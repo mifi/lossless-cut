@@ -34,9 +34,7 @@ import type { Frame } from '../ffmpeg';
 import type { FindNearestKeyframeTime } from '../hooks/useKeyframes';
 import { troubleshootingUrl } from '../../../common/constants';
 import OutDirSelector from './OutDirSelector';
-
-const remote = window.require('@electron/remote');
-const { shell } = remote;
+import mainApi from '../mainApi';
 
 
 const noticeStyle: CSSProperties = { marginBottom: '.5em' };
@@ -66,7 +64,7 @@ function renderNoticeIcon(notice: { warning?: boolean | undefined } | undefined,
   return notice.warning ? (
     <FaExclamationTriangle style={{ flexShrink: '0', fontSize: '.8em', verticalAlign: 'baseline', color: warningColor, ...style }} />
   ) : (
-    <FaInfoCircle style={{ flexShrink: '0', fontSize: '.8em', verticalAlign: 'baseline', color: 'var(--blue-10)', ...style }} />
+    <FaInfoCircle style={{ flexShrink: '0', fontSize: '.8em', verticalAlign: 'baseline', color: 'var(--cyan-10)', ...style }} />
   );
 }
 
@@ -81,14 +79,36 @@ interface GenericNotice {
   url?: string,
 }
 
-function renderNotice(notice: Notice | GenericNotice | undefined, { style }: { style?: CSSProperties }) {
-  if (notice == null) return null;
-  const { warning, text } = notice;
-  const url = 'url' in notice ? notice.url : undefined;
+function Notice({ notice }: { notice: Notice | GenericNotice }) {
+  const { text, warning } = notice;
   return (
-    <div key={typeof notice.text === 'string' ? notice.text : undefined} style={{ ...(warning ? warningStyle : infoStyle), display: 'flex', alignItems: 'center', gap: '0 .5em', ...style }}>
-      {renderNoticeIcon({ warning }, { fontSize: '1em', flexShrink: 0 })} <span style={{ fontSize: '.9em' }}>{text}</span>{url != null && <IoIosHelpCircle style={{ cursor: 'pointer', fontSize: '1.5em', flexShrink: 0, color: primaryTextColor }} title={i18n.t('Learn more')} role="button" tabIndex={0} onClick={() => shell.openExternal(url)} />}
+    <div style={{ ...(warning ? warningStyle : infoStyle), display: 'flex', alignItems: 'center', gap: '0 .5em' }}>
+      {renderNoticeIcon({ warning }, { fontSize: '1em', flexShrink: 0 })}
+      {' '}
+      <span style={{ fontSize: '.9em' }}>{text}</span>
     </div>
+  );
+}
+
+function renderNotice(notice: Notice | undefined) {
+  if (notice == null) return null;
+  const { text } = notice;
+  return (
+    <Notice notice={notice} key={typeof text === 'string' ? text : undefined} />
+  );
+}
+
+function renderGenericNotice(notice: GenericNotice) {
+  const { url } = notice;
+  return (
+    <tr key={notice.text}>
+      <td colSpan={2}>
+        <Notice notice={notice} />
+      </td>
+      <td>
+        {url != null && <IoIosHelpCircle style={{ cursor: 'pointer', fontSize: '1.5em', flexShrink: 0, color: primaryTextColor }} title={i18n.t('Learn more')} role="button" tabIndex={0} onClick={() => mainApi.openExternal(url)} />}
+      </td>
+    </tr>
   );
 }
 
@@ -129,7 +149,7 @@ function ExportConfirm({
   onClosePress: () => void,
   onExportConfirm: () => void,
   outFormat: string | undefined,
-  renderOutFmt: (style: CSSProperties) => JSX.Element,
+  renderOutFmt: (style: CSSProperties) => ReactNode,
   outputDir: string | undefined,
   numStreamsTotal: number,
   numStreamsToCopy: number,
@@ -171,11 +191,11 @@ function ExportConfirm({
   const areWeCuttingProblematicStreams = areWeCutting && mainCopiedThumbnailStreams.length > 0;
 
   const haveSegmentWithProblematicKeyframe = useMemo(() => {
-    if (neighbouringKeyFrames.length === 0) return false;
+    if (neighbouringKeyFrames.length === 0) return false; // we don't know
     return segmentsToExport.some(({ start, end }) => {
-      const previousKeyframeTime = findNearestKeyFrameTime({ time: start, direction: -1 }) ?? 0;
+      const nearestPreviousKeyframeTime = findNearestKeyFrameTime({ time: start, direction: -1 }) ?? 0;
       const segmentDuration = end - start;
-      const estimatedExportedSegmentDuration = end - previousKeyframeTime;
+      const estimatedExportedSegmentDuration = end - nearestPreviousKeyframeTime;
       // if estimated actual output length of segment is more than 1.5 times the intended segment duration, then we consider it problematic and warn the user about it.
       return estimatedExportedSegmentDuration > segmentDuration * 1.5;
     });
@@ -350,12 +370,7 @@ function ExportConfirm({
     >
       <table className={styles['options']}>
         <tbody>
-          <tr>
-            <td colSpan={2}>
-              {notices.generic.map((notice) => renderNotice(notice, {}))}
-            </td>
-            <td />
-          </tr>
+          {notices.generic.map((notice) => renderGenericNotice(notice))}
 
           {segmentsOrInverse.selected.length !== segmentsOrInverse.all.length && (
             <tr>
@@ -369,7 +384,7 @@ function ExportConfirm({
           <tr>
             <td>
               {segmentsOrInverse.selected.length > 1 ? t('Export mode for {{segments}} segments', { segments: segmentsOrInverse.selected.length }) : t('Export mode')}
-              {renderNotice(notices.specific['exportMode'], {})}
+              {renderNotice(notices.specific['exportMode'])}
             </td>
             <td>
               <ExportModeButton selectedSegments={segmentsOrInverse.selected} style={{ height: '1.8em' }} />
@@ -394,7 +409,7 @@ function ExportConfirm({
           <tr>
             <td>
               <Trans>Input has {{ numStreamsTotal }} tracks</Trans>
-              {renderNotice(notices.specific['problematicStreams'], {})}
+              {renderNotice(notices.specific['problematicStreams'])}
             </td>
             <td>
               <HighlightedText style={{ cursor: 'pointer' }} onClick={onShowStreamsSelectorClick}><Trans>Keeping {{ numStreamsToCopy }} tracks</Trans></HighlightedText>
@@ -441,7 +456,7 @@ function ExportConfirm({
           <tr>
             <td>
               {t('Overwrite existing files')}
-              {renderNotice(notices.specific['overwriteOutput'], {})}
+              {renderNotice(notices.specific['overwriteOutput'])}
             </td>
             <td>
               <Switch checked={enableOverwriteOutput} onCheckedChange={setEnableOverwriteOutput} />
@@ -520,7 +535,7 @@ function ExportConfirm({
                     </td>
                     <td>
                       <Switch checked={movFastStart} onCheckedChange={toggleMovFastStart} />
-                      {renderNotice(notices.specific['movFastStart'], {})}
+                      {renderNotice(notices.specific['movFastStart'])}
                     </td>
                     <td>
                       {renderNoticeIcon(notices.specific['movFastStart'], rightIconStyle) ?? <HelpIcon onClick={onMovFastStartHelpPress} />}
@@ -530,7 +545,7 @@ function ExportConfirm({
                   <AnimatedTr>
                     <td>
                       {t('Preserve all MP4/MOV metadata?')}
-                      {renderNotice(notices.specific['preserveMovData'], {})}
+                      {renderNotice(notices.specific['preserveMovData'])}
                     </td>
                     <td>
                       <Switch checked={preserveMovData} onCheckedChange={togglePreserveMovData} />
@@ -603,7 +618,7 @@ function ExportConfirm({
                   <AnimatedTr>
                     <td>
                       {t('Smart cut (experimental):')}
-                      {renderNotice(notices.specific['smartCut'], {})}
+                      {renderNotice(notices.specific['smartCut'])}
                     </td>
                     <td>
                       <Switch checked={enableSmartCut} onCheckedChange={() => setEnableSmartCut((v) => !v)} />
@@ -617,7 +632,7 @@ function ExportConfirm({
                     <AnimatedTr>
                       <td>
                         {t('Keyframe cut mode')}
-                        {renderNotice(notices.specific['cutMode'], {})}
+                        {renderNotice(notices.specific['cutMode'])}
                       </td>
                       <td>
                         <Switch checked={keyframeCut} onCheckedChange={() => toggleKeyframeCut()} />
@@ -668,7 +683,7 @@ function ExportConfirm({
                 <AnimatedTr>
                   <td>
                     &quot;ffmpeg&quot; <code className="highlighted">avoid_negative_ts</code>
-                    {renderNotice(notices.specific['avoidNegativeTs'], {})}
+                    {renderNotice(notices.specific['avoidNegativeTs'])}
                   </td>
                   <td>
                     <Select value={avoidNegativeTs} onChange={(e) => setAvoidNegativeTs(e.target.value as AvoidNegativeTs)} style={{ height: 20, marginLeft: 5 }}>

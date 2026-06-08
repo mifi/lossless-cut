@@ -22,7 +22,7 @@ export default ({ filePath, relevantTime, fileDuration, waveformEnabled, audioSt
 }) => {
   const [waveforms, setWaveforms] = useState<WaveformSlice[]>([]);
   const [overviewWaveform, setOverviewWaveform] = useState<OverviewWaveform>();
-  const waveformsRef = useRef<WaveformSlice[]>();
+  const waveformsRef = useRef<WaveformSlice[]>(undefined);
 
   useEffect(() => {
     waveformsRef.current = waveforms;

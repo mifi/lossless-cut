@@ -27,7 +27,7 @@ function useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream, 
 }) {
   const { t } = useTranslation();
 
-  const readingKeyframesPromise = useRef<Promise<unknown>>();
+  const readingKeyframesPromise = useRef<Promise<unknown>>(undefined);
   const [neighbouringKeyFramesMap, setNeighbouringKeyFrames] = useState<Record<string, Frame>>({});
 
   const neighbouringKeyFrames = useMemo(() => Object.values(neighbouringKeyFramesMap), [neighbouringKeyFramesMap]);
@@ -42,8 +42,9 @@ function useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream, 
     return map;
   }, [detectedFps, neighbouringKeyFrames]);
 
-  const findNearestKeyFrameTime = useCallback(({ time, direction }: { time: number, direction: number }) => ffmpegFindNearestKeyFrameTime({ frames: neighbouringKeyFrames, time, direction, fps: detectedFps }), [neighbouringKeyFrames, detectedFps]);
+  const findNearestKeyFrameTime = useCallback(({ time, direction }: { time: number, direction: number }) => ffmpegFindNearestKeyFrameTime({ frames: neighbouringKeyFrames, time, direction }), [neighbouringKeyFrames]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setNeighbouringKeyFrames({}), [filePath, videoStream]);
 
   useDebounceOld(() => {

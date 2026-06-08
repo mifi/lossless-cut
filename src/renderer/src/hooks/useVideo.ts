@@ -9,7 +9,7 @@ export default ({ filePath }: { filePath: string | undefined }) => {
   const [outputPlaybackRate, setOutputPlaybackRateState] = useState(1);
   const [playerTime, setPlayerTime] = useState<number>();
   const [playbackMode, setPlaybackModeState] = useState<PlaybackMode>();
-  const playbackModeRef = useRef<PlaybackMode>();
+  const playbackModeRef = useRef<PlaybackMode>(undefined);
 
   const setPlaybackMode = useCallback((mode: PlaybackMode | undefined) => {
     playbackModeRef.current = mode;
@@ -34,7 +34,7 @@ export default ({ filePath }: { filePath: string | undefined }) => {
 
   // https://kitchen.vibbio.com/blog/optimizing-html5-video-scrubbing/
   const seekingRef = useRef<NodeJS.Timeout | undefined>(undefined);
-  const seekToRef = useRef<number>();
+  const seekToRef = useRef<number>(undefined);
 
   const smoothSeek = useCallback((seekTo: number) => {
     if (seekingRef.current) {

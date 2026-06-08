@@ -9,13 +9,14 @@ import type { Readable } from 'node:stream';
 import { app, clipboard, nativeImage } from 'electron';
 
 import { platform, arch, isWindows, isLinux } from './util.js';
-import type { CaptureFormat, FfmpegHwAccel, Waveform } from '../common/types.js';
+import type { CaptureFormat, FfmpegHwAccel } from '../common/types.js';
 import type { FFprobeFormat } from '../common/ffprobe.js';
 import isDev from './isDev.js';
 import logger from './logger.js';
 import { parseFfmpegProgressLine } from './progress.js';
-import { getHwaccelArgs, parseFfprobeDuration } from '../common/util.js';
+import { formatFfmpegNumber, getHwaccelArgs, parseFfprobeDuration } from '../common/util.js';
 import { getFfmpegJpegQuality } from './ffmpegUtil.js';
+import { throwIfDisabledNetworking } from './networking.js';
 
 
 // cannot use process.kill: https://github.com/sindresorhus/execa/issues/1177
@@ -196,6 +197,10 @@ export async function runFfprobe(args: readonly string[], { timeout = isDev ? 10
   }
 }
 
+export interface Waveform {
+  buffer: Buffer,
+}
+
 export async function renderWaveformPng({ filePath, start, duration, resample, color, streamIndex, timeout }: {
   filePath: string,
   start?: number,
@@ -260,9 +265,9 @@ export async function renderWaveformPng({ filePath, start, duration, resample, c
 }
 
 const getInputSeekArgs = ({ filePath, from, to }: { filePath: string, from?: number | undefined, to?: number | undefined }) => [
-  ...(from != null ? ['-ss', from.toFixed(5)] : []),
+  ...(from != null ? ['-ss', formatFfmpegNumber(from)] : []),
   '-i', filePath,
-  ...(from != null && to != null ? ['-t', (to - from).toFixed(5)] : []),
+  ...(from != null && to != null ? ['-t', formatFfmpegNumber(to - from)] : []),
 ];
 
 export function mapTimesToSegments(times: number[], includeLast: boolean) {
@@ -731,6 +736,8 @@ export function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIn
 }
 
 export async function downloadMediaUrl(url: string, outPath: string) {
+  throwIfDisabledNetworking();
+
   // User agent taken from https://techblog.willshouse.com/2012/01/03/most-common-user-agents/
   const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
   const args = [
@@ -744,5 +751,5 @@ export async function downloadMediaUrl(url: string, outPath: string) {
   await runFfmpegProcess(args);
 }
 
-// Don't pass complex objects over the bridge (the process), so just convert it to a promise
+// Don't pass complex objects (execa decorated promise) over the bridge (the process). Instead convert it to a normal promise
 export const runFfmpeg = async (...args: Parameters<typeof runFfmpegProcess>) => runFfmpegProcess(...args);

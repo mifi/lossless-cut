@@ -15,7 +15,7 @@ import timers from 'node:timers/promises';
 import { z } from 'zod';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import electronUnhandled from 'electron-unhandled';
-import { fileTypeFromFile } from 'file-type/node';
+import { fileTypeFromFile } from 'file-type';
 import type { Asyncify } from 'type-fest';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { installExtension, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
@@ -38,6 +38,7 @@ import type { ApiActionRequest } from '../common/types.js';
 import * as ffmpeg from './ffmpeg.js';
 import * as compatPlayer from './compatPlayer.js';
 import { downloadMediaUrl } from './ffmpeg.js';
+import { hasDisabledNetworking, setDisableNetworking } from './networking.js';
 
 
 electronUnhandled({ showDialog: true, logger: (err) => logger.error('electron-unhandled', err) });
@@ -68,7 +69,6 @@ let mainWindow: BrowserWindow | null;
 let askBeforeClose = false;
 let rendererReady = false;
 let newVersion: string | undefined;
-let disableNetworking: boolean;
 
 const openFiles = (paths: string[]) => mainWindow!.webContents.send('openFiles', paths);
 
@@ -218,9 +218,17 @@ function createWindow() {
   mainWindow.on('move', debouncedSaveWindowState);
 }
 
+async function openExternal(url: string) {
+  if (hasDisabledNetworking()) {
+    logger.warn('openExternal blocked because networking is disabled', url);
+    return;
+  }
+  await shell.openExternal(url);
+}
+
 function updateMenu() {
   assert(mainWindow);
-  menu({ app, mainWindow, newVersion, isStoreBuild });
+  menu({ app, mainWindow, newVersion, isStoreBuild, openExternal });
 }
 
 async function changeLanguage(language: string | null) {
@@ -370,7 +378,7 @@ async function init() {
     if (filesToOpen.length === 0) filesToOpen = argv._.map(String);
     const { settingsJson } = argv;
 
-    ({ disableNetworking } = argv);
+    setDisableNetworking(argv['disableNetworking']);
 
     if (settingsJson != null) {
       logger.info('initializing settings', settingsJson);
@@ -403,7 +411,7 @@ async function init() {
 
     const enableUpdateCheck = configStore.get('enableUpdateCheck');
 
-    if (!disableNetworking && enableUpdateCheck && !isStoreBuild) {
+    if (!hasDisabledNetworking() && enableUpdateCheck && !isStoreBuild) {
       newVersion = await checkNewVersion();
       // newVersion = '1.2.3';
       if (newVersion) updateMenu();
@@ -426,13 +434,13 @@ function quitApp() {
   timers.setTimeout(1000).then(() => electron.app.quit());
 }
 
-const hasDisabledNetworking = () => !!disableNetworking;
-
 const setProgressBar = (v: number) => mainWindow?.setProgressBar(v);
 
 function sendOsNotification(options: NotificationConstructorOptions) {
   if (!Notification.isSupported()) return;
   const notification = new Notification(options);
+  // Note: For notifications on macOS, your application will need to be code-signed in order for notification events to emit correctly. This requirement stems from the underlying UNNotification API provided by Apple. Unsigned binaries will emit a `failed` event when notification APIs are called.
+  // https://www.electronjs.org/docs/latest/tutorial/notifications#macos
   notification.on('failed', (_e, error) => logger.warn('Notification failed', error));
   notification.show();
 }
@@ -445,6 +453,9 @@ const remoteApi = {
   quitApp,
   setProgressBar,
   sendOsNotification,
+  writeClipboardText: (text: string) => electron.clipboard.writeText(text),
+  readClipboardText: () => electron.clipboard.readText(),
+  openExternal,
 };
 
 export type RemoteApi = typeof remoteApi;

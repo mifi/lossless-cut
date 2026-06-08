@@ -1,5 +1,5 @@
 import type { MutableRefObject, CSSProperties, WheelEventHandler, MouseEventHandler } from 'react';
-import { memo, useRef, useMemo, useCallback, useEffect, useState } from 'react';
+import { memo, useRef, useMemo, useCallback, useEffect } from 'react';
 import { motion, useMotionValue, useSpring } from 'motion/react';
 import debounce from 'lodash/debounce';
 import { useTranslation } from 'react-i18next';
@@ -84,11 +84,8 @@ const CommandedTime = memo(({ commandedTimePercent }: { commandedTimePercent: st
 
 const timelineHeight = 36;
 
-const timeWrapperStyle: CSSProperties = { height: timelineHeight };
-
 function Timeline({
   fileDurationNonZero,
-  startTimeOffset,
   playerTime,
   commandedTime,
   relevantTime,
@@ -101,7 +98,6 @@ function Timeline({
   currentCutSeg,
   inverseCutSegments,
   formatTimecode,
-  formatTimeAndFrames,
   waveforms,
   overviewWaveform,
   shouldShowWaveform,
@@ -114,13 +110,12 @@ function Timeline({
   waveformEnabled,
   waveformHeight,
   showThumbnails,
-  playing,
-  isFileOpened,
   onWheel,
   commandedTimeRef,
   goToTimecode,
   darkMode,
   setCutTime,
+  setHoveringTime,
 } : {
   fileDurationNonZero: number,
   startTimeOffset: number,
@@ -136,7 +131,6 @@ function Timeline({
   currentCutSeg: StateSegment | undefined,
   inverseCutSegments: InverseCutSegment[],
   formatTimecode: FormatTimecode,
-  formatTimeAndFrames: (a: number) => string,
   waveforms: WaveformSlice[],
   overviewWaveform: OverviewWaveform | undefined,
   shouldShowWaveform: boolean,
@@ -155,7 +149,8 @@ function Timeline({
   commandedTimeRef: MutableRefObject<number>,
   goToTimecode: () => void,
   darkMode: boolean,
-  setCutTime: UseSegments['setCutTime'];
+  setCutTime: UseSegments['setCutTime'],
+  setHoveringTime: (time: number | undefined) => void,
 }) {
   const { t } = useTranslation();
 
@@ -163,13 +158,8 @@ function Timeline({
 
   const timelineScrollerRef = useRef<HTMLDivElement>(null);
   const timelineScrollerSkipEventRef = useRef<boolean>(false);
-  const timelineScrollerSkipEventDebounce = useRef<() => void>();
+  const timelineScrollerSkipEventDebounce = useRef<() => void>(undefined);
   const timelineWrapperRef = useRef<HTMLDivElement>(null);
-
-  const [hoveringTime, setHoveringTime] = useState<number>();
-
-  const displayTime = (hoveringTime != null && isFileOpened && !playing ? hoveringTime : relevantTime) + startTimeOffset;
-  const displayTimePercent = useMemo(() => `${Math.round((displayTime / fileDurationNonZero) * 100)}%`, [displayTime, fileDurationNonZero]);
 
   const isZoomed = zoom > 1;
 
@@ -288,11 +278,11 @@ function Timeline({
     return (relX / target.offsetWidth) * fileDurationNonZero;
   }, [fileDurationNonZero]);
 
-  const mouseDownRef = useRef<unknown>();
+  const mouseDownRef = useRef<unknown>(undefined);
 
   useEffect(() => {
     setHoveringTime(undefined);
-  }, [relevantTime]);
+  }, [relevantTime, setHoveringTime]);
 
   // for performance
   const currentCutSegRef = useRef<StateSegment | undefined>(currentCutSeg);
@@ -300,7 +290,7 @@ function Timeline({
     currentCutSegRef.current = currentCutSeg;
   }, [currentCutSeg]);
 
-  const resizingSegmentRef = useRef<{ operation: 'start' | 'end' | 'move', offset?: number } | undefined>();
+  const resizingSegmentRef = useRef<{ operation: 'start' | 'end' | 'move', offset?: number } | undefined>(undefined);
 
   const onMouseDown = useCallback<MouseEventHandler<HTMLElement>>((e) => {
     if (e.nativeEvent.buttons !== 1) return; // not primary button
@@ -358,29 +348,7 @@ function Timeline({
     window.addEventListener('mousemove', onMouseMove);
   }, [fileDurationNonZero, getMouseTimelinePos, seekAbs, segmentMouseModifierKey, setCutTime, zoom]);
 
-  const timeRef = useRef<HTMLDivElement>(null);
-  const timeFadeTimeoutRef = useRef<NodeJS.Timeout>();
-
-  const onMouseMove = useCallback<MouseEventHandler<HTMLDivElement>>((e) => {
-    // need to manually check, because we cannot use css :hover when pointer-events: none
-    // and we need pointer-events: none on time because we want to be able to click through it to segments behind (and they are not parent)
-    const rect = timeRef.current?.getBoundingClientRect();
-    const isInBounds = rect && e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
-    const showHide = (show: boolean) => timeRef.current?.style.setProperty('opacity', show ? '0.2' : '1');
-    if (isInBounds != null) showHide(isInBounds);
-    // console.log('isInBounds', isInBounds);
-
-    // https://github.com/mifi/lossless-cut/issues/2592#issuecomment-3476211496
-    if (timeFadeTimeoutRef.current) clearTimeout(timeFadeTimeoutRef.current);
-    timeFadeTimeoutRef.current = setTimeout(() => showHide(false), 1000);
-
-    if (!mouseDownRef.current) { // no button pressed
-      setHoveringTime(getMouseTimelinePos(e.nativeEvent));
-    }
-    e.preventDefault();
-  }, [getMouseTimelinePos]);
-
-  const onMouseOut = useCallback(() => setHoveringTime(undefined), []);
+  const onMouseOut = useCallback(() => setHoveringTime(undefined), [setHoveringTime]);
 
   const contextMenuTemplate = useMemo(() => [
     { label: t('Seek to timecode'), click: goToTimecode },
@@ -396,9 +364,9 @@ function Timeline({
   return (
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions,jsx-a11y/mouse-events-have-key-events
     <div
+      className="no-user-select"
       style={{ position: 'relative', borderTop: '1px solid var(--gray-7)', borderBottom: '1px solid var(--gray-7)' }}
       onMouseDown={onMouseDown}
-      onMouseMove={onMouseMove}
       // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
       onMouseOut={onMouseOut}
     >
@@ -484,12 +452,6 @@ function Timeline({
           {commandedTimePercent !== undefined && (
             <CommandedTime commandedTimePercent={commandedTimePercent} />
           )}
-        </div>
-      </div>
-
-      <div style={timeWrapperStyle} className={styles['time-wrapper']}>
-        <div className={styles['time']} ref={timeRef}>
-          {formatTimeAndFrames(displayTime)}{isZoomed ? ` ${displayTimePercent}` : ''}
         </div>
       </div>
     </div>

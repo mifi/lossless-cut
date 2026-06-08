@@ -868,5 +868,15 @@
   "Zoom in more to view waveform": "Perbesar lagi untuk melihat waveform",
   "Zoom in timeline": "Perbesar linimasa",
   "Zoom in/out timeline": "Perbesar/perkecil linimasa",
-  "Zoom out timeline": "Perkecil linimasa"
+  "Zoom out timeline": "Perkecil linimasa",
+  "Choose directory": "Pilih direktori",
+  "Clear recents": "Hapus terkini",
+  "Elapsed: {{seconds}} seconds": "Berlalu: {{seconds}} detik",
+  "Enable FFmpeg `-hwaccel auto` flag. This can improve performance segment auto detection and FFmpeg-assisted playback speed.": "Aktifkan flag FFmpeg `-hwaccel auto`. Ini dapat meningkatkan performa deteksi otomatis segmen dan kecepatan pemutaran berbantuan FFmpeg.",
+  "Export options screen is disabled, and you will not see any important notices or warnings.": "Layar opsi ekspor dinonaktifkan, dan Anda tidak akan melihat pemberitahuan atau peringatan penting apa pun.",
+  "Learn more": "Pelajari lebih lanjut",
+  "Other": "Lainnya",
+  "Segment label (starts with)": "Label segmen (dimulai dengan)",
+  "Segment start to previous keyframe and end to next keyframe": "Awal segmen ke keyframe sebelumnya dan akhir ke keyframe berikutnya",
+  "Source file no longer exists or is not accessible. Please check that it is still in its original location and that you have permission to access it.": "File sumber tidak lagi ada atau tidak dapat diakses. Harap periksa bahwa file tersebut masih berada di lokasi aslinya dan Anda memiliki izin untuk mengaksesnya."
 }

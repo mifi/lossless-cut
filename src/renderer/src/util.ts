@@ -14,14 +14,15 @@ import type { EnableImportChapters, Html5ifyMode } from '../../common/types';
 import { UserFacingError } from '../errors';
 import type { FFprobeFormat } from '../../common/ffprobe';
 
-const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename } = window.require('path');
-const { stat, lstat, readdir, utimes, unlink, open, access, constants: { R_OK, W_OK } } = window.require('fs/promises');
-const { ipcRenderer } = window.require('electron');
+const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename } = window.require('node:path');
+const { stat, lstat, readdir, utimes, unlink, open, access, constants: { R_OK, W_OK } } = window.require('node:fs/promises');
 const remote = window.require('@electron/remote');
+const { app } = remote;
 const { isWindows, isMac } = remote.require('./index.js');
+const { ipcRenderer } = window.require('electron');
 
-const appVersion = remote.app.getVersion();
-const appPath = remote.app.getAppPath();
+const appVersion = app.getVersion();
+const appPath = app.getAppPath();
 
 export { isWindows, isMac, appVersion, appPath };
 
@@ -273,9 +274,6 @@ export function getHtml5ifiedPath(cod: string | undefined, fp: string, type: Exc
   return getSuffixedOutPath({ customOutDir: cod, filePath: fp, nameSuffix: `${html5ifiedPrefix}${type}.${ext}` });
 }
 
-
-export const deleteDispositionValue = 'llc_disposition_remove';
-
 export const mirrorTransform = 'matrix(-1, 0, 0, 1, 0, 0)';
 
 // todo this is not a correct assumption
@@ -429,6 +427,112 @@ export function getMetaKeyName() {
   if (isMac) return i18n.t('⌘ Cmd');
   if (isWindows) return i18n.t('⊞ Win');
   return i18n.t('Meta');
+}
+
+const keyCodeToDisplayName: Record<string, string> = {
+  Escape: 'Esc',
+  Digit1: '1',
+  Digit2: '2',
+  Digit3: '3',
+  Digit4: '4',
+  Digit5: '5',
+  Digit6: '6',
+  Digit7: '7',
+  Digit8: '8',
+  Digit9: '9',
+  Digit0: '0',
+  KeyQ: 'Q',
+  KeyW: 'W',
+  KeyE: 'E',
+  KeyR: 'R',
+  KeyT: 'T',
+  KeyY: 'Y',
+  KeyU: 'U',
+  KeyI: 'I',
+  KeyO: 'O',
+  KeyP: 'P',
+  KeyA: 'A',
+  KeyS: 'S',
+  KeyD: 'D',
+  KeyF: 'F',
+  KeyG: 'G',
+  KeyH: 'H',
+  KeyJ: 'J',
+  KeyK: 'K',
+  KeyL: 'L',
+  KeyZ: 'Z',
+  KeyX: 'X',
+  KeyC: 'C',
+  KeyV: 'V',
+  KeyB: 'B',
+  KeyN: 'N',
+  KeyM: 'M',
+  Minus: '-',
+  Equal: '=',
+  BracketLeft: '[',
+  BracketRight: ']',
+  Semicolon: ';',
+  Quote: '\'',
+  Backquote: '`',
+  Backslash: '\\',
+  Comma: ',',
+  Period: '.',
+  Slash: '/',
+  F1: 'F1',
+  F2: 'F2',
+  F3: 'F3',
+  F4: 'F4',
+  F5: 'F5',
+  F6: 'F6',
+  F7: 'F7',
+  F8: 'F8',
+  F9: 'F9',
+  F10: 'F10',
+  F11: 'F11',
+  F12: 'F12',
+  F13: 'F13',
+  F14: 'F14',
+  F15: 'F15',
+  F16: 'F16',
+  F17: 'F17',
+  F18: 'F18',
+  F19: 'F19',
+  F20: 'F20',
+  F21: 'F21',
+  F22: 'F22',
+  F23: 'F23',
+  F24: 'F24',
+  NumpadParenLeft: '(',
+  NumpadParenRight: ')',
+  PageUp: 'PgUp',
+  PageDown: 'PgDn',
+  ArrowUp: '↑',
+  ArrowLeft: '←',
+  ArrowRight: '→',
+  ArrowDown: '↓',
+  ControlLeft: 'Ctrl',
+  ControlRight: 'Ctrl',
+  ShiftLeft: 'Shift',
+  ShiftRight: 'Shift',
+  AltLeft: 'Alt',
+  AltRight: 'Alt',
+};
+
+export function getKeyDisplayName(code: string, keyboardLayoutMap: Map<string, string> | undefined): string | undefined {
+  if (code === 'MetaLeft' || code === 'MetaRight') {
+    return getMetaKeyName();
+  }
+  if (keyboardLayoutMap == null) {
+    return undefined;
+  }
+  return keyboardLayoutMap.get(code) ?? keyCodeToDisplayName[code] ?? code;
+}
+
+export function formatKeybinding(keys: string, keyboardLayoutMap: Map<string, string> | undefined): string | undefined {
+  const parts = splitKeyboardKeys(keys);
+  const names = parts.map((code) => getKeyDisplayName(code, keyboardLayoutMap));
+  if (names.some((n) => n == null)) return undefined;
+  return names.join('+');
 }
 
 export const getEnableImportChaptersOptions = (): Record<EnableImportChapters, string> => ({

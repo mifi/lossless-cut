@@ -3,24 +3,22 @@ import { memo, useRef, useState, useMemo, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import invariant from 'tiny-invariant';
 import { motion } from 'motion/react';
-import { FaCheck, FaEdit, FaPlus, FaTrash, FaUndo } from 'react-icons/fa';
+import { FaCheck, FaClipboard, FaClipboardList, FaEdit, FaInfo, FaPlus, FaTrash, FaUndo } from 'react-icons/fa';
+import { IconButton, Tooltip, Button, TextField } from '@radix-ui/themes';
 
 import type { SegmentTags } from '../types';
 import { segmentTagsSchema } from '../types';
 import CopyClipboardButton from './CopyClipboardButton';
 import { errorToast } from '../swal';
-import TextInput from './TextInput';
-import Button from './Button';
 import Warning from './Warning';
+import mainApi from '../mainApi';
 
-
-const { clipboard } = window.require('electron');
 
 const activeColor = 'var(--gray-12)';
 
 const emptyObject = {};
 
-function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editingTag, setEditingTag, onTagsChange, onTagReset, addTagTitle }: {
+function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editingTag, setEditingTag, onTagsChange, onTagReset, addTagTitle, tagInfo, canDeleteExisting }: {
   existingTags?: SegmentTags,
   customTags?: SegmentTags | undefined,
   editingTag: string | undefined,
@@ -28,6 +26,8 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
   onTagsChange: (keyValues: Record<string, string>) => void,
   onTagReset: (tag: string) => void,
   addTagTitle: string,
+  tagInfo?: Record<string, { description: string, url?: string }>,
+  canDeleteExisting?: boolean,
 }) {
   const { t } = useTranslation();
   const ref = useRef<HTMLInputElement>(null);
@@ -52,7 +52,7 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
   }, [editingTag, onTagReset, setEditingTag]);
 
   const onPasteClick = useCallback(async () => {
-    const text = clipboard.readText();
+    const text = await mainApi.readClipboardText();
     try {
       const json = JSON.parse(text);
       const newTags = segmentTagsSchema.parse(json);
@@ -65,8 +65,7 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
   const saveTag = useCallback(() => {
     invariant(editingTag != null);
     invariant(editingTagVal != null);
-    const editingValTransformed = editingTag === 'language' ? editingTagVal.toLowerCase() : editingTagVal;
-    onTagsChange({ [editingTag]: editingValTransformed });
+    onTagsChange({ [editingTag]: editingTagVal });
     setEditingTag(undefined);
   }, [editingTag, editingTagVal, onTagsChange, setEditingTag]);
 
@@ -85,6 +84,11 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
       setEditingTagVal(tag && String(effectiveTags[tag]));
     }
   }, [editingTag, editingTagVal, existingTags, effectiveTags, newTagKey, onResetClick, saveTag, setEditingTag]);
+
+  const onDeleteExistingClick = useCallback((tag: string) => {
+    onTagsChange({ [tag]: '' }); // empty string means delete metadata in ffmpeg
+    setEditingTag(undefined);
+  }, [onTagsChange, setEditingTag]);
 
   const onSubmit = useCallback<FormEventHandler<HTMLFormElement>>((e) => {
     e.preventDefault();
@@ -116,15 +120,32 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
 
   const canAdd = !newTagKey && (editingTag == null || effectiveTags[editingTag] == null);
 
+  function renderValue({ isDeletedExisting, value, thisTagCustom }: {
+    isDeletedExisting: boolean,
+    value: string | undefined,
+    thisTagCustom: boolean,
+  }) {
+    const emphasized = thisTagCustom || isDeletedExisting;
+    const color = isDeletedExisting ? 'var(--red-10)' : (emphasized ? activeColor : 'var(--gray-11)');
+    const displayValue = isDeletedExisting ? `<${t('deleted')}>` : (value ? String(value) : `<${t('empty')}>`);
+    return (
+      <span style={{ marginRight: '.5em', padding: '.3em 0', fontWeight: emphasized ? 'bold' : undefined, color }}>
+        {displayValue}
+      </span>
+    );
+  }
+
   return (
     <>
       <table style={{ marginBottom: '1em', width: '100%' }}>
         <tbody>
           {Object.keys(effectiveTags).map((tag) => {
             const editingThis = tag === editingTag;
-            const Icon = editingThis ? FaCheck : FaEdit;
             const thisTagCustom = customTags[tag] != null;
             const thisTagNew = existingTags[tag] == null;
+            const value = effectiveTags[tag];
+            const isDeletedExisting = !!canDeleteExisting && !value && !thisTagNew;
+            const editingOther = editingTag != null && !editingThis;
 
             return (
               <motion.tr
@@ -137,19 +158,33 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
               >
                 <td style={{ paddingRight: '1em', color: thisTagNew ? activeColor : 'var(--gray-11)' }}>{tag}</td>
 
-                <td style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                <td style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '.5em' }}>
                   {editingThis ? (
-                    <form style={{ display: 'inline' }} onSubmit={onSubmit}>
-                      <TextInput ref={ref} placeholder={t('Enter value')} value={editingTagVal || ''} onChange={(e) => setEditingTagVal(e.target.value)} style={{ padding: '.4em', textTransform: editingTag === 'language' ? 'lowercase' : undefined }} />
+                    <form style={{ marginRight: '.5em', display: 'inline' }} onSubmit={onSubmit}>
+                      <TextField.Root ref={ref} placeholder={t('Enter value')} value={editingTagVal ?? ''} onChange={(e) => setEditingTagVal(e.target.value)} />
                     </form>
                   ) : (
-                    <span style={{ padding: '.3em 0', color: thisTagCustom ? activeColor : 'var(--gray-11)', fontWeight: thisTagCustom ? 'bold' : undefined }}>{effectiveTags[tag] ? String(effectiveTags[tag]) : `<${t('empty')}>`}</span>
+                    renderValue({ isDeletedExisting, value, thisTagCustom })
                   )}
-                  <Button disabled={editingTag != null && !editingThis} title={t('Edit')} style={{ marginLeft: '.4em' }} onClick={() => onEditClick(tag)}><Icon style={{ fontSize: '.9em', padding: '.5em', verticalAlign: 'middle' }} /></Button>
-                  {editingThis && (
-                    <Button title={thisTagNew ? t('Delete') : t('Reset')} onClick={onResetClick}>
-                      {thisTagNew ? <FaTrash style={{ fontSize: '.9em', padding: '.5em', verticalAlign: 'middle' }} /> : <FaUndo style={{ fontSize: '.9em', padding: '.5em', verticalAlign: 'middle' }} />}
-                    </Button>
+
+                  {tagInfo?.[tag] && !editingThis && (
+                    <Tooltip content={tagInfo[tag].description}>
+                      <IconButton size="1" variant="ghost" color="gray" style={{ cursor: tagInfo[tag]?.url ? 'pointer' : undefined }} onClick={() => tagInfo[tag]?.url && mainApi.openExternal(tagInfo[tag].url)}><FaInfo /></IconButton>
+                    </Tooltip>
+                  )}
+
+                  <IconButton disabled={editingOther} size="1" variant="ghost" color={editingThis ? 'cyan' : 'gray'} title={t('Edit')} onClick={() => onEditClick(tag)}>{editingThis ? <FaCheck /> : <FaEdit />}</IconButton>
+
+                  {editingThis && thisTagNew && (
+                    <IconButton size="1" color="red" variant="ghost" title={t('Delete')} onClick={onResetClick}><FaTrash /></IconButton>
+                  )}
+
+                  {editingThis && !thisTagNew && (
+                    <IconButton size="1" color="red" variant="ghost" title={t('Reset')} onClick={onResetClick}><FaUndo /></IconButton>
+                  )}
+
+                  {canDeleteExisting && !isDeletedExisting && !editingThis && existingTags[tag] != null && (
+                    <IconButton disabled={editingOther} size="1" color="red" variant="ghost" title={t('Delete')} onClick={() => onDeleteExistingClick(tag)}><FaTrash /></IconButton>
                   )}
                 </td>
               </motion.tr>
@@ -158,19 +193,19 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
         </tbody>
       </table>
 
-      <form onSubmit={onAddSubmit} style={{ opacity: canAdd ? undefined : 0.5, marginBottom: '1em' }}>
-        <TextInput ref={ref} disabled={!canAdd} value={newTagKeyInput} onChange={(e) => setNewTagKeyInput(e.target.value)} placeholder={addTagTitle} style={{ padding: '.4em', marginRight: '1em', verticalAlign: 'middle' }} />
-        <Button type="submit" disabled={!canAdd} title={addTagTitle} onClick={add}><FaPlus style={{ padding: '.6em', verticalAlign: 'middle' }} /></Button>
+      <form onSubmit={onAddSubmit} style={{ opacity: canAdd ? undefined : 0.5, marginBottom: '1em', display: 'flex', alignItems: 'center' }}>
+        <TextField.Root ref={ref} disabled={!canAdd} value={newTagKeyInput} onChange={(e) => setNewTagKeyInput(e.target.value)} placeholder={addTagTitle} style={{ marginRight: '1em' }} />
+        <IconButton size="2" type="submit" disabled={!canAdd} title={addTagTitle} onClick={add}><FaPlus /></IconButton>
       </form>
 
       {newTagKeyInputError && <Warning>{t('Invalid character(s) found in key')}</Warning>}
 
-      <div style={{ marginBottom: '1em' }}>
+      <div style={{ marginBottom: '1em', display: 'flex', alignItems: 'center' }}>
         <CopyClipboardButton text={JSON.stringify(effectiveTags, null, 2)} style={{ marginRight: '.3em', verticalAlign: 'middle' }}>
-          {({ onClick }) => <Button onClick={onClick} style={{ display: 'block' }}>{t('Copy to clipboard')}</Button>}
+          {({ onClick }) => <Button color="gray" size="1" onClick={onClick}><FaClipboardList />{t('Copy to clipboard')}</Button>}
         </CopyClipboardButton>
 
-        <Button onClick={onPasteClick}>{t('Paste')}</Button>
+        <Button color="gray" size="1" onClick={onPasteClick}><FaClipboard />{t('Paste')}</Button>
       </div>
     </>
   );

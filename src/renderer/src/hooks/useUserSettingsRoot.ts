@@ -8,8 +8,9 @@ import { errorToast } from '../swal';
 import isDev from '../isDev';
 import { mySpring, emitter as animationsEmitter } from '../animations';
 
-const { configStore } = window.require('@electron/remote').require('./index.js');
-const { systemPreferences } = window.require('@electron/remote');
+const remote = window.require('@electron/remote');
+const { systemPreferences } = remote;
+const { configStore } = remote.require('./index.js');
 
 const animationSettings = systemPreferences.getAnimationSettings();
 

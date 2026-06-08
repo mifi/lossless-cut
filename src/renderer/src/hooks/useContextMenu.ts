@@ -7,7 +7,7 @@ import type { ContextMenuTemplate } from '../types';
 
 // https://github.com/transflow/use-electron-context-menu
 export default function useContextMenu(
-  ref: RefObject<HTMLElement>,
+  ref: RefObject<HTMLElement | null>,
   template: ContextMenuTemplate,
 ) {
   const { openMenu, closeMenu } = useNativeMenu(template);

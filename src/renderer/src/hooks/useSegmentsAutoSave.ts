@@ -32,7 +32,7 @@ export default ({ autoSaveProjectFile, storeProjectInWorkingDir, filePath, custo
   // NOTE: Could lose a save if user closes too fast, but not a big issue I think
   const [debouncedSaveOperation] = useDebounce(currentSaveOperation, isDev ? 2000 : 500);
 
-  const lastSaveOperation = useRef<typeof debouncedSaveOperation>();
+  const lastSaveOperation = useRef<typeof debouncedSaveOperation>(undefined);
 
   useEffect(() => {
     async function save() {

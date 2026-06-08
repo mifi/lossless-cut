@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import type { defineConfig } from 'i18next-cli';
 
-const configBase: Parameters<typeof defineConfig>[0] = {
+const configBase: Omit<Parameters<typeof defineConfig>[0], 'locales'> = {
   extract: {
     input: [
       'src/renderer/**/*.{ts,tsx}',

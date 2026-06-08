@@ -13,9 +13,7 @@ import Action from '../components/Action';
 import ExpressionDialog from '../components/ExpressionDialog';
 import type { ShowGenericDialog } from '../components/GenericDialog';
 import { changeEnabledStreamsExpressionHelpUrl } from '../../../common/constants';
-
-const remote = window.require('@electron/remote');
-const { shell } = remote;
+import mainApi from '../mainApi';
 
 
 export default function useStreamsMeta({ mainStreams, externalFilesMeta, filePath, autoExportExtraStreams, showGenericDialog }: {
@@ -132,7 +130,7 @@ export default function useStreamsMeta({ mainStreams, externalFilesMeta, filePat
             { name: i18n.t('1st, 2nd and 3rd track'), code: 'track.index >= 0 && track.index <= 2' },
           ]}
           title={i18n.t('Toggle tracks by expression')}
-          description={<><Trans>Enter a JavaScript filter expression which will be evaluated for each track of the current file. Tracks for which the expression evaluates to &quot;true&quot; will be selected or deselected. You may also the <Action name="toggleStripCurrentFilter" /> keyboard action to run this filter.</Trans> <button type="button" className="link-button" onClick={() => shell.openExternal(changeEnabledStreamsExpressionHelpUrl)}>View available syntax.</button></>}
+          description={<><Trans>Enter a JavaScript filter expression which will be evaluated for each track of the current file. Tracks for which the expression evaluates to &quot;true&quot; will be selected or deselected. You may also the <Action name="toggleStripCurrentFilter" /> keyboard action to run this filter.</Trans> <button type="button" className="link-button" onClick={() => mainApi.openExternal(changeEnabledStreamsExpressionHelpUrl)}>View available syntax.</button></>}
           inputValue={enabledStreamsFilter ?? ''}
         />
       ),

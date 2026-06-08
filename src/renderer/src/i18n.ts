@@ -4,6 +4,7 @@ import { initReactI18next } from 'react-i18next';
 const Backend = window.require('i18next-fs-backend');
 
 const remote = window.require('@electron/remote');
+const { app } = remote;
 const { i18n: { commonI18nOptions, loadPath, addPath } } = remote.require('./index.js');
 
 
@@ -13,7 +14,7 @@ const { i18n: { commonI18nOptions, loadPath, addPath } } = remote.require('./ind
 // https://github.com/i18next/i18next/issues/869
 i18n
   .use(Backend)
-  .use({ type: 'languageDetector', async: false, detect: () => remote.app.getLocale() })
+  .use({ type: 'languageDetector', async: false, detect: () => app.getLocale() })
   .use(initReactI18next)
   // See also i18next.config.base.ts
   .init({

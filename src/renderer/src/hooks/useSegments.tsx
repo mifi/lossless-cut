@@ -11,7 +11,7 @@ import { FaLink } from 'react-icons/fa';
 import { detectSceneChanges as ffmpegDetectSceneChanges, readFrames, mapTimesToSegments, findKeyframeNearTime, getStreamFps } from '../ffmpeg';
 import { getFileSize, shuffleArray } from '../util';
 import { errorToast } from '../swal';
-import { createNumSegments as createNumSegmentsDialog, createFixedByteSixedSegments as createFixedByteSixedSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, labelSegmentDialog, askForShiftSegments, askForAlignSegments, selectSegmentsByLabelDialog, askForSegmentDuration, toastError } from '../dialogs';
+import { createNumSegments as createNumSegmentsDialog, createFixedByteSixedSegments as createFixedByteSixedSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, labelSegmentDialog, askForAlignSegments, selectSegmentsByLabelDialog, askForSegmentDuration, toastError } from '../dialogs';
 import { createSegment, sortSegments, invertSegments, combineOverlappingSegments as combineOverlappingSegments2, combineSelectedSegments as combineSelectedSegments2, isDurationValid, addSegmentColorIndex, filterNonMarkers, makeDurationSegments, isInitialSegment } from '../segments';
 import type { FfmpegDialog } from '../ffmpegParameters';
 import { parameters as allFfmpegParameters, getHint, getLabel } from '../ffmpegParameters';
@@ -31,9 +31,9 @@ import { UserFacingError } from '../../errors';
 import { editSegmentByExpressionHelpUrl, selectSegmentByExpressionHelpUrl } from '../../../common/constants';
 import type { Segment as ScopeSegment } from '../../../common/userTypes';
 import type { FfmpegHwAccel } from '../../../common/types';
+import mainApi from '../mainApi';
 
 const remote = window.require('@electron/remote');
-const { shell } = remote;
 const { ffmpeg: { blackDetect, silenceDetect } } = remote.require('./index.js');
 
 
@@ -271,7 +271,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
 
           <Dialog.Description>{description}</Dialog.Description>
 
-          {docUrl && <p><Button onClick={() => shell.openExternal(docUrl)}><FaLink style={{ fontSize: '.8em' }} /> {t('Read more')}</Button></p>}
+          {docUrl && <p><Button onClick={() => mainApi.openExternal(docUrl)}><FaLink style={{ fontSize: '.8em' }} /> {t('Read more')}</Button></p>}
 
           <form onSubmit={handleSubmit}>
             {Object.entries(parametersIn).map(([key, parameter], i) => {
@@ -493,20 +493,6 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
 
     safeSetCutSegments(newSegments, fileDuration);
   }, [cutSegments, fileDuration, safeSetCutSegments]);
-
-  const shiftAllSegmentTimes = useCallback(async () => {
-    const shift = await askForShiftSegments({ inputPlaceholder: timecodePlaceholder, parseTimecode });
-    if (shift == null) return;
-
-    const { shiftAmount, shiftKeys } = shift;
-    await modifySelectedSegmentTimes((segment) => {
-      const newSegment = { ...segment };
-      shiftKeys.forEach((key) => {
-        if (newSegment[key] != null) newSegment[key] += shiftAmount;
-      });
-      return newSegment;
-    });
-  }, [modifySelectedSegmentTimes, parseTimecode, timecodePlaceholder]);
 
   const alignSegmentTimesToKeyframes = useCallback(async () => {
     if (!videoStream || workingRef.current) return;
@@ -841,7 +827,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
             { name: i18n.t('Markers'), code: 'segment.end == null' },
           ]}
           title={i18n.t('Select segments by expression')}
-          description={<Trans>Enter a JavaScript expression which will be evaluated for each segment. Segments for which the expression evaluates to &quot;true&quot; will be selected. <button type="button" className="link-button" onClick={() => shell.openExternal(selectSegmentByExpressionHelpUrl)}>View available syntax.</button></Trans>}
+          description={<Trans>Enter a JavaScript expression which will be evaluated for each segment. Segments for which the expression evaluates to &quot;true&quot; will be selected. <button type="button" className="link-button" onClick={() => mainApi.openExternal(selectSegmentByExpressionHelpUrl)}>View available syntax.</button></Trans>}
           variables={['segment.index', 'segment.label', 'segment.start', 'segment.end', 'segment.duration', 'segment.tags.*']}
         />
       ),
@@ -911,7 +897,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
             { name: i18n.t('Convert markers to segments'), code: '{ ...(segment.end == null && { end: segment.start + 5 }) }' },
           ]}
           title={i18n.t('Edit segments by expression')}
-          description={<Trans>Enter a JavaScript expression which will be evaluated for each selected segment. Returned properties will be edited. <button type="button" className="link-button" onClick={() => shell.openExternal(editSegmentByExpressionHelpUrl)}>View available syntax.</button></Trans>}
+          description={<Trans>Enter a JavaScript expression which will be evaluated for each selected segment. Returned properties will be edited. <button type="button" className="link-button" onClick={() => mainApi.openExternal(editSegmentByExpressionHelpUrl)}>View available syntax.</button></Trans>}
           variables={['segment.index', 'segment.label', 'segment.start', 'segment.end', 'segment.tags.*']}
         />
       ),
@@ -1010,7 +996,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     fillSegmentsGaps,
     combineOverlappingSegments,
     combineSelectedSegments,
-    shiftAllSegmentTimes,
+    modifySelectedSegmentTimes,
     alignSegmentTimesToKeyframes,
     updateSegOrder,
     updateSegOrders,

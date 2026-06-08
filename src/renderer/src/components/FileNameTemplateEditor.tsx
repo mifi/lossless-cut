@@ -17,8 +17,7 @@ import Button from './Button';
 import * as Dialog from './Dialog';
 import { dangerColor, warningColor } from '../colors';
 import { exportedFileNameTemplateHelpUrl } from '../../../common/constants';
-
-const electron = window.require('electron');
+import mainApi from '../mainApi';
 
 
 const formatVariable = (variable: string) => `\${${variable}}`;
@@ -52,10 +51,12 @@ function FileNameTemplateEditor(opts: {
   useEffect(() => {
     // if an important message appears, make sure we don't auto-close after it's resolved
     // https://github.com/mifi/lossless-cut/issues/2567
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (haveImportantMessage) setOpen(true);
   }, [haveImportantMessage]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setText(templateIn);
   }, [templateIn]);
 
@@ -229,7 +230,7 @@ function FileNameTemplateEditor(opts: {
               <div style={{ fontSize: '.9em', color: 'var(--gray-11)', display: 'flex', gap: '.3em', flexWrap: 'wrap', alignItems: 'center', marginBottom: '.7em' }}>
                 {`${t('Variables')}:`}
 
-                <IoIosHelpCircle fontSize="1.3em" color="var(--gray-12)" role="button" cursor="pointer" onClick={() => electron.shell.openExternal(exportedFileNameTemplateHelpUrl)} />
+                <IoIosHelpCircle fontSize="1.3em" color="var(--gray-12)" role="button" cursor="pointer" onClick={() => mainApi.openExternal(exportedFileNameTemplateHelpUrl)} />
                 {availableVariables.map((variable) => (
                   <span key={variable} role="button" style={{ cursor: 'copy', marginRight: '.2em', textDecoration: 'underline', textDecorationStyle: 'dashed', fontSize: '.9em' }} onClick={() => onVariableClick(variable)}>{variable}</span>
                 ))}

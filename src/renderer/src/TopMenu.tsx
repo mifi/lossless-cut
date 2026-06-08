@@ -10,11 +10,12 @@ import ExportModeButton from './components/ExportModeButton';
 import { withBlur } from './util';
 import { primaryTextColor, controlsBackground, darkModeTransition } from './colors';
 import useUserSettings from './hooks/useUserSettings';
+import useActionTitle from './hooks/useActionTitle';
 import styles from './TopMenu.module.css';
 import OutDirSelector from './components/OutDirSelector';
 
 
-const { stat } = window.require('fs/promises');
+const { stat } = window.require('node:fs/promises');
 const { webUtils } = window.require('electron');
 
 const outFmtStyle = { maxWidth: 100 };
@@ -51,6 +52,7 @@ function TopMenu({
 }) {
   const { t } = useTranslation();
   const { customOutDir, setCustomOutDir, simpleMode, outFormatLocked, setOutFormatLocked, darkMode } = useUserSettings();
+  const actionTitle = useActionTitle();
   const workingDirButtonRef = useRef<HTMLButtonElement>(null);
 
   const DarkMode = darkMode ? FaSun : FaMoon;
@@ -99,7 +101,7 @@ function TopMenu({
           {enabledStreamsFilter != null && (
             <Button
               onClick={withBlur(() => applyEnabledStreamsFilter())}
-              title={t('Toggle tracks using current filter')}
+              title={actionTitle(t('Toggle tracks using current filter'), 'toggleStripCurrentFilter')}
             >
               <FaFilter
                 style={{ fontSize: '.8em', verticalAlign: 'middle' }}
@@ -137,12 +139,12 @@ function TopMenu({
       )}
 
       {!simpleMode && (
-        <Button onClick={toggleDarkMode} title={t('Toggle dark mode')}>
+        <Button onClick={toggleDarkMode} title={actionTitle(t('Toggle dark mode'), 'toggleDarkMode')}>
           <DarkMode style={{ verticalAlign: 'middle', fontSize: '.9em' }} />
         </Button>
       )}
 
-      <Button onClick={toggleSettings}>
+      <Button onClick={toggleSettings} title={actionTitle(t('Settings'), 'toggleSettings')}>
         <IoIosSettings style={{ fontSize: '1em', verticalAlign: 'bottom' }} />
       </Button>
     </div>

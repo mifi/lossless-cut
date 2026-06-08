@@ -2,9 +2,10 @@ import type { CSSProperties, Dispatch, SetStateAction } from 'react';
 import { memo, useState, useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AiOutlineMergeCells } from 'react-icons/ai';
-import { FaQuestionCircle, FaExclamationTriangle, FaCog, FaCheck, FaNotEqual } from 'react-icons/fa';
+import { FaQuestionCircle, FaExclamationTriangle, FaCog, FaCheck } from 'react-icons/fa';
 import invariant from 'tiny-invariant';
 import pMap from 'p-map';
+import { Table } from '@radix-ui/themes';
 
 import Checkbox from './Checkbox';
 import type { FileFfprobeMeta } from '../ffmpeg';
@@ -23,8 +24,9 @@ import FileNameTemplateEditor from './FileNameTemplateEditor';
 import HighlightedText from './HighlightedText';
 import type { FileStats } from '../types';
 import OutDirSelector from './OutDirSelector';
+import { parseRatio } from '../../../common/util';
 
-const { basename } = window.require('path');
+const { basename } = window.require('node:path');
 
 
 const rowStyle: CSSProperties = {
@@ -37,8 +39,17 @@ function Alert({ text }: { text: string }) {
   );
 }
 
-type Problem = { index: number, type: 'extraneous' }
-  | { index: number, type: 'parameter_mismatch', key: string, values: [string | number | undefined, string | number | undefined] };
+type ProblemValue = string | number | undefined;
+
+type Problem = {
+  index: number,
+} & ({
+  type: 'extraneous',
+} | {
+  type: 'parameter_mismatch',
+  key: string,
+  values: [ProblemValue, ProblemValue],
+});
 
 function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate, generateMergedFileNames, onConcat, alwaysConcatMultipleFiles, setAlwaysConcatMultipleFiles, fileFormat, setFileFormat, detectedFileFormat, setDetectedFileFormat, onOutputFormatUserChange }: {
   isShown: boolean,
@@ -128,10 +139,20 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate, generateMerg
         }
         // check all these parameters
         (['codec_name', 'width', 'height', 'pix_fmt', 'level', 'profile', 'sample_fmt', 'avg_frame_rate', 'r_frame_rate', 'time_base'] as const).forEach((key) => {
-          const val = stream[key];
-          const referenceVal = referenceStream[key];
-          if (val !== referenceVal) {
-            addProblem(path, { type: 'parameter_mismatch', index: stream.index, key, values: [String(val), referenceVal] });
+          // special handling: https://github.com/mifi/lossless-cut/discussions/2740
+          if (key === 'avg_frame_rate') {
+            const val = parseRatio(stream[key]);
+            const referenceVal = parseRatio(referenceStream[key]);
+            const sigma = 0.01;
+            if ((val == null && referenceVal != null) || (val != null && referenceVal == null) || (val != null && referenceVal != null && Math.abs(val - referenceVal) >= sigma)) {
+              addProblem(path, { type: 'parameter_mismatch', index: stream.index, key, values: [String(val), referenceVal] });
+            }
+          } else {
+            const val = stream[key];
+            const referenceVal = referenceStream[key];
+            if (val !== referenceVal) {
+              addProblem(path, { type: 'parameter_mismatch', index: stream.index, key, values: [String(val), referenceVal] });
+            }
           }
         });
       });
@@ -236,24 +257,44 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate, generateMerg
                           <Dialog.Content aria-describedby={undefined}>
                             <Dialog.Title>{t('Mismatches detected')}</Dialog.Title>
 
-                            <ul style={{ margin: '10px 0', textAlign: 'left' }}>
-                              {(problemsByFile[path] ?? []).map((problem) => (
-                                <li key={JSON.stringify(problem)}>
-                                  <span style={{ marginRight: '.5em', color: 'var(--gray-11)' }}>{t('Track {{num}}', { num: problem.index + 1 })}:</span>
+                            <Table.Root>
+                              <Table.Header>
+                                <Table.Row>
+                                  <Table.ColumnHeaderCell>{t('Track')}</Table.ColumnHeaderCell>
+                                  <Table.ColumnHeaderCell>{t('Parameter')}</Table.ColumnHeaderCell>
+                                  <Table.ColumnHeaderCell>{t('Expected')}</Table.ColumnHeaderCell>
+                                  <Table.ColumnHeaderCell>{t('Actual')}</Table.ColumnHeaderCell>
+                                </Table.Row>
+                              </Table.Header>
 
-                                  {problem.type === 'extraneous' && t('Extraneous')}
+                              <Table.Body>
+                                {(problemsByFile[path] ?? []).map((problem) => (
+                                  <Table.Row key={JSON.stringify(problem)}>
+                                    <Table.Cell style={{ marginRight: '.5em', color: 'var(--gray-11)' }}>
+                                      {problem.index + 1}
+                                    </Table.Cell>
 
-                                  {problem.type === 'parameter_mismatch' && (
-                                    <>
-                                      <span style={{ marginRight: '1em' }}>{problem.key}</span>
-                                      <span style={{ fontWeight: 'bold' }}>{problem.values[0] ?? t('N/A')}</span>
-                                      <FaNotEqual style={{ fontSize: '.7em', marginLeft: '.7em', marginRight: '.7em', color: dangerColor, fontWeight: 'bold' }} />
-                                      <span style={{ fontWeight: 'bold', color: dangerColor }}>{problem.values[1] ?? t('N/A')}</span>
-                                    </>
-                                  )}
-                                </li>
-                              ))}
-                            </ul>
+                                    {problem.type === 'extraneous' && (
+                                      <>
+                                        <Table.Cell />
+                                        <Table.Cell />
+                                        <Table.Cell style={{ color: dangerColor, fontWeight: 'bold' }}>{t('Extraneous')}</Table.Cell>
+                                      </>
+                                    )}
+
+                                    {problem.type === 'parameter_mismatch' && (
+                                      <>
+                                        <Table.Cell style={{ marginRight: '1em' }}>{problem.key}</Table.Cell>
+                                        <Table.Cell style={{ fontWeight: 'bold' }}>{problem.values[0] ?? t('N/A')}</Table.Cell>
+                                        <Table.Cell>
+                                          <span style={{ fontWeight: 'bold', color: dangerColor }}>{problem.values[1] ?? t('N/A')}</span>
+                                        </Table.Cell>
+                                      </>
+                                    )}
+                                  </Table.Row>
+                                ))}
+                              </Table.Body>
+                            </Table.Root>
 
                             <Dialog.CloseButton />
                           </Dialog.Content>

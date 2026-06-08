@@ -14,8 +14,12 @@ const esc = (val: string) => val.replaceAll('&', '&&');
 
 const { Menu } = electron;
 
-export default ({ app, mainWindow, newVersion, isStoreBuild }: {
-  app: Electron.App, mainWindow: BrowserWindow, newVersion?: string | undefined, isStoreBuild: boolean,
+export default ({ app, mainWindow, newVersion, isStoreBuild, openExternal }: {
+  app: Electron.App,
+  mainWindow: BrowserWindow,
+  newVersion?: string | undefined,
+  isStoreBuild: boolean,
+  openExternal: (url: string) => void,
 }) => {
   // todo TS mainWindow.webContents.send
   const menu: (MenuItemConstructorOptions | MenuItem)[] = [
@@ -199,6 +203,12 @@ export default ({ app, mainWindow, newVersion, isStoreBuild }: {
           label: esc(t('Fix incorrect duration')),
           click() {
             mainWindow.webContents.send('fixInvalidDuration');
+          },
+        },
+        {
+          label: esc(t('Decimate video')),
+          click() {
+            mainWindow.webContents.send('decimate');
           },
         },
         { type: 'separator' },
@@ -438,15 +448,15 @@ export default ({ app, mainWindow, newVersion, isStoreBuild }: {
       submenu: [
         {
           label: esc(t('How to use')),
-          click() { electron.shell.openExternal(usageUrl); },
+          click() { openExternal(usageUrl); },
         },
         {
           label: esc(t('FAQ')),
-          click() { electron.shell.openExternal(faqUrl); },
+          click() { openExternal(faqUrl); },
         },
         {
           label: esc(t('Troubleshooting')),
-          click() { electron.shell.openExternal(troubleshootingUrl); },
+          click() { openExternal(troubleshootingUrl); },
         },
         {
           label: esc(t('Keyboard & mouse shortcuts')),
@@ -456,7 +466,7 @@ export default ({ app, mainWindow, newVersion, isStoreBuild }: {
         },
         {
           label: esc(t('Learn More')),
-          click() { electron.shell.openExternal(homepageUrl); },
+          click() { openExternal(homepageUrl); },
         },
         { type: 'separator' },
         {
@@ -465,11 +475,11 @@ export default ({ app, mainWindow, newVersion, isStoreBuild }: {
         },
         {
           label: esc(t('Feature request')),
-          click() { electron.shell.openExternal(featureRequestUrl); },
+          click() { openExternal(featureRequestUrl); },
         },
         ...(!isStoreBuild ? [{
           label: esc(`${t('Donate')} ❤️`),
-          click() { electron.shell.openExternal(thanksUrl); },
+          click() { openExternal(thanksUrl); },
         }] : []),
         { type: 'separator' },
         {
@@ -483,7 +493,7 @@ export default ({ app, mainWindow, newVersion, isStoreBuild }: {
         { type: 'separator' },
         {
           label: esc(t('Licenses')),
-          click() { electron.shell.openExternal(licensesUrl); },
+          click() { openExternal(licensesUrl); },
         },
         ...(process.platform !== 'darwin' ? [{ role: 'about' as const, label: esc(t('About LosslessCut')) }] : []),
       ],
@@ -496,7 +506,7 @@ export default ({ app, mainWindow, newVersion, isStoreBuild }: {
       submenu: [
         {
           label: esc(t('Download {{version}}', { version: newVersion })),
-          click() { electron.shell.openExternal(getReleaseUrl(newVersion)); },
+          click() { openExternal(getReleaseUrl(newVersion)); },
         },
       ],
     });

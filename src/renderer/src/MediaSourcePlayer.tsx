@@ -312,7 +312,7 @@ function MediaSourcePlayer({ rotate, filePath, videoStream, audioStreams, master
   filePath: string,
   videoStream: FFprobeStream | undefined,
   audioStreams: FFprobeStream[],
-  masterVideoRef: RefObject<HTMLVideoElement>,
+  masterVideoRef: RefObject<HTMLVideoElement | null>,
   mediaSourceQuality: number,
   ffmpegHwaccel: FfmpegHwAccel,
 }) {

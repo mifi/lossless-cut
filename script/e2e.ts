@@ -28,7 +28,7 @@ console.log('Started', losslessCutExePath);
 // eslint-disable-next-line unicorn/prefer-top-level-await
 ps.catch((err) => console.error(err));
 
-const client = ky.extend({ prefixUrl: `http://127.0.0.1:${port}` });
+const client = ky.extend({ baseUrl: `http://127.0.0.1:${port}` });
 
 async function captureScreenshot(outPath: string) {
   // https://trac.ffmpeg.org/wiki/Capture/Desktop#Windows

@@ -68,9 +68,11 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Black scene detection, silent audio detection, and scene change detection
 - Divide timeline into segments of length L, size (X MB), N number of segments or even randomized segments!
 - Speed up / slow down video or audio file ([changing FPS](https://github.com/mifi/lossless-cut/issues/1712))
+- Lossless crop and aspect ratio modification
 - Basic [CLI](docs/cli.md) and [HTTP API](docs/api.md)
 - Show (DJI) embedded GPS track on a map
 - Losslessly Download videos over HTTP (e.g. HLS `.m3u8`)
+- Extremely fast removal of all non-keyframes (e.g. timelapse)
 
 ## Example lossless use cases
 

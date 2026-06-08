@@ -161,17 +161,45 @@ export type AllFilesMeta = Record<string, {
   chapters: FFprobeChapter[];
 }>
 
-export type CustomTagsByFile = Record<string, Record<string, string>>;
+export interface BsfCropParams {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+}
+
+export interface BsfAspectRatioParams {
+  num: number;
+  den: number;
+}
+
+export const dispositionOptions = ['default', 'dub', 'original', 'comment', 'lyrics', 'karaoke', 'forced', 'hearing_impaired', 'visual_impaired', 'clean_effects', 'attached_pic', 'captions', 'descriptions', 'dependent', 'metadata'] as const;
+export const contentDispositionOptionsSchema = z.enum(dispositionOptions);
+export type ContentDispositionOptions = z.infer<typeof contentDispositionOptionsSchema>;
+export const deleteDispositionValue = 'llc_disposition_remove' as const;
+
 
 export interface StreamParams {
-  customTags?: Record<string, string>,
-  disposition?: string,
+  metadata: Record<string, string>,
+  disposition?: ContentDispositionOptions | 'llc_disposition_remove' | undefined,
   bsfH264Mp4toannexb?: boolean,
   bsfHevcMp4toannexb?: boolean,
   bsfHevcAudInsert?: boolean,
   tag?: string | undefined,
+  crop?: BsfCropParams | undefined,
+  aspectRatio?: BsfAspectRatioParams | undefined,
 }
-export type ParamsByStreamId = Map<string, Map<number, StreamParams>>;
+
+export type ParamsByStream = Map<number, StreamParams>;
+
+export interface FileParams {
+  paramsByStream: ParamsByStream;
+
+  metadata: Record<string, string>;
+  offset?: number | undefined;
+}
+
+export type ParamsByFile = Map<string, FileParams>;
 
 export interface BatchFile {
   path: string,

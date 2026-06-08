@@ -1,7 +1,7 @@
 import { Suspense, StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { enableMapSet } from 'immer';
-import type * as Electron from 'electron';
+import type * as ElectronRenderer from 'electron/renderer';
 import type Remote from '@electron/remote';
 import type path from 'node:path';
 import type fsPromises from 'node:fs/promises';
@@ -21,6 +21,8 @@ import '@fontsource/open-sans/700.css';
 import '@fontsource/open-sans/700-italic.css';
 import '@fontsource/open-sans/800.css';
 import '@fontsource/open-sans/800-italic.css';
+
+import '@radix-ui/themes/styles.css';
 
 import type { KeyboardLayoutMap } from './types';
 import App from './App';
@@ -45,10 +47,8 @@ declare global {
   interface Window {
     require: <T extends string>(module: T) => (
       T extends '@electron/remote' ? TypedRemote :
-      T extends 'electron' ? typeof Electron :
-      T extends 'path' ? typeof path :
+      T extends 'electron' ? typeof ElectronRenderer :
       T extends 'node:path' ? typeof path :
-      T extends 'fs/promises' ? typeof fsPromises :
       T extends 'node:fs/promises' ? typeof fsPromises :
       T extends 'mime-types' ? typeof mimeTypes :
       T extends 'i18next-fs-backend' ? typeof i18nextFsBackend :
