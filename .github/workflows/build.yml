@@ -102,6 +102,8 @@ jobs:
         if: runner.os == 'Linux'
         run: yarn download-ffmpeg-linux-x64
 
+      - run: ls -R ffmpeg
+
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
         with:
