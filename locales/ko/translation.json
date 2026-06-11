@@ -1094,5 +1094,7 @@
   "Value must be shorter than total duration ({{totalDuration}})": "값은 전체 길이보다 짧아야 함 ({{totalDuration}})",
   "Width": "너비",
   "Shift end by": "종료 지점 이동",
-  "Shift start by": "시작 지점 이동"
+  "Shift start by": "시작 지점 이동",
+  "Expected": "예상",
+  "Shift segments": "세그먼트 이동"
 }
