@@ -170,6 +170,7 @@
     "files": [
       "out/**/*"
     ],
+    "publish": "onTag",
     "asar": {
       "smartUnpack": false
     },
