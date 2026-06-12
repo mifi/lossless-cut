@@ -106,7 +106,7 @@ jobs:
 
       - name: Build for macOS
         if: runner.os == 'macOS'
-        run: yarn electron-builder
+        run: yarn electron-builder --publish onTag
         env:
           GH_TOKEN: ${{ secrets.github_token }}
           # signing:
@@ -119,19 +119,19 @@ jobs:
 
       - name: Build for Linux
         if: runner.os == 'Linux'
-        run: yarn electron-builder
+        run: yarn electron-builder --publish onTag
         env:
           GH_TOKEN: ${{ secrets.github_token }}
 
       - name: Build for Windows x64
         if: matrix.os == 'windows-latest'
-        run: yarn electron-builder --win --x64
+        run: yarn electron-builder --publish onTag --win --x64
         env:
           GH_TOKEN: ${{ secrets.github_token }}
 
       - name: Build for Windows ARM64
         if: matrix.os == 'windows-11-arm'
-        run: yarn electron-builder --win --arm64
+        run: yarn electron-builder --publish onTag --win --arm64
         env:
           GH_TOKEN: ${{ secrets.github_token }}
 
