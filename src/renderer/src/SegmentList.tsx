@@ -148,7 +148,7 @@ const Segment = memo(({
       { type: 'separator' },
 
       { label: t('Segment tags'), click: () => onEditSegmentTags(index) },
-      { label: t('Extract frames as image files'), click: () => onExtractSegmentsFramesAsImages([seg]) },
+      { label: t('Extract segment frames as image files'), click: () => onExtractSegmentsFramesAsImages([seg]) },
     ];
   }, [invertCutSegments, t, addSegment, onLabelSelectedSegments, onRemoveSelected, onExtractSelectedSegmentsFramesAsImages, updateSegOrder, index, jumpSegStart, jumpSegEnd, onLabelPress, onRemovePress, onDuplicateSegmentClick, seg, onSelectSingleSegment, onSelectAllSegments, onDeselectAllSegments, onSelectAllMarkers, onSelectSegmentsByLabel, onSelectSegmentsByExpr, onInvertSelectedSegments, onMutateSegmentsByExpr, onReorderPress, onEditSegmentTags, onExtractSegmentsFramesAsImages]);
 
