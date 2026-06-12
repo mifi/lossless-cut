@@ -1108,5 +1108,6 @@
   "Please send us an email where you describe what you were doing.": "Пожалуйста, отправьте нам электронное письмо с описанием того, что вы делали.",
   "Shift by seconds": "Сдвинуть на секунды",
   "Shift the timestamps of all tracks in this file by a specified number of seconds, relative to other files. Positive values will delay the file's tracks, negative will advance it.": "Сдвинуть временные метки всех дорожек в этом файле на указанное количество секунд относительно других файлов. Положительные значения задержат дорожки файла, отрицательные – ускорят их.",
-  "This is hardcoded by FFmpeg and cannot be changed.": "Это жёстко закодировано в FFmpeg и не может быть изменено."
+  "This is hardcoded by FFmpeg and cannot be changed.": "Это жёстко закодировано в FFmpeg и не может быть изменено.",
+  "Extract segment frames as image files": "Извлечь сегменты кадров в виде файлов изображений"
 }
