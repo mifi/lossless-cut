@@ -104,30 +104,36 @@ jobs:
 
       - run: ls -R ffmpeg
 
-      - name: Build/release Electron app
-        uses: samuelmeuli/action-electron-builder@v1
-        with:
-          # GitHub token, automatically provided to the action
-          # (No need to define this secret in the repo settings)
-          github_token: ${{ secrets.github_token }}
-
-          # If the commit is tagged with a version (e.g. "v1.0.0"),
-          # release the app after building
-          release: ${{ env.is_tag == 'true' }}
-
-          max_attempts: 1
-
-          mac_certs: ${{ secrets.mac_certs }}
-          mac_certs_password: ${{ secrets.mac_certs_password }}
-
-# Temporary 30 day certificate, not needed for Microsoft Store
-#          windows_certs: ${{ secrets.windows_certs }}
-#          windows_certs_password: ${{ secrets.windows_certs_password }}
+      - name: Build for macOS
+        if: runner.os == 'macOS'
+        run: yarn electron-builder
         env:
+          GH_TOKEN: ${{ secrets.github_token }}
+          # signing:
+          CSC_LINK: ${{ secrets.mac_certs }}
+          CSC_KEY_PASSWORD: ${{ secrets.mac_certs_password }}
+          # notarization:
           APPLE_API_KEY: ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.api_key_id }}.p8
           APPLE_API_KEY_ID: ${{ secrets.api_key_id }}
           APPLE_API_ISSUER: ${{ secrets.api_key_issuer_id }}
 
+      - name: Build for Linux
+        if: runner.os == 'Linux'
+        run: yarn electron-builder
+        env:
+          GH_TOKEN: ${{ secrets.github_token }}
+
+      - name: Build for Windows x64
+        if: matrix.os == 'windows-latest'
+        run: yarn electron-builder --win --x64
+        env:
+          GH_TOKEN: ${{ secrets.github_token }}
+
+      - name: Build for Windows ARM64
+        if: matrix.os == 'windows-11-arm'
+        run: yarn electron-builder --win --arm64
+        env:
+          GH_TOKEN: ${{ secrets.github_token }}
 
       - run: node script/e2e.ts 'dist/mac-arm64/LosslessCut.app/Contents/MacOS/LosslessCut' 0:none screenshot.jpeg
         if: runner.os == 'macOS' && env.is_tag == 'false'
