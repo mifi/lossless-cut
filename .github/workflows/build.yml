@@ -46,19 +46,8 @@ jobs:
           cache: 'yarn'
 
       # This global ffmpeg is used for screenshots (see below)
-      - uses: FedericoCarboni/setup-ffmpeg@v3
+      - uses: AnimMouse/setup-ffmpeg@v1
         if: matrix.os != 'windows-11-arm' && env.is_tag == 'false'
-        with:
-          ffmpeg-version: release
-          # arm not yet supported on macos
-          architecture: ${{ matrix.os == 'macos-latest' && 'x64' || '' }}
-          # Linking type of the binaries. Use "shared" to download shared binaries and 
-          # "static" for statically linked ones. Shared builds are currently only available
-          # for windows releases. Defaults to "static"
-          linking-type: static
-          # As of version 3 of this action, builds are no longer downloaded from GitHub
-          # except on Windows: https://github.com/GyanD/codexffmpeg/releases.
-          github-token: ${{ github.server_url == 'https://github.com' && github.token || '' }}
 
       - run: ffmpeg -version
         if: matrix.os != 'windows-11-arm'
