@@ -104,6 +104,8 @@ jobs:
 
       - run: ls -R ffmpeg
 
+      - run: yarn build
+
       - name: Build for macOS
         if: runner.os == 'macOS'
         run: yarn electron-builder --publish onTag
