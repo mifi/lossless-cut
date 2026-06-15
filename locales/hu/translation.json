@@ -950,5 +950,6 @@
   "Value must be shorter than total duration ({{totalDuration}})": "Az értéknek rövidebbnek kell lennie, mint a teljes időtartam ({{totalDuration}})",
   "Width": "Szélesség",
   "<p>If you're having a problem or question about LosslessCut, please first check the links in the <1>Help</1> menu. If you cannot find any resolution, you may ask a question in <3>GitHub discussions</3> or on <5>Discord.</5></p><p>If you believe that you found a bug in LosslessCut, you may <1>report a bug</1>.</p>": "<p>Ha problémája vagy kérdése van a LosslessCut programmal kapcsolatban, először tekintse meg a <1>Súgó</1> menüben található linkeket. Ha nem találsz megoldást, felteheted a kérdésedet a <3>GitHub beszélgetésekben</3> vagy a <5>Discordon.</5></p><p>Ha úgy gondolod, hogy hibát találtál a LosslessCutban, <1>bejelentheted a hibát</1>.</p>",
-  "Please send us an email where you describe what you were doing.": "Kérlek küldj egy e-mailt, amiben leírod, hogy mit csináltál."
+  "Please send us an email where you describe what you were doing.": "Kérlek küldj egy e-mailt, amiben leírod, hogy mit csináltál.",
+  "Extract segment frames as image files": "Szegmensképkockák mentése képfájlként"
 }
