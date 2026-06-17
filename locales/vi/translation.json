@@ -844,5 +844,11 @@
   "Use + and - for relative seek": "Dùng + và - để tua lân cận",
   "What do you want to do after exporting a file or when pressing the \"delete source file\" button?": "Bạn muốn làm gì sau khi xuất một tệp hoặc khi ấn nút \"xóa tệp nguồn\"?",
   "When merging, it's generally recommended to set this to \"make_non_negative\"": "Khi gộp, khuyến khích đặt thành \"make_non_negative\"",
-  "Advanced settings are currently not visible.": "Cài đặt nâng cao đang không hiển thị"
+  "Advanced settings are currently not visible.": "Cài đặt nâng cao đang không hiển thị",
+  "\"{{property}}\" must be a number": "\"{{property}}\" phải là một con số",
+  "\"{{property}}\" must be a string": "\"{{property}}\" phải là một chuỗi",
+  "\"{{property}}\" must be an object of strings": "\"{{property}}\" phải là một đối tượng của chuỗi",
+  "{{appStoreType}} edition, based on GitHub v{{appVersion}}": "Phiên bản {{appStoreType}}, dựa trên GitHub v{{appVersion}}",
+  "{{durationMsFormatted}} ms": "{{durationMsFormatted}} ms",
+  "{{frameCount}} frames": "{{frameCount}} frames"
 }
