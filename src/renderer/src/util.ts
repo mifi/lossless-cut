@@ -559,3 +559,9 @@ export function shootConfetti(options?: confetti.Options) {
     ...options,
   });
 }
+
+export const calculateTimelinePos = (time: number | undefined, fileDuration: number | undefined) => (time !== undefined ? Math.min(time / (fileDuration || 1), 1) : undefined);
+export function calculateTimelinePercent(time: number | undefined, fileDuration: number | undefined) {
+  const pos = calculateTimelinePos(time, fileDuration);
+  return pos !== undefined ? `${pos * 100}%` : undefined;
+}

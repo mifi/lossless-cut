@@ -83,6 +83,7 @@ import {
   transferTimestamps,
   getOutFileExtension,
   getSuffixedOutPath,
+  calculateTimelinePercent,
 } from './util';
 import getSwal, { errorToast, showPlaybackFailedMessage } from './swal';
 import { adjustRate } from './util/rate-calculator';
@@ -2000,6 +2001,15 @@ function App() {
     }
   }, [videoContainerRef, videoRef]);
 
+  const [fullscreen, setFullscreen] = useState(false);
+
+  useEffect(() => {
+    const onFullscreenChange = () => setFullscreen(screenfull.isFullscreen);
+    if (!screenfull.isEnabled) return undefined;
+    screenfull.on('change', onFullscreenChange);
+    return () => screenfull.off('change', onFullscreenChange);
+  }, []);
+
   const onEditSegmentTags = useCallback((index: number) => {
     setEditingSegmentTagsSegmentIndex(index);
     const seg = cutSegments[index];
@@ -2616,6 +2626,10 @@ function App() {
                           />
                         )}
                       </div>
+                    )}
+
+                    {fullscreen && (
+                      <div style={{ position: 'absolute', bottom: 0, left: 0, height: '.1em', backgroundColor: 'var(--red-9)', width: calculateTimelinePercent(playerTime, fileDuration) }} />
                     )}
                   </div>
 
