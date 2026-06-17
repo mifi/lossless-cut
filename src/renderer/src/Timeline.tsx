@@ -348,6 +348,13 @@ function Timeline({
     window.addEventListener('mousemove', onMouseMove);
   }, [fileDurationNonZero, getMouseTimelinePos, seekAbs, segmentMouseModifierKey, setCutTime, zoom]);
 
+  const onMouseMove = useCallback<MouseEventHandler<HTMLDivElement>>((e) => {
+    if (!mouseDownRef.current) { // no button pressed
+      setHoveringTime(getMouseTimelinePos(e.nativeEvent));
+    }
+    e.preventDefault();
+  }, [getMouseTimelinePos, setHoveringTime]);
+
   const onMouseOut = useCallback(() => setHoveringTime(undefined), [setHoveringTime]);
 
   const contextMenuTemplate = useMemo(() => [
@@ -367,6 +374,7 @@ function Timeline({
       className="no-user-select"
       style={{ position: 'relative', borderTop: '1px solid var(--gray-7)', borderBottom: '1px solid var(--gray-7)' }}
       onMouseDown={onMouseDown}
+      onMouseMove={onMouseMove}
       // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
       onMouseOut={onMouseOut}
     >
