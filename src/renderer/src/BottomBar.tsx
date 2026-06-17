@@ -399,9 +399,8 @@ function BottomBar({
     const backgroundColor = seg && getSegColor(seg).desaturate(0.6).lightness(darkMode ? 35 : 55).string();
     const opacity = seg ? undefined : 0.5;
     const text = seg ? `${newIndex + 1}` : '-';
-    const wide = text.length > 1;
     const segButtonStyle: CSSProperties = {
-      backgroundColor, opacity, padding: `6px ${wide ? 4 : 6}px`, borderRadius: 10, color: seg ? 'white' : undefined, fontSize: wide ? 12 : 14, width: 20, boxSizing: 'border-box', letterSpacing: -1, lineHeight: '10px', fontWeight: 'bold', margin: '0 6px',
+      backgroundColor, opacity, padding: '6px 0', borderRadius: 10, color: seg ? 'white' : undefined, fontSize: text.length === 1 ? 14 : (text.length === 2 ? 12 : 10), width: 20, boxSizing: 'border-box', letterSpacing: -1, lineHeight: '10px', fontWeight: 'bold', margin: '0 6px', whiteSpace: 'nowrap', textAlign: 'center',
     };
 
     return (
