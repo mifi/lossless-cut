@@ -51,7 +51,7 @@ type Problem = {
   values: [ProblemValue, ProblemValue],
 });
 
-function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate, generateMergedFileNames, onConcat, alwaysConcatMultipleFiles, setAlwaysConcatMultipleFiles, fileFormat, setFileFormat, detectedFileFormat, setDetectedFileFormat, onOutputFormatUserChange }: {
+function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate: storedMergedFileTemplate, generateMergedFileNames, onConcat, alwaysConcatMultipleFiles, setAlwaysConcatMultipleFiles, fileFormat, setFileFormat, detectedFileFormat, setDetectedFileFormat, onOutputFormatUserChange }: {
   isShown: boolean,
   onHide: () => void,
   paths: string[],
@@ -67,7 +67,9 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate, generateMerg
   onOutputFormatUserChange: (newFormat: string) => void,
 }) {
   const { t } = useTranslation();
-  const { preserveMovData, setPreserveMovData, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, customOutDir, simpleMode, setMergedFileTemplate, outFormatLocked } = useUserSettings();
+  const { preserveMovData, setPreserveMovData, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, customOutDir, simpleMode, setMergedFileTemplate: setStoredMergedFileTemplate, outFormatLocked } = useUserSettings();
+
+  // Note: all state here is preserved when dialog is closed
 
   const [includeAllStreams, setIncludeAllStreams] = useState(false);
   const [allFilesMeta, setAllFilesMeta] = useState<Record<string, { ffprobeMeta: FileFfprobeMeta, stats: FileStats }>>({});
@@ -90,13 +92,27 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate, generateMerg
     return generateMergedFileNames({ template, sourceFiles, fileFormat, outputDir, epochMs: uniqueSuffix });
   }, [allFilesMeta, fileFormat, generateMergedFileNames, outputDir, paths, uniqueSuffix]);
 
+  // for simple mode, we want to auto-generate the merged file template based on the first file, so we don't store it in user settings, as that could overwrite what they already have there
+  // https://github.com/mifi/lossless-cut/issues/2927#issuecomment-4773155758
+  const [tempMergedFileTemplate, setTempMergedFileTemplate] = useState<string | undefined>(defaultMergedFileTemplate);
+  const mergedFileTemplate = simpleMode ? (tempMergedFileTemplate ?? defaultMergedFileTemplate) : storedMergedFileTemplate;
+  const setMergedFileTemplate = simpleMode ? setTempMergedFileTemplate : setStoredMergedFileTemplate;
+
   useEffect(() => {
     if (!isShown) {
       // todo
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setAllFilesMeta({});
+      setTempMergedFileTemplate(defaultMergedFileTemplate);
     }
   }, [isShown, setDetectedFileFormat, setFileFormat]);
+
+  useEffect(() => {
+    if (simpleMode) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setEnableReadFileMeta(true);
+    }
+  }, [simpleMode]);
 
   useEffect(() => {
     const abortController = new AbortController();
