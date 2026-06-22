@@ -886,6 +886,7 @@
   "Working directory": "Working directory",
   "XML files": "XML files",
   "Yes": "Yes",
+  "You are in simple mode, meaning some functionality has been simplified or hidden.": "You are in simple mode, meaning some functionality has been simplified or hidden.",
   "You are not allowed to write the output file. This probably means that the file already exists with the wrong permissions, or you don't have write permissions to the output folder.": "You are not allowed to write the output file. This probably means that the file already exists with the wrong permissions, or you don't have write permissions to the output folder.",
   "You can customize the file name of the merged file using special variables.": "You can customize the file name of the merged file using special variables.",
   "You can customize the file name of the output segment(s) using special variables._one": "You can customize the file name of the output using special variables.",

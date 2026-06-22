@@ -37,12 +37,6 @@ import OutDirSelector from './OutDirSelector';
 import mainApi from '../mainApi';
 
 
-const noticeStyle: CSSProperties = { marginBottom: '.5em' };
-const infoStyle: CSSProperties = { ...noticeStyle, color: primaryTextColor };
-const warningStyle: CSSProperties = { ...noticeStyle, color: warningColor };
-
-const rightIconStyle: CSSProperties = { fontSize: '1.2em', verticalAlign: 'middle' };
-
 const adjustCutFromValues = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const adjustCutToValues = [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
@@ -80,6 +74,10 @@ interface GenericNotice {
 }
 
 function Notice({ notice }: { notice: Notice | GenericNotice }) {
+  const noticeStyle: CSSProperties = {};
+  const infoStyle: CSSProperties = { ...noticeStyle, color: primaryTextColor };
+  const warningStyle: CSSProperties = { ...noticeStyle, color: warningColor };
+
   const { text, warning } = notice;
   return (
     <div style={{ ...(warning ? warningStyle : infoStyle), display: 'flex', alignItems: 'center', gap: '0 .5em' }}>
@@ -101,7 +99,7 @@ function renderNotice(notice: Notice | undefined) {
 function renderGenericNotice(notice: GenericNotice) {
   const { url } = notice;
   return (
-    <tr key={notice.text}>
+    <tr key={notice.text} className={styles['notice-row']}>
       <td colSpan={2}>
         <Notice notice={notice} />
       </td>
@@ -111,6 +109,8 @@ function renderGenericNotice(notice: GenericNotice) {
     </tr>
   );
 }
+
+const rightIconStyle: CSSProperties = { fontSize: '1.2em', verticalAlign: 'middle' };
 
 function ExportConfirm({
   areWeCutting,
@@ -225,6 +225,10 @@ function ExportConfirm({
 
     const generic: GenericNotice[] = [];
 
+    if (simpleMode) {
+      generic.push({ text: t('You are in simple mode, meaning some functionality has been simplified or hidden.') });
+    }
+
     if ((effectiveExportMode === 'separate' || effectiveExportMode === 'merge' || effectiveExportMode === 'merge+separate') && !areWeCutting) {
       generic.push({ text: t('Exporting whole file without cutting, because there are no segments to export.') });
     }
@@ -247,7 +251,7 @@ function ExportConfirm({
       specific,
       totalNum: generic.filter((n) => n.warning).length + Object.values(specific).filter((n) => n != null && n.warning).length,
     };
-  }, [areWeCutting, areWeCuttingProblematicStreams, avoidNegativeTs, effectiveExportMode, enableOverwriteOutput, isEncoding, isIpod, isMov, keyframeCut, keyframesEnabled, mainCopiedThumbnailStreams, movFastStart, needSmartCut, outFormat, outputPlaybackRate, preserveMovData, haveSegmentWithProblematicKeyframe, t, willMerge]);
+  }, [effectiveExportMode, areWeCuttingProblematicStreams, mainCopiedThumbnailStreams, isMov, isIpod, movFastStart, t, preserveMovData, areWeCutting, needSmartCut, isEncoding, keyframeCut, enableOverwriteOutput, simpleMode, willMerge, avoidNegativeTs, outFormat, outputPlaybackRate, keyframesEnabled, haveSegmentWithProblematicKeyframe]);
 
   const exportModeDescription = useMemo(() => ({
     segments_to_chapters: t('Don\'t cut the file, but instead export an unmodified original which has chapters generated from segments'),

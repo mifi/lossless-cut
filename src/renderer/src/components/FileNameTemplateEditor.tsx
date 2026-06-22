@@ -45,8 +45,10 @@ function FileNameTemplateEditor(opts: {
   const [debouncedText] = useDebounce(text, 500);
   const [generated, setGenerated] = useState<GeneratedOutFileNames>();
 
+  const isSimpleMergeFilesMode = simpleMode && mode === 'merge-files';
+
   const haveImportantMessage = generated != null && (generated.problems.error != null || generated.problems.sameAsInputFileNameWarning);
-  const [open, setOpen] = useState(haveImportantMessage || (simpleMode && mode === 'merge-files'));
+  const [open, setOpen] = useState(haveImportantMessage || isSimpleMergeFilesMode);
 
   useEffect(() => {
     // if an important message appears, make sure we don't auto-close after it's resolved
@@ -145,9 +147,6 @@ function FileNameTemplateEditor(opts: {
     setText(newValue);
   }, [text]);
 
-  // In simple mode for merge-files, we auto generate file name, so there will be no ${EXT} variable
-  const shouldIgnoreMissingExtension = useMemo(() => simpleMode && mode === 'merge-files', [simpleMode, mode]);
-
   function formatCurrentSegFileOrFirst(names: string[]) {
     if (mode === 'separate') {
       const { currentSegIndexSafe } = opts;
@@ -163,11 +162,10 @@ function FileNameTemplateEditor(opts: {
   return (
     <>
       {generated != null && (
-        <div>{
-          (mode === 'merge-files' || mode === 'merge-segments')
+        <div>
+          {(mode === 'merge-files' || mode === 'merge-segments')
             ? t('Merged output file name:')
-            : t('Output name(s):', { count: generated.fileNames.length })
-          }
+            : t('Output name(s):', { count: generated.fileNames.length })}
         </div>
       )}
 
@@ -198,7 +196,9 @@ function FileNameTemplateEditor(opts: {
               animate={{ opacity: 1, height: 'auto', marginTop: '.7em', marginBottom: '1em' }}
               exit={{ opacity: 0, height: 0, marginTop: 0, marginBottom: 0 }}
             >
-              <div style={{ color: 'var(--gray-11)', fontSize: '.8em' }}>{t('Output file name template')}:</div>
+              {!isSimpleMergeFilesMode && (
+                <div style={{ color: 'var(--gray-11)', fontSize: '.8em' }}>{t('Output file name template')}:</div>
+              )}
 
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '.2em', gap: '.5em' }}>
                 <TextInput ref={inputRef} onChange={onTextChange} value={text} autoComplete="off" autoCapitalize="off" autoCorrect="off" style={{ padding: '.3em' }} />
@@ -224,7 +224,9 @@ function FileNameTemplateEditor(opts: {
                   </Dialog.Root>
                 )}
 
-                <Button onClick={reset} style={{ marginLeft: '.3em', padding: '.3em' }}><FaUndo style={{ fontSize: '.8em', color: dangerColor, marginRight: '.5em' }} />{t('Reset')}</Button>
+                {!isSimpleMergeFilesMode && (
+                  <Button onClick={reset} style={{ marginLeft: '.3em', padding: '.3em' }}><FaUndo style={{ fontSize: '.8em', color: dangerColor, marginRight: '.5em' }} />{t('Reset')}</Button>
+                )}
               </div>
 
               <div style={{ fontSize: '.9em', color: 'var(--gray-11)', display: 'flex', gap: '.3em', flexWrap: 'wrap', alignItems: 'center', marginBottom: '.7em' }}>
@@ -245,12 +247,14 @@ function FileNameTemplateEditor(opts: {
                 </div>
               )}
 
-              <div title={t('Whether or not to sanitize output file names (sanitizing removes special characters)')} style={{ marginBottom: '.3em' }}>
-                <Switch checked={safeOutputFileName} onCheckedChange={toggleSafeOutputFileName} style={{ verticalAlign: 'middle', marginRight: '.5em' }} />
-                <span>{t('Sanitize file names')}</span>
+              {!simpleMode && (
+                <div title={t('Whether or not to sanitize output file names (sanitizing removes special characters)')} style={{ marginBottom: '.3em' }}>
+                  <Switch checked={safeOutputFileName} onCheckedChange={toggleSafeOutputFileName} style={{ verticalAlign: 'middle', marginRight: '.5em' }} />
+                  <span>{t('Sanitize file names')}</span>
 
-                {!safeOutputFileName && <FaExclamationTriangle color={warningColor} style={{ marginLeft: '.5em', verticalAlign: 'middle' }} />}
-              </div>
+                  {!safeOutputFileName && <FaExclamationTriangle color={warningColor} style={{ marginLeft: '.5em', verticalAlign: 'middle' }} />}
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -269,7 +273,8 @@ function FileNameTemplateEditor(opts: {
                 </div>
               )}
 
-              {!shouldIgnoreMissingExtension && isMissingExtension && (
+              {/* In simple mode for merge-files, we auto generate file name, so there might be no ${EXT} variable */}
+              {!isSimpleMergeFilesMode && isMissingExtension && (
                 <div style={{ marginBottom: '1em' }}>
                   <FaExclamationTriangle style={{ verticalAlign: 'middle', marginRight: '.3em' }} color={warningColor} />
                   {t('The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.', { ext: extVariableFormatted })}

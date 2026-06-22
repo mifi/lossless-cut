@@ -2,7 +2,7 @@ import type { CSSProperties, Dispatch, SetStateAction } from 'react';
 import { memo, useState, useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AiOutlineMergeCells } from 'react-icons/ai';
-import { FaQuestionCircle, FaExclamationTriangle, FaCog, FaCheck } from 'react-icons/fa';
+import { FaQuestionCircle, FaExclamationTriangle, FaCog, FaCheck, FaInfoCircle } from 'react-icons/fa';
 import invariant from 'tiny-invariant';
 import pMap from 'p-map';
 import { Table } from '@radix-ui/themes';
@@ -18,7 +18,7 @@ import type { FFprobeStream } from '../../../common/ffprobe';
 import Button, { DialogButton } from './Button';
 import type { GeneratedOutFileNames, GenerateMergedOutFileNames } from '../util/outputNameTemplate';
 import { defaultMergedFileTemplate } from '../util/outputNameTemplate';
-import { dangerColor, saveColor, warningColor } from '../colors';
+import { dangerColor, primaryTextColor, saveColor, warningColor } from '../colors';
 import * as Dialog from './Dialog';
 import FileNameTemplateEditor from './FileNameTemplateEditor';
 import HighlightedText from './HighlightedText';
@@ -72,7 +72,7 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate, generateMerg
   const [includeAllStreams, setIncludeAllStreams] = useState(false);
   const [allFilesMeta, setAllFilesMeta] = useState<Record<string, { ffprobeMeta: FileFfprobeMeta, stats: FileStats }>>({});
   const [clearBatchFilesAfterConcat, setClearBatchFilesAfterConcat] = useState(false);
-  const [enableReadFileMeta, setEnableReadFileMeta] = useState(false);
+  const [enableReadFileMeta, setEnableReadFileMeta] = useState(simpleMode);
   const [uniqueSuffix, setUniqueSuffix] = useState(() => Date.now());
 
   const firstPath = useMemo(() => paths[0], [paths]);
@@ -331,10 +331,19 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate, generateMerg
             {!enableReadFileMeta && (
               <Alert text={t('File compatibility check is not enabled, so the merge operation might not produce a valid output. Enable "Check compatibility" below to check file compatibility before merging.')} />
             )}
+
+            {simpleMode && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0 .5em', color: primaryTextColor }}>
+                <FaInfoCircle color={primaryTextColor} style={{ verticalAlign: 'middle' }} />
+                {t('You are in simple mode, meaning some functionality has been simplified or hidden.')}
+              </div>
+            )}
           </div>
 
           <Dialog.ButtonRow>
-            <Checkbox checked={enableReadFileMeta} onCheckedChange={handleReadFileMetaCheckedChange} label={t('Check compatibility')} />
+            {!simpleMode && (
+              <Checkbox checked={enableReadFileMeta} onCheckedChange={handleReadFileMetaCheckedChange} label={t('Check compatibility')} />
+            )}
 
             <Dialog.Close asChild>
               <DialogButton>{t('Cancel')}</DialogButton>

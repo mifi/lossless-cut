@@ -18,3 +18,7 @@ table.options td {
 table.options td {
   vertical-align: top;
 }
+
+tr.notice-row td {
+  padding: 0;
+}
