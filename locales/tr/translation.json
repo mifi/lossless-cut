@@ -1086,5 +1086,6 @@
   "Width": "Genişlik",
   "<p>If you're having a problem or question about LosslessCut, please first check the links in the <1>Help</1> menu. If you cannot find any resolution, you may ask a question in <3>GitHub discussions</3> or on <5>Discord.</5></p><p>If you believe that you found a bug in LosslessCut, you may <1>report a bug</1>.</p>": "<p>LosslessCut ile ilgili bir soru veya sorununuz varsa, lütfen önce <1>Yardım</1> menüsündeki bağlantılara bakın. Bir çözüm bulamazsanız, <3>GitHub tartışmaları</3> veya <5>Discord</5> üzerinden soru sorabilirsiniz. </p><p>LosslessCut'ta bir hata bulduğunuzu düşünüyorsanız, <1>hata bildiriminde bulunabilirsiniz</1>. </p>",
   "Please send us an email where you describe what you were doing.": "Lütfen bize ne yaptığınızı anlattığınız bir e-posta gönderin.",
-  "Extract segment frames as image files": "Parça karelerini resim dosyaları olarak çıkart"
+  "Extract segment frames as image files": "Parça karelerini resim dosyaları olarak çıkart",
+  "You are in simple mode, meaning some functionality has been simplified or hidden.": "Basit moddasınız; bu, bazı işlevlerin basitleştirildiği veya gizlendiği anlamına gelir."
 }
