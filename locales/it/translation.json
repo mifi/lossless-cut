@@ -1077,5 +1077,6 @@
   "This is hardcoded by FFmpeg and cannot be changed.": "Questo è codificato da FFmpeg e non può essere modificato.",
   "<p>If you're having a problem or question about LosslessCut, please first check the links in the <1>Help</1> menu. If you cannot find any resolution, you may ask a question in <3>GitHub discussions</3> or on <5>Discord.</5></p><p>If you believe that you found a bug in LosslessCut, you may <1>report a bug</1>.</p>": "<p>Se hai un problema o una domanda su LosslessCut, controlla prima i collegamenti nel menu <1>Aiuto</1>. Se non riesci a trovare nessuna soluzione, puoi porre una domanda nelle <3>discussioni GitHub</3> o su <5>Discord.</5></p><p>Se ritieni di aver trovato un bug in LosslessCut, puoi <1>segnalare un bug</1>.</p>",
   "Please send us an email where you describe what you were doing.": "Invia un'e-mail in cui descrivi cosa stavi facendo.",
-  "Extract segment frames as image files": "Estrai fotogrammi segmenti come file immagine"
+  "Extract segment frames as image files": "Estrai fotogrammi segmenti come file immagine",
+  "You are in simple mode, meaning some functionality has been simplified or hidden.": "Sei in modalità semplice, il che significa che alcune funzionalità sono state semplificate o nascoste."
 }
