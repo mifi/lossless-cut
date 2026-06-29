@@ -172,7 +172,7 @@
   "Custom FFmpeg directory (experimental)": "Egyéni FFmpeg-könyvtár (kísérleti)",
   "Report": "Jelentés",
   "DROP FILE(S)": "FÁJL(OK) HÚZÁSA",
-  "\"ffmpeg\" experimental flag": "\"ffmpeg\" kísérleti jelölő",
+  "\"ffmpeg\" experimental flag": "\"ffmpeg\" kísérleti jelző",
   "(detected)": "(észlelve)",
   "{{selectedSegments}} of {{nonFilteredSegments}} segments selected": "{{selectedSegments}}/{{nonFilteredSegments}} szegmens kiválasztva",
   "<0></0> <2></2> or <4>I</4> <6>O</6> to set cutpoints": "<0></0> <2></2> vagy <4>I</4> <6>O</6> a vágási pontok beállításához",
@@ -222,7 +222,7 @@
   "Downloading URL": "URL letöltése",
   "\"{{property}}\" must be a number": "\"{{property}}\" számnak kell lennie",
   "\"{{property}}\" must be a string": "\"{{property}}\" karakterláncnak kell lennie",
-  "\"{{property}}\" must be an object of strings": "\"{{property}}\" a stringek objektumának kell lennie",
+  "\"{{property}}\" must be an object of strings": "\"{{property}}\" karakterekből kell állnia",
   "Capture frame": "Képkocka rögzítése",
   "Capture frames that differ the most from the previous frame": "Az előző képkockától leginkább eltérő képkockák rögzítése",
   "Center segments around start time": "Középső szegmensek a kezdési időpont körül",
@@ -948,5 +948,9 @@
   "Top": "Fent",
   "Track": "Sáv",
   "Value must be shorter than total duration ({{totalDuration}})": "Az értéknek rövidebbnek kell lennie, mint a teljes időtartam ({{totalDuration}})",
-  "Width": "Szélesség"
+  "Width": "Szélesség",
+  "<p>If you're having a problem or question about LosslessCut, please first check the links in the <1>Help</1> menu. If you cannot find any resolution, you may ask a question in <3>GitHub discussions</3> or on <5>Discord.</5></p><p>If you believe that you found a bug in LosslessCut, you may <1>report a bug</1>.</p>": "<p>Ha problémája vagy kérdése van a LosslessCut programmal kapcsolatban, először tekintse meg a <1>Súgó</1> menüben található linkeket. Ha nem találsz megoldást, felteheted a kérdésedet a <3>GitHub beszélgetésekben</3> vagy a <5>Discordon.</5></p><p>Ha úgy gondolod, hogy hibát találtál a LosslessCutban, <1>bejelentheted a hibát</1>.</p>",
+  "Please send us an email where you describe what you were doing.": "Kérlek küldj egy e-mailt, amiben leírod, hogy mit csináltál.",
+  "Extract segment frames as image files": "Szegmensképkockák mentése képfájlként",
+  "You are in simple mode, meaning some functionality has been simplified or hidden.": "Jelenleg egyszerű módban van, ami azt jelenti, hogy egyes funkciók leegyszerűsítve vagy elrejtve vannak."
 }
