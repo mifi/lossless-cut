@@ -949,7 +949,7 @@
   "Divide timeline into a number of segments with an approximate byte size": "Aufteilung der Zeitachse in eine Reihe von Segmenten mit einer ungefähren Bytegröße",
   "Donate": "Spenden",
   "Edit segments by expression": "Segmente nach Ausdruck bearbeiten",
-  "EDL": "EDL",
+  "EDL": "EDL (Schnittliste)",
   "Please input a valid size. Example: {{example}}": "Bitte geben Sie eine gültige Größe ein. Beispiel: {{example}}",
   "Select all markers": "Alle Markierungen auswählen",
   "Shift all end times": "Alle Endzeiten verschieben",
@@ -1114,5 +1114,7 @@
   "The language tag (ISO 639-2 code). For example \"eng\" for English. This is used by some players to select the appropriate audio/subtitle track based on the user's language preferences.": "Das Sprachkennzeichen (ISO 639-2-Code). Zum Beispiel „eng“ für Englisch. Dies wird von einigen Playern verwendet, um anhand der Spracheinstellungen des Benutzers die passende Audio- bzw. Untertitelspur auszuwählen.",
   "This is hardcoded by FFmpeg and cannot be changed.": "Dies ist in FFmpeg fest programmiert und kann nicht geändert werden.",
   "Value must be shorter than total duration ({{totalDuration}})": "Der Wert muss kürzer sein als die Gesamtdauer ({{totalDuration}})",
-  "Decimating video": "Zugeschnittenes Video"
+  "Decimating video": "Zugeschnittenes Video",
+  "Extract segment frames as image files": "Segmentframes als Bilddateien extrahieren",
+  "You are in simple mode, meaning some functionality has been simplified or hidden.": "Sie befinden sich im einfachen Modus, was bedeutet, dass einige Funktionen vereinfacht oder ausgeblendet wurden."
 }
