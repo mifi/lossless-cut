@@ -40,7 +40,7 @@
 
   !define MUI_ABORTWARNING
   
-  !define MUI_ICON ".\icon-build\icon.ico"
+  !define MUI_ICON ".\icon-build\app.ico"
   !define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\modern-uninstall-blue.ico"
   !define MUI_HEADERIMAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Header\nsis3-grey.bmp"
   !define MUI_WELCOMEFINISHPAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Wizard\win.bmp"
