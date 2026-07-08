@@ -1,6 +1,7 @@
 import express from 'express';
 import morgan from 'morgan';
 import http from 'node:http';
+import crypto from 'node:crypto';
 import asyncHandler from 'express-async-handler';
 import assert from 'node:assert';
 
@@ -24,8 +25,18 @@ export default ({ port, onKeyboardAction, onAwaitAppEvent }: {
   }));
 
   const apiRouter = express.Router();
+  const apiToken = crypto.randomBytes(32).toString('hex');
 
   app.get('/', (_req, res) => res.send(`See ${homepageUrl}`));
+
+  apiRouter.use((req, res, next) => {
+    const auth = req.headers['authorization'];
+    if (auth !== `Bearer ${apiToken}`) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+    next();
+  });
 
   app.use('/api', apiRouter);
 
@@ -64,5 +75,6 @@ export default ({ port, onKeyboardAction, onAwaitAppEvent }: {
 
   return {
     startHttpServer,
+    apiToken,
   };
 };
