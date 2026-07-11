@@ -156,7 +156,7 @@
     "lodash.debounce": "^4.0.8",
     "mime-types": "^3.0.2",
     "mitt": "patch:mitt@npm%3A3.0.1#~/.yarn/patches/mitt-npm-3.0.1-ce290ffa77.patch",
-    "morgan": "^1.10.1",
+    "morgan": "^1.11.0",
     "semver": "^7.8.1",
     "string-to-stream": "^3.0.1",
     "winston": "^3.19.0",
