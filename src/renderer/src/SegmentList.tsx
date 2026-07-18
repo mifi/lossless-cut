@@ -135,9 +135,9 @@ const Segment = memo(({
       { type: 'separator' },
 
       { label: t('Label selected segments'), click: onLabelSelectedSegments },
-      { label: t('Remove selected segments'), click: onRemoveSelected },
       { label: t('Edit segments by expression'), click: () => onMutateSegmentsByExpr() },
       { label: t('Extract frames from selected segments as image files'), click: onExtractSelectedSegmentsFramesAsImages },
+      { label: t('Remove selected segments'), click: onRemoveSelected },
 
       { type: 'separator' },
 
