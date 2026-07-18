@@ -118,11 +118,11 @@ If you prefer to download the executables manually, this will of course always b
 - [More releases](https://github.com/mifi/lossless-cut/releases) - Note that APPX (Windows) and PKG (macOS) do **not** work)
 - [Latest nightly builds 🧪](https://mifi.no/llc/nightly/)
 
-Difference between App Stores and GitHub download? [Please see FAQ](docs/index.md#faq).
+Note that the above are the [only official downloads](docs/index.md#faq). Difference between App Stores and GitHub download? [Please see FAQ](docs/index.md#faq).
 
 [![](./donate.svg)](https://mifi.no/thanks)
 
-LosslessCut is maintained by me alone and will always remain free and open source. If it's useful to you, consider supporting my work. Alternatively [donate to FFmpeg](https://www.ffmpeg.org/donations.html) because they are doing the world a huge favor.
+LosslessCut is maintained by me alone and will always remain free and open source. If it's useful to you, consider supporting my work. Alternatively [donate to the FFmpeg team](https://www.ffmpeg.org/donations.html) because they are doing the world a huge favor.
 
 [Paypal](https://paypal.me/mifino/usd) | [crypto](https://mifi.no/thanks) | [more](https://mifi.no/thanks)
 

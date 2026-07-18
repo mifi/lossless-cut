@@ -20,6 +20,8 @@ Please read the documentation before creating an issue. Thank you 🙏
   - **A** LosslessCut version in the App Stores is often a few versions behind the latest GitHub version, because I want to be sure that the new versions work perfectly before releasing in the App Stores. The GitHub version will contain new, untested features and may contain some bugs (even in existing functionality). I consider the newest GitHub versions to be a public "beta" test. Then, once I'm sure that the new version works well, I will release it in the App Stores as well to give a frictionless as possible experience for customers. They have exactly the same in-app features, except for a few platform limitations: Apple doesn't allow opening VOB files with App Store apps. Apple App Store apps run in a sandbox, and therefore need to prompt for output directory before allowing writing files.
 - **Q**: What are all these `.llc` files that get created?
   - **A***: Their purpose is to save your segments so that when you exit/re-open LosslessCut you can continue where you left off. You can turn them off in app settings. See also [#2115](https://github.com/mifi/lossless-cut/issues/2115).
+- **Q**: Can I download LosslessCut from other websites or package managers?
+  - **A**: Only the [official sources specified here](../README.md#download) are maintained by me. Downloading LosslessCut from other sources such as other websites or package managers like WinGet or Homebrew entirely at your own risk, because those are not being maintained or vetted by me.
 
 ## Commonly requested features
 
