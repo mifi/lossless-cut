@@ -3,7 +3,7 @@ import type { BrowserWindow, MenuItem, MenuItemConstructorOptions } from 'electr
 import electron from 'electron';
 import { t } from 'i18next';
 
-import { homepageUrl, getReleaseUrl, licensesUrl, thanksUrl, usageUrl, faqUrl, troubleshootingUrl, featureRequestUrl } from '../common/constants.js';
+import { homepageUrl, getReleaseUrl, licensesUrl, thanksUrl, usageUrl, faqUrl, troubleshootingUrl, featureRequestUrl, githubUrl } from '../common/constants.js';
 import { logFilePath } from './logger.js';
 import { getConfigPath } from './configStore.js';
 
@@ -492,10 +492,17 @@ export default ({ app, mainWindow, newVersion, isStoreBuild, openExternal }: {
         },
         { type: 'separator' },
         {
+          label: esc(t('Source code')),
+          click() { openExternal(githubUrl); },
+        },
+        {
           label: esc(t('Licenses')),
           click() { openExternal(licensesUrl); },
         },
-        ...(process.platform !== 'darwin' ? [{ role: 'about' as const, label: esc(t('About LosslessCut')) }] : []),
+        ...(process.platform !== 'darwin' ? [{
+          role: 'about' as const,
+          label: esc(t('About LosslessCut')),
+        }] : []),
       ],
     },
   ];
