@@ -44,6 +44,15 @@ jobs:
         with:
           node-version: 22
           cache: 'yarn'
+      
+      - name: (Windows) Install NSIS
+        if: runner.os == 'windows-latest'
+        run: |
+          iwr -useb get.scoop.sh -outfile 'install.ps1'
+          .\install.ps1 -RunAsAdmin
+          scoop update
+          scoop bucket add extras
+          scoop install nsis
 
       # This global ffmpeg is used for screenshots (see below)
       - uses: AnimMouse/setup-ffmpeg@v1
@@ -125,6 +134,10 @@ jobs:
         run: yarn electron-builder --publish onTag --win --arm64
         env:
           GH_TOKEN: ${{ secrets.github_token }}
+      
+      - name: (Windows) Create Installer
+        if: matrix.os == 'windows-latest'
+        run: makensis -V4 setup.nsi
 
       - run: node script/e2e.ts 'dist/mac-arm64/LosslessCut.app/Contents/MacOS/LosslessCut' 0:none screenshot.jpeg
         if: runner.os == 'macOS' && env.is_tag == 'false'
@@ -170,6 +183,14 @@ jobs:
           ACTIONS_RESULTS_URL: ${{ env.ACTIONS_RESULTS_URL }}
         run: |
           yarn upload-artifacts dist/LosslessCut-win-${{ matrix.os == 'windows-11-arm' && 'arm64' || 'x64' }}.7z
+
+      - name: (Windows x64) Upload installer
+        if: matrix.os == 'windows-latest'
+        env:
+          ACTIONS_RUNTIME_TOKEN: ${{ env.ACTIONS_RUNTIME_TOKEN }}
+          ACTIONS_RESULTS_URL: ${{ env.ACTIONS_RESULTS_URL }}
+        run: |
+          yarn upload-artifacts dist/LosslessCut-win-x64.exe
 
       - name: (Windows x64) Upload screenshot
         if: matrix.os == 'windows-latest' && env.is_tag == 'false'
