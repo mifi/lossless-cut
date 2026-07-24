@@ -1102,5 +1102,9 @@
   "Source file no longer exists or is not accessible. Please check that it is still in its original location and that you have permission to access it.": "源文件已不存在或无法访问。请检查是否还在原始位置并且有访问权限。",
   "Elapsed: {{seconds}} seconds": "已用时间：{{seconds}} 秒",
   "Enable FFmpeg `-hwaccel auto` flag. This can improve performance segment auto detection and FFmpeg-assisted playback speed.": "启用 FFmpeg 的 “-hwaccel auto” 标志。这能够提升片段自动检测的性能以及 FFmpeg 辅助播放的速度。",
-  "Other": "其他"
+  "Other": "其他",
+  "<p>If you're having a problem or question about LosslessCut, please first check the links in the <1>Help</1> menu. If you cannot find any resolution, you may ask a question in <3>GitHub discussions</3> or on <5>Discord.</5></p><p>If you believe that you found a bug in LosslessCut, you may <1>report a bug</1>.</p>": "<p>如果你有关于 LosslessCut 的问题或疑问，请先查阅 <1>帮助</1> 菜单中的链接。如果找不到任何解决方案，可以在 <3>GitHub discussions</3> 或 <5>Discord</5>上提问。</p><p>如果你相信 发现了 LosslessCut 中的 bug，你可以 <1>报告 bug</1>。</p>",
+  "Decimate allows you to losslessly extract only the keyframes from a video, discarding all non-keyframes. You can also optionally drop some of the keyframes. This can dramatically speed up playback and is useful for shortening long videos with little motion, such as creating time-lapse videos.": "Decimate 操作允许从视频中只提取关键帧，丢弃所有非关键帧。你也可以扔掉一些关键帧。这可以大大加速播放，有助缩短没什么动作的长视频，比如创建延时摄影视频。",
+  "Shift the timestamps of all tracks in this file by a specified number of seconds, relative to other files. Positive values will delay the file's tracks, negative will advance it.": "将此文件中所有音轨的时间戳相对于其他文件移动指定秒数。正值会延后文件音轨时间，负值会让音轨时间提前。",
+  "The language tag (ISO 639-2 code). For example \"eng\" for English. This is used by some players to select the appropriate audio/subtitle track based on the user's language preferences.": "语言标签（ISO 639-2 代码）。如英语的代码为 \"eng\"。这被一些播放器用来基于用户的语言偏好选择合适的音频/字幕轨道。"
 }
