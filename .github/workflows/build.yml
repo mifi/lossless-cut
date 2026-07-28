@@ -25,7 +25,8 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest, windows-11-arm]
+        # todo upgrade to windows-latest (VS 2026, but it requires node-gyp 13 which is not included yet as of node 24) https://claude.ai/code/session_012stY6nPsqDo5EPAXYnZ8WJ
+        os: [macos-latest, ubuntu-latest, windows-2022, windows-11-arm]
 #        os: [windows-latest]
 
     steps:
