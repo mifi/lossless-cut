@@ -33,8 +33,8 @@ Please read the documentation before creating an issue. Thank you 🙏
   - **A:** Probably not, but [you can probably do it yourself!](batch.md)
 - **Q:** Is LosslessCut a portable app? Where is application data, settings and temp files stored?
   - **A:** See LosslessCut is *not* a [portable app](https://github.com/mifi/lossless-cut/issues/645). See [Installation and files](installation.md).
-- **Q:** Can I export and replace the input file in-place?
-  - **A:** No, but you can export and automatically delete the input file.
+- **Q:** Can I export and replace the source file in-place?
+  - **A:** No, but you can export and automatically delete the input file (see keyboard shortcuts). If you want the output file to have the same name as the input file, you have to choose a different output folder.
 - **Q:** Can you publish through [winget](https://github.com/mifi/lossless-cut/issues/1279), [Flatpak](https://github.com/mifi/lossless-cut/pull/1813), [Docker](https://github.com/mifi/lossless-cut/issues/1086) or other software mangers?
   - **A:** In general I don't want to maintain more build systems, but I could be open to linking to externally maintained build systems.
 - **Q:** How to sync/shift audio/video tracks?
