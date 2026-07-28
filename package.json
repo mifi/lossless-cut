@@ -102,7 +102,6 @@
     "eslint-plugin-unicorn": "56.0.1",
     "fast-xml-parser": "^5.8.0",
     "i18next-cli": "^1.58.1",
-    "icon-gen": "^5.0.0",
     "immer": "^11.1.8",
     "ky": "^2.0.2",
     "leaflet": "^1.9.4",
@@ -487,9 +486,6 @@
         "removable-media"
       ]
     }
-  },
-  "resolutions": {
-    "icon-gen/sharp": "^0.34.5"
   },
   "packageManager": "yarn@4.11.0"
 }
