@@ -148,7 +148,6 @@
     "electron-unhandled": "^5.0.0",
     "execa": "^9.6.1",
     "express": "^5.2.1",
-    "express-async-handler": "^1.2.0",
     "file-type": "^22.0.1",
     "i18next": "^26.3.0",
     "i18next-fs-backend": "^2.6.6",

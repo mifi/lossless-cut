@@ -7870,13 +7870,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"express-async-handler@npm:^1.2.0":
-  version: 1.2.0
-  resolution: "express-async-handler@npm:1.2.0"
-  checksum: 10/214a7f383db1946d0c17fa2731164082c251ce2ad173d29cb048eeaa20f27a3d36e27c9889e515780b583168ab4ceb43285260562d4abb32d8f68f8543cf6735
-  languageName: node
-  linkType: hard
-
 "express@npm:^5.2.1":
   version: 5.2.1
   resolution: "express@npm:5.2.1"
@@ -10154,7 +10147,6 @@ __metadata:
     eslint-plugin-unicorn: "npm:56.0.1"
     execa: "npm:^9.6.1"
     express: "npm:^5.2.1"
-    express-async-handler: "npm:^1.2.0"
     fast-xml-parser: "npm:^5.8.0"
     file-type: "npm:^22.0.1"
     i18next: "npm:^26.3.0"
