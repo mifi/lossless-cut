@@ -81,7 +81,7 @@ jobs:
           yarn download-ffmpeg-darwin-arm64
 
       - name: (Windows x64) Download ffmpeg
-        if: matrix.os == 'windows-latest'
+        if: runner.os == 'Windows' && matrix.os != 'windows-11-arm'
         run: yarn download-ffmpeg-win32-x64
 
       - name: (Windows ARM64) Download ffmpeg
@@ -116,7 +116,7 @@ jobs:
           GH_TOKEN: ${{ secrets.github_token }}
 
       - name: Build for Windows x64
-        if: matrix.os == 'windows-latest'
+        if: runner.os == 'Windows' && matrix.os != 'windows-11-arm'
         run: yarn electron-builder --publish onTag --win --x64
         env:
           GH_TOKEN: ${{ secrets.github_token }}
@@ -131,7 +131,7 @@ jobs:
         if: runner.os == 'macOS' && env.is_tag == 'false'
 
       - run: node script/e2e.ts 'dist\win-unpacked\LosslessCut.exe' desktop screenshot.jpeg
-        if: matrix.os == 'windows-latest' && env.is_tag == 'false'
+        if: runner.os == 'Windows' && matrix.os != 'windows-11-arm' && env.is_tag == 'false'
 
       - run: |
           export DISPLAY=:0
@@ -173,7 +173,7 @@ jobs:
           yarn upload-artifacts dist/LosslessCut-win-${{ matrix.os == 'windows-11-arm' && 'arm64' || 'x64' }}.7z
 
       - name: (Windows x64) Upload screenshot
-        if: matrix.os == 'windows-latest' && env.is_tag == 'false'
+        if: runner.os == 'Windows' && matrix.os != 'windows-11-arm' && env.is_tag == 'false'
         env:
           ACTIONS_RUNTIME_TOKEN: ${{ env.ACTIONS_RUNTIME_TOKEN }}
           ACTIONS_RESULTS_URL: ${{ env.ACTIONS_RESULTS_URL }}
