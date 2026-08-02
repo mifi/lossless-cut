@@ -2483,7 +2483,7 @@ function App() {
 
   useEffect(() => {
     (async () => {
-      setFfmpegInfo(await runStartupCheck({ onError: ({ title, message }) => setGenericError({ title, err: message }) }));
+      setFfmpegInfo(await runStartupCheck({ customFfPath, onError: ({ title, message }) => setGenericError({ title, err: message }) }));
     })();
   }, [customFfPath, setGenericError]);
 

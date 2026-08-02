@@ -18,7 +18,7 @@ import { parseFfprobeDuration } from '../../common/util';
 
 const { ffmpeg } = window.require('@electron/remote').require('./index.js');
 
-const { renderWaveformPng, mapTimesToSegments, detectSceneChanges, captureFrames, captureFrameToFile, captureFrameToClipboard, getFfCommandLine, runFfmpegConcat, runFfmpegWithProgress, getDuration, abortFfmpegs, runFfmpeg, runFfprobe, getFfmpegPath, setCustomFfPath } = ffmpeg;
+const { renderWaveformPng, mapTimesToSegments, detectSceneChanges, captureFrames, captureFrameToFile, captureFrameToClipboard, getFfCommandLine, runFfmpegConcat, runFfmpegWithProgress, getDuration, abortFfmpegs, runFfmpeg, runFfprobe, getFfmpegPath, setCustomFfPath, checkFfExists } = ffmpeg;
 
 
 export { renderWaveformPng, mapTimesToSegments, detectSceneChanges, captureFrames, captureFrameToFile, captureFrameToClipboard, getFfCommandLine, runFfmpegConcat, runFfmpegWithProgress, getDuration, abortFfmpegs, runFfmpeg, getFfmpegPath, setCustomFfPath };
@@ -550,6 +550,10 @@ const ffprobeVersionSchema = z.object({
 });
 
 export async function runFfmpegStartupCheck() {
+  // will throw ENOENT if the executables don't exist (e.g. custom FFmpeg directory pointing to a location without them)
+  await checkFfExists('ffmpeg');
+  await checkFfExists('ffprobe');
+
   // will throw if exit code != 0
   const { stderr: ffmpegStderr } = await runFfmpeg(['-f', 'lavfi', '-i', 'nullsrc=s=256x256:d=1', '-f', 'null', '-']);
   console.log('FFmpeg startup check output:', new TextDecoder().decode(ffmpegStderr));
