@@ -1072,5 +1072,7 @@
   "<p>If you're having a problem or question about LosslessCut, please first check the links in the <1>Help</1> menu. If you cannot find any resolution, you may ask a question in <3>GitHub discussions</3> or on <5>Discord.</5></p><p>If you believe that you found a bug in LosslessCut, you may <1>report a bug</1>.</p>": "<p>Se você estiver tendo algum problema ou dúvida sobre o LosslessCut, primeiro verifique os links no<1>Help</1> menu. Se você não conseguir encontrar nenhuma solução, você pode fazer uma pergunta nas <3>discussões no GitHub</3> ou no <5>Discord.</5></p><p>Se você acredita que encontrou um bug no LosslessCut, você pode <1>reportar um bug</1>.</p>",
   "Please send us an email where you describe what you were doing.": "Por favor, envie-nos um e-mail onde você descreve o que estava fazendo.",
   "Extract segment frames as image files": "Extrair quadros de segmentos como arquivos de imagem",
-  "You are in simple mode, meaning some functionality has been simplified or hidden.": "Você está no modo simples, o que significa que algumas funcionalidades foram simplificadas ou ocultadas."
+  "You are in simple mode, meaning some functionality has been simplified or hidden.": "Você está no modo simples, o que significa que algumas funcionalidades foram simplificadas ou ocultadas.",
+  "Source code": "Código fonte",
+  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "You have configured a custom FFmpeg directory.\\ You may change or reset it in Settings."
 }
