@@ -5,6 +5,7 @@ import assert from 'node:assert';
 
 import { homepageUrl } from '../common/constants.js';
 import logger from './logger.js';
+import { isRequestAllowed } from './httpServerUtil.js';
 import type { AppEvent } from './index.js';
 
 
@@ -21,6 +22,16 @@ export default ({ port, onKeyboardAction, onAwaitAppEvent }: {
   app.use(morgan(morganFormat, {
     stream: { write: (message) => logger.info(message.trim()) },
   }));
+
+  app.use((req, res, next) => {
+    const { host, origin } = req.headers;
+    if (!isRequestAllowed({ host, origin, port })) {
+      logger.warn('Rejecting HTTP API request', { host, origin });
+      res.status(403).send('Forbidden: the HTTP API can only be called by programs running on this computer, not from a web browser.');
+      return;
+    }
+    next();
+  });
 
   const apiRouter = express.Router();
 
