@@ -18,7 +18,7 @@ export async function loadMifiLink() {
   }
 }
 
-export async function runStartupCheck({ onError }: { onError: (error: { title: string, message: string }) => void }) {
+export async function runStartupCheck({ customFfPath, onError }: { customFfPath: string | undefined, onError: (error: { title: string, message: string }) => void }) {
   try {
     return await runFfmpegStartupCheck();
   } catch (err) {
@@ -26,7 +26,15 @@ export async function runStartupCheck({ onError }: { onError: (error: { title: s
       if ('code' in err && err.code === 'ENOENT') {
         onError({
           title: i18n.t('Fatal: FFmpeg executable not found'),
-          message: `${i18n.t('Make sure that the FFmpeg executable exists:')}\n\n${getFfmpegPath()}`,
+          message: [
+            i18n.t('Make sure that the FFmpeg executable exists:'),
+            '',
+            getFfmpegPath(),
+            ...(customFfPath != null ? [
+              '',
+              i18n.t('You have configured a custom FFmpeg directory. You may change or reset it in Settings.'),
+            ] : []),
+          ].join('\n'),
         });
         return undefined;
       }
