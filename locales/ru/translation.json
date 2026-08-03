@@ -1110,5 +1110,7 @@
   "Shift the timestamps of all tracks in this file by a specified number of seconds, relative to other files. Positive values will delay the file's tracks, negative will advance it.": "Сдвинуть временные метки всех дорожек в этом файле на указанное количество секунд относительно других файлов. Положительные значения задержат дорожки файла, отрицательные – ускорят их.",
   "This is hardcoded by FFmpeg and cannot be changed.": "Это жёстко закодировано в FFmpeg и не может быть изменено.",
   "Extract segment frames as image files": "Извлечь сегменты кадров в виде файлов изображений",
-  "You are in simple mode, meaning some functionality has been simplified or hidden.": "Вы находитесь в упрощённом режиме. Некоторые функции упрощены или скрыты."
+  "You are in simple mode, meaning some functionality has been simplified or hidden.": "Вы находитесь в упрощённом режиме. Некоторые функции упрощены или скрыты.",
+  "Source code": "Исходный код",
+  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "Вы указали пользовательскую папку FFmpeg. Её можно изменить или сбросить его в настройках."
 }
