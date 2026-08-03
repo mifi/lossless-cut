@@ -1,7 +1,7 @@
 <div align="center">
 	<br>
   <p><a href="https://losslesscut.app/"><img src="src/renderer/src/icon.svg" width="120" alt="LosslessCut" /></a></p>
-  <p><b>LosslessCut</b></p>
+  <p><a href="https://losslesscut.app/"><b>LosslessCut</b></a></p>
   The swiss army knife of lossless video/audio editing
 	<br>
   <img src="https://github.com/mifi/lossless-cut/workflows/Build/release/badge.svg" />
