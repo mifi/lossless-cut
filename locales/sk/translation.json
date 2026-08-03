@@ -967,5 +967,7 @@
   "Track": "Stopa",
   "Value must be shorter than total duration ({{totalDuration}})": "Hodnota musí byť kratšia ako celková dĺžka trvania ({{totalDuration}})",
   "Width": "Šírka",
-  "You are in simple mode, meaning some functionality has been simplified or hidden.": "Nachádzate sa v jednoduchom režime, čo znamená, že niektoré funkcie boli zjednodušené alebo skryté."
+  "You are in simple mode, meaning some functionality has been simplified or hidden.": "Nachádzate sa v jednoduchom režime, čo znamená, že niektoré funkcie boli zjednodušené alebo skryté.",
+  "Source code": "Zdrojový kód",
+  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "Nastavili ste vlastný adresár pre FFmpeg. V nastaveniach ho môžete zmeniť alebo obnoviť."
 }
