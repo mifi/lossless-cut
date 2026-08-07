@@ -30,6 +30,7 @@ export interface Config {
   enableCustomOutDir: boolean,
   recentCustomOutDirs: string[],
   keyframeCut: boolean,
+  autoKeyframeCutFix: boolean,
   autoMerge: boolean,
   autoDeleteMergedSegments: boolean,
   segmentsToChaptersOnly: boolean,
