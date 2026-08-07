@@ -106,9 +106,9 @@ If you want to support my continued work on LosslessCut, and you want the advant
 
 <a href="https://apps.apple.com/app/id1505323402"><img src="mac-app-store-badge.svg" alt="Mac App Store" height="50"/></a> <a href="https://www.microsoft.com/store/apps/9P30LSR4705L?cid=storebadge&ocid=badge"><img src="ms-store-badge.svg" alt="MS badge" height="50"/></a>
 
-For Linux these are some alternatives:
+For Linux I publish to the Snap Store:
 
-<a href="https://snapcraft.io/losslesscut"><img src="https://github.com/mifi/lossless-cut/raw/master/snap-store-black.svg?sanitize=true" alt="Snapcraft" height="50"/></a> <a href="https://flathub.org/apps/details/no.mifi.losslesscut"><img src="https://github.com/mifi/lossless-cut/raw/master/flathub-badge.svg?sanitize=true" alt="Flathub" height="50"/></a>
+<a href="https://snapcraft.io/losslesscut"><img src="https://github.com/mifi/lossless-cut/raw/master/snap-store-black.svg?sanitize=true" alt="Snapcraft" height="50"/></a>
 
 If you prefer to download the executables manually, this will of course always be free (see also [supported operating systems](docs/requirements.md)):
 
@@ -118,7 +118,7 @@ If you prefer to download the executables manually, this will of course always b
 - [More releases](https://github.com/mifi/lossless-cut/releases) - Note that APPX (Windows) and PKG (macOS) do **not** work)
 - [Latest nightly builds 🧪](https://mifi.no/llc/nightly/)
 
-Note that the above are the [only official downloads](docs/index.md#faq). Difference between App Stores and GitHub download? [Please see FAQ](docs/index.md#faq).
+Note that the above are the [only official downloads](docs/index.md#faq). There are also unofficial releases like [Flathub](https://flathub.org/apps/details/no.mifi.losslesscut) (not maintained by me). Difference between App Stores and GitHub download? [Please see FAQ](docs/index.md#faq).
 
 [![](./donate.svg)](https://mifi.no/thanks)
 
