@@ -152,7 +152,7 @@ LosslessCut uses the Chromium browser's HTML5 video player, and not all formats/
 - Your link here?
 - theo (YouTube) [1](https://youtu.be/FI5ba4RRE8U?t=246) [2](https://youtu.be/uaCypXEJjes?t=381)
 
-<img src="https://api.star-history.com/svg?repos=mifi/lossless-cut&type=Date" alt="Star History Chart" width="400px" />
+<img src="https://star-history.dera.page/svg?repos=mifi/lossless-cut&type=Date" alt="Star History Chart" width="400px" />
 
 ## Attributions
 - App icon made by [Dimi Kazak](http://www.flaticon.com/authors/dimi-kazak "Dimi Kazak") from [www.flaticon.com](http://www.flaticon.com "Flaticon") is licensed by [CC 3.0 BY](http://creativecommons.org/licenses/by/3.0/ "Creative Commons BY 3.0").
