@@ -1,5 +1,6 @@
 import invariant from 'tiny-invariant';
 import type { FFprobeStream, FFprobeStreamDisposition } from '../../../common/ffprobe';
+import type { AvoidNegativeTs } from '../../../common/types';
 import type { AllFilesMeta, ChromiumHTMLAudioElement, ChromiumHTMLVideoElement, CopyfileStreams, LiteFFprobeStream } from '../types';
 import type { FileStream } from '../ffmpeg';
 
@@ -260,6 +261,37 @@ export const attachedPicDisposition = 'attached_pic';
 
 export function isStreamThumbnail(stream: Pick<FFprobeStream, 'codec_type' | 'disposition'>) {
   return stream && stream.codec_type === 'video' && stream.disposition?.[attachedPicDisposition] === 1;
+}
+
+function isCopyingThumbnailStream({ allFilesMeta, copyFileStreams }: {
+  allFilesMeta: AllFilesStreamMeta,
+  copyFileStreams: CopyfileStreams,
+}) {
+  return copyFileStreams.some(({ path, streamIds }) => streamIds.some((streamId) => {
+    const stream = getStreamById({ allFilesMeta, streamId, path });
+    return stream != null && isStreamThumbnail(stream);
+  }));
+}
+
+/**
+ * An attached_pic (cover art) packet has no position on the timeline - the demuxer emits it at
+ * pts 0. When seeking before the input (`-ss` before `-i`), ffmpeg applies the seek offset to it
+ * anyway, dragging it to -(cut from), and it reaches the muxer first. `make_zero` and
+ * `make_non_negative` then derive their file-wide correction from that packet and shift every
+ * other stream back by +(cut from), undoing the rebase to zero that the audio/video already got.
+ * The mov muxer records that as an empty edit, so the muxed duration ends up being the segment's
+ * end time in the source instead of its length (ffprobe hides this, but e.g. VLC reports it).
+ * `auto` doesn't use the attached pic as its reference, so it cuts correctly and keeps the cover art.
+ * See https://github.com/mifi/lossless-cut/issues/3009
+ */
+export function getEffectiveAvoidNegativeTs({ avoidNegativeTs, allFilesMeta, copyFileStreams }: {
+  avoidNegativeTs: AvoidNegativeTs | undefined,
+  allFilesMeta: AllFilesStreamMeta,
+  copyFileStreams: CopyfileStreams,
+}) {
+  if (avoidNegativeTs !== 'make_zero' && avoidNegativeTs !== 'make_non_negative') return avoidNegativeTs;
+  if (!isCopyingThumbnailStream({ allFilesMeta, copyFileStreams })) return avoidNegativeTs;
+  return 'auto';
 }
 
 export const getAudioStreams = <T extends Pick<FFprobeStream, 'codec_type'>>(streams: T[]) => streams.filter((stream) => stream.codec_type === 'audio');
