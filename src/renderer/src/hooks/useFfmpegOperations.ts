@@ -6,7 +6,7 @@ import i18n from 'i18next';
 
 import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, getHtml5ifiedPath, unlinkWithRetry, getFrameDuration, isMac, html5ifiedPrefix, html5dummySuffix, assertFileExists } from '../util';
 import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, getDuration, createChaptersFromSegments, readFileFfprobeMeta, getExperimentalArgs, getVideoTimescaleArgs, logStdoutStderr, runFfmpegConcat, RefuseOverwriteError, runFfmpeg } from '../ffmpeg';
-import { getMapStreamsArgs, getStreamIdsToCopy } from '../util/streams';
+import { getEffectiveAvoidNegativeTs, getMapStreamsArgs, getStreamIdsToCopy } from '../util/streams';
 import { needsSmartCut, getCodecParams } from '../smartcut';
 import { getGuaranteedSegments, isDurationValid } from '../segments';
 import type { FFprobeStream } from '../../../common/ffprobe';
@@ -282,7 +282,10 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     const copyFileStreamsFiltered = copyFileStreams.filter(({ streamIds }) => streamIds.length > 0);
 
     // remove -avoid_negative_ts make_zero when not cutting start (no -ss), or else some videos get blank first frame in QuickLook
-    const avoidNegativeTsArgs = cuttingStart && avoidNegativeTs && ssBeforeInput ? ['-avoid_negative_ts', String(avoidNegativeTs)] : [];
+    // note: `make_zero`/`make_non_negative` get downgraded to `auto` when copying a cover art stream, or else the
+    // output gets the segment's end time as its duration, see https://github.com/mifi/lossless-cut/issues/2883
+    const effectiveAvoidNegativeTs = getEffectiveAvoidNegativeTs({ avoidNegativeTs, allFilesMeta, copyFileStreams: copyFileStreamsFiltered });
+    const avoidNegativeTsArgs = cuttingStart && effectiveAvoidNegativeTs && ssBeforeInput ? ['-avoid_negative_ts', String(effectiveAvoidNegativeTs)] : [];
 
     // If cutting multiple files, `-ss` must be before `-i`, regardless of `ssBeforeInput` choice
     // and it seems that `-t` must be after `-i` #896

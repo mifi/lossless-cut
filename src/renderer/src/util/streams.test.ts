@@ -1,6 +1,6 @@
 import { test, expect } from 'vitest';
 
-import { getMapStreamsArgs, getStreamIdsToCopy } from './streams';
+import { getEffectiveAvoidNegativeTs, getMapStreamsArgs, getStreamIdsToCopy } from './streams';
 import type { FFprobeStreamDisposition } from '../../../common/ffprobe';
 import type { LiteFFprobeStream } from '../types';
 
@@ -163,4 +163,42 @@ test('ass output', () => {
   })).toEqual([
     '-map', '0:0', '-c:0', 'ass',
   ]);
+});
+
+// stream 0 of `streams1` is an attached_pic (cover art) mjpeg stream
+// https://github.com/mifi/lossless-cut/issues/2883
+test('getEffectiveAvoidNegativeTs, downgrades to auto when copying cover art', () => {
+  expect(getEffectiveAvoidNegativeTs({
+    avoidNegativeTs: 'make_zero',
+    allFilesMeta,
+    copyFileStreams: [{ path, streamIds: [0, 1] }],
+  })).toBe('auto');
+
+  expect(getEffectiveAvoidNegativeTs({
+    avoidNegativeTs: 'make_non_negative',
+    allFilesMeta,
+    copyFileStreams: [{ path, streamIds: [0, 1] }],
+  })).toBe('auto');
+});
+
+test('getEffectiveAvoidNegativeTs, passes through when not copying cover art', () => {
+  expect(getEffectiveAvoidNegativeTs({
+    avoidNegativeTs: 'make_zero',
+    allFilesMeta,
+    copyFileStreams: [{ path, streamIds: [1, 2] }],
+  })).toBe('make_zero');
+
+  expect(getEffectiveAvoidNegativeTs({
+    avoidNegativeTs: 'make_non_negative',
+    allFilesMeta,
+    copyFileStreams: [{ path, streamIds: [1, 2] }],
+  })).toBe('make_non_negative');
+});
+
+test('getEffectiveAvoidNegativeTs, leaves other values alone', () => {
+  const copyFileStreams = [{ path, streamIds: [0, 1] }];
+
+  expect(getEffectiveAvoidNegativeTs({ avoidNegativeTs: 'auto', allFilesMeta, copyFileStreams })).toBe('auto');
+  expect(getEffectiveAvoidNegativeTs({ avoidNegativeTs: 'disabled', allFilesMeta, copyFileStreams })).toBe('disabled');
+  expect(getEffectiveAvoidNegativeTs({ avoidNegativeTs: undefined, allFilesMeta, copyFileStreams })).toBe(undefined);
 });
