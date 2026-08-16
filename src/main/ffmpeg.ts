@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import { access } from 'node:fs/promises';
+import { access, open as openFile, type FileHandle } from 'node:fs/promises';
 import readline from 'node:readline';
 import stringToStream from 'string-to-stream';
 import type { Options as ExecaOptions, ResultPromise } from 'execa';
@@ -586,6 +586,122 @@ async function readFormatData(filePath: string): Promise<FFprobeFormat> {
 
 export async function getDuration(filePath: string) {
   return parseFfprobeDuration((await readFormatData(filePath)).duration);
+}
+
+// Detection of Matroska files with broken track interleaving, e.g. where all audio data is stored at the very end of the file instead of being interleaved with the video data.
+// ffmpeg's multi-stream interleaved reading of such files produces outputs with wrong timestamps (e.g. audio starting at 17s instead of 0s), while reading each track type individually works fine.
+// Only EBML cluster headers are scanned (no media data is read), so this is fast even for large files.
+export async function checkMatroskaTrackInterleaving(filePath: string): Promise<{ hasProblems: boolean }> {
+  let handle: FileHandle;
+  try {
+    handle = await openFile(filePath, 'r');
+  } catch {
+    return { hasProblems: false };
+  }
+
+  try {
+    const { size: fileSize } = await handle.stat();
+
+    const cacheSize = 128 * 1024;
+    let cacheStart = -1;
+    let cacheBuf = Buffer.allocUnsafe(0);
+
+    const readAt = async (position: number, length: number): Promise<Buffer> => {
+      if (cacheStart >= 0 && position >= cacheStart && position + length <= cacheStart + cacheBuf.length) {
+        return cacheBuf.subarray(position - cacheStart, position - cacheStart + length);
+      }
+      const readLength = Math.min(Math.max(length, cacheSize), fileSize - position);
+      const buf = Buffer.allocUnsafe(readLength);
+      await handle.read(buf, 0, readLength, position);
+      cacheStart = position;
+      cacheBuf = buf;
+      return buf;
+    };
+
+    // Parse an EBML variable size integer, see Matroska spec
+    const readVint = async (position: number): Promise<{ value: bigint, length: number, allOnes: boolean }> => {
+      const [first] = await readAt(position, 1);
+      let length = 0;
+      for (let i = 7; i >= 0; i -= 1) {
+        if ((first! & (1 << i)) !== 0) { length = 8 - i; break; }
+      }
+      if (length === 0) throw new Error('Invalid EBML vint');
+      const bytes = await readAt(position, length);
+      let value = BigInt(bytes[0]! & ((1 << (8 - length)) - 1));
+      let allOnes = (bytes[0]! & ((1 << (8 - length)) - 1)) === ((1 << (8 - length)) - 1);
+      for (let i = 1; i < length; i += 1) {
+        value = (value << 8n) | BigInt(bytes[i]!);
+        if (bytes[i] !== 0xff) allOnes = false;
+      }
+      return { value, length, allOnes };
+    };
+
+    const readEbmlElementHeader = async (position: number): Promise<{ id: bigint, size: bigint, unknownSize: boolean, headerLength: number }> => {
+      const idInfo = await readVint(position);
+      const id = idInfo.value | (1n << BigInt(7 * idInfo.length)); // keep the marker bit so that IDs match the spec values
+      const sizeInfo = await readVint(position + idInfo.length);
+      return { id, size: sizeInfo.value, unknownSize: sizeInfo.allOnes, headerLength: idInfo.length + sizeInfo.length };
+    };
+
+    const ID_EBML = 0x1A45DFA3n;
+    const ID_SEGMENT = 0x18538067n;
+    const ID_CLUSTER = 0x1F43B675n;
+    const ID_TIMESTAMP = 0xE7n;
+
+    const top = await readEbmlElementHeader(0);
+    if (top.id !== ID_EBML) return { hasProblems: false }; // not an EBML/Matroska file
+    let offset = top.headerLength + Number(top.size);
+    const segment = await readEbmlElementHeader(offset);
+    if (segment.id !== ID_SEGMENT) return { hasProblems: false };
+    const segmentLimit = segment.unknownSize ? fileSize : Math.min(fileSize, offset + segment.headerLength + Number(segment.size));
+    offset += segment.headerLength;
+
+    let lastClusterTimestamp: number | undefined;
+    let hasProblems = false;
+
+    // Iterate over the Segment's top-level elements, only parsing cluster headers (no media data is read).
+    // Cluster timestamps increase monotonically in a properly interleaved file; a large jump backwards indicates that clusters of some track(s) were written after clusters of other tracks.
+    while (offset < segmentLimit) {
+      const element = await readEbmlElementHeader(offset);
+      if (element.unknownSize) break; // e.g. live stream, cannot reliably scan
+      const dataStart = offset + element.headerLength;
+
+      if (element.id === ID_CLUSTER) {
+        // Look for the Timestamp child element (only scan a bounded part of the cluster's children)
+        let inner = dataStart;
+        const innerLimit = Math.min(dataStart + Number(element.size), dataStart + 4096);
+        let clusterTimestamp: number | undefined;
+        while (inner < innerLimit) {
+          const child = await readEbmlElementHeader(inner);
+          if (child.unknownSize) break;
+          if (child.id === ID_TIMESTAMP) {
+            const tsBytes = await readAt(inner + child.headerLength, Number(child.size));
+            let v = 0;
+            // eslint-disable-next-line no-restricted-syntax
+            for (const b of tsBytes) v = v * 256 + b;
+            clusterTimestamp = v;
+            break;
+          }
+          inner += child.headerLength + Number(child.size);
+        }
+        if (clusterTimestamp != null) {
+          // Timestamps are in TimestampScale units (normally 1ms). Healthy files only ever increase.
+          // A backward jump of more than 2 seconds is always a sign of broken interleaving.
+          if (lastClusterTimestamp != null && clusterTimestamp < lastClusterTimestamp - 2000) hasProblems = true;
+          lastClusterTimestamp = Math.max(lastClusterTimestamp ?? 0, clusterTimestamp);
+        }
+      }
+
+      offset = dataStart + Number(element.size);
+    }
+    if (hasProblems) logger.info('Detected broken track interleaving in Matroska file', filePath);
+    return { hasProblems };
+  } catch (err) {
+    logger.warn('Failed to check Matroska track interleaving', err);
+    return { hasProblems: false };
+  } finally {
+    await handle.close();
+  }
 }
 
 const enableLog = false;
