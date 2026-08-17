@@ -1,4 +1,5 @@
 import { join } from 'node:path';
+import { access } from 'node:fs/promises';
 import readline from 'node:readline';
 import stringToStream from 'string-to-stream';
 import type { Options as ExecaOptions, ResultPromise } from 'execa';
@@ -64,6 +65,15 @@ function getFfPath(cmd: FfCommand) {
     ...(isWindows || isLinux ? ['lib'] : []),
     exeName,
   );
+}
+
+// Used by the startup check to fail fast with a proper ENOENT if the executable doesn't exist.
+// This is because on Windows, cross-spawn (used by execa) falls back to running the command through
+// cmd.exe when it cannot resolve the executable path (e.g. custom FFmpeg directory pointing to a
+// location without ffmpeg.exe), which instead fails with a confusing exit code 1:
+// "'...' is not recognized as an internal or external command"
+export async function checkFfExists(cmd: FfCommand) {
+  await access(getFfPath(cmd)); // throws with code ENOENT if it doesn't exist
 }
 
 const getFfprobePath = () => getFfPath('ffprobe');
