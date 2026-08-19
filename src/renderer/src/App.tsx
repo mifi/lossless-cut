@@ -1706,6 +1706,8 @@ function App() {
 
       if (err instanceof RefuseOverwriteError) {
         showRefuseToOverwrite();
+      } else if (err instanceof UserFacingError) {
+        errorToast(err.message);
       } else {
         errorToast(i18n.t('Failed to extract all streams'));
         console.error('Failed to extract all streams', err);
@@ -2248,6 +2250,8 @@ function App() {
 
       if (err instanceof RefuseOverwriteError) {
         showRefuseToOverwrite();
+      } else if (err instanceof UserFacingError) {
+        errorToast(err.message);
       } else {
         errorToast(i18n.t('Failed to extract track'));
         console.error('Failed to extract track', err);
