@@ -2,7 +2,7 @@ import { dataUriToBuffer } from 'data-uri-to-buffer';
 import pMap from 'p-map';
 import { useCallback } from 'react';
 
-import { getSuffixedOutPath, getOutDir, transferTimestamps, getSuffixedFileName, getOutPath, escapeRegExp, fsOperationWithRetry } from '../util';
+import { getSuffixedOutPath, getOutDir, transferTimestamps, getSuffixedFileName, getOutPath, escapeRegExp, fsOperationWithRetry, assertFileExists } from '../util';
 import { getNumDigits, isDurationValid } from '../segments';
 
 import * as ffmpeg from '../ffmpeg';
@@ -45,6 +45,9 @@ export default ({ appendFfmpegCommandLog, formatTimecode, treatInputFileModified
     onProgress: (a: number) => void,
     outputTimestamps: boolean,
   }) => {
+    // fail fast with a helpful message if the source file has been moved/deleted since it was opened
+    await assertFileExists(filePath);
+
     const getSuffix = (prefix: string) => `${prefix}.${captureFormat}`;
 
     if (!outputTimestamps) {
@@ -98,6 +101,8 @@ export default ({ appendFfmpegCommandLog, formatTimecode, treatInputFileModified
     captureFormat: CaptureFormat,
     quality: number,
   }) => {
+    await assertFileExists(filePath);
+
     const timecode = formatTimecode({ seconds: time, fileNameFriendly: true });
     const nameSuffix = `${timecode}.${captureFormat}`;
     const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix });
