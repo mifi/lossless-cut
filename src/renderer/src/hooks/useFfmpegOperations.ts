@@ -41,7 +41,19 @@ async function writeChaptersFfmetadata(outDir: string, chapters: Chapter[] | und
   return path;
 }
 
-function getMovFlags({ preserveMovData, movFastStart }: { preserveMovData: boolean, movFastStart: boolean }) {
+// Muxers implemented by ffmpeg's movenc.c, i.e. the ones that accept `-movflags`.
+// Note: deliberately not util/streams.ts `isMov`, which is a narrower, UI oriented list.
+const movencFormats = new Set(['3g2', '3gp', 'f4v', 'ipod', 'ismv', 'mov', 'mp4', 'psp']);
+
+// Muxers implemented by ffmpeg's matroskaenc.c, i.e. the ones that accept `-default_mode`.
+const matroskaencFormats = new Set(['matroska', 'webm']);
+
+// ffmpeg tolerates private options belonging to a different muxer, but they add noise to the command line
+// that we log, show in "Last commands" and include in error reports - which makes troubleshooting harder.
+// If the output format is unknown, ffmpeg infers the muxer from the file extension, so keep the flags to be safe.
+function getMovFlags({ outFormat, preserveMovData, movFastStart }: { outFormat: string | undefined, preserveMovData: boolean, movFastStart: boolean }) {
+  if (outFormat != null && !movencFormats.has(outFormat)) return [];
+
   const flags: string[] = [];
 
   // https://video.stackexchange.com/a/26084/29486
@@ -55,7 +67,10 @@ function getMovFlags({ preserveMovData, movFastStart }: { preserveMovData: boole
   return flags.flatMap((flag) => ['-movflags', flag]);
 }
 
-function getMatroskaFlags() {
+// same as getMovFlags, but for the matroska muxer's private options
+function getMatroskaFlags(outFormat: string | undefined) {
+  if (outFormat != null && !matroskaencFormats.has(outFormat)) return [];
+
   return [
     '-default_mode', 'infer_no_subs',
     // because it makes sense to not force subtitles disposition to "default" if they were not default in the input file
@@ -201,8 +216,8 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
         ...(chaptersInputIndex != null ? ['-map_chapters', String(chaptersInputIndex)] : []),
 
-        ...getMovFlags({ preserveMovData, movFastStart }),
-        ...getMatroskaFlags(),
+        ...getMovFlags({ outFormat, preserveMovData, movFastStart }),
+        ...getMatroskaFlags(outFormat),
 
         // See https://github.com/mifi/lossless-cut/issues/170
         '-ignore_unknown',
@@ -454,8 +469,8 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
       ...(shortestFlag ? ['-shortest'] : []),
 
-      ...getMovFlags({ preserveMovData, movFastStart }),
-      ...getMatroskaFlags(),
+      ...getMovFlags({ outFormat, preserveMovData, movFastStart }),
+      ...getMatroskaFlags(outFormat),
 
       ...customFileMetadataArgs,
 
@@ -1081,6 +1096,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     customOutDir: string | undefined, streams: FFprobeStream[],
   }) => {
     invariant(filePath != null);
+    await assertFileExists(filePath);
 
     const attachmentStreams = streams.filter((s) => s.codec_type === 'attachment');
     const nonAttachmentStreams = streams.filter((s) => s.codec_type !== 'attachment');
