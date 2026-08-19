@@ -162,6 +162,9 @@
     "zod": "^4.4.3"
   },
   "build": {
+    "toolsets": {
+      "appimage": "1.0.3"
+    },
     "directories": {
       "buildResources": "build-resources"
     },
