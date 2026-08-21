@@ -472,6 +472,10 @@ const KeyboardShortcuts = memo(({
         name: t('Detect scene changes'),
         category: segmentsAndCutpointsCategory,
       },
+      detectCroppedScenes: {
+        name: t('Detect cropped scenes'),
+        category: segmentsAndCutpointsCategory,
+      },
       shuffleSegments: {
         name: t('Shuffle segments order'),
         category: segmentsAndCutpointsCategory,
