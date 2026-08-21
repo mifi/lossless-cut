@@ -23,6 +23,7 @@ import getSwal from './swal';
 import { getSegColor as getSegColorRaw } from './util/colors';
 import { useSegColors } from './contexts';
 import { isExactDurationMatch } from './util/duration';
+import handleCutTimeInputKeyDown from './util/inputFocus';
 import useUserSettings from './hooks/useUserSettings';
 import useActionTitle from './hooks/useActionTitle';
 import { askForPlaybackRate, checkAppPath } from './dialogs';
@@ -251,6 +252,7 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
         onChange={(e) => handleCutTimeInput(e.target.value)}
         onPaste={handleCutTimePaste}
         onBlur={handleInputBlur}
+        onKeyDown={(e) => handleCutTimeInputKeyDown(e, isStart)}
         onContextMenu={handleContextMenu}
         value={renderValue()}
       />
