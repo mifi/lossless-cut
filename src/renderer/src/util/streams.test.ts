@@ -1,6 +1,6 @@
 import { test, expect } from 'vitest';
 
-import { getMapStreamsArgs, getStreamIdsToCopy } from './streams';
+import { getEffectiveAvoidNegativeTs, getMapStreamsArgs, getStreamIdsToCopy } from './streams';
 import type { FFprobeStreamDisposition } from '../../../common/ffprobe';
 import type { LiteFFprobeStream } from '../types';
 
@@ -163,4 +163,15 @@ test('ass output', () => {
   })).toEqual([
     '-map', '0:0', '-c:0', 'ass',
   ]);
+});
+
+test('getEffectiveAvoidNegativeTs downgrades to auto when copying an attached_pic stream (#3009)', () => {
+  expect(getEffectiveAvoidNegativeTs({ avoidNegativeTs: 'make_zero', hasCopiedAttachedPicStream: true })).toBe('auto');
+  expect(getEffectiveAvoidNegativeTs({ avoidNegativeTs: 'make_non_negative', hasCopiedAttachedPicStream: true })).toBe('auto');
+
+  // no cover art copied: user preference passes through
+  expect(getEffectiveAvoidNegativeTs({ avoidNegativeTs: 'make_zero', hasCopiedAttachedPicStream: false })).toBe('make_zero');
+  expect(getEffectiveAvoidNegativeTs({ avoidNegativeTs: 'auto', hasCopiedAttachedPicStream: true })).toBe('auto');
+  expect(getEffectiveAvoidNegativeTs({ avoidNegativeTs: 'disabled', hasCopiedAttachedPicStream: true })).toBe('disabled');
+  expect(getEffectiveAvoidNegativeTs({ avoidNegativeTs: undefined, hasCopiedAttachedPicStream: true })).toBeUndefined();
 });

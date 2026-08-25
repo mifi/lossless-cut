@@ -6,7 +6,7 @@ import i18n from 'i18next';
 
 import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, getHtml5ifiedPath, unlinkWithRetry, getFrameDuration, isMac, html5ifiedPrefix, html5dummySuffix, assertFileExists } from '../util';
 import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, getDuration, createChaptersFromSegments, readFileFfprobeMeta, getExperimentalArgs, getVideoTimescaleArgs, logStdoutStderr, runFfmpegConcat, RefuseOverwriteError, runFfmpeg } from '../ffmpeg';
-import { getMapStreamsArgs, getStreamIdsToCopy, getStreamById, isStreamThumbnail } from '../util/streams';
+import { getEffectiveAvoidNegativeTs, getMapStreamsArgs, getStreamById, getStreamIdsToCopy, isStreamThumbnail } from '../util/streams';
 import { needsSmartCut, getCodecParams } from '../smartcut';
 import { getGuaranteedSegments, isDurationValid } from '../segments';
 import type { FFprobeStream } from '../../../common/ffprobe';
@@ -297,15 +297,11 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     const copyFileStreamsFiltered = copyFileStreams.filter(({ streamIds }) => streamIds.length > 0);
 
     // remove -avoid_negative_ts make_zero when not cutting start (no -ss), or else some videos get blank first frame in QuickLook
-    // A copied attached_pic (cover art) packet has no timeline position, so with -ss before -i,
-    // make_zero/make_non_negative derive the file-wide timestamp correction from it, which
-    // results in an empty edit and an inflated reported output duration (#3009).
-    // `auto` doesn't use the cover art as the correction reference, so downgrade to it.
     const copiedAttachedPicStream = copyFileStreams.some(({ streamIds, path }) => streamIds.some((streamId) => {
       const stream = getStreamById({ allFilesMeta, streamId, path });
       return stream != null && isStreamThumbnail(stream);
     }));
-    const effectiveAvoidNegativeTs = copiedAttachedPicStream && (avoidNegativeTs === 'make_zero' || avoidNegativeTs === 'make_non_negative') ? 'auto' : avoidNegativeTs;
+    const effectiveAvoidNegativeTs = getEffectiveAvoidNegativeTs({ avoidNegativeTs, hasCopiedAttachedPicStream: copiedAttachedPicStream });
     const avoidNegativeTsArgs = cuttingStart && effectiveAvoidNegativeTs && ssBeforeInput ? ['-avoid_negative_ts', String(effectiveAvoidNegativeTs)] : [];
 
     // If cutting multiple files, `-ss` must be before `-i`, regardless of `ssBeforeInput` choice

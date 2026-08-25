@@ -1,4 +1,5 @@
 import invariant from 'tiny-invariant';
+import type { AvoidNegativeTs } from '../../../common/types';
 import type { FFprobeStream, FFprobeStreamDisposition } from '../../../common/ffprobe';
 import type { AllFilesMeta, ChromiumHTMLAudioElement, ChromiumHTMLVideoElement, CopyfileStreams, LiteFFprobeStream } from '../types';
 import type { FileStream } from '../ffmpeg';
@@ -261,6 +262,18 @@ export const attachedPicDisposition = 'attached_pic';
 export function isStreamThumbnail(stream: Pick<FFprobeStream, 'codec_type' | 'disposition'>) {
   return stream && stream.codec_type === 'video' && stream.disposition?.[attachedPicDisposition] === 1;
 }
+
+/**
+ * A copied attached_pic (cover art) packet has no timeline position, so with keyframe
+ * cutting (`-ss` before `-i`) ffmpeg applies the seek offset to it anyway and it reaches
+ * the muxer first. `-avoid_negative_ts make_zero`/`make_non_negative` then derives its
+ * file-wide timestamp correction from that packet, which records an empty edit and
+ * inflates the reported output duration (#3009). `auto` doesn't use the cover art as the
+ * correction reference, so it's used instead when a copied stream is a thumbnail.
+ */
+export const getEffectiveAvoidNegativeTs = ({ avoidNegativeTs, hasCopiedAttachedPicStream }: { avoidNegativeTs: AvoidNegativeTs | undefined, hasCopiedAttachedPicStream: boolean }) => (
+  hasCopiedAttachedPicStream && (avoidNegativeTs === 'make_zero' || avoidNegativeTs === 'make_non_negative') ? 'auto' : avoidNegativeTs
+);
 
 export const getAudioStreams = <T extends Pick<FFprobeStream, 'codec_type'>>(streams: T[]) => streams.filter((stream) => stream.codec_type === 'audio');
 export const getRealVideoStreams = <T extends Pick<FFprobeStream, 'codec_type' | 'disposition'>>(streams: T[]) => streams.filter((stream) => stream.codec_type === 'video' && !isStreamThumbnail(stream));
