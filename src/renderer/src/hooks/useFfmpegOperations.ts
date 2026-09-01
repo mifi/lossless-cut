@@ -15,7 +15,7 @@ import { deleteDispositionValue, type AllFilesMeta, type Chapter, type CopyfileS
 import type { LossyMode } from '../../../main';
 import { UserFacingError } from '../../errors';
 import mainApi from '../mainApi';
-import { formatFfmpegNumber, getFixChannelLayoutFilter, getHwaccelArgs, hasUnsupportedChannelLayout } from '../../../common/util';
+import { formatFfmpegNumber, getFixChannelLayoutFilter, getHwaccelArgs, hasCustomChannelLayout } from '../../../common/util';
 
 const { join, resolve, dirname } = window.require('node:path');
 const { writeFile, mkdir, access, constants: { W_OK } } = window.require('node:fs/promises');
@@ -898,7 +898,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     if (audio != null && audio !== 'copy') {
       try {
         const audioStreams = (await readFileFfprobeMeta(filePathArg)).streams.filter((s) => s.codec_type === 'audio');
-        const unsupportedStream = audioStreams.find((s) => hasUnsupportedChannelLayout(s.channel_layout));
+        const unsupportedStream = audioStreams.find((s) => hasCustomChannelLayout(s.channel_layout));
         const sameChannelCount = new Set(audioStreams.map((s) => s.channels)).size === 1;
         if (unsupportedStream != null && sameChannelCount) {
           const filter = getFixChannelLayoutFilter({ channels: unsupportedStream.channels, channelLayout: unsupportedStream.channel_layout });
