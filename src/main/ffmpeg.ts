@@ -10,7 +10,7 @@ import type { Readable } from 'node:stream';
 import { app, clipboard, nativeImage } from 'electron';
 
 import { platform, arch, isWindows, isLinux } from './util.js';
-import type { CaptureFormat, FfmpegHwAccel } from '../common/types.js';
+import type { AudioStreamInfo, CaptureFormat, FfmpegHwAccel } from '../common/types.js';
 import type { FFprobeFormat } from '../common/ffprobe.js';
 import isDev from './isDev.js';
 import logger from './logger.js';
@@ -594,7 +594,7 @@ const encode = true;
 export function createMediaSourceProcess({ path, videoStreamIndex, audioStreams, seekTo, size, fps, rotate, forceColorspace, ffmpegHwaccel }: {
   path: string,
   videoStreamIndex?: number | undefined,
-  audioStreams: { index: number, channels?: number | undefined, channelLayout?: string | undefined }[],
+  audioStreams: AudioStreamInfo[],
   seekTo: number,
   size?: number | undefined,
   fps?: number | undefined,
@@ -666,7 +666,7 @@ export function createMediaSourceProcess({ path, videoStreamIndex, audioStreams,
 
     if (audioStreams.length > 0) {
       // some streams have a channel layout that ffmpeg cannot resample or downmix, so relabel it first
-      const getAudioFilters = (stream: typeof audioStreams[number], rest: string[]) => {
+      const getAudioFilters = (stream: AudioStreamInfo, rest: string[]) => {
         const filters = [getFixChannelLayoutFilter(stream), ...rest].filter((filter) => filter != null);
         return filters.length > 0 ? filters.join(',') : 'anull';
       };

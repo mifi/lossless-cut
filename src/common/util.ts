@@ -1,4 +1,4 @@
-import type { FfmpegHwAccel } from './types.ts';
+import type { AudioChannelInfo, FfmpegHwAccel } from './types.ts';
 
 export const parseFfprobeDuration = (durationStr: string | undefined) => (
   durationStr != null ? parseFloat(durationStr) : undefined
@@ -41,10 +41,7 @@ export const hasCustomChannelLayout = (channelLayout: string | undefined) => (
 // The `channelmap` filter re-labels the channels without touching the samples, which turns the layout
 // into a plain "N channels" (unspecified) layout. swresample handles those by skipping the rematrixing
 // step entirely, so the stream then behaves exactly as if it had carried no channel layout information.
-export function getFixChannelLayoutFilter({ channels, channelLayout }: {
-  channels?: number | undefined,
-  channelLayout?: string | undefined,
-}) {
+export function getFixChannelLayoutFilter({ channels, channelLayout }: AudioChannelInfo) {
   if (channels == null || channels <= 0 || !hasCustomChannelLayout(channelLayout)) return undefined;
   return `channelmap=${Array.from({ length: channels }, (_, i) => i).join('|')}`;
 }

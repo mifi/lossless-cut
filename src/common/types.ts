@@ -9,6 +9,19 @@ export interface KeyBinding {
 
 export type FfmpegHwAccel = 'none' | 'auto' | 'vdpau' | 'dxva2' | 'd3d11va' | 'vaapi' | 'qsv' | 'videotoolbox';
 
+/**
+ * The parts of an audio stream's ffprobe data needed to decide whether its channel layout
+ * has to be fixed up before ffmpeg can resample or downmix it. See `getFixChannelLayoutFilter`.
+ */
+export interface AudioChannelInfo {
+  channels?: number | undefined,
+  channelLayout?: string | undefined,
+}
+
+export interface AudioStreamInfo extends AudioChannelInfo {
+  index: number,
+}
+
 export type CaptureFormat = 'jpeg' | 'png' | 'webp';
 
 export type TimecodeFormat = 'timecodeWithDecimalFraction' | 'frameCount' | 'seconds' | 'timecodeWithFramesFraction';
