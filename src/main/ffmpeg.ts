@@ -15,7 +15,7 @@ import type { FFprobeFormat } from '../common/ffprobe.js';
 import isDev from './isDev.js';
 import logger from './logger.js';
 import { parseFfmpegProgressLine } from './progress.js';
-import { formatFfmpegNumber, getHwaccelArgs, parseFfprobeDuration } from '../common/util.js';
+import { formatFfmpegNumber, getFixChannelLayoutFilter, getHwaccelArgs, parseFfprobeDuration } from '../common/util.js';
 import { getFfmpegJpegQuality } from './ffmpegUtil.js';
 import { throwIfDisabledNetworking } from './networking.js';
 
@@ -591,10 +591,10 @@ export async function getDuration(filePath: string) {
 const enableLog = false;
 const encode = true;
 
-export function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIndexes, seekTo, size, fps, rotate, forceColorspace, ffmpegHwaccel }: {
+export function createMediaSourceProcess({ path, videoStreamIndex, audioStreams, seekTo, size, fps, rotate, forceColorspace, ffmpegHwaccel }: {
   path: string,
   videoStreamIndex?: number | undefined,
-  audioStreamIndexes: number[],
+  audioStreams: { index: number, channels?: number | undefined, channelLayout?: string | undefined }[],
   seekTo: number,
   size?: number | undefined,
   fps?: number | undefined,
@@ -664,18 +664,24 @@ export function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIn
       graph.push(`[0:${videoStreamIndex}]${videoFiltersStr}[video]`);
     }
 
-    if (audioStreamIndexes.length > 0) {
-      if (audioStreamIndexes.length > 1) {
-        const resampledStr = audioStreamIndexes.map((i) => `[resampled${i}]`).join('');
-        const weightsStr = audioStreamIndexes.map(() => '1').join(' ');
+    if (audioStreams.length > 0) {
+      // some streams have a channel layout that ffmpeg cannot resample or downmix, so relabel it first
+      const getAudioFilters = (stream: typeof audioStreams[number], rest: string[]) => {
+        const filters = [getFixChannelLayoutFilter(stream), ...rest].filter((filter) => filter != null);
+        return filters.length > 0 ? filters.join(',') : 'anull';
+      };
+
+      if (audioStreams.length > 1) {
+        const resampledStr = audioStreams.map(({ index }) => `[resampled${index}]`).join('');
+        const weightsStr = audioStreams.map(() => '1').join(' ');
         graph.push(
           // First resample because else we get the lowest sample rate
-          ...audioStreamIndexes.map((i) => `[0:${i}]aresample=44100[resampled${i}]`),
+          ...audioStreams.map((stream) => `[0:${stream.index}]${getAudioFilters(stream, ['aresample=44100'])}[resampled${stream.index}]`),
           // now mix all audio channels together
-          `${resampledStr}amix=inputs=${audioStreamIndexes.length}:duration=longest:weights=${weightsStr}:normalize=0:dropout_transition=2[audio]`,
+          `${resampledStr}amix=inputs=${audioStreams.length}:duration=longest:weights=${weightsStr}:normalize=0:dropout_transition=2[audio]`,
         );
       } else {
-        graph.push(`[0:${audioStreamIndexes[0]}]anull[audio]`);
+        graph.push(`[0:${audioStreams[0]!.index}]${getAudioFilters(audioStreams[0]!, [])}[audio]`);
       }
     }
 
@@ -727,7 +733,7 @@ export function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIn
         '-g', '1', // reduces latency and buffering
       ] : ['-vn']),
 
-      ...(audioStreamIndexes.length > 0 ? [
+      ...(audioStreams.length > 0 ? [
         '-map', '[audio]',
         '-ac', '2', '-c:a', 'aac', '-b:a', '128k',
       ] : ['-an']),

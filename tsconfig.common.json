@@ -16,4 +16,9 @@
   "include": [
     "src/common/**/*",
   ],
+  // tests are run by vitest from the sources; don't emit them into the build output,
+  // or vitest would discover and run the compiled copies too
+  "exclude": [
+    "src/common/**/*.test.ts",
+  ],
 }
