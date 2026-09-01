@@ -8,7 +8,7 @@ import isDev from './isDev';
 import type { ChromiumHTMLVideoElement } from './types';
 import type { FFprobeStream } from '../../common/ffprobe';
 import { getFrameDuration } from './util';
-import type { FfmpegHwAccel } from '../../common/types';
+import type { AudioStreamInfo, FfmpegHwAccel } from '../../common/types';
 
 const { compatPlayer: { createMediaSourceStream } } = window.require('@electron/remote').require('./index.js');
 
@@ -18,7 +18,7 @@ async function startPlayback({ path, slaveVideo, masterVideo, videoStreamIndex, 
   slaveVideo: ChromiumHTMLVideoElement,
   masterVideo: ChromiumHTMLVideoElement,
   videoStreamIndex?: number | undefined,
-  audioStreams: { index: number, channels?: number | undefined, channelLayout?: string | undefined }[],
+  audioStreams: AudioStreamInfo[],
   seekTo: number,
   signal: AbortSignal,
   size?: number | undefined,
