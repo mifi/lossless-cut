@@ -20,23 +20,31 @@ export function parseRatio(str: string, char = '/') {
   return num / den;
 }
 
-// ffmpeg's swresample cannot handle channel layouts that contain unknown ("UNK") or unused ("UNSD")
-// channels, which ffprobe describes like "4 channels (UNSD+UNSD+UNSD+UNSD)". Such layouts occur in
-// e.g. DV/DVCPRO .mov files, whose 'chan' atom labels every channel as "unused". Any operation that
-// needs to resample or downmix such a stream then fails with:
+// ffmpeg's swresample only accepts channel layouts that it considers "sane" (see sane_layout() in
+// libswresample/rematrix.c): a native layout, or a custom one whose channels form a standard speaker
+// set. Anything else is rejected outright when the resampler initializes, so any operation that
+// resamples or downmixes such a stream fails with:
 //   [SWR] Input channel layout '4 channels (UNSD+UNSD+UNSD+UNSD)' is not supported
-// (swresample only accepts native or fully-specified custom layouts, see swr_init in libswresample)
-export const hasUnsupportedChannelLayout = (channelLayout: string | undefined) => (
-  channelLayout != null && /\b(?:UNK|UNSD)\b/.test(channelLayout)
+// There is no flag to relax this check.
+//
+// ffprobe describes a layout it could not express natively as "N channels (A+B+...)", e.g.
+// "4 channels (UNSD+UNSD+UNSD+UNSD)" for DV/DVCPRO .mov files, whose 'chan' atom labels every channel
+// as unused, or "2 channels (BL+BR)" for a surround stem pair. Layouts that do form a standard set are
+// reported under their native name instead ("stereo", "5.1"), and those always work.
+// A plain "N channels" (no positions at all) is also fine, which is what the fix below produces.
+const customChannelLayoutRegex = /^\d+ channels \(/;
+
+export const hasCustomChannelLayout = (channelLayout: string | undefined) => (
+  channelLayout != null && customChannelLayoutRegex.test(channelLayout)
 );
 
-// The `channelmap` filter re-labels the channels without touching the samples, which turns the
-// layout into a plain "N channels" (unspecified) layout that swresample does support. The stream
-// then behaves exactly as if it had carried no channel layout information at all.
+// The `channelmap` filter re-labels the channels without touching the samples, which turns the layout
+// into a plain "N channels" (unspecified) layout. swresample handles those by skipping the rematrixing
+// step entirely, so the stream then behaves exactly as if it had carried no channel layout information.
 export function getFixChannelLayoutFilter({ channels, channelLayout }: {
   channels?: number | undefined,
   channelLayout?: string | undefined,
 }) {
-  if (channels == null || channels <= 0 || !hasUnsupportedChannelLayout(channelLayout)) return undefined;
+  if (channels == null || channels <= 0 || !hasCustomChannelLayout(channelLayout)) return undefined;
   return `channelmap=${Array.from({ length: channels }, (_, i) => i).join('|')}`;
 }
