@@ -11,6 +11,7 @@
   },
   "include": [
     "electron.vite.config.ts",
+    "vitest.config.ts",
     "i18next.config*.ts",
     "script/**/*",
   ],
