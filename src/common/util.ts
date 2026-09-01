@@ -19,3 +19,24 @@ export function parseRatio(str: string, char = '/') {
   if (den <= 0) return undefined;
   return num / den;
 }
+
+// ffmpeg's swresample cannot handle channel layouts that contain unknown ("UNK") or unused ("UNSD")
+// channels, which ffprobe describes like "4 channels (UNSD+UNSD+UNSD+UNSD)". Such layouts occur in
+// e.g. DV/DVCPRO .mov files, whose 'chan' atom labels every channel as "unused". Any operation that
+// needs to resample or downmix such a stream then fails with:
+//   [SWR] Input channel layout '4 channels (UNSD+UNSD+UNSD+UNSD)' is not supported
+// (swresample only accepts native or fully-specified custom layouts, see swr_init in libswresample)
+export const hasUnsupportedChannelLayout = (channelLayout: string | undefined) => (
+  channelLayout != null && /\b(?:UNK|UNSD)\b/.test(channelLayout)
+);
+
+// The `channelmap` filter re-labels the channels without touching the samples, which turns the
+// layout into a plain "N channels" (unspecified) layout that swresample does support. The stream
+// then behaves exactly as if it had carried no channel layout information at all.
+export function getFixChannelLayoutFilter({ channels, channelLayout }: {
+  channels?: number | undefined,
+  channelLayout?: string | undefined,
+}) {
+  if (channels == null || channels <= 0 || !hasUnsupportedChannelLayout(channelLayout)) return undefined;
+  return `channelmap=${Array.from({ length: channels }, (_, i) => i).join('|')}`;
+}

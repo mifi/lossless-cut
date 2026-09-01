@@ -15,7 +15,7 @@ import { deleteDispositionValue, type AllFilesMeta, type Chapter, type CopyfileS
 import type { LossyMode } from '../../../main';
 import { UserFacingError } from '../../errors';
 import mainApi from '../mainApi';
-import { formatFfmpegNumber, getHwaccelArgs } from '../../../common/util';
+import { formatFfmpegNumber, getFixChannelLayoutFilter, getHwaccelArgs, hasUnsupportedChannelLayout } from '../../../common/util';
 
 const { join, resolve, dirname } = window.require('node:path');
 const { writeFile, mkdir, access, constants: { W_OK } } = window.require('node:fs/promises');
@@ -890,6 +890,26 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       }
     }
 
+    // Some files (e.g. DV/DVCPRO .mov) have an audio channel layout that ffmpeg cannot resample or
+    // downmix, which makes the encode fail. Relabel the channels first so that it can.
+    // We don't pass -map, so ffmpeg picks one audio stream by itself. Therefore only apply the filter
+    // when every audio stream has the same channel count, or the filter might not match the picked stream.
+    let audioFilterArgs: string[] = [];
+    if (audio != null && audio !== 'copy') {
+      try {
+        const audioStreams = (await readFileFfprobeMeta(filePathArg)).streams.filter((s) => s.codec_type === 'audio');
+        const unsupportedStream = audioStreams.find((s) => hasUnsupportedChannelLayout(s.channel_layout));
+        const sameChannelCount = new Set(audioStreams.map((s) => s.channels)).size === 1;
+        if (unsupportedStream != null && sameChannelCount) {
+          const filter = getFixChannelLayoutFilter({ channels: unsupportedStream.channels, channelLayout: unsupportedStream.channel_layout });
+          if (filter != null) audioFilterArgs = ['-af', filter];
+        }
+      } catch (err) {
+        // don't fail the conversion just because we couldn't probe it
+        console.warn('Failed to probe audio channel layout', err);
+      }
+    }
+
     const ffmpegArgs = [
       '-hide_banner',
       ...((video === 'lq' || video === 'hq') ? getHwaccelArgs(ffmpegHwaccel) : []),
@@ -897,6 +917,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       '-i', filePathArg,
       ...videoArgs,
       ...audioArgs,
+      ...audioFilterArgs,
       '-sn',
       '-y', outPath,
     ];
