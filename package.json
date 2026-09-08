@@ -161,6 +161,17 @@
     "yargs-parser": "^22.0.0",
     "zod": "^4.4.3"
   },
+  "dependenciesMeta": {
+    "@parcel/watcher": {
+      "built": true
+    },
+    "@swc/core": {
+      "built": true
+    },
+    "esbuild": {
+      "built": true
+    }
+  },
   "build": {
     "toolsets": {
       "appimage": "1.0.3"
