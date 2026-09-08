@@ -6317,10 +6317,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"csv-parse@npm:^6.2.1":
-  version: 6.2.1
-  resolution: "csv-parse@npm:6.2.1"
-  checksum: 10/7fbde1225c6df6aaea01a202934e1f15ce16ed55e544ead0d066b0c4dc9ae1a2fc881b412889cbf115cd74cbf14ea17388b394e8a31e05cb412dd7dc6114bebd
+"csv-parse@npm:^7.0.2":
+  version: 7.0.2
+  resolution: "csv-parse@npm:7.0.2"
+  checksum: 10/66158491d25b2070908c6d28130c1d439bec0e0d1ab3fad372973909e573bcc85a46ca317ae410f0178157f272112e3741b164aaf850d8241128c30ea2137670
   languageName: node
   linkType: hard
 
@@ -9888,7 +9888,7 @@ __metadata:
     "@vitejs/plugin-react": "npm:^5.2.0"
     canvas-confetti: "npm:^1.9.4"
     color: "npm:^5.0.3"
-    csv-parse: "npm:^6.2.1"
+    csv-parse: "npm:^7.0.2"
     csv-stringify: "npm:^6.7.0"
     cue-parser: "npm:^0.3.0"
     data-uri-to-buffer: "npm:^8.0.0"

@@ -87,7 +87,7 @@
     "@vitejs/plugin-react": "^5.2.0",
     "canvas-confetti": "^1.9.4",
     "color": "^5.0.3",
-    "csv-parse": "^6.2.1",
+    "csv-parse": "^7.0.2",
     "csv-stringify": "^6.7.0",
     "data-uri-to-buffer": "^8.0.0",
     "electron": "^42.3.0",
