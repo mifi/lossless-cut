@@ -177,6 +177,23 @@ Links:
 yarn upgrade-interactive
 ```
 
+Install scripts are disabled by default (`enableScripts: false` in `.yarnrc.yml`), so a
+compromised dependency cannot run code just by being installed. Packages that genuinely need
+to build something at install time are opted in individually under `dependenciesMeta` in
+`package.json`.
+
+If an install prints `YN0004: <package> lists build scripts, but all build scripts have been
+disabled`, decide whether that package really needs to build. If it does, add it:
+
+```json
+"dependenciesMeta": {
+  "<package>": { "built": true }
+}
+```
+
+Ignoring the warning leaves the package unbuilt, which usually surfaces later as a confusing
+runtime failure rather than an install error.
+
 ### i18n strings / Weblate
 
 Run `yarn scan-i18n` to get the newest English strings and push so Weblate gets them.
