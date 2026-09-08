@@ -9922,7 +9922,7 @@ __metadata:
     mime-types: "npm:^3.0.2"
     mitt: "patch:mitt@npm%3A3.0.1#~/.yarn/patches/mitt-npm-3.0.1-ce290ffa77.patch"
     mkdirp: "npm:^3.0.1"
-    morgan: "npm:^1.11.0"
+    morgan: "npm:^1.12.0"
     motion: "npm:^12.40.0"
     nanoid: "npm:^5.1.11"
     p-map: "npm:^7.0.4"
@@ -10731,16 +10731,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"morgan@npm:^1.11.0":
-  version: 1.11.0
-  resolution: "morgan@npm:1.11.0"
+"morgan@npm:^1.12.0":
+  version: 1.12.0
+  resolution: "morgan@npm:1.12.0"
   dependencies:
     basic-auth: "npm:~2.0.1"
     debug: "npm:2.6.9"
     depd: "npm:~2.0.0"
     on-finished: "npm:~2.4.1"
     on-headers: "npm:~1.1.0"
-  checksum: 10/d6e72d98ccaab1eb191f9455b224711b626e235e7ace217060b3d44e23a3cdc4ba6d9097b30e9195728ef86ecd53589685f211b8acb4c16dbf958fa787bc5ec0
+  checksum: 10/0dc0a228b97451961b5cdf74831d73444a8d0823a57613d345ad82556f56ac6ff8b5240fcd054ff0bc651148f3731b6c31ae70afa9baa5b3fc2c66891e40be86
   languageName: node
   linkType: hard
 
