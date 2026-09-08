@@ -9957,13 +9957,6 @@ __metadata:
     yargs: "npm:^18.0.0"
     yargs-parser: "npm:^22.0.0"
     zod: "npm:^4.4.3"
-  dependenciesMeta:
-    "@parcel/watcher":
-      built: true
-    "@swc/core":
-      built: true
-    esbuild:
-      built: true
   languageName: unknown
   linkType: soft
 
