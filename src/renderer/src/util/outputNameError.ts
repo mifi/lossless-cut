@@ -15,7 +15,11 @@ export function getInvalidOutputPath(stderr: Stdio) {
   return candidates.length > 0 ? candidates.at(-1) : undefined;
 }
 
-export function getInvalidFileNameChars(filePath: string) {
+export function getInvalidFileNameChars(filePath: string, platform: NodeJS.Platform = window.process.platform) {
+  // These Windows restrictions do not apply to POSIX file names. An ffmpeg
+  // "Invalid argument" error alone does not prove these characters caused it.
+  if (platform !== 'win32') return [];
+
   const fileName = filePath.split(/[\\/]/).pop() ?? filePath;
   return [...new Set([...fileName].filter((char) => invalidFileNameCharRegex.test(char)))];
 }
