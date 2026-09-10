@@ -964,7 +964,7 @@
   "Remove current segment cutpoint": "Удалить точку разделения текущего сегмента",
   "Invert segment selection": "Инвертировать выбранный сегмент",
   "Remove cutpoint from segment {{segmentNumber}}": "Удалить точку разделения из сегмента {{segmentNumber}}",
-  "Load overview": "Обзор загрузок",
+  "Load overview": "Загрузить обзор",
   "1st, 2nd and 3rd track": "1-я, 2-я и 3-я дорожка",
   "Action:": "Действие:",
   "Are you sure you want to reset all keyboard bindings?": "Вы уверены, что хотите сбросить все сочетания клавиш?",
