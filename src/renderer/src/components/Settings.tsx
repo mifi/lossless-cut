@@ -1,6 +1,6 @@
 import type { CSSProperties, ChangeEventHandler, TdHTMLAttributes } from 'react';
 import { memo, useCallback, useMemo } from 'react';
-import { FaYinYang, FaKeyboard, FaGlobe, FaBroom, FaCogs, FaHashtag, FaClock, FaFolder, FaFile, FaTimes } from 'react-icons/fa';
+import { FaYinYang, FaKeyboard, FaGlobe, FaBroom, FaCogs, FaHashtag, FaClock, FaFolder, FaFile, FaTimes, FaExclamationTriangle } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import invariant from 'tiny-invariant';
 
@@ -23,6 +23,7 @@ import { getModifierKeyNames } from '../hooks/useTimelineScroll';
 import type { TunerType } from '../types';
 import Truncated from './Truncated';
 import { dangerColor } from '../colors';
+import Warning from './Warning';
 import OutDirSelector from './OutDirSelector.js';
 
 // eslint-disable-next-line react/jsx-props-no-spreading
@@ -481,8 +482,12 @@ function Settings({
             <KeyCell>
               {t('Combine title bar and menu bar')}
               <div style={detailsStyle}>
-                {t('Merges the window title bar and the menu bar (File, Edit, ...) into a single compact row, similar to VS Code. Requires an app restart to take effect.')}
+                {t('Merges the window title bar and the menu bar (File, Edit, ...) into a single compact row, similar to VS Code.')}
               </div>
+              <Warning style={{ fontSize: '.9em', fontWeight: 'bold', textTransform: 'uppercase', marginTop: '.3em' }}>
+                <FaExclamationTriangle style={{ verticalAlign: 'middle', marginRight: '.4em' }} />
+                {t('Requires an app restart to take effect')}
+              </Warning>
             </KeyCell>
             <td>
               <Switch checked={compactTitleBar} onCheckedChange={setCompactTitleBar} />
