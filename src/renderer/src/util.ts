@@ -18,13 +18,17 @@ const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename 
 const { stat, lstat, readdir, utimes, unlink, open, access, constants: { R_OK, W_OK } } = window.require('node:fs/promises');
 const remote = window.require('@electron/remote');
 const { app } = remote;
-const { isWindows, isMac, isLinux } = remote.require('./index.js');
+const { isWindows, isMac, isLinux, isCompactTitleBarActive } = remote.require('./index.js');
 const { ipcRenderer } = window.require('electron');
 
 const appVersion = app.getVersion();
 const appPath = app.getAppPath();
+// Whether *this* window was actually created with the compact title bar - fixed for the lifetime
+// of this window/renderer, unlike the live `compactTitleBar` setting, which can be toggled in
+// Settings before a restart is done (titleBarStyle/titleBarOverlay can't change on a live window).
+const compactTitleBarActive: boolean = isCompactTitleBarActive();
 
-export { isWindows, isMac, isLinux, appVersion, appPath };
+export { isWindows, isMac, isLinux, appVersion, appPath, compactTitleBarActive };
 
 
 export const trashFile = async (path: string) => ipcRenderer.invoke('tryTrashItem', path);

@@ -69,6 +69,10 @@ let mainWindow: BrowserWindow | null;
 let askBeforeClose = false;
 let rendererReady = false;
 let newVersion: string | undefined;
+// Whether the *current* window was actually created with the compact title bar (titleBarStyle +
+// titleBarOverlay are BrowserWindow creation-time options and cannot change on a live window), as
+// opposed to the live `compactTitleBar` config value, which can change before a restart is done.
+let activeCompactTitleBar = false;
 
 const openFiles = (paths: string[]) => mainWindow!.webContents.send('openFiles', paths);
 
@@ -156,6 +160,7 @@ function createWindow() {
   // "combine" with the title bar there - this setting only applies to Windows/Linux.
   // https://github.com/mifi/lossless-cut/issues/798
   const compactTitleBar = (isWindows || isLinux) && configStore.get('compactTitleBar');
+  activeCompactTitleBar = compactTitleBar;
 
   mainWindow = new BrowserWindow({
     ...savedBounds.options,
@@ -497,6 +502,7 @@ const remoteApiLegacy = {
   lossyMode,
   pathToFileURL,
   hasDisabledNetworking,
+  isCompactTitleBarActive: () => activeCompactTitleBar,
 };
 
 export type RemoteApiLegacy = typeof remoteApiLegacy;
