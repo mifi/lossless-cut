@@ -22,7 +22,7 @@ import { installExtension, REACT_DEVELOPER_TOOLS } from 'electron-devtools-insta
 import mitt from 'mitt';
 
 import logger from './logger.js';
-import menu from './menu.js';
+import menu, { popupMenuItem, type TopMenuId } from './menu.js';
 import * as configStore from './configStore.js';
 import { isLinux, isWindows, isMac, platform, arch, pathExists } from './util.js';
 import { appName } from './common.js';
@@ -152,6 +152,11 @@ function createWindow() {
 
   const savedBounds = getSavedBounds();
 
+  // On macOS the menu bar is a system-level bar outside the window, so there is nothing to
+  // "combine" with the title bar there - this setting only applies to Windows/Linux.
+  // https://github.com/mifi/lossless-cut/issues/798
+  const compactTitleBar = (isWindows || isLinux) && configStore.get('compactTitleBar');
+
   mainWindow = new BrowserWindow({
     ...savedBounds.options,
     darkTheme: true,
@@ -165,6 +170,14 @@ function createWindow() {
     backgroundColor: darkMode ? '#333' : '#fff',
     minWidth: 300,
     minHeight: 300,
+    ...(compactTitleBar ? {
+      titleBarStyle: 'hidden' as const,
+      titleBarOverlay: {
+        color: darkMode ? '#333333' : '#f4f4f4',
+        symbolColor: darkMode ? '#e5e5e5' : '#333333',
+        height: 34,
+      },
+    } : {}),
   });
 
   if (savedBounds.isMaximized) mainWindow.maximize();
@@ -228,7 +241,8 @@ async function openExternal(url: string) {
 
 function updateMenu() {
   assert(mainWindow);
-  menu({ app, mainWindow, newVersion, isStoreBuild, openExternal });
+  const compact = (isWindows || isLinux) && configStore.get('compactTitleBar');
+  menu({ app, mainWindow, newVersion, isStoreBuild, openExternal, compact });
 }
 
 async function changeLanguage(language: string | null) {
@@ -456,6 +470,10 @@ const remoteApi = {
   writeClipboardText: (text: string) => electron.clipboard.writeText(text),
   readClipboardText: () => electron.clipboard.readText(),
   openExternal,
+  popupAppMenu: (id: TopMenuId, x: number, y: number) => {
+    assert(mainWindow);
+    popupMenuItem({ id, x, y, app, mainWindow, newVersion, isStoreBuild, openExternal });
+  },
 };
 
 export type RemoteApi = typeof remoteApi;

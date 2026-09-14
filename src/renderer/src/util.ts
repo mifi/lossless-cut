@@ -18,13 +18,13 @@ const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename 
 const { stat, lstat, readdir, utimes, unlink, open, access, constants: { R_OK, W_OK } } = window.require('node:fs/promises');
 const remote = window.require('@electron/remote');
 const { app } = remote;
-const { isWindows, isMac } = remote.require('./index.js');
+const { isWindows, isMac, isLinux } = remote.require('./index.js');
 const { ipcRenderer } = window.require('electron');
 
 const appVersion = app.getVersion();
 const appPath = app.getAppPath();
 
-export { isWindows, isMac, appVersion, appPath };
+export { isWindows, isMac, isLinux, appVersion, appPath };
 
 
 export const trashFile = async (path: string) => ipcRenderer.invoke('tryTrashItem', path);
@@ -350,7 +350,7 @@ export function checkFileSizes(inputSize: number, outputSize: number) {
   return undefined;
 }
 
-export function setDocumentTitle({ filePath, working, progress }: {
+export function getDisplayTitle({ filePath, working, progress }: {
   filePath?: string | undefined,
   working?: string | undefined,
   progress?: number | undefined }) {
@@ -367,7 +367,14 @@ export function setDocumentTitle({ filePath, working, progress }: {
 
   parts.push(isStoreBuild ? appName : `${appName} ${appVersion}`);
 
-  document.title = parts.join(' - ');
+  return parts.join(' - ');
+}
+
+export function setDocumentTitle(args: {
+  filePath?: string | undefined,
+  working?: string | undefined,
+  progress?: number | undefined }) {
+  document.title = getDisplayTitle(args);
 }
 
 export async function readVideoTs(videoTsPath: string) {
