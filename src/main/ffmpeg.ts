@@ -555,8 +555,11 @@ export async function cropDetect({ filePath, streamId, limit, reset_count, minSe
     });
     await process;
 
-    // Create Last Segment
-    if(currentStartTime != null && lastTime != null) {
+    // Create Last 1-2 Segments
+    if(!setNextSegmnent && nextStartTime > 0 && currentStartTime != null && lastTime != null && lastTime - nextStartTime >= minDuration){
+      onSegmentDetected({ start: from + currentStartTime!, end: from + currentEndTime! });
+      onSegmentDetected({ start: from + nextStartTime!, end: from + lastTime! });
+    }else if(currentStartTime != null && lastTime != null) {
       onSegmentDetected({ start: from + currentStartTime!, end: from + lastTime! });
     }
   } else {
