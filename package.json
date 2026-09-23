@@ -311,8 +311,32 @@
           "name": "Audio",
           "description": "Audio files",
           "role": "Viewer"
+        },
+        {
+          "ext": [
+            "llc"
+          ],
+          "name": "LosslessCut project",
+          "description": "LosslessCut project",
+          "role": "Editor"
         }
-      ]
+      ],
+      "extendInfo": {
+        "UTExportedTypeDeclarations": [
+          {
+            "UTTypeIdentifier": "no.mifi.losslesscut.project",
+            "UTTypeDescription": "LosslessCut project",
+            "UTTypeConformsTo": [
+              "public.plain-text"
+            ],
+            "UTTypeTagSpecification": {
+              "public.filename-extension": [
+                "llc"
+              ]
+            }
+          }
+        ]
+      }
     },
     "mas": {
       "artifactName": "${productName}-${os}-${arch}-DONT-USE-THIS-FILE.${ext}",
@@ -446,6 +470,14 @@
           "name": "Audio",
           "description": "Audio files",
           "role": "Viewer"
+        },
+        {
+          "ext": [
+            "llc"
+          ],
+          "name": "LosslessCut project",
+          "description": "LosslessCut project",
+          "role": "Editor"
         }
       ]
     },
