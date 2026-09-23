@@ -423,6 +423,12 @@ export default ({ app, mainWindow, newVersion, isStoreBuild, openExternal }: {
           },
         },
         {
+          label: esc(t('Detect cropped scenes')),
+          click() {
+            mainWindow.webContents.send('detectCroppedScenes');
+          },
+        },
+        {
           label: esc(t('Read all keyframes')),
           click() {
             mainWindow.webContents.send('readAllKeyframes');
