@@ -94,7 +94,7 @@ export async function maybeMkDeepOutDir({ outputDir, fileOutPath }: { outputDir:
 }
 
 
-function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, isEncoding, lossyMode, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, cutToAdjustmentFrames, appendLastCommandsLog, encCustomBitrate, appendFfmpegCommandLog, ffmpegHwaccel }: {
+function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, isEncoding, lossyMode, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, cutToAdjustmentFrames, appendLastCommandsLog, encCustomBitrate, appendFfmpegCommandLog, ffmpegHwaccel, fileHasTrackInterleavingProblem }: {
   filePath: string | undefined,
   treatInputFileModifiedTimeAsStart: boolean,
   treatOutputFileModifiedTimeAsStart: boolean | null | undefined,
@@ -108,6 +108,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
   encCustomBitrate: number | undefined,
   appendFfmpegCommandLog: (args: string[]) => void,
   ffmpegHwaccel: FfmpegHwAccel,
+  fileHasTrackInterleavingProblem: boolean,
 }) {
   const shouldSkipExistingFile = useCallback(async (path: string) => {
     const fileExists = await mainApi.pathExists(path);
@@ -276,7 +277,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     movFastStart: boolean,
     paramsByFile: ParamsByFile,
     videoTimebase?: number | undefined,
-    detectedFps?: number,
+    detectedFps?: number | undefined,
   }) => {
     const frameDuration = getFrameDuration(detectedFps);
 
@@ -496,6 +497,90 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     await transferTimestamps({ inPath: filePath, outPath, cutFrom, cutTo, treatInputFileModifiedTimeAsStart, duration: isDurationValid(fileDuration) ? fileDuration : undefined, treatOutputFileModifiedTimeAsStart });
   }, [appendFfmpegCommandLog, cutFromAdjustmentFrames, cutToAdjustmentFrames, filePath, getOutputPlaybackRateArgs, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
 
+  // Same as losslessCutSingle, but safe for Matroska files with broken track interleaving (e.g. audio data stored after all video data instead of being interleaved).
+  // ffmpeg reads such files incorrectly when reading multiple streams interleaved, and some streams end up with wrong timestamps.
+  // Workaround: cut the file twice - once with all streams except audio, once with audio only (both are read correctly because ffmpeg doesn't need interleaved reading in those cases), then losslessly merge them.
+  const losslessCutSingleAudioSafe = useCallback(async ({
+    keyframeCut, avoidNegativeTs, copyFileStreams, cutFrom, cutTo, chaptersPath, onProgress, outPath, customOutDir, fileDuration, rotation, allFilesMeta, outFormat, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMovData, preserveChapters, movFastStart, paramsByFile, detectedFps,
+  }: {
+    keyframeCut: boolean,
+    avoidNegativeTs: AvoidNegativeTs | undefined,
+    copyFileStreams: CopyfileStreams,
+    cutFrom: number,
+    cutTo: number,
+    chaptersPath: string | undefined,
+    onProgress: (p: number) => void,
+    outPath: string,
+    customOutDir: string | undefined,
+    fileDuration: number | undefined,
+    rotation: number | undefined,
+    allFilesMeta: AllFilesMeta,
+    outFormat: string,
+    shortestFlag: boolean,
+    ffmpegExperimental: boolean,
+    preserveMetadata: PreserveMetadata,
+    preserveMovData: boolean,
+    preserveChapters: boolean,
+    movFastStart: boolean,
+    paramsByFile: ParamsByFile,
+    detectedFps?: number | undefined,
+  }) => {
+    invariant(filePath != null);
+
+    if (copyFileStreams.length !== 1) {
+      // Avoid dropping streams from additional input files; fall back to the regular single-pass cut.
+      return losslessCutSingle({ keyframeCut, avoidNegativeTs, copyFileStreams, cutFrom, cutTo, chaptersPath, onProgress, outPath, fileDuration, rotation, allFilesMeta, outFormat, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMovData, preserveChapters, movFastStart, paramsByFile, detectedFps });
+    }
+
+    const firstFile = copyFileStreams[0];
+    invariant(firstFile != null);
+    const { path: mainPath, streamIds: allStreamIds } = firstFile;
+    const mainFileStreams = allFilesMeta[mainPath]?.streams ?? [];
+    const audioStreamIds = allStreamIds.filter((streamId) => mainFileStreams.find((s) => s.index === streamId)?.codec_type === 'audio');
+    const nonAudioStreamIds = allStreamIds.filter((streamId: number) => !audioStreamIds.includes(streamId));
+
+    // No audio streams selected, so nothing to work around
+    if (audioStreamIds.length === 0 || nonAudioStreamIds.length === 0) {
+      return losslessCutSingle({ keyframeCut, avoidNegativeTs, copyFileStreams, cutFrom, cutTo, chaptersPath, onProgress, outPath, fileDuration, rotation, allFilesMeta, outFormat, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMovData, preserveChapters, movFastStart, paramsByFile, detectedFps });
+    }
+
+    console.log('Cutting file with broken track interleaving using audio-safe two-pass method');
+
+    const ext = getOutFileExtension({ isCustomFormatSelected: true, outFormat, filePath });
+    const uniqueSuffix = Date.now();
+    const nonAudioOutPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `noaudio-segment-${uniqueSuffix}${ext}` });
+    const audioOnlyOutPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `audio-only-segment-${uniqueSuffix}${ext}` });
+
+    try {
+      // Pass 1: cut everything except audio. Progress 0 to 0.5
+      await losslessCutSingle({ keyframeCut, avoidNegativeTs, copyFileStreams: [{ path: mainPath, streamIds: nonAudioStreamIds }], cutFrom, cutTo, chaptersPath, onProgress: (p) => onProgress(p / 2), outPath: nonAudioOutPath, fileDuration, rotation, allFilesMeta, outFormat, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMovData, preserveChapters, movFastStart, paramsByFile, detectedFps });
+
+      // Pass 2: cut audio only. Progress 0.5 to 0.75
+      await losslessCutSingle({ keyframeCut, avoidNegativeTs, copyFileStreams: [{ path: mainPath, streamIds: audioStreamIds }], cutFrom, cutTo, chaptersPath, onProgress: (p) => onProgress(0.5 + p / 4), outPath: audioOnlyOutPath, fileDuration, rotation, allFilesMeta, outFormat, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMovData, preserveChapters, movFastStart, paramsByFile, detectedFps });
+
+      // Losslessly merge the two parts back together. Progress 0.75 to 1
+      const mergeArgs = [
+        '-hide_banner',
+        '-i', nonAudioOutPath,
+        '-i', audioOnlyOutPath,
+        '-map', '0',
+        '-map', '1:a',
+        '-c', 'copy',
+        ...getMatroskaFlags(),
+        '-ignore_unknown',
+        '-f', outFormat, '-y', outPath,
+      ];
+
+      appendFfmpegCommandLog(mergeArgs);
+      const result = await runFfmpegWithProgress({ ffmpegArgs: mergeArgs, duration: cutTo - cutFrom, onProgress: (p) => onProgress(0.75 + p / 4) });
+      logStdoutStderr(result);
+
+      await transferTimestamps({ inPath: filePath, outPath, cutFrom, cutTo, treatInputFileModifiedTimeAsStart, duration: isDurationValid(fileDuration) ? fileDuration : undefined, treatOutputFileModifiedTimeAsStart });
+    } finally {
+      await tryDeleteFiles([nonAudioOutPath, audioOnlyOutPath]);
+    }
+  }, [appendFfmpegCommandLog, filePath, losslessCutSingle, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
+
   // inspired by https://gist.github.com/fernandoherreradelasheras/5eca67f4200f1a7cc8281747da08496e
   const cutEncodeSmartPart = useCallback(async ({ cutFrom, cutTo, outPath, outFormat, videoCodec, videoBitrate, videoTimebase, allFilesMeta, copyFileStreams, videoStreamIndex, ffmpegExperimental, hasBFrames }: {
     cutFrom: number,
@@ -621,9 +706,19 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       if (!isEncoding) {
         // simple lossless cut
         invariant(outFormat != null);
-        await losslessCutSingle({
-          cutFrom: desiredCutFrom, cutTo, chaptersPath, outPath: finalOutPath, copyFileStreams, keyframeCut, avoidNegativeTs, fileDuration, rotation, allFilesMeta, outFormat, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMovData, preserveChapters, movFastStart, paramsByFile, onProgress: (progress) => onSingleProgress(i, progress),
-        });
+        const onSingleCutProgress = (progress: number) => onSingleProgress(i, progress);
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (fileHasTrackInterleavingProblem) {
+          // The source file has broken track interleaving (detected when the file was opened).
+          // Cut it with the audio-safe two-pass method so that stream timestamps stay correct.
+          await losslessCutSingleAudioSafe({
+            cutFrom: desiredCutFrom, cutTo, chaptersPath, outPath: finalOutPath, customOutDir, copyFileStreams, keyframeCut, avoidNegativeTs, fileDuration, rotation, allFilesMeta, outFormat, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMovData, preserveChapters, movFastStart, paramsByFile, onProgress: onSingleCutProgress,
+          });
+        } else {
+          await losslessCutSingle({
+            cutFrom: desiredCutFrom, cutTo, chaptersPath, outPath: finalOutPath, copyFileStreams, keyframeCut, avoidNegativeTs, fileDuration, rotation, allFilesMeta, outFormat, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMovData, preserveChapters, movFastStart, paramsByFile, onProgress: onSingleCutProgress,
+          });
+        }
         return { path: finalOutPath, created: true };
       }
 
@@ -728,7 +823,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     } finally {
       if (chaptersPath) await tryDeleteFiles([chaptersPath]);
     }
-  }, [shouldSkipExistingFile, isEncoding, filePath, lossyMode, losslessCutSingle, cutEncodeSmartPart, encCustomBitrate, concatFiles]);
+  }, [shouldSkipExistingFile, isEncoding, filePath, lossyMode, losslessCutSingle, losslessCutSingleAudioSafe, fileHasTrackInterleavingProblem, cutEncodeSmartPart, encCustomBitrate, concatFiles]);
 
   const concatCutSegments = useCallback(async ({ customOutDir, outFormat, segmentPaths, ffmpegExperimental, onProgress, preserveMovData, movFastStart, chapterNames, preserveMetadataOnMerge, mergedOutFilePath }: {
     customOutDir: string | undefined,

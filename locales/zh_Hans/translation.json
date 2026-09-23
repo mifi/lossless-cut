@@ -310,6 +310,7 @@
   "Failed to fix file duration": "修复文件时长失败",
   "Fixing file duration": "正在修复文件时长",
   "This file does not have a valid duration. This may cause issues. You can try to fix the file's duration from the File menu": "此文件的时长无效。这可能有问题。你可以尝试使用文件菜单中的修复错误时长",
+  "This file has broken track interleaving": "此文件的轨道交织损坏（部分轨道未正确交织存储）。导出时 LosslessCut 会自动采用安全切割方式规避该问题，以保证导出片段的时间戳正确。",
   "Change value": "改变值",
   "Other operations": "其它操作",
   "Enable MOV Faststart?": "启用 MOV 快速启动",
