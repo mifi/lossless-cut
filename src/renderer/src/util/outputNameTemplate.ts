@@ -234,6 +234,21 @@ function maybeTruncatePath(fileName: string, truncate: boolean) {
   ].join(pathSep);
 }
 
+function sanitizeOutputBasename(fileName: string, sanitizeName: (name: string) => string, safeOutputFileName: boolean) {
+  if (!safeOutputFileName) return fileName;
+
+  const pathSegs = fileName.split(pathSep);
+  if (pathSegs.length === 0) return fileName;
+
+  const [lastSeg] = pathSegs.slice(-1);
+  if (lastSeg == null) return fileName;
+
+  const { name, ext } = parsePath(lastSeg);
+  const sanitizedLastSeg = `${sanitizeName(name)}${filenamify(ext)}`;
+
+  return [...pathSegs.slice(0, -1), sanitizedLastSeg].join(pathSep);
+}
+
 async function generateWithFallback({ generate, desiredTemplate, defaultTemplate, safeOutputFileName, filePath, outputDir, maxLabelLength }: {
   generate: (a: {
     template: string,
@@ -336,7 +351,7 @@ export async function generateCutFileNames({ fileDuration, segmentsToExport: seg
           currentFileExportCount,
         });
 
-        return maybeTruncatePath(segFileName, safeOutputFileName2);
+        return maybeTruncatePath(sanitizeOutputBasename(segFileName, sanitizeName, safeOutputFileName2), safeOutputFileName2);
       }, { concurrency: 5 });
     },
     desiredTemplate,
@@ -377,7 +392,7 @@ export async function generateCutMergedFileNames({ template: desiredTemplate, is
         segLabels: segLabels.map((label) => sanitizeName(label)),
       });
 
-      return [maybeTruncatePath(fileName, safeOutputFileName2)];
+      return [maybeTruncatePath(sanitizeOutputBasename(fileName, sanitizeName, safeOutputFileName2), safeOutputFileName2)];
     },
     desiredTemplate,
     defaultTemplate: defaultCutMergedFileTemplate,
@@ -415,7 +430,7 @@ export async function generateMergedFileNames({ template: desiredTemplate, isCus
         segLabels: sourceFiles.map((file) => sanitizeName(basename(file.path))),
       });
 
-      return [maybeTruncatePath(fileName, safeOutputFileName2)];
+      return [maybeTruncatePath(sanitizeOutputBasename(fileName, sanitizeName, safeOutputFileName2), safeOutputFileName2)];
     },
     desiredTemplate,
     defaultTemplate: defaultCutMergedFileTemplate,
