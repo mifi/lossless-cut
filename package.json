@@ -90,7 +90,7 @@
     "csv-parse": "^7.0.2",
     "csv-stringify": "^6.7.0",
     "data-uri-to-buffer": "^8.0.0",
-    "electron": "^42.3.0",
+    "electron": "^42.10.0",
     "electron-builder": "26.16.1",
     "electron-vite": "^5.0.0",
     "eslint": "^8.57.1",
