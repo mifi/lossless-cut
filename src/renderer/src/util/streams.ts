@@ -263,14 +263,35 @@ export function isStreamThumbnail(stream: Pick<FFprobeStream, 'codec_type' | 'di
   return stream && stream.codec_type === 'video' && stream.disposition?.[attachedPicDisposition] === 1;
 }
 
+/** Resolves every stream that is going to be copied to the output. Unknown streams resolve to `undefined`. */
+const getCopiedStreams = ({ allFilesMeta, copyFileStreams }: {
+  allFilesMeta: AllFilesStreamMeta,
+  copyFileStreams: CopyfileStreams,
+}) => copyFileStreams.flatMap(({ path, streamIds }) => streamIds.map((streamId) => getStreamById({ allFilesMeta, streamId, path })));
+
 function isCopyingThumbnailStream({ allFilesMeta, copyFileStreams }: {
   allFilesMeta: AllFilesStreamMeta,
   copyFileStreams: CopyfileStreams,
 }) {
-  return copyFileStreams.some(({ path, streamIds }) => streamIds.some((streamId) => {
-    const stream = getStreamById({ allFilesMeta, streamId, path });
-    return stream != null && isStreamThumbnail(stream);
-  }));
+  return getCopiedStreams({ allFilesMeta, copyFileStreams }).some((stream) => stream != null && isStreamThumbnail(stream));
+}
+
+/**
+ * Whether every stream being copied is audio (cover art is allowed, as it is a single keyframe anyway).
+ *
+ * Used to decide whether it is safe to pass `-copyinkf` to ffmpeg. When cutting with `-ss` *after* `-i`
+ * (keyframe cut mode off), ffmpeg's stream copy discards packets until it sees one flagged as a keyframe.
+ * Audio packets are normally all keyframes, but some audio-only MP4/M4A files carry a sync sample table
+ * (`stss`) that only flags a packet every few seconds. The cut then starts seconds late (and with `-ss`
+ * before `-i`, seconds early). `-copyinkf` makes ffmpeg keep the leading non-keyframe packets, which is
+ * harmless for audio, but would produce broken frames for video, so we only do it for audio-only exports.
+ */
+export function isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams }: {
+  allFilesMeta: AllFilesStreamMeta,
+  copyFileStreams: CopyfileStreams,
+}) {
+  const streams = getCopiedStreams({ allFilesMeta, copyFileStreams });
+  return streams.length > 0 && streams.every((stream) => stream != null && (stream.codec_type === 'audio' || isStreamThumbnail(stream)));
 }
 
 /**

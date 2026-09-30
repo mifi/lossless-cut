@@ -6,7 +6,7 @@ import i18n from 'i18next';
 
 import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, getHtml5ifiedPath, unlinkWithRetry, getFrameDuration, isMac, html5ifiedPrefix, html5dummySuffix, assertFileExists } from '../util';
 import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, getDuration, createChaptersFromSegments, readFileFfprobeMeta, getExperimentalArgs, getVideoTimescaleArgs, logStdoutStderr, runFfmpegConcat, RefuseOverwriteError, runFfmpeg } from '../ffmpeg';
-import { getEffectiveAvoidNegativeTs, getMapStreamsArgs, getStreamIdsToCopy } from '../util/streams';
+import { getEffectiveAvoidNegativeTs, getMapStreamsArgs, getStreamIdsToCopy, isCopyingOnlyAudioStreams } from '../util/streams';
 import { needsSmartCut, getCodecParams } from '../smartcut';
 import { getGuaranteedSegments, isDurationValid } from '../segments';
 import type { FFprobeStream } from '../../../common/ffprobe';
@@ -302,6 +302,10 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     const effectiveAvoidNegativeTs = getEffectiveAvoidNegativeTs({ avoidNegativeTs, allFilesMeta, copyFileStreams: copyFileStreamsFiltered });
     const avoidNegativeTsArgs = cuttingStart && effectiveAvoidNegativeTs && ssBeforeInput ? ['-avoid_negative_ts', String(effectiveAvoidNegativeTs)] : [];
 
+    // When seeking after the input (keyframe cut mode off), keep leading non-keyframe packets for audio-only exports,
+    // or else the cut starts late for audio files where not all packets are flagged as keyframes. See isCopyingOnlyAudioStreams
+    const copyInitialNonKeyframesArgs = cuttingStart && !ssBeforeInput && isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams: copyFileStreamsFiltered }) ? ['-copyinkf'] : [];
+
     // If cutting multiple files, `-ss` must be before `-i`, regardless of `ssBeforeInput` choice
     // and it seems that `-t` must be after `-i` #896
     const inputFilesArgs = copyFileStreamsFiltered.length > 1
@@ -463,6 +467,8 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       ...getChaptersInputArgs(chaptersPath),
 
       ...avoidNegativeTsArgs,
+
+      ...copyInitialNonKeyframesArgs,
 
       ...mapStreamsArgs,
 
