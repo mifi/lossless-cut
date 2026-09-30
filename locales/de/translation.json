@@ -1116,5 +1116,7 @@
   "Value must be shorter than total duration ({{totalDuration}})": "Der Wert muss kürzer sein als die Gesamtdauer ({{totalDuration}})",
   "Decimating video": "Zugeschnittenes Video",
   "Extract segment frames as image files": "Segmentframes als Bilddateien extrahieren",
-  "You are in simple mode, meaning some functionality has been simplified or hidden.": "Sie befinden sich im einfachen Modus, was bedeutet, dass einige Funktionen vereinfacht oder ausgeblendet wurden."
+  "You are in simple mode, meaning some functionality has been simplified or hidden.": "Sie befinden sich im einfachen Modus, was bedeutet, dass einige Funktionen vereinfacht oder ausgeblendet wurden.",
+  "Source code": "Quellcode",
+  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "Sie haben ein benutzerdefiniertes FFmpeg-Verzeichnis konfiguriert. Sie können es in den Einstellungen ändern oder zurücksetzen."
 }
