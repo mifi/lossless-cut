@@ -236,6 +236,9 @@ export async function renderWaveformPng({ filePath, start, duration, resample, c
       '-ar', String(resample),
     ] : [
       '-c', 'copy',
+      // we seek after the input, so keep leading non-keyframe packets, or else the waveform is shifted
+      // for audio files where not all packets are flagged as keyframes (see isCopyingOnlyAudioStreams in renderer)
+      '-copyinkf',
     ]),
     '-f', 'matroska', // mpegts doesn't support vorbis etc
     '-',

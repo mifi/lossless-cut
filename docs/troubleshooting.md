@@ -20,6 +20,7 @@ Each segment's *start cut time* will normally (but not always) be "rounded" to t
 - Your mileage may vary when it comes to *Keyframe cut mode*. Most common video files need *Keyframe cut* enabled, but you may need to try both values. [ffmpeg](https://trac.ffmpeg.org/wiki/Seeking) also has documentation about these two seek/cut modes. In `ffmpeg`, *Keyframe cut* corresponds to `-ss` *before* `-i`.
 - Try to change `avoid_negative_ts` (in export options).
 - Try also to set the **start**-cutpoint a few frames **before or after** the nearest keyframe (may also solve audio sync issues).
+- For **audio-only** files (e.g. `.m4a`) where the cut starts several seconds early with *Keyframe cut mode* on, and late with it off, the file probably has a sync sample table that only flags some audio packets as keyframes. Disable *Keyframe cut mode*, or first export the whole file without cutting (this remuxes it and drops the table) and then cut the exported file.
 - You may try to enable the experimental "Smart cut" mode to allow cutting between keyframes. However it will not work for many files.
 - Currently, the only way to review the exported file (to check the actual cutpoints) is to run the export (possibly with only one segment enabled to speed up) and then manually check the output file. See also [#1887](https://github.com/mifi/lossless-cut/issues/1887)
 
