@@ -11,6 +11,7 @@ If the video exports successfully without any error from LosslessCut, but it doe
 - Select a different **output format** (`matroska` and `mov` support a lot of codecs.)
 - Try the same operation with a different file (same codec or different codec) and see whether it's a problem with just that one particular file.
 - Enable the **Experimental Flag** under **Settings** before trying again.
+- If your files are stored in a cloud-synced folder (e.g. iCloud Drive, OneDrive, Google Drive, Dropbox, Proton Drive) or on a network drive, try copying them to a local folder (e.g. Desktop) and also export to a local folder. Cloud sync clients may serve incomplete (on-demand) files or interfere with files while they are being written.
 
 ## Cutting times are not accurate
 
