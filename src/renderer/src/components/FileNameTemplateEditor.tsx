@@ -1,10 +1,10 @@
-import type { ChangeEventHandler } from 'react';
-import { memo, useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import type { ChangeEventHandler, KeyboardEventHandler } from 'react';
+import { memo, useState, useEffect, useCallback, useLayoutEffect, useReducer, useRef, useMemo } from 'react';
 import { useDebounce } from 'use-debounce';
 import { useTranslation } from 'react-i18next';
 import { IoIosHelpCircle } from 'react-icons/io';
 import { motion, AnimatePresence } from 'motion/react';
-import { FaCaretUp, FaEdit, FaExclamationTriangle, FaEye, FaFile, FaUndo } from 'react-icons/fa';
+import { FaCaretUp, FaEdit, FaExclamationTriangle, FaEye, FaFile, FaRedoAlt, FaUndo, FaUndoAlt } from 'react-icons/fa';
 
 import HighlightedText from './HighlightedText';
 import type { GenerateOutFileNames, GeneratedOutFileNames } from '../util/outputNameTemplate';
@@ -18,6 +18,7 @@ import * as Dialog from './Dialog';
 import { dangerColor, warningColor } from '../colors';
 import { exportedFileNameTemplateHelpUrl } from '../../../common/constants';
 import mainApi from '../mainApi';
+import { canRedo, canUndo, createTextHistory, getTextHistoryValue, textHistoryReducer } from '../util/textHistory';
 
 
 const formatVariable = (variable: string) => `\${${variable}}`;
@@ -43,6 +44,7 @@ function FileNameTemplateEditor(opts: {
 
   const [text, setText] = useState(templateIn);
   const [debouncedText] = useDebounce(text, 500);
+  const [history, dispatchHistory] = useReducer(textHistoryReducer, templateIn, createTextHistory);
   const [generated, setGenerated] = useState<GeneratedOutFileNames>();
 
   const isSimpleMergeFilesMode = simpleMode && mode === 'merge-files';
@@ -63,6 +65,8 @@ function FileNameTemplateEditor(opts: {
   }, [templateIn]);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  // caret position to restore after we replace the whole value (undo/redo), because the browser would put it at the end
+  const caretRef = useRef<number>(undefined);
 
   const { t } = useTranslation();
 
@@ -120,20 +124,81 @@ function FileNameTemplateEditor(opts: {
     setTemplate(debouncedText);
   }, [debouncedText, setTemplate]);
 
+  // record into the undo history only once typing settles, so a burst of keystrokes becomes a single undo step.
+  // it's a no-op when the value is already the current entry, e.g. when the debounce catches up after an undo
+  useEffect(() => {
+    dispatchHistory({ type: 'set', value: debouncedText });
+  }, [debouncedText]);
+
   useEffect(() => {
     if (open) inputRef.current?.focus();
   }, [open]);
 
+  useLayoutEffect(() => {
+    if (caretRef.current == null) return;
+    inputRef.current?.setSelectionRange(caretRef.current, caretRef.current);
+    caretRef.current = undefined;
+  }, [text]);
+
+  // typing that the debounce hasn't recorded yet still needs to be undoable
+  const hasPendingEdit = text !== getTextHistoryValue(history);
+  const undoEnabled = hasPendingEdit || canUndo(history);
+  const redoEnabled = !hasPendingEdit && canRedo(history);
+
+  const applyValue = useCallback((value: string) => {
+    caretRef.current = value.length;
+    setText(value);
+  }, []);
+
+  // records a discrete edit (variable insertion, reset) as its own undo step right away,
+  // first committing any typing that the debounce hasn't recorded yet
+  const recordEdit = useCallback((value: string) => {
+    if (text !== getTextHistoryValue(history)) dispatchHistory({ type: 'set', value: text });
+    dispatchHistory({ type: 'set', value });
+  }, [history, text]);
+
+  const undo = useCallback(() => {
+    if (hasPendingEdit) {
+      dispatchHistory({ type: 'set', value: text });
+      dispatchHistory({ type: 'undo' });
+      applyValue(getTextHistoryValue(history));
+      return;
+    }
+    if (!canUndo(history)) return;
+    dispatchHistory({ type: 'undo' });
+    applyValue(history.stack[history.index - 1]!);
+  }, [applyValue, hasPendingEdit, history, text]);
+
+  const redo = useCallback(() => {
+    if (!redoEnabled) return;
+    dispatchHistory({ type: 'redo' });
+    applyValue(history.stack[history.index + 1]!);
+  }, [applyValue, history, redoEnabled]);
+
   const reset = useCallback(() => {
     setTemplate(defaultTemplate);
-    setText(defaultTemplate);
-  }, [defaultTemplate, setTemplate]);
+    recordEdit(defaultTemplate);
+    applyValue(defaultTemplate);
+  }, [applyValue, defaultTemplate, recordEdit, setTemplate]);
 
   const handleSampleClick = useCallback(() => {
     setOpen((v) => !v);
   }, []);
 
   const onTextChange = useCallback<ChangeEventHandler<HTMLInputElement>>((e) => setText(e.target.value), []);
+
+  // the browser's own undo can't restore programmatic edits (variable insertion, reset), so handle it ourselves
+  const onTextKeyDown = useCallback<KeyboardEventHandler<HTMLInputElement>>((e) => {
+    if (e.altKey || !(e.ctrlKey || e.metaKey)) return;
+    const key = e.key.toLowerCase();
+    if (key === 'z' && !e.shiftKey) {
+      e.preventDefault();
+      undo();
+    } else if ((key === 'z' && e.shiftKey) || key === 'y') {
+      e.preventDefault();
+      redo();
+    }
+  }, [redo, undo]);
 
   const onVariableClick = useCallback((variable: string) => {
     const input = inputRef.current;
@@ -144,8 +209,9 @@ function FileNameTemplateEditor(opts: {
     const toInsert = variable === segTagsExample ? `${segTagsExample} ?? ''` : variable;
 
     const newValue = `${text.slice(0, startPos)}${`${formatVariable(toInsert)}${text.slice(endPos)}`}`;
+    recordEdit(newValue);
     setText(newValue);
-  }, [text]);
+  }, [recordEdit, text]);
 
   function formatCurrentSegFileOrFirst(names: string[]) {
     if (mode === 'separate') {
@@ -201,7 +267,7 @@ function FileNameTemplateEditor(opts: {
               )}
 
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '.2em', gap: '.5em' }}>
-                <TextInput ref={inputRef} onChange={onTextChange} value={text} autoComplete="off" autoCapitalize="off" autoCorrect="off" style={{ padding: '.3em' }} />
+                <TextInput ref={inputRef} onChange={onTextChange} onKeyDown={onTextKeyDown} value={text} autoComplete="off" autoCapitalize="off" autoCorrect="off" style={{ padding: '.3em' }} />
 
                 {generated != null && generated.fileNames.length > 1 && (
                   <Dialog.Root>
@@ -225,7 +291,12 @@ function FileNameTemplateEditor(opts: {
                 )}
 
                 {!isSimpleMergeFilesMode && (
-                  <Button onClick={reset} style={{ marginLeft: '.3em', padding: '.3em' }}><FaUndo style={{ fontSize: '.8em', color: dangerColor, marginRight: '.5em' }} />{t('Reset')}</Button>
+                  <>
+                    <Button onClick={undo} disabled={!undoEnabled} title={t('Undo')} style={{ marginLeft: '.3em', padding: '.3em' }}><FaUndoAlt style={{ fontSize: '.8em' }} /></Button>
+                    <Button onClick={redo} disabled={!redoEnabled} title={t('Redo')} style={{ padding: '.3em' }}><FaRedoAlt style={{ fontSize: '.8em' }} /></Button>
+
+                    <Button onClick={reset} style={{ marginLeft: '.3em', padding: '.3em' }}><FaUndo style={{ fontSize: '.8em', color: dangerColor, marginRight: '.5em' }} />{t('Reset')}</Button>
+                  </>
                 )}
               </div>
 
