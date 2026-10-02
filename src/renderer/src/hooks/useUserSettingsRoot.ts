@@ -113,6 +113,8 @@ export default function useUserSettingsRoot() {
   useEffect(() => safeSetConfig({ hideOsNotifications }), [hideOsNotifications]);
   const [autoLoadTimecode, setAutoLoadTimecode] = useState(safeGetConfigInitial('autoLoadTimecode'));
   useEffect(() => safeSetConfig({ autoLoadTimecode }), [autoLoadTimecode]);
+  const [updateTimecodeOnCut, setUpdateTimecodeOnCut] = useState(safeGetConfigInitial('updateTimecodeOnCut'));
+  useEffect(() => safeSetConfig({ updateTimecodeOnCut }), [updateTimecodeOnCut]);
   const [autoDeleteMergedSegments, setAutoDeleteMergedSegments] = useState(safeGetConfigInitial('autoDeleteMergedSegments'));
   useEffect(() => safeSetConfig({ autoDeleteMergedSegments }), [autoDeleteMergedSegments]);
   const [exportConfirmEnabled, setExportConfirmEnabled] = useState(safeGetConfigInitial('exportConfirmEnabled'));
@@ -285,6 +287,7 @@ export default function useUserSettingsRoot() {
     hideNotifications,
     hideOsNotifications,
     autoLoadTimecode,
+    updateTimecodeOnCut,
     autoDeleteMergedSegments,
     exportConfirmEnabled,
     segmentsToChapters,
@@ -367,6 +370,7 @@ export default function useUserSettingsRoot() {
     setHideNotifications,
     setHideOsNotifications,
     setAutoLoadTimecode,
+    setUpdateTimecodeOnCut,
     setAutoDeleteMergedSegments,
     setExportConfirmEnabled,
     setSegmentsToChapters,

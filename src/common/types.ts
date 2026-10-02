@@ -79,6 +79,7 @@ export const configSchema = z.object({
   hideNotifications: z.literal('all').or(z.undefined()),
   hideOsNotifications: z.literal('all').or(z.undefined()),
   autoLoadTimecode: z.boolean(),
+  updateTimecodeOnCut: z.boolean(),
   segmentsToChapters: z.boolean(),
   simpleMode: z.boolean(),
   /** todo: rename to cutFileTemplate */
