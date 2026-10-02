@@ -16,12 +16,13 @@ import { changeEnabledStreamsExpressionHelpUrl } from '../../../common/constants
 import mainApi from '../mainApi';
 
 
-export default function useStreamsMeta({ mainStreams, externalFilesMeta, filePath, autoExportExtraStreams, showGenericDialog }: {
+export default function useStreamsMeta({ mainStreams, externalFilesMeta, filePath, autoExportExtraStreams, showGenericDialog, updateTimecodeOnCut }: {
   mainStreams: FFprobeStream[],
   externalFilesMeta: FilesMeta,
   filePath: string | undefined,
   autoExportExtraStreams: boolean,
   showGenericDialog: ShowGenericDialog,
+  updateTimecodeOnCut: boolean,
 }) {
   const { t } = useTranslation();
 
@@ -36,8 +37,9 @@ export default function useStreamsMeta({ mainStreams, externalFilesMeta, filePat
   const mainCopiedStreams = useMemo(() => mainStreams.filter((stream) => isCopyingStreamId(filePath, stream.index)), [filePath, isCopyingStreamId, mainStreams]);
   const mainCopiedThumbnailStreams = useMemo(() => mainCopiedStreams.filter((stream) => isStreamThumbnail(stream)), [mainCopiedStreams]);
 
-  // Streams that are not copy enabled by default
-  const extraStreams = useMemo(() => mainStreams.filter((stream) => !shouldCopyStreamByDefault(stream)), [mainStreams]);
+  // Streams that are not copy enabled by default. When timecode handling is enabled, timecode streams are
+  // considered copyable (they are selected by default), so they aren't auto-exported as separate "extra" files.
+  const extraStreams = useMemo(() => mainStreams.filter((stream) => !shouldCopyStreamByDefault(stream, { includeTimecodeStreams: updateTimecodeOnCut })), [mainStreams, updateTimecodeOnCut]);
 
   // Extra streams that the user has not selected for copy
   const nonCopiedExtraStreams = useMemo(() => extraStreams.filter((stream) => !isCopyingStreamId(filePath, stream.index)), [extraStreams, filePath, isCopyingStreamId]);
