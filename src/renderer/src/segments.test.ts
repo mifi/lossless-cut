@@ -1,6 +1,6 @@
 import { test, it, expect, describe } from 'vitest';
 
-import { convertSegmentsToChaptersWithGaps, partitionIntoOverlappingRanges, formatSegNum, combineOverlappingSegments, invertSegments } from './segments';
+import { convertSegmentsToChaptersWithGaps, partitionIntoOverlappingRanges, formatSegNum, combineOverlappingSegments, invertSegments, getSegmentAroundPlayhead } from './segments';
 
 it('converts segments to chapters with gaps', () => {
   expect(convertSegmentsToChaptersWithGaps([
@@ -234,5 +234,47 @@ describe('combineOverlappingSegments', () => {
     ];
 
     expect(combineOverlappingSegments(segments)).toMatchSnapshot();
+  });
+});
+
+
+describe('getSegmentAroundPlayhead', () => {
+  it.each([
+    [30, 60, 15, 15, 15, 45],
+    [5, 60, 15, 15, 0, 20],
+    [55, 60, 15, 15, 40, 60],
+    [0, 60, 15, 15, 0, 15],
+    [60, 60, 15, 15, 45, 60],
+    [2, 5, 15, 15, 0, 5],
+    [30, 60, 5, 20, 25, 50],
+    [30.25, 60, 1.5, 2.75, 28.75, 33],
+    [30, 60, 0, 15, 30, 45],
+    [30, 60, 15, 0, 15, 30],
+    [-1, 60, 15, 15, 0, 15],
+    [61, 60, 15, 15, 45, 60],
+    [30, 60, Number.MAX_VALUE, Number.MAX_VALUE, 0, 60],
+  ])('clamps time %s with duration %s and offsets %s/%s to %s–%s', (time, duration, before, after, start, end) => {
+    expect(getSegmentAroundPlayhead({ time, duration, before, after })).toEqual({ start, end });
+  });
+
+  it.each([undefined, 0, -1, NaN, Infinity])('rejects invalid duration %s', (duration) => {
+    expect(getSegmentAroundPlayhead({ time: 30, duration, before: 15, after: 15 })).toBeUndefined();
+  });
+
+  it.each([NaN, Infinity, -Infinity])('rejects invalid playhead %s', (time) => {
+    expect(getSegmentAroundPlayhead({ time, duration: 60, before: 15, after: 15 })).toBeUndefined();
+  });
+
+  it.each([-1, NaN, Infinity, -Infinity])('rejects invalid offset %s', (offset) => {
+    expect(getSegmentAroundPlayhead({ time: 30, duration: 60, before: offset, after: 15 })).toBeUndefined();
+    expect(getSegmentAroundPlayhead({ time: 30, duration: 60, before: 15, after: offset })).toBeUndefined();
+  });
+
+  it.each([
+    [30, 0, 0],
+    [0, 15, 0],
+    [60, 0, 15],
+  ])('does not create an empty segment at %s with offsets %s/%s', (time, before, after) => {
+    expect(getSegmentAroundPlayhead({ time, duration: 60, before, after })).toBeUndefined();
   });
 });
