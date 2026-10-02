@@ -173,7 +173,7 @@ function ExportConfirm({
 }) {
   const { t } = useTranslation();
 
-  const { keyframeCut, toggleKeyframeCut, preserveMovData, setPreserveMovData, preserveMetadata, setPreserveMetadata, preserveChapters, setPreserveChapters, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode, enableOverwriteOutput, setEnableOverwriteOutput, ffmpegExperimental, setFfmpegExperimental, cutFromAdjustmentFrames, setCutFromAdjustmentFrames, cutToAdjustmentFrames, setCutToAdjustmentFrames, setCutFileTemplate, setCutMergedFileTemplate, simpleMode, keyframesEnabled } = useUserSettings();
+  const { keyframeCut, toggleKeyframeCut, preserveMovData, setPreserveMovData, preserveMetadata, setPreserveMetadata, preserveChapters, setPreserveChapters, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode, enableOverwriteOutput, setEnableOverwriteOutput, ffmpegExperimental, setFfmpegExperimental, cutFromAdjustmentFrames, setCutFromAdjustmentFrames, cutToAdjustmentFrames, setCutToAdjustmentFrames, setCutFileTemplate, setCutMergedFileTemplate, simpleMode, keyframesEnabled, updateTimecodeOnCut, setUpdateTimecodeOnCut } = useUserSettings();
 
   const [showAdvanced, setShowAdvanced] = useState(!simpleMode);
 
@@ -182,6 +182,7 @@ function ExportConfirm({
   const toggleMovFastStart = useCallback(() => setMovFastStart((val) => !val), [setMovFastStart]);
   const toggleSegmentsToChapters = useCallback(() => setSegmentsToChapters((v) => !v), [setSegmentsToChapters]);
   const togglePreserveMetadataOnMerge = useCallback(() => setPreserveMetadataOnMerge((v) => !v), [setPreserveMetadataOnMerge]);
+  const toggleUpdateTimecodeOnCut = useCallback(() => setUpdateTimecodeOnCut((v) => !v), [setUpdateTimecodeOnCut]);
 
   const isMov = ffmpegIsMov(outFormat);
   const isIpod = outFormat === 'ipod';
@@ -272,6 +273,12 @@ function ExportConfirm({
 
   const onPreserveMetadataHelpPress = useCallback(() => {
     showHelpText({ text: i18n.t('Whether to preserve metadata from source file. Default: Global (file metadata), per-track and per-chapter metadata will be copied. Non-global: Only per-track and per-chapter metadata will be copied. None: No metadata will be copied') });
+  }, [showHelpText]);
+
+  const onUpdateTimecodeOnCutHelpPress = useCallback(() => {
+    showHelpText({
+      text: i18n.t('If the input file has a timecode (or custom start time offset), the timecode for each cut clip will be updated so it starts at the cut point instead of resetting to the beginning or 00:00:00.'),
+    });
   }, [showHelpText]);
 
   const onMovFastStartHelpPress = useCallback(() => {
@@ -570,6 +577,18 @@ function ExportConfirm({
                 </td>
                 <td>
                   <HelpIcon onClick={onPreserveMetadataHelpPress} />
+                </td>
+              </AnimatedTr>
+
+              <AnimatedTr>
+                <td>
+                  {t('Update timecode on cut')}
+                </td>
+                <td>
+                  <Switch checked={updateTimecodeOnCut} onCheckedChange={toggleUpdateTimecodeOnCut} />
+                </td>
+                <td>
+                  <HelpIcon onClick={onUpdateTimecodeOnCutHelpPress} />
                 </td>
               </AnimatedTr>
 

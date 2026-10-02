@@ -69,6 +69,7 @@ export interface Config {
   hideNotifications: 'all' | undefined,
   hideOsNotifications: 'all' | undefined,
   autoLoadTimecode: boolean,
+  updateTimecodeOnCut: boolean,
   segmentsToChapters: boolean,
   simpleMode: boolean,
   /** todo: rename to cutFileTemplate */

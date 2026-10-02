@@ -1,7 +1,7 @@
 import { test, expect } from 'vitest';
 
-import { getEffectiveAvoidNegativeTs, getMapStreamsArgs, getStreamIdsToCopy, isCopyingOnlyAudioStreams } from './streams';
-import type { FFprobeStreamDisposition } from '../../../common/ffprobe';
+import { getEffectiveAvoidNegativeTs, getMapStreamsArgs, getStreamIdsToCopy, isCopyingOnlyAudioStreams, isTimecodeStream, shouldCopyStreamByDefault } from './streams';
+import type { FFprobeStream, FFprobeStreamDisposition } from '../../../common/ffprobe';
 import type { LiteFFprobeStream } from '../types';
 
 
@@ -217,4 +217,37 @@ test('isCopyingOnlyAudioStreams, false when copying video, subtitles, unknown st
   expect(isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams: [{ path, streamIds: [1, 99] }] })).toBe(false);
   expect(isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams: [{ path, streamIds: [] }] })).toBe(false);
   expect(isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams: [] })).toBe(false);
+});
+
+test('isTimecodeStream', () => {
+  // ffprobe often reports an empty codec_name for a tmcd track, so codec_tag_string must be enough
+  expect(isTimecodeStream({ codec_type: 'data', codec_name: '', codec_tag_string: 'tmcd' })).toBe(true);
+  expect(isTimecodeStream({ codec_type: 'data', codec_name: 'tmcd', codec_tag_string: '' })).toBe(true);
+  expect(isTimecodeStream({ codec_type: 'data', codec_name: '', codec_tag_string: '', tags: { handler_name: 'TimeCodeHandler' } })).toBe(true);
+  expect(isTimecodeStream({ codec_type: 'data', codec_name: '', codec_tag_string: '', tags: { timecode: '00:00:00:00' } })).toBe(true);
+
+  // a data stream that is not a timecode must not be dropped (e.g. GoPro gpmd)
+  expect(isTimecodeStream({ codec_type: 'data', codec_name: 'bin_data', codec_tag_string: 'gpmd', tags: { handler_name: 'GoPro MET' } })).toBe(false);
+  expect(isTimecodeStream({ codec_type: 'data', codec_name: '', codec_tag_string: '' })).toBe(false);
+
+  // non-data streams aren't timecode tracks even if they carry unrelated tags
+  expect(isTimecodeStream({ codec_type: 'video', codec_name: 'h264', codec_tag_string: '', tags: { timecode: '00:00:00:00' } })).toBe(false);
+  expect(isTimecodeStream({ codec_type: 'audio', codec_name: 'aac', codec_tag_string: '' })).toBe(false);
+});
+
+test('shouldCopyStreamByDefault, timecode streams', () => {
+  // ffprobe often reports an empty codec_name for tmcd, so use the codec_tag_string
+  const tmcd = { codec_type: 'data', codec_name: '', codec_tag_string: 'tmcd' } as unknown as FFprobeStream;
+  const gpmd = { codec_type: 'data', codec_name: 'bin_data', codec_tag_string: 'gpmd' } as unknown as FFprobeStream;
+  const unknownData = { codec_type: 'data', codec_name: '', codec_tag_string: '' } as unknown as FFprobeStream;
+
+  // timecode tracks are excluded by default (existing behavior) ...
+  expect(shouldCopyStreamByDefault(tmcd)).toBe(false);
+  // ... but included when timecode handling is enabled, so they are preserved when not cutting
+  expect(shouldCopyStreamByDefault(tmcd, { includeTimecodeStreams: true })).toBe(true);
+
+  // gpmd is always copied by default, while unknown data tracks never are
+  expect(shouldCopyStreamByDefault(gpmd)).toBe(true);
+  expect(shouldCopyStreamByDefault(gpmd, { includeTimecodeStreams: true })).toBe(true);
+  expect(shouldCopyStreamByDefault(unknownData, { includeTimecodeStreams: true })).toBe(false);
 });

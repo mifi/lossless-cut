@@ -1,8 +1,6 @@
 import pMap from 'p-map';
 import sortBy from 'lodash/sortBy';
 import i18n from 'i18next';
-import type { FRAMERATE } from 'smpte-timecode';
-import Timecode from 'smpte-timecode';
 import minBy from 'lodash/minBy';
 import invariant from 'tiny-invariant';
 import z from 'zod';
@@ -511,33 +509,7 @@ export function getStreamFps(stream: FFprobeStream) {
 }
 
 
-function parseTimecode(str: string, frameRate?: number | undefined) {
-  // console.log(str, frameRate);
-  const t = Timecode(str, frameRate ? parseFloat(frameRate.toFixed(3)) as FRAMERATE : undefined);
-  if (!t) return undefined;
-  const seconds = ((t.hours * 60) + t.minutes) * 60 + t.seconds + (t.frames / t.frameRate);
-  return Number.isFinite(seconds) ? seconds : undefined;
-}
-
-export function getTimecodeFromStreams(streams: FFprobeStream[]) {
-  console.log('Trying to load timecode');
-  let foundTimecode: number | undefined;
-  streams.find((stream) => {
-    try {
-      if (stream.tags && stream.tags['timecode']) {
-        const fps = getStreamFps(stream);
-        foundTimecode = parseTimecode(stream.tags['timecode'], fps);
-        console.log('Loaded timecode', stream.tags['timecode'], 'from stream', stream.index);
-        return true;
-      }
-      return undefined;
-    } catch {
-      // console.warn('Failed to parse timecode from file streams', err);
-      return undefined;
-    }
-  });
-  return foundTimecode;
-}
+export { getSourceTimecode, calculateSegmentTimecode, getEffectiveSourceTimecode } from './util/timecode';
 
 const ffprobeVersionSchema = z.object({
   program_version: z.object({
