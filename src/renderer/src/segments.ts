@@ -9,6 +9,22 @@ import type { DefiniteSegmentBase, PlaybackMode, SegmentBase, SegmentTags, Segme
 
 export const isDurationValid = (duration?: number): duration is number => duration != null && Number.isFinite(duration) && duration > 0;
 
+export function getSegmentAroundPlayhead({ time, duration, before, after }: {
+  time: number,
+  duration: number | undefined,
+  before: number,
+  after: number,
+}): DefiniteSegmentBase | undefined {
+  if (!isDurationValid(duration) || !Number.isFinite(time)) return undefined;
+  if (!Number.isFinite(before) || before < 0 || !Number.isFinite(after) || after < 0) return undefined;
+
+  const playhead = Math.min(Math.max(time, 0), duration);
+  const start = Math.max(playhead - before, 0);
+  const end = Math.min(playhead + after, duration);
+  if (start >= end) return undefined;
+  return { start, end };
+}
+
 export const createSegment = (props?: {
   start?: number | undefined,
   end?: number | undefined,
