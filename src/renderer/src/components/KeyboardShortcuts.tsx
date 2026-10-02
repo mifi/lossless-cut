@@ -346,6 +346,10 @@ const KeyboardShortcuts = memo(({
         name: t('Add cut segment'),
         category: segmentsAndCutpointsCategory,
       },
+      addSegmentAroundPlayhead: {
+        name: t('Create segment around playhead'),
+        category: segmentsAndCutpointsCategory,
+      },
       removeCurrentCutpoint: {
         name: t('Remove current segment cutpoint'),
         category: segmentsAndCutpointsCategory,

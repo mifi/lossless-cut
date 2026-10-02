@@ -1,5 +1,5 @@
 import type { CSSProperties, ChangeEventHandler, TdHTMLAttributes } from 'react';
-import { memo, useCallback, useMemo } from 'react';
+import { memo, useCallback, useMemo, useId, useState } from 'react';
 import { FaYinYang, FaKeyboard, FaGlobe, FaBroom, FaCogs, FaHashtag, FaClock, FaFolder, FaFile, FaTimes } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import invariant from 'tiny-invariant';
@@ -24,6 +24,7 @@ import type { TunerType } from '../types';
 import Truncated from './Truncated';
 import { dangerColor } from '../colors';
 import OutDirSelector from './OutDirSelector.js';
+import TextInput from './TextInput';
 
 // eslint-disable-next-line react/jsx-props-no-spreading
 const Button = ({ style, ...props }: ButtonProps) => <ButtonRaw style={{ padding: '.5em .9em', ...style }} {...props} />;
@@ -56,6 +57,34 @@ function ModifierKeySetting({ text, value, setValue }: { text: string, value: Mo
     </Row>
   );
 }
+function SegmentAroundPlayheadSetting({ text, value, setValue }: { text: string, value: number, setValue: (v: number) => void }) {
+  const id = useId();
+  const [inputValue, setInputValue] = useState(String(value));
+
+  return (
+    <Row>
+      <KeyCell><label htmlFor={id}>{text}</label></KeyCell>
+      <td>
+        <TextInput
+          id={id}
+          type="number"
+          min={0}
+          step="any"
+          required
+          value={inputValue}
+          style={{ width: '6em', padding: '.5em' }}
+          onChange={(e) => {
+            const input = e.currentTarget;
+            setInputValue(input.value);
+            if (input.checkValidity() && Number.isFinite(input.valueAsNumber)) setValue(input.valueAsNumber);
+          }}
+          onBlur={() => setInputValue(String(value))}
+        />
+      </td>
+    </Row>
+  );
+}
+
 const detailsStyle: CSSProperties = { opacity: 0.75, fontSize: '.9em', marginTop: '.3em' };
 
 function Settings({
@@ -75,7 +104,7 @@ function Settings({
 }) {
   const { t } = useTranslation();
 
-  const { customOutDir, keyframeCut, toggleKeyframeCut, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, askBeforeClose, setAskBeforeClose, enableImportChapters, setEnableImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, autoSaveProjectFile, setAutoSaveProjectFile, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, hideNotifications, setHideNotifications, hideOsNotifications, setHideOsNotifications, autoLoadTimecode, setAutoLoadTimecode, enableAutoHtml5ify, setEnableAutoHtml5ify, customFfPath, setCustomFfPath, storeProjectInWorkingDir, mouseWheelZoomModifierKey, setMouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, setMouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, setMouseWheelKeyframeSeekModifierKey, segmentMouseModifierKey, setSegmentMouseModifierKey, captureFrameMethod, setCaptureFrameMethod, captureFrameQuality, setCaptureFrameQuality, captureFrameFileNameFormat, setCaptureFrameFileNameFormat, enableNativeHevc, setEnableNativeHevc, enableUpdateCheck, setEnableUpdateCheck, allowMultipleInstances, setAllowMultipleInstances, preferStrongColors, setPreferStrongColors, treatInputFileModifiedTimeAsStart, setTreatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, setTreatOutputFileModifiedTimeAsStart, exportConfirmEnabled, toggleExportConfirmEnabled, storeWindowBounds, setStoreWindowBounds, reducedMotion, setReducedMotion, ffmpegHwaccel, setFfmpegHwaccel } = useUserSettings();
+  const { customOutDir, keyframeCut, toggleKeyframeCut, timecodeFormat, setTimecodeFormat, invertCutSegments, setInvertCutSegments, askBeforeClose, setAskBeforeClose, enableImportChapters, setEnableImportChapters, enableAskForFileOpenAction, setEnableAskForFileOpenAction, autoSaveProjectFile, setAutoSaveProjectFile, invertTimelineScroll, setInvertTimelineScroll, language, setLanguage, hideNotifications, setHideNotifications, hideOsNotifications, setHideOsNotifications, autoLoadTimecode, setAutoLoadTimecode, enableAutoHtml5ify, setEnableAutoHtml5ify, customFfPath, setCustomFfPath, storeProjectInWorkingDir, mouseWheelZoomModifierKey, setMouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, setMouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, setMouseWheelKeyframeSeekModifierKey, segmentMouseModifierKey, setSegmentMouseModifierKey, captureFrameMethod, setCaptureFrameMethod, captureFrameQuality, setCaptureFrameQuality, captureFrameFileNameFormat, setCaptureFrameFileNameFormat, enableNativeHevc, setEnableNativeHevc, enableUpdateCheck, setEnableUpdateCheck, allowMultipleInstances, setAllowMultipleInstances, preferStrongColors, setPreferStrongColors, treatInputFileModifiedTimeAsStart, setTreatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, setTreatOutputFileModifiedTimeAsStart, exportConfirmEnabled, toggleExportConfirmEnabled, storeWindowBounds, setStoreWindowBounds, reducedMotion, setReducedMotion, ffmpegHwaccel, setFfmpegHwaccel, segmentAroundPlayheadBefore, setSegmentAroundPlayheadBefore, segmentAroundPlayheadAfter, setSegmentAroundPlayheadAfter } = useUserSettings();
 
   const onLangChange = useCallback<ChangeEventHandler<HTMLSelectElement>>((e) => {
     const { value } = e.target;
@@ -382,6 +411,9 @@ function Settings({
             <Button onClick={onKeyboardShortcutsDialogRequested}><FaKeyboard style={{ verticalAlign: 'middle', marginRight: '.3em' }} /> {t('Keyboard & mouse shortcuts')}</Button>
           </td>
         </Row>
+
+        <SegmentAroundPlayheadSetting text={t('Segment around playhead: seconds before')} value={segmentAroundPlayheadBefore} setValue={setSegmentAroundPlayheadBefore} />
+        <SegmentAroundPlayheadSetting text={t('Segment around playhead: seconds after')} value={segmentAroundPlayheadAfter} setValue={setSegmentAroundPlayheadAfter} />
 
         <ModifierKeySetting text={t('Segment manipulation mouse modifier key')} value={segmentMouseModifierKey} setValue={setSegmentMouseModifierKey} />
         <ModifierKeySetting text={t('Mouse wheel zoom modifier key')} value={mouseWheelZoomModifierKey} setValue={setMouseWheelZoomModifierKey} />
