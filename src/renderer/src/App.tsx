@@ -32,6 +32,7 @@ import { UserSettingsContext, SegColorsContext, AppContext } from './contexts';
 import NoFileLoaded from './NoFileLoaded';
 import MediaSourcePlayer from './MediaSourcePlayer';
 import TopMenu from './TopMenu';
+import CompactTitleBar from './CompactTitleBar';
 import LastCommands from './LastCommands';
 import StreamsSelector from './StreamsSelector';
 import SegmentList from './SegmentList';
@@ -71,13 +72,14 @@ import {
   getOutPath, getOutDir,
   isStoreBuild, dragPreventer,
   havePermissionToReadFile, resolvePathIfNeeded, getPathReadAccessError, findExistingHtml5FriendlyFile,
-  isOutOfSpaceError, readFileSize, readFileSizes, checkFileSizes, setDocumentTitle, readVideoTs, readDirRecursively, getImportProjectType,
+  isOutOfSpaceError, readFileSize, readFileSizes, checkFileSizes, getDisplayTitle, readVideoTs, readDirRecursively, getImportProjectType,
   calcShouldShowWaveform, calcShouldShowKeyframes, mediaSourceQualities, isExecaError, getStdioString,
   isMuxNotSupported,
   getDownloadMediaOutPath,
   isAbortedError,
   shootConfetti,
   isMasBuild,
+  compactTitleBarActive,
   readFileStats,
   makeSourceFileAccessError,
   transferTimestamps,
@@ -212,7 +214,9 @@ function App() {
   const zoomedDuration = isDurationValid(fileDuration) ? fileDuration / zoom : undefined;
   const zoomWindowEndTime = useMemo(() => (zoomedDuration != null ? zoomWindowStartTime + zoomedDuration : undefined), [zoomedDuration, zoomWindowStartTime]);
 
-  useEffect(() => setDocumentTitle({ filePath, working: working?.text, progress }), [progress, filePath, working?.text]);
+  const windowTitle = useMemo(() => getDisplayTitle({ filePath, working: working?.text, progress }), [filePath, working?.text, progress]);
+
+  useEffect(() => { document.title = windowTitle; }, [windowTitle]);
 
   useEffect(() => {
     mainApi.setProgressBar(progress ?? -1);
@@ -2527,6 +2531,8 @@ function App() {
           <SegColorsContext.Provider value={segColorsContext}>
             <UserSettingsContext.Provider value={userSettingsContext}>
               <div className={rootClass} style={rootStyle} id="app-root">
+                {compactTitleBarActive && <CompactTitleBar title={windowTitle} />}
+
                 <TopMenu
                   filePath={filePath}
                   fileFormat={fileFormat}
