@@ -234,7 +234,24 @@ export function getMapStreamsArgs({ startIndex = 0, outFormat, allFilesMeta, cop
   return args;
 }
 
-export function shouldCopyStreamByDefault(stream: FFprobeStream) {
+/**
+ * Whether the stream is a SMPTE/timecode track (e.g. MOV/MP4 `tmcd`).
+ *
+ * We need to recognize these to be able to drop the source's timecode track when embedding a new (cut-point
+ * adjusted) one. Otherwise the copied track would keep winning over the new timecode.
+ *
+ * Note: ffprobe often reports an empty `codec_name` for these tracks, so `codec_tag_string` is the more reliable
+ * field. The handler/tag checks are kept as fallbacks for files where the tag is not reported as `tmcd`.
+ */
+export function isTimecodeStream(stream: Pick<FFprobeStream, 'codec_type' | 'codec_name' | 'tags'> & { codec_tag_string?: string | undefined }) {
+  if (stream.codec_type !== 'data') return false;
+  return stream.codec_tag_string === 'tmcd'
+    || stream.codec_name === 'tmcd'
+    || stream.tags?.['handler_name'] === 'TimeCodeHandler'
+    || stream.tags?.['timecode'] != null;
+}
+
+export function shouldCopyStreamByDefault(stream: FFprobeStream, { includeTimecodeStreams = false }: { includeTimecodeStreams?: boolean } = {}) {
   // https://www.ffmpeg.org/doxygen/3.2/libavutil_2utils_8c_source.html#l00079
   switch (stream.codec_type) {
     case 'audio':
@@ -246,6 +263,9 @@ export function shouldCopyStreamByDefault(stream: FFprobeStream) {
       return stream.codec_name !== 'dvb_teletext'; // ffmpeg doesn't seem to support this https://github.com/mifi/lossless-cut/issues/1343
     }
     case 'data': {
+      // Copied by default when the "Update timecode on cut" feature is enabled, so that the source timecode is
+      // preserved when not cutting (and re-derived/replaced when cutting).
+      if (includeTimecodeStreams && isTimecodeStream(stream)) return true;
       // can handle gopro gpmd https://github.com/mifi/lossless-cut/issues/2134
       // no other data tracks are known to be supported (might be added later)
       return stream.codec_name === 'bin_data' && stream.codec_tag_string === 'gpmd';
