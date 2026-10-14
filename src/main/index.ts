@@ -25,7 +25,7 @@ import mitt from 'mitt';
 import logger from './logger.js';
 import menu from './menu.js';
 import * as configStore from './configStore.js';
-import { isLinux, isWindows, isMac, platform, arch, pathExists } from './util.js';
+import { isLinux, isWindows, isMac, platform, arch, pathExists, resolveCliFileArgs } from './util.js';
 import { appName } from './common.js';
 import attachContextMenu from './contextMenu.js';
 import HttpServer from './httpServer.js';
@@ -308,7 +308,7 @@ async function init() {
     // However when users start your app in command line, the system's single instance mechanism will be bypassed, and you have to use this method to ensure single instance.
     // This can be tested with one terminal: npx electron .
     // and another terminal: npx electron . path/to/file.mp4
-    app.on('second-instance', (_event, _commandLine, _workingDirectory, additionalData) => {
+    app.on('second-instance', (_event, _commandLine, workingDirectory, additionalData) => {
       // Someone tried to run a second instance, we should focus our window.
       if (mainWindow) {
         if (mainWindow.isMinimized()) mainWindow.restore();
@@ -322,7 +322,7 @@ async function init() {
       logger.info('second-instance', argv2);
 
       if (argv2['keyboardAction']) sendApiAction(argv2['keyboardAction'], argv2._.map((arg) => JSON.parse(String(arg))));
-      else if (argv2._ && argv2._.length > 0) openFilesEventually(argv2._.map(String));
+      else if (argv2._ && argv2._.length > 0) openFilesEventually(resolveCliFileArgs(argv2._.map(String), workingDirectory));
     });
 
     // Quit when all windows are closed.
