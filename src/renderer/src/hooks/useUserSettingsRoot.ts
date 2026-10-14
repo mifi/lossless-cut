@@ -179,6 +179,8 @@ export default function useUserSettingsRoot() {
   useEffect(() => safeSetConfig({ darkMode }), [darkMode]);
   const [preferStrongColors, setPreferStrongColors] = useState(safeGetConfigInitial('preferStrongColors'));
   useEffect(() => safeSetConfig({ preferStrongColors }), [preferStrongColors]);
+  const [compactTitleBar, setCompactTitleBar] = useState(safeGetConfigInitial('compactTitleBar'));
+  useEffect(() => safeSetConfig({ compactTitleBar }), [compactTitleBar]);
   const [outputFileNameMinZeroPadding, setOutputFileNameMinZeroPadding] = useState(safeGetConfigInitial('outputFileNameMinZeroPadding'));
   useEffect(() => safeSetConfig({ outputFileNameMinZeroPadding }), [outputFileNameMinZeroPadding]);
   const [cutFromAdjustmentFrames, setCutFromAdjustmentFrames] = useState(safeGetConfigInitial('cutFromAdjustmentFrames'));
@@ -307,6 +309,7 @@ export default function useUserSettingsRoot() {
     allowMultipleInstances,
     darkMode,
     preferStrongColors,
+    compactTitleBar,
     outputFileNameMinZeroPadding,
     cutFromAdjustmentFrames,
     cutToAdjustmentFrames,
@@ -389,6 +392,7 @@ export default function useUserSettingsRoot() {
     setAllowMultipleInstances,
     toggleDarkMode,
     setPreferStrongColors,
+    setCompactTitleBar,
     setOutputFileNameMinZeroPadding,
     setCutFromAdjustmentFrames,
     setCutToAdjustmentFrames,

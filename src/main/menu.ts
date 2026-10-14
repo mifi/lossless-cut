@@ -14,18 +14,26 @@ const esc = (val: string) => val.replaceAll('&', '&&');
 
 const { Menu } = electron;
 
-export default ({ app, mainWindow, newVersion, isStoreBuild, openExternal }: {
+export type TopMenuId = 'file' | 'edit' | 'segments' | 'view' | 'tools' | 'help';
+
+interface MenuParams {
   app: Electron.App,
   mainWindow: BrowserWindow,
   newVersion?: string | undefined,
   isStoreBuild: boolean,
   openExternal: (url: string) => void,
-}) => {
+}
+
+// Pure: builds the menu template without installing it anywhere, so it can be used both for the
+// normal always-visible application menu and for popping a single top-level item's submenu
+// (used by the compact title bar, see popupMenuItem below).
+export function buildMenuTemplate({ app, mainWindow, newVersion, isStoreBuild, openExternal }: MenuParams): (MenuItemConstructorOptions | MenuItem)[] {
   // todo TS mainWindow.webContents.send
   const menu: (MenuItemConstructorOptions | MenuItem)[] = [
     ...(process.platform === 'darwin' ? [{ role: 'appMenu' as const }] : []),
 
     {
+      id: 'file' satisfies TopMenuId,
       label: esc(t('File')),
       submenu: [
         {
@@ -236,6 +244,7 @@ export default ({ app, mainWindow, newVersion, isStoreBuild, openExternal }: {
     },
 
     {
+      id: 'edit' satisfies TopMenuId,
       label: esc(t('Edit')),
       submenu: [
         // https://github.com/mifi/lossless-cut/issues/610
@@ -269,6 +278,7 @@ export default ({ app, mainWindow, newVersion, isStoreBuild, openExternal }: {
     },
 
     {
+      id: 'segments' satisfies TopMenuId,
       label: esc(t('Segments')),
       submenu: [
         {
@@ -371,6 +381,7 @@ export default ({ app, mainWindow, newVersion, isStoreBuild, openExternal }: {
     },
 
     {
+      id: 'view' satisfies TopMenuId,
       label: esc(t('View')),
       submenu: [
         ...(process.platform === 'win32' ? [
@@ -390,6 +401,7 @@ export default ({ app, mainWindow, newVersion, isStoreBuild, openExternal }: {
     ...(process.platform === 'darwin' ? [{ role: 'windowMenu' as const, label: esc(t('Window')) }] : []),
 
     {
+      id: 'tools' satisfies TopMenuId,
       label: esc(t('Tools')),
       submenu: [
         {
@@ -443,6 +455,7 @@ export default ({ app, mainWindow, newVersion, isStoreBuild, openExternal }: {
       ],
     },
     {
+      id: 'help' satisfies TopMenuId,
       role: 'help',
       label: esc(t('Help')),
       submenu: [
@@ -519,5 +532,24 @@ export default ({ app, mainWindow, newVersion, isStoreBuild, openExternal }: {
     });
   }
 
-  Menu.setApplicationMenu(Menu.buildFromTemplate(menu));
+  return menu;
+}
+
+// Installs the application menu, or (when `compact` is enabled outside macOS) removes it, because
+// in that mode the top-level items are instead shown in the renderer's custom compact title bar
+// and opened on demand via popupMenuItem.
+export default (params: MenuParams & { compact?: boolean }) => {
+  if (params.compact && process.platform !== 'darwin') {
+    Menu.setApplicationMenu(null);
+    return;
+  }
+  Menu.setApplicationMenu(Menu.buildFromTemplate(buildMenuTemplate(params)));
 };
+
+// Used by the compact title bar to open a single top-level item's submenu as a native popup
+// positioned under the button that was clicked.
+export function popupMenuItem({ id, x, y, ...params }: MenuParams & { id: TopMenuId, x: number, y: number }) {
+  const builtMenu = Menu.buildFromTemplate(buildMenuTemplate(params));
+  const item = builtMenu.getMenuItemById(id);
+  item?.submenu?.popup({ window: params.mainWindow, x, y });
+}

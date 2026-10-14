@@ -162,6 +162,7 @@ const defaults: Config = {
   allowMultipleInstances: false,
   darkMode: true,
   preferStrongColors: false,
+  compactTitleBar: false,
   outputFileNameMinZeroPadding: 1,
   cutFromAdjustmentFrames: 0,
   cutToAdjustmentFrames: 0,

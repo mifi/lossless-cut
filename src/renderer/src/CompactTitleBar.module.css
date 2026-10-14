@@ -1,0 +1,50 @@
+.wrapper {
+  -webkit-app-region: drag;
+  display: flex;
+  align-items: center;
+  height: 34px;
+  padding-inline-start: .3em;
+  background-color: var(--gray-3);
+  color: var(--gray-12);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.menuButtons {
+  display: flex;
+  align-items: center;
+  gap: .2em;
+  flex-shrink: 0;
+}
+
+.menuButton {
+  -webkit-app-region: no-drag;
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  padding: .3em .6em;
+  border-radius: 4px;
+  cursor: default;
+}
+
+.menuButton:hover {
+  background-color: var(--gray-5);
+}
+
+.title {
+  flex-grow: 1;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: .9em;
+  opacity: 0.85;
+}
+
+/* Reserves space for the native minimize/maximize/close buttons drawn by the Window Controls
+   Overlay (titleBarOverlay) in the top-right corner. */
+.controlsSpacer {
+  flex-shrink: 0;
+  width: 140px;
+}

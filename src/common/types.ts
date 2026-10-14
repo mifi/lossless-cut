@@ -107,6 +107,7 @@ export interface Config {
   allowMultipleInstances: boolean,
   darkMode: boolean,
   preferStrongColors: boolean,
+  compactTitleBar: boolean,
   outputFileNameMinZeroPadding: number,
   cutFromAdjustmentFrames: number,
   cutToAdjustmentFrames: number,
