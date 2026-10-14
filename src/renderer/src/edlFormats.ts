@@ -80,7 +80,7 @@ export function parseCsv(csvStr: string, parseTimeFn: (a: string) => number | un
     }
 
     return [{
-      start: parseTimeFn(start) ?? 0,
+      start: parseTimeFn(start) ?? Number.NaN,
       ...(end != null && { end: parseTimeFn(end) }),
       ...(name != null && { name: name?.trim() }),
       ...(tagsColumns.length > 0 && {
@@ -283,9 +283,10 @@ export function parseXmeml(xmlStr: string) {
   }
 
   // todo
-  const mainTrack: { clipitem: { in: number, out: number, rate: { timebase: number } }[] } = Array.isArray(sequence.media.video.track) ? sequence.media.video.track[0] : sequence.media.video.track;
+  const mainTrack: { clipitem: { in: number, out: number, rate: { timebase: number } } | { in: number, out: number, rate: { timebase: number } }[] } = Array.isArray(sequence.media.video.track) ? sequence.media.video.track[0] : sequence.media.video.track;
 
-  return mainTrack.clipitem.map((item) => ({ start: item.in / item.rate.timebase, end: item.out / item.rate.timebase }));
+  const clipItems = Array.isArray(mainTrack.clipitem) ? mainTrack.clipitem : (mainTrack.clipitem != null ? [mainTrack.clipitem] : []);
+  return clipItems.map((item) => ({ start: item.in / item.rate.timebase, end: item.out / item.rate.timebase }));
 }
 
 export function parseFcpXml(xmlStr: string) {
@@ -296,13 +297,19 @@ export function parseFcpXml(xmlStr: string) {
 
   function getTime(str: string) {
     const match = str.match(/(\d+)\/(\d+)s/);
-    if (!match) throw new Error('Invalid attribute');
-    return parseInt(match[1]!, 10) / parseInt(match[2]!, 10);
+    if (match) return parseInt(match[1]!, 10) / parseInt(match[2]!, 10);
+    const secMatch = str.match(/^(\d+(?:\.\d+)?)s$/);
+    if (secMatch) return parseFloat(secMatch[1]!);
+    throw new Error('Invalid attribute');
   }
 
   // todo
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (fcpxml.library.event.project.sequence.spine['asset-clip'] as any[]).map((assetClip) => {
+  const rawClips = fcpxml?.library?.event?.project?.sequence?.spine?.['asset-clip'];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const assetClips: any[] = Array.isArray(rawClips) ? rawClips : (rawClips != null ? [rawClips] : []);
+  if (assetClips.length === 0) throw new Error('No <asset-clip> elements found in FCPXML');
+  return assetClips.map((assetClip) => {
     const start = getTime(assetClip['@_start']);
     const duration = getTime(assetClip['@_duration']);
     const end = start + duration;

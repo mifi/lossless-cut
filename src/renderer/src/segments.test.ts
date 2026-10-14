@@ -53,6 +53,8 @@ it('converts segments to chapters with single long segment', () => {
 });
 
 it('detects overlapping segments', () => {
+  expect(partitionIntoOverlappingRanges([])).toEqual([]);
+
   expect(partitionIntoOverlappingRanges([
     { start: 0, end: 1 },
   ])).toEqual([]);

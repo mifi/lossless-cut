@@ -198,6 +198,44 @@ it('parses fcpxml 1.9', async () => {
   expect(parseFcpXml(await readFixture('FCPXML_1_9.fcpxml'))).toMatchSnapshot();
 });
 
+it('parses xmeml with single clipitem', () => {
+  const xml = `
+  <xmeml version="4">
+    <sequence>
+      <media>
+        <video>
+          <track>
+            <clipitem>
+              <in>30</in>
+              <out>90</out>
+              <rate><timebase>30</timebase></rate>
+            </clipitem>
+          </track>
+        </video>
+      </media>
+    </sequence>
+  </xmeml>`;
+  expect(parseXmeml(xml)).toEqual([{ start: 1, end: 3 }]);
+});
+
+it('parses fcpxml with single asset-clip', () => {
+  const xml = `
+  <fcpxml version="1.9">
+    <library>
+      <event>
+        <project>
+          <sequence>
+            <spine>
+              <asset-clip offset="0s" name="Single" start="10/2s" duration="20/2s"/>
+            </spine>
+          </sequence>
+        </project>
+      </event>
+    </library>
+  </fcpxml>`;
+  expect(parseFcpXml(xml)).toEqual([{ start: 5, end: 15 }]);
+});
+
 // https://github.com/mifi/lossless-cut/issues/1024
 const csvFramesStr = `\
 0,155,EP106_SQ010_SH0010
