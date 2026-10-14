@@ -35,7 +35,7 @@ import type { FfmpegHwAccel } from '../../../common/types';
 import mainApi from '../mainApi';
 
 const remote = window.require('@electron/remote');
-const { ffmpeg: { blackDetect, silenceDetect } } = remote.require('./index.js');
+const { ffmpeg: { blackDetect, silenceDetect, cropDetect } } = remote.require('./index.js');
 
 
 type ParameterDialogParameters = Record<string, string>;
@@ -348,6 +348,27 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     const minChange = parameters['minChange'];
     invariant(minChange != null);
     await detectSegments({ name: 'sceneChanges', workingText: i18n.t('Detecting scene changes'), errorText: i18n.t('Failed to detect scene changes'), fn: async (onSegmentDetected) => ffmpegDetectSceneChanges({ filePath, streamId: activeVideoStreamIndex, minChange, onProgress: setProgress, onSegmentDetected, from: start, to: end, ffmpegHwaccel }) });
+  }, [activeVideoStreamIndex, currentCutSegOrWholeTimeline, deleteCurrentCutSeg, detectSegments, ffmpegHwaccel, filePath, getFfmpegParameters, setFfmpegParametersForDialog, setProgress, showParametersDialog]);
+
+  const detectCroppedScenes = useCallback(async () => {
+    const { start, end } = currentCutSegOrWholeTimeline;
+    deleteCurrentCutSeg();
+    const dialogType = 'cropdetect';
+    const parameters = await showParametersDialog({ title: i18n.t('Enter parameters'), dialogType, parameters: getFfmpegParameters(dialogType), docUrl: 'https://ffmpeg.org/ffmpeg-filters.html#cropdetect' });
+    if (parameters == null) return;
+    setFfmpegParametersForDialog(dialogType, parameters);
+    invariant(filePath != null)
+    const limit = parameters['limit'];
+    const reset_count = parameters['reset_count'];
+    const minSegmentDuration = parameters['minSegmentDuration'];
+    const width = parameters['width'];
+    const height = parameters['height'];
+    invariant(limit != null);
+    invariant(reset_count != null);
+    invariant(minSegmentDuration != null);
+    invariant(width != null);
+    invariant(height != null);
+    await detectSegments({ name: 'croppedScenes', workingText: i18n.t('Detecting cropped scenes'), errorText: i18n.t('Failed to detect cropped scenes'), fn: async (onSegmentDetected) => cropDetect({ filePath, streamId: activeVideoStreamIndex, limit, reset_count, minSegmentDuration, width, height , onProgress: setProgress, onSegmentDetected, from: start, to: end, ffmpegHwaccel }) });
   }, [activeVideoStreamIndex, currentCutSegOrWholeTimeline, deleteCurrentCutSeg, detectSegments, ffmpegHwaccel, filePath, getFfmpegParameters, setFfmpegParametersForDialog, setProgress, showParametersDialog]);
 
   const createSegmentsFromKeyframes = useCallback(async () => {
@@ -967,6 +988,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     detectBlackScenes,
     detectSilentScenes,
     detectSceneChanges,
+    detectCroppedScenes,
     removeSegment,
     invertAllSegments,
     fillSegmentsGaps,
