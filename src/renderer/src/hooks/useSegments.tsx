@@ -13,7 +13,7 @@ import { detectSceneChanges as ffmpegDetectSceneChanges, readFrames, mapTimesToS
 import { getFileSize, shuffleArray } from '../util';
 import { errorToast } from '../swal';
 import { createNumSegments as createNumSegmentsDialog, createFixedByteSixedSegments as createFixedByteSixedSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, labelSegmentDialog, askForAlignSegments, selectSegmentsByLabelDialog, askForSegmentDuration, toastError } from '../dialogs';
-import { createSegment, sortSegments, invertSegments, combineOverlappingSegments as combineOverlappingSegments2, combineSelectedSegments as combineSelectedSegments2, isDurationValid, addSegmentColorIndex, filterNonMarkers, makeDurationSegments, isInitialSegment } from '../segments';
+import { createSegment, sortSegments, invertSegments, combineOverlappingSegments as combineOverlappingSegments2, combineSelectedSegments as combineSelectedSegments2, isDurationValid, addSegmentColorIndex, filterNonMarkers, makeDurationSegments, isInitialSegment, getSegmentAroundPlayhead } from '../segments';
 import type { FfmpegDialog } from '../ffmpegParameters';
 import { parameters as allFfmpegParameters, getHint, getLabel } from '../ffmpegParameters';
 import { maxSegmentsAllowed } from '../util/constants';
@@ -42,7 +42,7 @@ type ParameterDialogParameters = Record<string, string>;
 
 const offsetSegments = (segments: DefiniteSegmentBase[], offset: number) => segments.map((s) => ({ start: s.start + offset, end: s.end + offset }));
 
-function useSegments({ filePath, workingRef, setWorking, setProgress, videoStream, fileDuration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode, appendFfmpegCommandLog, fileDurationNonZero, mainFileMeta, seekAbs, activeVideoStreamIndex, activeAudioStreamIndexes, handleError, showGenericDialog, simpleMode, ffmpegHwaccel }: {
+function useSegments({ filePath, workingRef, setWorking, setProgress, videoStream, fileDuration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode, appendFfmpegCommandLog, fileDurationNonZero, mainFileMeta, seekAbs, activeVideoStreamIndex, activeAudioStreamIndexes, handleError, showGenericDialog, simpleMode, ffmpegHwaccel, segmentAroundPlayheadBefore, segmentAroundPlayheadAfter }: {
   filePath?: string | undefined,
   workingRef: MutableRefObject<boolean>,
   setWorking: (w: { text: string, abortController?: AbortController } | undefined) => void,
@@ -66,6 +66,8 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
   showGenericDialog: ShowGenericDialog,
   simpleMode: boolean,
   ffmpegHwaccel: FfmpegHwAccel,
+  segmentAroundPlayheadBefore: number,
+  segmentAroundPlayheadAfter: number,
 }) {
   const { t } = useTranslation();
 
@@ -580,6 +582,20 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     }
   }, [getRelevantTime, fileDuration, cutSegments, simpleMode, createIndexedSegment, safeSetCutSegments]);
 
+  const addSegmentAroundPlayhead = useCallback(() => {
+    if (!checkFileOpened()) return;
+
+    // Capture once so both boundaries refer to the same frame during playback.
+    const time = getRelevantTime();
+    const segment = getSegmentAroundPlayhead({ time, duration: fileDuration, before: segmentAroundPlayheadBefore, after: segmentAroundPlayheadAfter });
+    if (segment == null) {
+      errorToast(i18n.t('No valid segments found'));
+      return;
+    }
+
+    loadCutSegments({ segments: [segment], append: true, clampDuration: fileDuration, getNextCurrentSegIndex: (segments) => segments.length - 1 });
+  }, [checkFileOpened, getRelevantTime, fileDuration, segmentAroundPlayheadBefore, segmentAroundPlayheadAfter, loadCutSegments]);
+
   const duplicateSegment = useCallback((segment: Pick<StateSegment, 'start' | 'end'> & Partial<Pick<StateSegment, 'name'>>) => {
     try {
       // Cannot duplicate if seg is not finished
@@ -978,6 +994,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     updateSegOrders,
     reorderSegsByStartTime,
     addSegment,
+    addSegmentAroundPlayhead,
     duplicateCurrentSegment,
     duplicateSegment,
     setCutStart,

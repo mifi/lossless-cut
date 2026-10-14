@@ -6,6 +6,8 @@ Please read the documentation before creating an issue. Thank you 🙏
 
 - **Q:** Is there a keyboard shortcut to do X?
   - **A:** First check the Keyboard shortcuts dialog. If you cannot find your shortcut there, [see this issue.](https://github.com/mifi/lossless-cut/issues/254)
+- **Q:** How can I quickly create a segment around the playhead?
+  - **A:** Choose **Segments → Create segment around playhead**, or assign it a shortcut in **Keyboard & mouse shortcuts**. It creates an editable segment using the current playhead, with 15 seconds before and after by default. Change each duration in Settings under **Keyboard, mouse and input**. The segment is shortened at the start or end of the file; existing segments are kept (except the initial full-file segment). You can undo it or export it normally. A zero-length result does not create a segment.
 - **Q:** How can I import multiple files into my project and edit them together?
   - **A:** LosslessCut is not a [non-linear editor](https://github.com/mifi/lossless-cut/issues/976) (like Adobe Premiere) and it is not a linear editor (like Avidemux) - it is something in-between. You create segments on the timeline and the segments represent which portions of video will be exported. If you want more advanced workflows, you have to do it in multiple separate operations.
 - **Q:** Can LosslessCut be automated using a CLI or API or do external post-processing?

@@ -129,6 +129,10 @@ export default function useUserSettingsRoot() {
   useEffect(() => safeSetConfig({ keyboardSeekSpeed2 }), [keyboardSeekSpeed2]);
   const [keyboardSeekSpeed3, setKeyboardSeekSpeed3] = useState(safeGetConfigInitial('keyboardSeekSpeed3'));
   useEffect(() => safeSetConfig({ keyboardSeekSpeed3 }), [keyboardSeekSpeed3]);
+  const [segmentAroundPlayheadBefore, setSegmentAroundPlayheadBefore] = useState(safeGetConfigInitial('segmentAroundPlayheadBefore'));
+  useEffect(() => safeSetConfig({ segmentAroundPlayheadBefore }), [segmentAroundPlayheadBefore]);
+  const [segmentAroundPlayheadAfter, setSegmentAroundPlayheadAfter] = useState(safeGetConfigInitial('segmentAroundPlayheadAfter'));
+  useEffect(() => safeSetConfig({ segmentAroundPlayheadAfter }), [segmentAroundPlayheadAfter]);
 
   const [treatInputFileModifiedTimeAsStart, setTreatInputFileModifiedTimeAsStart] = useState(safeGetConfigInitial('treatInputFileModifiedTimeAsStart'));
   useEffect(() => safeSetConfig({ treatInputFileModifiedTimeAsStart }), [treatInputFileModifiedTimeAsStart]);
@@ -283,6 +287,8 @@ export default function useUserSettingsRoot() {
     keyboardNormalSeekSpeed,
     keyboardSeekSpeed2,
     keyboardSeekSpeed3,
+    segmentAroundPlayheadBefore,
+    segmentAroundPlayheadAfter,
     treatInputFileModifiedTimeAsStart,
     treatOutputFileModifiedTimeAsStart,
     outFormatLocked,
@@ -364,6 +370,8 @@ export default function useUserSettingsRoot() {
     setKeyboardNormalSeekSpeed,
     setKeyboardSeekSpeed2,
     setKeyboardSeekSpeed3,
+    setSegmentAroundPlayheadBefore,
+    setSegmentAroundPlayheadAfter,
     setTreatInputFileModifiedTimeAsStart,
     setTreatOutputFileModifiedTimeAsStart,
     setOutFormatLocked,

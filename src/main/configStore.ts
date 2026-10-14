@@ -137,6 +137,8 @@ const defaults: Config = {
   keyboardNormalSeekSpeed: 1,
   keyboardSeekSpeed2: 10,
   keyboardSeekSpeed3: 60,
+  segmentAroundPlayheadBefore: 15,
+  segmentAroundPlayheadAfter: 15,
   treatInputFileModifiedTimeAsStart: true,
   treatOutputFileModifiedTimeAsStart: true,
   outFormatLocked: undefined,

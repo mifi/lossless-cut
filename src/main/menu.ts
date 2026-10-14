@@ -272,6 +272,12 @@ export default ({ app, mainWindow, newVersion, isStoreBuild, openExternal }: {
       label: esc(t('Segments')),
       submenu: [
         {
+          label: esc(t('Create segment around playhead')),
+          click() {
+            mainWindow.webContents.send('addSegmentAroundPlayhead');
+          },
+        },
+        {
           label: esc(t('Create num segments')),
           click() {
             mainWindow.webContents.send('createNumSegments');
