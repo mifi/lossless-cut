@@ -5,8 +5,9 @@ import invariant from 'tiny-invariant';
 import i18n from 'i18next';
 
 import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, getHtml5ifiedPath, unlinkWithRetry, getFrameDuration, isMac, html5ifiedPrefix, html5dummySuffix, assertFileExists } from '../util';
-import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, getDuration, createChaptersFromSegments, readFileFfprobeMeta, getExperimentalArgs, getVideoTimescaleArgs, logStdoutStderr, runFfmpegConcat, RefuseOverwriteError, runFfmpeg } from '../ffmpeg';
-import { getMapStreamsArgs, getStreamIdsToCopy } from '../util/streams';
+import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, getDuration, createChaptersFromSegments, readFileFfprobeMeta, getExperimentalArgs, getVideoTimescaleArgs, logStdoutStderr, runFfmpegConcat, RefuseOverwriteError, runFfmpeg, readFramesAroundTime } from '../ffmpeg';
+import { getMapStreamsArgs, getStreamIdsToCopy, getRealVideoStreams } from '../util/streams';
+import getAlignedKeyframeCut from '../keyframeCut';
 import { needsSmartCut, getCodecParams } from '../smartcut';
 import { getGuaranteedSegments, isDurationValid } from '../segments';
 import type { FFprobeStream } from '../../../common/ffprobe';
@@ -277,9 +278,29 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
     // Don't cut if not needed: https://github.com/mifi/lossless-cut/issues/50
     const cutFromArgs = cuttingStart ? ['-ss', formatFfmpegNumber(cutFromWithAdjustment)] : [];
-    const cutToArgs = cuttingEnd ? ['-t', formatFfmpegNumber(cutDuration)] : [];
-
     const copyFileStreamsFiltered = copyFileStreams.filter(({ streamIds }) => streamIds.length > 0);
+
+    let alignedCut: ReturnType<typeof getAlignedKeyframeCut>;
+    const singleInput = copyFileStreamsFiltered.length === 1 ? copyFileStreamsFiltered[0] : undefined;
+    if (ssBeforeInput && singleInput != null && areWeCutting && outputPlaybackRate === 1 && !paramsByFile.get(singleInput.path)?.offset) {
+      const meta = allFilesMeta[singleInput.path]!;
+      const videos = getRealVideoStreams(meta.streams.filter((stream) => singleInput.streamIds.includes(stream.index)));
+      const video = videos.length === 1 ? videos[0] : undefined;
+      // Limit the workaround to the affected Matroska/B-frame case. Other seek
+      // modes, non-keyframe cuts, external inputs, and speed changes keep their
+      // existing behavior.
+      if (meta.format.format_name.split(',').includes('matroska') && video?.has_b_frames && Number(video.start_time) === 0) {
+        const times = [...new Set([cutFromWithAdjustment, cutToWithAdjustment])];
+        const frameGroups = await Promise.all(times.map((aroundTime) => readFramesAroundTime({ filePath: singleInput.path, streamIndex: video.index, aroundTime, window: 10 })));
+        alignedCut = getAlignedKeyframeCut({ frames: frameGroups.flat(), cutFrom: cutFromWithAdjustment, cutTo: cutToWithAdjustment });
+        if (alignedCut != null) {
+          cutDuration = alignedCut.duration;
+          console.log('Trimming keyframe-aligned Matroska cut at decode timestamps', alignedCut);
+        }
+      }
+    }
+    const cutToArgs = cuttingEnd ? ['-t', formatFfmpegNumber(cutDuration)] : [];
+    const outputSeekArgs = alignedCut?.outputSeek != null ? ['-ss', formatFfmpegNumber(alignedCut.outputSeek)] : [];
 
     // remove -avoid_negative_ts make_zero when not cutting start (no -ss), or else some videos get blank first frame in QuickLook
     const avoidNegativeTsArgs = cuttingStart && avoidNegativeTs && ssBeforeInput ? ['-avoid_negative_ts', String(avoidNegativeTs)] : [];
@@ -307,7 +328,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       : [
         ...(ssBeforeInput ? cutFromArgs : []),
         '-i', copyFileStreamsFiltered[0]!.path,
-        ...(!ssBeforeInput ? cutFromArgs : []),
+        ...(!ssBeforeInput ? cutFromArgs : outputSeekArgs),
         ...cutToArgs,
       ];
 
@@ -441,6 +462,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
       ...rotationArgs,
 
+      ...(alignedCut != null ? ['-copyts'] : []),
       ...inputFilesArgs,
       ...getChaptersInputArgs(chaptersPath),
 
@@ -476,7 +498,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     logStdoutStderr(result);
 
     await transferTimestamps({ inPath: filePath, outPath, cutFrom, cutTo, treatInputFileModifiedTimeAsStart, duration: isDurationValid(fileDuration) ? fileDuration : undefined, treatOutputFileModifiedTimeAsStart });
-  }, [appendFfmpegCommandLog, cutFromAdjustmentFrames, cutToAdjustmentFrames, filePath, getOutputPlaybackRateArgs, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
+  }, [appendFfmpegCommandLog, cutFromAdjustmentFrames, cutToAdjustmentFrames, filePath, getOutputPlaybackRateArgs, outputPlaybackRate, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
 
   // inspired by https://gist.github.com/fernandoherreradelasheras/5eca67f4200f1a7cc8281747da08496e
   const cutEncodeSmartPart = useCallback(async ({ cutFrom, cutTo, outPath, outFormat, videoCodec, videoBitrate, videoTimebase, allFilesMeta, copyFileStreams, videoStreamIndex, ffmpegExperimental, hasBFrames }: {

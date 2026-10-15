@@ -70,7 +70,8 @@ function getIntervalAroundTime(time: number, window: number) {
 export interface Frame {
   time: number,
   createdAt: Date,
-  keyframe: boolean
+  keyframe: boolean,
+  decodeTime?: number | undefined,
 }
 
 export async function readFrames({ filePath, from, to, streamIndex }: {
@@ -80,12 +81,13 @@ export async function readFrames({ filePath, from, to, streamIndex }: {
   streamIndex: number,
 }) {
   const intervalsArgs = from != null && to != null ? ['-read_intervals', `${from}%${to}`] : [];
-  const { stdout } = await runFfprobe(['-v', 'error', ...intervalsArgs, '-show_packets', '-select_streams', String(streamIndex), '-show_entries', 'packet=pts_time,flags', '-of', 'json', filePath], { logCli: false });
+  const { stdout } = await runFfprobe(['-v', 'error', ...intervalsArgs, '-show_packets', '-select_streams', String(streamIndex), '-show_entries', 'packet=pts_time,dts_time,flags', '-of', 'json', filePath], { logCli: false });
   const createdAt = new Date();
-  const packetsFiltered: Frame[] = (JSON.parse(new TextDecoder().decode(stdout)).packets as { flags: string, pts_time: string }[])
+  const packetsFiltered: Frame[] = (JSON.parse(new TextDecoder().decode(stdout)).packets as { flags: string, pts_time: string, dts_time?: string }[])
     .map((p) => ({
       keyframe: p.flags[0] === 'K',
       time: parseFloat(p.pts_time),
+      decodeTime: Number.isFinite(Number(p.dts_time)) ? Number(p.dts_time) : undefined,
       createdAt,
     }))
     .filter((p) => !Number.isNaN(p.time));
