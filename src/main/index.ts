@@ -321,7 +321,8 @@ async function init() {
 
       logger.info('second-instance', argv2);
 
-      if (argv2['keyboardAction']) sendApiAction(argv2['keyboardAction'], resolveCliKeyboardActionArgs(argv2['keyboardAction'], argv2._.map((arg) => JSON.parse(String(arg))), workingDirectory));
+      const { keyboardAction } = argv2;
+      if (keyboardAction) sendApiAction(keyboardAction, resolveCliKeyboardActionArgs(keyboardAction, argv2._.map((arg) => JSON.parse(String(arg))), workingDirectory));
       else if (argv2._ && argv2._.length > 0) openFilesEventually(resolveCliFileArgs(argv2._.map(String), workingDirectory));
     });
 
