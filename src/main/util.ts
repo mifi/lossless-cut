@@ -26,7 +26,8 @@ export const resolveCliFileArgs = (args: string[], workingDirectory: string) => 
 
 // `--keyboard-action openFiles '["file.mp4"]'` takes file paths too
 export function resolveCliKeyboardActionArgs(action: string, args: unknown[], workingDirectory: string) {
+  if (action !== 'openFiles') return args;
   const parsed = openFilesActionArgsSchema.safeParse(args);
-  if (action !== 'openFiles' || !parsed.success) return args;
+  if (!parsed.success) return args;
   return [resolveCliFileArgs(parsed.data[0], workingDirectory)];
 }

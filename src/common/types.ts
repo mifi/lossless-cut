@@ -129,4 +129,3 @@ export interface ApiActionRequest {
 export type Html5ifyMode = 'fastest' | 'fast-audio-remux' | 'fast-audio' | 'fast' | 'slow' | 'slow-audio' | 'slowest';
 
 export const openFilesActionArgsSchema = z.tuple([z.string().array()]);
-export type OpenFilesActionArgs = z.infer<typeof openFilesActionArgsSchema>
