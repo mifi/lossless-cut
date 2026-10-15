@@ -25,7 +25,7 @@ import mitt from 'mitt';
 import logger from './logger.js';
 import menu from './menu.js';
 import * as configStore from './configStore.js';
-import { isLinux, isWindows, isMac, platform, arch, pathExists, resolveCliFileArgs, resolveCliKeyboardActionArgs, parseSettingsJson } from './util.js';
+import { isLinux, isWindows, isMac, platform, arch, pathExists, resolveCliFileArgs, parseCliKeyboardActionArgs, parseSettingsJson } from './util.js';
 import { appName } from './common.js';
 import attachContextMenu from './contextMenu.js';
 import HttpServer from './httpServer.js';
@@ -323,8 +323,13 @@ async function init() {
       logger.info('second-instance', argv2);
 
       const { keyboardAction } = argv2;
-      if (keyboardAction) sendApiAction(keyboardAction, resolveCliKeyboardActionArgs(keyboardAction, argv2._.map((arg) => JSON.parse(String(arg))), workingDirectory));
-      else if (argv2._ && argv2._.length > 0) openFilesEventually(resolveCliFileArgs(argv2._.map(String), workingDirectory));
+      if (keyboardAction) {
+        try {
+          sendApiAction(keyboardAction, parseCliKeyboardActionArgs(keyboardAction, argv2._, workingDirectory));
+        } catch (err) {
+          logger.error('Invalid --keyboard-action arguments', err);
+        }
+      } else if (argv2._ && argv2._.length > 0) openFilesEventually(resolveCliFileArgs(argv2._.map(String), workingDirectory));
     });
 
     // Quit when all windows are closed.
@@ -378,7 +383,8 @@ async function init() {
 
     logger.info('CLI arguments', argv);
     // Only if no files to open already (open-file might have already added some files)
-    if (filesToOpen.length === 0) filesToOpen = argv._.map(String);
+    if (argv['keyboardAction'] != null) logger.warn('--keyboard-action only works with an already running instance, ignoring it and its arguments');
+    else if (filesToOpen.length === 0) filesToOpen = argv._.map(String);
     const { settingsJson } = argv;
 
     setDisableNetworking(argv['disableNetworking']);

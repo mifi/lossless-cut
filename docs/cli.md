@@ -62,7 +62,7 @@ LosslessCut file1.mp4 file2.mkv
 
 ### Keyboard actions, `--keyboard-action`
 
-Simulate a keyboard press action in an already running instance of LosslessCut. **Note that the command will return immediately**, so if you want to run multiple actions in a sequence, you have to `sleep` for a few seconds between the commands. Alternatively if you want to wait until an action has finished processing, use the [HTTP API](api.md) instead.
+Simulate a keyboard press action in an already running instance of LosslessCut (if no instance is running, the action is ignored). Arguments are JSON or JSON5. **Note that the command will return immediately**, so if you want to run multiple actions in a sequence, you have to `sleep` for a few seconds between the commands. Alternatively if you want to wait until an action has finished processing, use the [HTTP API](api.md) instead.
 
 ### Available keyboard actions
 
