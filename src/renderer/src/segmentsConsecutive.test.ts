@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { combineConsecutiveSegments } from './segments';
 import type { StateSegment } from './types';
+import { keyBindingSchema } from '../../common/types';
 
 const makeSegment = (segId: string, start: number, end?: number): StateSegment => ({
   segId, start, end, name: segId, segColorIndex: 1, selected: true,
@@ -75,4 +76,9 @@ describe('combineConsecutiveSegments', () => {
     const input = [makeSegment('a', 10), makeSegment('b', 10)];
     expect(combine(['a'], input)?.segments).toEqual([{ ...input[0], end: undefined }]);
   });
+});
+
+it('accepts the merge shortcut through settings validation', () => {
+  const binding = { keys: 'ControlLeft+ShiftLeft+KeyC', action: 'combineConsecutiveSegments' };
+  expect(keyBindingSchema.parse(binding)).toEqual(binding);
 });

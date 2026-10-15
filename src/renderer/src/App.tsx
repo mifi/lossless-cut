@@ -83,6 +83,7 @@ import {
   transferTimestamps,
   getOutFileExtension,
   getSuffixedOutPath,
+  calculateTimelinePercent,
 } from './util';
 import getSwal, { errorToast, showPlaybackFailedMessage } from './swal';
 import { adjustRate } from './util/rate-calculator';
@@ -97,8 +98,9 @@ import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './uti
 import BigWaveform from './components/BigWaveform';
 
 import type { BatchFile, Chapter, EdlExportType, EdlFileType, EdlImportType, FfmpegCommandLog, FilesMeta, FileStats, ParamsByFile, PlaybackMode, SegmentBase, SegmentColorIndex, SegmentTags, StateSegment, TunerType } from './types';
-import { goToTimecodeDirectArgsSchema, openFilesActionArgsSchema } from './types';
+import { goToTimecodeDirectArgsSchema } from './types';
 import type { CaptureFormat, KeyboardAction, ApiActionRequest } from '../../common/types.js';
+import { openFilesActionArgsSchema } from '../../common/types.js';
 import type { FFprobeChapter, FFprobeStream } from '../../common/ffprobe.js';
 import { parseFfprobeDuration } from '../../common/util.js';
 
@@ -625,17 +627,35 @@ function App() {
 
   const usingPreviewFile = !!previewFilePath;
   const effectiveFilePath = previewFilePath || filePath;
-  const fileUri = useMemo(() => {
+  useEffect(() => {
     if (!effectiveFilePath) return undefined;
-    const uri = pathToFileURL(effectiveFilePath).href;
-    // https://github.com/mifi/lossless-cut/issues/1674
-    if (cacheBuster !== 0) {
-      const qs = new URLSearchParams();
-      qs.set('t', String(cacheBuster));
-      return `${uri}?${qs.toString()}`;
+    const url = (() => {
+      const baseUrl = pathToFileURL(effectiveFilePath).href;
+      // https://github.com/mifi/lossless-cut/issues/1674
+      if (cacheBuster !== 0) {
+        const qs = new URLSearchParams();
+        qs.set('t', String(cacheBuster));
+        return `${baseUrl}?${qs.toString()}`;
+      }
+      return baseUrl;
+    })();
+
+    const video = videoRef.current;
+    if (video) {
+      video.src = url;
     }
-    return uri;
-  }, [cacheBuster, effectiveFilePath]);
+
+    return () => {
+      // Apparently this is the correct way to unload a video
+      // See commit 260603f613632850c301f72f0fca267b06b688a0
+      // and https://github.com/mifi/lossless-cut/issues/2907
+      if (video) {
+        video.pause();
+        video.removeAttribute('src'); // empty source
+        video.load();
+      }
+    };
+  }, [cacheBuster, effectiveFilePath, videoRef]);
 
   const resetState = useCallback(() => {
     console.log('State reset');
@@ -1687,6 +1707,8 @@ function App() {
 
       if (err instanceof RefuseOverwriteError) {
         showRefuseToOverwrite();
+      } else if (err instanceof UserFacingError) {
+        errorToast(err.message);
       } else {
         errorToast(i18n.t('Failed to extract all streams'));
         console.error('Failed to extract all streams', err);
@@ -1982,6 +2004,15 @@ function App() {
     }
   }, [videoContainerRef, videoRef]);
 
+  const [fullscreen, setFullscreen] = useState(false);
+
+  useEffect(() => {
+    const onFullscreenChange = () => setFullscreen(screenfull.isFullscreen);
+    if (!screenfull.isEnabled) return undefined;
+    screenfull.on('change', onFullscreenChange);
+    return () => screenfull.off('change', onFullscreenChange);
+  }, []);
+
   const onEditSegmentTags = useCallback((index: number) => {
     setEditingSegmentTagsSegmentIndex(index);
     const seg = cutSegments[index];
@@ -2221,6 +2252,8 @@ function App() {
 
       if (err instanceof RefuseOverwriteError) {
         showRefuseToOverwrite();
+      } else if (err instanceof UserFacingError) {
+        errorToast(err.message);
       } else {
         errorToast(i18n.t('Failed to extract track'));
         console.error('Failed to extract track', err);
@@ -2235,7 +2268,6 @@ function App() {
   const onVideoError = useCallback(async () => {
     const error = videoRef.current?.error;
     if (!error) return;
-    if (!fileUri) return; // Probably MEDIA_ELEMENT_ERROR: Empty src attribute
 
     console.error('onVideoError', error.message, error.code);
 
@@ -2290,7 +2322,7 @@ function App() {
     } catch (err) {
       toastError(err);
     }
-  }, [videoRef, fileUri, usingPreviewFile, filePath, workingRef, setWorking, mainFileFormat?.duration, hasVideo, hasAudio, html5ifyAndLoadWithPreferences, customOutDir, showNotNativelySupportedMessage]);
+  }, [videoRef, usingPreviewFile, filePath, workingRef, setWorking, mainFileFormat?.duration, hasVideo, hasAudio, html5ifyAndLoadWithPreferences, customOutDir, showNotNativelySupportedMessage]);
 
   const onVideoFocus = useCallback<FocusEventHandler<HTMLVideoElement>>((e) => {
     // prevent video element from stealing focus in fullscreen mode https://github.com/mifi/lossless-cut/issues/543#issuecomment-1868167775
@@ -2457,7 +2489,7 @@ function App() {
 
   useEffect(() => {
     (async () => {
-      setFfmpegInfo(await runStartupCheck({ onError: ({ title, message }) => setGenericError({ title, err: message }) }));
+      setFfmpegInfo(await runStartupCheck({ customFfPath, onError: ({ title, message }) => setGenericError({ title, err: message }) }));
     })();
   }, [customFfPath, setGenericError]);
 
@@ -2544,7 +2576,6 @@ function App() {
                         muted={playbackVolume === 0 || compatPlayerEnabled}
                         ref={videoRef}
                         style={videoStyle}
-                        src={fileUri}
                         onPlay={onStartPlaying}
                         onPause={onStopPlaying}
                         onAbort={onVideoAbort}
@@ -2601,6 +2632,10 @@ function App() {
                           />
                         )}
                       </div>
+                    )}
+
+                    {fullscreen && (
+                      <div style={{ position: 'absolute', bottom: 0, left: 0, height: '.1em', backgroundColor: 'var(--red-9)', width: calculateTimelinePercent(playerTime, fileDuration) }} />
                     )}
                   </div>
 

@@ -11,14 +11,14 @@ export function createMediaSourceStream(params: Parameters<typeof createMediaSou
   const abort = () => abortController.abort();
 
   async function attemptCreateProcess({ forceColorspace }: { forceColorspace?: boolean } = {}) {
-    const { videoStreamIndex, audioStreamIndexes, seekTo } = params;
+    const { videoStreamIndex, audioStreams, seekTo } = params;
 
-    logger.info('Starting preview process', { videoStreamIndex, audioStreamIndexes, seekTo });
+    logger.info('Starting preview process', { videoStreamIndex, audioStreams, seekTo });
     const process = createMediaSourceProcess({ ...params, forceColorspace });
 
     // eslint-disable-next-line unicorn/prefer-add-event-listener
     abortController.signal.onabort = () => {
-      logger.info('Aborting preview process', { videoStreamIndex, audioStreamIndexes, seekTo });
+      logger.info('Aborting preview process', { videoStreamIndex, audioStreams, seekTo });
       process.kill('SIGKILL');
     };
 

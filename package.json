@@ -31,6 +31,7 @@
     "generate-icon": "mkdirp icon-build build-resources/appx && node script/generateIcon.ts",
     "generate-licenses": "yarn licenses generate-disclaimer -R > licenses.txt && echo '\n\nffmpeg is licensed under GPL v2+:\n\nhttp://www.gnu.org/licenses/old-licenses/gpl-2.0.html' >> licenses.txt",
     "generate-docs": "node script/generateDocs.ts",
+    "release-notes": "node script/releaseNotes.ts",
     "check-licenses": "node script/checkLicenses.ts",
     "upload-artifacts": "node script/uploadArtifacts.ts"
   },
@@ -69,7 +70,6 @@
     "@types/express": "^5.0.6",
     "@types/leaflet": "^1.9.21",
     "@types/lodash": "^4.17.24",
-    "@types/lodash.debounce": "^4.0.9",
     "@types/luxon": "^3.7.1",
     "@types/mime-types": "^3.0.1",
     "@types/morgan": "^1.9.10",
@@ -87,11 +87,11 @@
     "@vitejs/plugin-react": "^5.2.0",
     "canvas-confetti": "^1.9.4",
     "color": "^5.0.3",
-    "csv-parse": "^6.2.1",
+    "csv-parse": "^7.0.2",
     "csv-stringify": "^6.7.0",
     "data-uri-to-buffer": "^8.0.0",
-    "electron": "^42.3.0",
-    "electron-builder": "26.8.1",
+    "electron": "^42.10.0",
+    "electron-builder": "26.16.1",
     "electron-vite": "^5.0.0",
     "eslint": "^8.57.1",
     "eslint-config-mifi": "^0.1.1",
@@ -102,7 +102,6 @@
     "eslint-plugin-unicorn": "56.0.1",
     "fast-xml-parser": "^5.8.0",
     "i18next-cli": "^1.58.1",
-    "icon-gen": "^5.0.0",
     "immer": "^11.1.8",
     "ky": "^2.0.2",
     "leaflet": "^1.9.4",
@@ -125,7 +124,7 @@
     "react-use": "^17.6.0",
     "sass": "^1.100.0",
     "screenfull": "^6.0.2",
-    "sharp": "^0.34.5",
+    "sharp": "^0.35.5",
     "smpte-timecode": "^1.3.6",
     "sweetalert2": "^11.26.17",
     "sweetalert2-react-content": "^5.1.1",
@@ -135,8 +134,8 @@
     "typescript": "~6.0.3",
     "use-debounce": "^10.1.1",
     "use-trace-update": "^1.3.3",
-    "vite": "7.3.3",
-    "vitest": "^4.1.8",
+    "vite": "7.3.5",
+    "vitest": "^4.1.11",
     "yargs": "^18.0.0"
   },
   "dependencies": {
@@ -148,15 +147,13 @@
     "electron-unhandled": "^5.0.0",
     "execa": "^9.6.1",
     "express": "^5.2.1",
-    "express-async-handler": "^1.2.0",
     "file-type": "^22.0.1",
     "i18next": "^26.3.0",
     "i18next-fs-backend": "^2.6.6",
     "json5": "^2.2.3",
-    "lodash.debounce": "^4.0.8",
     "mime-types": "^3.0.2",
     "mitt": "patch:mitt@npm%3A3.0.1#~/.yarn/patches/mitt-npm-3.0.1-ce290ffa77.patch",
-    "morgan": "^1.10.1",
+    "morgan": "^1.12.1",
     "semver": "^7.8.1",
     "string-to-stream": "^3.0.1",
     "winston": "^3.19.0",
@@ -164,6 +161,9 @@
     "zod": "^4.4.3"
   },
   "build": {
+    "toolsets": {
+      "appimage": "1.0.3"
+    },
     "directories": {
       "buildResources": "build-resources"
     },
@@ -172,6 +172,13 @@
     ],
     "asar": {
       "smartUnpack": false
+    },
+    "electronFuses": {
+      "runAsNode": false,
+      "enableNodeOptionsEnvironmentVariable": false,
+      "enableNodeCliInspectArguments": false,
+      "enableEmbeddedAsarIntegrityValidation": true,
+      "onlyLoadAppFromAsar": true
     },
     "appId": "no.mifi.losslesscut",
     "artifactName": "${productName}-${os}-${arch}.${ext}",
@@ -303,8 +310,32 @@
           "name": "Audio",
           "description": "Audio files",
           "role": "Viewer"
+        },
+        {
+          "ext": [
+            "llc"
+          ],
+          "name": "LosslessCut project",
+          "description": "LosslessCut project",
+          "role": "Editor"
         }
-      ]
+      ],
+      "extendInfo": {
+        "UTExportedTypeDeclarations": [
+          {
+            "UTTypeIdentifier": "no.mifi.losslesscut.project",
+            "UTTypeDescription": "LosslessCut project",
+            "UTTypeConformsTo": [
+              "public.plain-text"
+            ],
+            "UTTypeTagSpecification": {
+              "public.filename-extension": [
+                "llc"
+              ]
+            }
+          }
+        ]
+      }
     },
     "mas": {
       "artifactName": "${productName}-${os}-${arch}-DONT-USE-THIS-FILE.${ext}",
@@ -438,6 +469,14 @@
           "name": "Audio",
           "description": "Audio files",
           "role": "Viewer"
+        },
+        {
+          "ext": [
+            "llc"
+          ],
+          "name": "LosslessCut project",
+          "description": "LosslessCut project",
+          "role": "Editor"
         }
       ]
     },
@@ -482,15 +521,11 @@
       ]
     },
     "snap": {
-      "base": "core22",
       "plugs": [
         "default",
         "removable-media"
       ]
     }
   },
-  "resolutions": {
-    "icon-gen/sharp": "^0.34.5"
-  },
-  "packageManager": "yarn@4.11.0"
+  "packageManager": "yarn@4.18.0"
 }

@@ -50,7 +50,7 @@
  * @property {string} [sample_fmt] The audio sample format (not present if codec_type is not "audio")
  * @property {string} [sample_rate] A string representation of an integer showing the audio sample rate (not present if codec_type is not "audio")
  * @property {number} [channels] The audio track's channel count (not present if codec_type is not "audio")
- * @property {'stereo'|'mono'} [channel_layout] The audio track's channel layout (e.g. "stereo") (not present if codec_type is not "audio")
+ * @property {string} [channel_layout] The audio track's channel layout (e.g. "stereo") (not present if codec_type is not "audio")
  * @property {number} [bits_per_sample] Bits per audio sample (might not be accurate, may just be 0) (not present if codec_type is not "audio")
  * @property {number} [width] The video stream width (also available for images) (not present if codec_type is not "video")
  * @property {number} [height] The stream height (also available for images) (not present if codec_type is not "video")
@@ -346,7 +346,7 @@ export interface FFprobeStream {
   /**
    * The audio track's channel layout (e.g. "stereo") (not present if codec_type is not "audio")
    */
-  channel_layout?: 'stereo' | 'mono',
+  channel_layout?: string,
 
   /**
    * Bits per audio sample (might not be accurate, may just be 0) (not present if codec_type is not "audio")

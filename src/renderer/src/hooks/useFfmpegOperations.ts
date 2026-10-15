@@ -6,7 +6,7 @@ import i18n from 'i18next';
 
 import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, getHtml5ifiedPath, unlinkWithRetry, getFrameDuration, isMac, html5ifiedPrefix, html5dummySuffix, assertFileExists } from '../util';
 import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, getDuration, createChaptersFromSegments, readFileFfprobeMeta, getExperimentalArgs, getVideoTimescaleArgs, logStdoutStderr, runFfmpegConcat, RefuseOverwriteError, runFfmpeg, readFramesAroundTime } from '../ffmpeg';
-import { getMapStreamsArgs, getStreamIdsToCopy, getRealVideoStreams } from '../util/streams';
+import { getEffectiveAvoidNegativeTs, getMapStreamsArgs, getStreamIdsToCopy, isCopyingOnlyAudioStreams, getRealVideoStreams } from '../util/streams';
 import getAlignedKeyframeCut from '../keyframeCut';
 import { needsSmartCut, getCodecParams } from '../smartcut';
 import { getGuaranteedSegments, isDurationValid } from '../segments';
@@ -16,7 +16,7 @@ import { deleteDispositionValue, type AllFilesMeta, type Chapter, type CopyfileS
 import type { LossyMode } from '../../../main';
 import { UserFacingError } from '../../errors';
 import mainApi from '../mainApi';
-import { formatFfmpegNumber, getHwaccelArgs } from '../../../common/util';
+import { formatFfmpegNumber, getFixChannelLayoutFilter, getHwaccelArgs, hasCustomChannelLayout } from '../../../common/util';
 
 const { join, resolve, dirname } = window.require('node:path');
 const { writeFile, mkdir, access, constants: { W_OK } } = window.require('node:fs/promises');
@@ -42,7 +42,19 @@ async function writeChaptersFfmetadata(outDir: string, chapters: Chapter[] | und
   return path;
 }
 
-function getMovFlags({ preserveMovData, movFastStart }: { preserveMovData: boolean, movFastStart: boolean }) {
+// Muxers implemented by ffmpeg's movenc.c, i.e. the ones that accept `-movflags`.
+// Note: deliberately not util/streams.ts `isMov`, which is a narrower, UI oriented list.
+const movencFormats = new Set(['3g2', '3gp', 'f4v', 'ipod', 'ismv', 'mov', 'mp4', 'psp']);
+
+// Muxers implemented by ffmpeg's matroskaenc.c, i.e. the ones that accept `-default_mode`.
+const matroskaencFormats = new Set(['matroska', 'webm']);
+
+// ffmpeg tolerates private options belonging to a different muxer, but they add noise to the command line
+// that we log, show in "Last commands" and include in error reports - which makes troubleshooting harder.
+// If the output format is unknown, ffmpeg infers the muxer from the file extension, so keep the flags to be safe.
+function getMovFlags({ outFormat, preserveMovData, movFastStart }: { outFormat: string | undefined, preserveMovData: boolean, movFastStart: boolean }) {
+  if (outFormat != null && !movencFormats.has(outFormat)) return [];
+
   const flags: string[] = [];
 
   // https://video.stackexchange.com/a/26084/29486
@@ -56,7 +68,10 @@ function getMovFlags({ preserveMovData, movFastStart }: { preserveMovData: boole
   return flags.flatMap((flag) => ['-movflags', flag]);
 }
 
-function getMatroskaFlags() {
+// same as getMovFlags, but for the matroska muxer's private options
+function getMatroskaFlags(outFormat: string | undefined) {
+  if (outFormat != null && !matroskaencFormats.has(outFormat)) return [];
+
   return [
     '-default_mode', 'infer_no_subs',
     // because it makes sense to not force subtitles disposition to "default" if they were not default in the input file
@@ -202,8 +217,8 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
         ...(chaptersInputIndex != null ? ['-map_chapters', String(chaptersInputIndex)] : []),
 
-        ...getMovFlags({ preserveMovData, movFastStart }),
-        ...getMatroskaFlags(),
+        ...getMovFlags({ outFormat, preserveMovData, movFastStart }),
+        ...getMatroskaFlags(outFormat),
 
         // See https://github.com/mifi/lossless-cut/issues/170
         '-ignore_unknown',
@@ -303,7 +318,14 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     const outputSeekArgs = alignedCut?.outputSeek != null ? ['-ss', formatFfmpegNumber(alignedCut.outputSeek)] : [];
 
     // remove -avoid_negative_ts make_zero when not cutting start (no -ss), or else some videos get blank first frame in QuickLook
-    const avoidNegativeTsArgs = cuttingStart && avoidNegativeTs && ssBeforeInput ? ['-avoid_negative_ts', String(avoidNegativeTs)] : [];
+    // note: `make_zero`/`make_non_negative` get downgraded to `auto` when copying a cover art stream, or else the
+    // output gets the segment's end time as its duration, see https://github.com/mifi/lossless-cut/issues/3009
+    const effectiveAvoidNegativeTs = getEffectiveAvoidNegativeTs({ avoidNegativeTs, allFilesMeta, copyFileStreams: copyFileStreamsFiltered });
+    const avoidNegativeTsArgs = cuttingStart && effectiveAvoidNegativeTs && ssBeforeInput ? ['-avoid_negative_ts', String(effectiveAvoidNegativeTs)] : [];
+
+    // When seeking after the input (keyframe cut mode off), keep leading non-keyframe packets for audio-only exports,
+    // or else the cut starts late for audio files where not all packets are flagged as keyframes. See isCopyingOnlyAudioStreams
+    const copyInitialNonKeyframesArgs = cuttingStart && !ssBeforeInput && isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams: copyFileStreamsFiltered }) ? ['-copyinkf'] : [];
 
     // If cutting multiple files, `-ss` must be before `-i`, regardless of `ssBeforeInput` choice
     // and it seems that `-t` must be after `-i` #896
@@ -468,6 +490,8 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
       ...avoidNegativeTsArgs,
 
+      ...copyInitialNonKeyframesArgs,
+
       ...mapStreamsArgs,
 
       ...getPreserveMetadata(),
@@ -476,8 +500,8 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
       ...(shortestFlag ? ['-shortest'] : []),
 
-      ...getMovFlags({ preserveMovData, movFastStart }),
-      ...getMatroskaFlags(),
+      ...getMovFlags({ outFormat, preserveMovData, movFastStart }),
+      ...getMatroskaFlags(outFormat),
 
       ...customFileMetadataArgs,
 
@@ -894,6 +918,26 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       }
     }
 
+    // Some files (e.g. DV/DVCPRO .mov) have an audio channel layout that ffmpeg cannot resample or
+    // downmix, which makes the encode fail. Relabel the channels first so that it can.
+    // We don't pass -map, so ffmpeg picks one audio stream by itself. Therefore only apply the filter
+    // when every audio stream has the same channel count, or the filter might not match the picked stream.
+    let audioFilterArgs: string[] = [];
+    if (audio != null && audio !== 'copy') {
+      try {
+        const audioStreams = (await readFileFfprobeMeta(filePathArg)).streams.filter((s) => s.codec_type === 'audio');
+        const unsupportedStream = audioStreams.find((s) => hasCustomChannelLayout(s.channel_layout));
+        const sameChannelCount = new Set(audioStreams.map((s) => s.channels)).size === 1;
+        if (unsupportedStream != null && sameChannelCount) {
+          const filter = getFixChannelLayoutFilter({ channels: unsupportedStream.channels, channelLayout: unsupportedStream.channel_layout });
+          if (filter != null) audioFilterArgs = ['-af', filter];
+        }
+      } catch (err) {
+        // don't fail the conversion just because we couldn't probe it
+        console.warn('Failed to probe audio channel layout', err);
+      }
+    }
+
     const ffmpegArgs = [
       '-hide_banner',
       ...((video === 'lq' || video === 'hq') ? getHwaccelArgs(ffmpegHwaccel) : []),
@@ -901,6 +945,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       '-i', filePathArg,
       ...videoArgs,
       ...audioArgs,
+      ...audioFilterArgs,
       '-sn',
       '-y', outPath,
     ];
@@ -1103,6 +1148,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     customOutDir: string | undefined, streams: FFprobeStream[],
   }) => {
     invariant(filePath != null);
+    await assertFileExists(filePath);
 
     const attachmentStreams = streams.filter((s) => s.codec_type === 'attachment');
     const nonAttachmentStreams = streams.filter((s) => s.codec_type !== 'attachment');

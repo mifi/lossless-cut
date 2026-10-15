@@ -115,6 +115,7 @@ Before releasing, consider [Maintainence chores](#maintainence-chores) first.
   - `git checkout master`
   - `git merge stores`
 - Bump [snap version](https://snapcraft.io/losslesscut/releases)
+- Copy paste release notes and post to discord & twitter and re-tweet
 
 ### After releasing existing GitHub version in Stores
 
@@ -127,6 +128,12 @@ Before releasing, consider [Maintainence chores](#maintainence-chores) first.
 ### More info
 
 For per-platform build/signing setup, see [this article](https://mifi.no/blog/automated-electron-build-with-release-to-mac-app-store-microsoft-store-snapcraft/).
+
+### Yearly Apple certificate renewal
+
+Apple sends an email when certificates are about to expire. Follow the "Certificate creation/renewal" section of [the article above](https://mifi.no/blog/automated-electron-build-with-release-to-mac-app-store-microsoft-store-snapcraft/). LosslessCut specifics:
+
+- The Development provisioning profile is kept in the project root as `LosslessCut_Dev.provisionprofile` (gitignored) — replace it with the newly downloaded one, for use with `yarn pack-mas-dev`.
 
 ## Minimum OS version
 
@@ -169,6 +176,28 @@ Links:
 ```bash
 yarn upgrade-interactive
 ```
+
+Install scripts are disabled by default (`enableScripts: false` in `.yarnrc.yml`), so a
+compromised dependency cannot run code just by being installed. No package currently needs an
+exception.
+
+Installs print `YN0004: <package> lists build scripts, but all build scripts have been
+disabled` for packages whose scripts were skipped. That warning is not by itself a problem —
+most install scripts in modern packages are no-ops that only matter when a prebuilt native
+binary is missing, and some are explicitly skipped under Yarn anyway. Before granting an
+exception, read the script and check whether the package actually works without it.
+
+If it genuinely needs to build, opt that one package in:
+
+```json
+"dependenciesMeta": {
+  "<package>": { "built": true }
+}
+```
+
+Prefer verifying over granting: a package that silently fails to build usually surfaces as a
+confusing runtime error, but a blanket `enableScripts: true` gives every dependency in the
+tree the right to execute code at install time.
 
 ### i18n strings / Weblate
 

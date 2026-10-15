@@ -1,5 +1,6 @@
 import invariant from 'tiny-invariant';
 import type { FFprobeStream, FFprobeStreamDisposition } from '../../../common/ffprobe';
+import type { AvoidNegativeTs } from '../../../common/types';
 import type { AllFilesMeta, ChromiumHTMLAudioElement, ChromiumHTMLVideoElement, CopyfileStreams, LiteFFprobeStream } from '../types';
 import type { FileStream } from '../ffmpeg';
 
@@ -260,6 +261,58 @@ export const attachedPicDisposition = 'attached_pic';
 
 export function isStreamThumbnail(stream: Pick<FFprobeStream, 'codec_type' | 'disposition'>) {
   return stream && stream.codec_type === 'video' && stream.disposition?.[attachedPicDisposition] === 1;
+}
+
+/** Resolves every stream that is going to be copied to the output. Unknown streams resolve to `undefined`. */
+const getCopiedStreams = ({ allFilesMeta, copyFileStreams }: {
+  allFilesMeta: AllFilesStreamMeta,
+  copyFileStreams: CopyfileStreams,
+}) => copyFileStreams.flatMap(({ path, streamIds }) => streamIds.map((streamId) => getStreamById({ allFilesMeta, streamId, path })));
+
+function isCopyingThumbnailStream({ allFilesMeta, copyFileStreams }: {
+  allFilesMeta: AllFilesStreamMeta,
+  copyFileStreams: CopyfileStreams,
+}) {
+  return getCopiedStreams({ allFilesMeta, copyFileStreams }).some((stream) => stream != null && isStreamThumbnail(stream));
+}
+
+/**
+ * Whether every stream being copied is audio (cover art is allowed, as it is a single keyframe anyway).
+ *
+ * Used to decide whether it is safe to pass `-copyinkf` to ffmpeg. When cutting with `-ss` *after* `-i`
+ * (keyframe cut mode off), ffmpeg's stream copy discards packets until it sees one flagged as a keyframe.
+ * Audio packets are normally all keyframes, but some audio-only MP4/M4A files carry a sync sample table
+ * (`stss`) that only flags a packet every few seconds. The cut then starts seconds late (and with `-ss`
+ * before `-i`, seconds early). `-copyinkf` makes ffmpeg keep the leading non-keyframe packets, which is
+ * harmless for audio, but would produce broken frames for video, so we only do it for audio-only exports.
+ */
+export function isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams }: {
+  allFilesMeta: AllFilesStreamMeta,
+  copyFileStreams: CopyfileStreams,
+}) {
+  const streams = getCopiedStreams({ allFilesMeta, copyFileStreams });
+  return streams.length > 0 && streams.every((stream) => stream != null && (stream.codec_type === 'audio' || isStreamThumbnail(stream)));
+}
+
+/**
+ * An attached_pic (cover art) packet has no position on the timeline - the demuxer emits it at
+ * pts 0. When seeking before the input (`-ss` before `-i`), ffmpeg applies the seek offset to it
+ * anyway, dragging it to -(cut from), and it reaches the muxer first. `make_zero` and
+ * `make_non_negative` then derive their file-wide correction from that packet and shift every
+ * other stream back by +(cut from), undoing the rebase to zero that the audio/video already got.
+ * The mov muxer records that as an empty edit, so the muxed duration ends up being the segment's
+ * end time in the source instead of its length (ffprobe hides this, but e.g. VLC reports it).
+ * `auto` doesn't use the attached pic as its reference, so it cuts correctly and keeps the cover art.
+ * See https://github.com/mifi/lossless-cut/issues/3009
+ */
+export function getEffectiveAvoidNegativeTs({ avoidNegativeTs, allFilesMeta, copyFileStreams }: {
+  avoidNegativeTs: AvoidNegativeTs | undefined,
+  allFilesMeta: AllFilesStreamMeta,
+  copyFileStreams: CopyfileStreams,
+}) {
+  if (avoidNegativeTs !== 'make_zero' && avoidNegativeTs !== 'make_non_negative') return avoidNegativeTs;
+  if (!isCopyingThumbnailStream({ allFilesMeta, copyFileStreams })) return avoidNegativeTs;
+  return 'auto';
 }
 
 export const getAudioStreams = <T extends Pick<FFprobeStream, 'codec_type'>>(streams: T[]) => streams.filter((stream) => stream.codec_type === 'audio');

@@ -11,6 +11,7 @@ If the video exports successfully without any error from LosslessCut, but it doe
 - Select a different **output format** (`matroska` and `mov` support a lot of codecs.)
 - Try the same operation with a different file (same codec or different codec) and see whether it's a problem with just that one particular file.
 - Enable the **Experimental Flag** under **Settings** before trying again.
+- If your files are stored in a cloud-synced folder (e.g. iCloud Drive, OneDrive, Google Drive, Dropbox, Proton Drive) or on a network drive, try copying them to a local folder (e.g. Desktop) and also export to a local folder. Cloud sync clients may serve incomplete (on-demand) files or interfere with files while they are being written.
 
 ## Cutting times are not accurate
 
@@ -19,6 +20,7 @@ Each segment's *start cut time* will normally (but not always) be "rounded" to t
 - Your mileage may vary when it comes to *Keyframe cut mode*. Most common video files need *Keyframe cut* enabled, but you may need to try both values. [ffmpeg](https://trac.ffmpeg.org/wiki/Seeking) also has documentation about these two seek/cut modes. In `ffmpeg`, *Keyframe cut* corresponds to `-ss` *before* `-i`.
 - Try to change `avoid_negative_ts` (in export options).
 - Try also to set the **start**-cutpoint a few frames **before or after** the nearest keyframe (may also solve audio sync issues).
+- For **audio-only** files (e.g. `.m4a`) where the cut starts several seconds early with *Keyframe cut mode* on, and late with it off, the file probably has a sync sample table that only flags some audio packets as keyframes. Disable *Keyframe cut mode*, or first export the whole file without cutting (this remuxes it and drops the table) and then cut the exported file.
 - You may try to enable the experimental "Smart cut" mode to allow cutting between keyframes. However it will not work for many files.
 - Currently, the only way to review the exported file (to check the actual cutpoints) is to run the export (possibly with only one segment enabled to speed up) and then manually check the output file. See also [#1887](https://github.com/mifi/lossless-cut/issues/1887)
 

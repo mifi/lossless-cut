@@ -180,7 +180,8 @@ export async function transferTimestamps({ inPath, outPath, cutFrom = 0, cutTo: 
 
 export function filenamify(name: string) {
   // \p{L}\p{N} are unicode letters and numbers
-  return name.replaceAll(/[^\p{L}\p{N} .-_]/gu, '_');
+  // Keep the hyphen last so it is treated literally rather than as a character-class range.
+  return name.replaceAll(/[^\p{L}\p{N} ._-]/gu, '_');
 }
 
 // eslint-disable-next-line space-before-function-paren
@@ -558,4 +559,10 @@ export function shootConfetti(options?: confetti.Options) {
     },
     ...options,
   });
+}
+
+export const calculateTimelinePos = (time: number | undefined, fileDuration: number | undefined) => (time !== undefined ? Math.min(time / (fileDuration || 1), 1) : undefined);
+export function calculateTimelinePercent(time: number | undefined, fileDuration: number | undefined) {
+  const pos = calculateTimelinePos(time, fileDuration);
+  return pos !== undefined ? `${pos * 100}%` : undefined;
 }

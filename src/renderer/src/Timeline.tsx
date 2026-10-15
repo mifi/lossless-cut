@@ -20,6 +20,7 @@ import type { FormatTimecode, InverseCutSegment, OverviewWaveform, RenderableWav
 import Button from './components/Button';
 import type { UseSegments } from './hooks/useSegments';
 import { keyMap } from './hooks/useTimelineScroll';
+import { calculateTimelinePercent as calculateTimelinePercent2, calculateTimelinePos } from './util';
 
 
 type CalculateTimelinePercent = (time: number) => string | undefined;
@@ -171,22 +172,17 @@ function Timeline({
   // See https://github.com/mifi/lossless-cut/issues/259
   const areKeyframesTooClose = keyFramesInZoomWindow.length > zoom * 200;
 
-  const calculateTimelinePos = useCallback((time: number | undefined) => (time !== undefined ? Math.min(time / fileDurationNonZero, 1) : undefined), [fileDurationNonZero]);
-  const calculateTimelinePercent = useCallback((time: number | undefined) => {
-    const pos = calculateTimelinePos(time);
-    return pos !== undefined ? `${pos * 100}%` : undefined;
-  }, [calculateTimelinePos]);
-
-  const currentTimePercent = useMemo(() => calculateTimelinePercent(playerTime), [calculateTimelinePercent, playerTime]);
-  const commandedTimePercent = useMemo(() => calculateTimelinePercent(commandedTime), [calculateTimelinePercent, commandedTime]);
+  const calculateTimelinePercent = useCallback((time: number) => calculateTimelinePercent2(time, fileDurationNonZero), [fileDurationNonZero]);
+  const currentTimePercent = useMemo(() => calculateTimelinePercent2(playerTime, fileDurationNonZero), [fileDurationNonZero, playerTime]);
+  const commandedTimePercent = useMemo(() => calculateTimelinePercent2(commandedTime, fileDurationNonZero), [commandedTime, fileDurationNonZero]);
 
   const timeOfInterestPosPixels = useMemo(() => {
     // https://github.com/mifi/lossless-cut/issues/676
-    const pos = calculateTimelinePos(relevantTime);
+    const pos = calculateTimelinePos(relevantTime, fileDurationNonZero);
     // eslint-disable-next-line react-hooks/refs
     if (pos != null && timelineScrollerRef.current) return pos * zoom * timelineScrollerRef.current!.offsetWidth;
     return undefined;
-  }, [calculateTimelinePos, relevantTime, zoom]);
+  }, [fileDurationNonZero, relevantTime, zoom]);
 
   const calcZoomWindowStartTime = useCallback(() => (timelineScrollerRef.current
     ? (timelineScrollerRef.current.scrollLeft / (timelineScrollerRef.current!.offsetWidth * zoom)) * fileDurationNonZero
@@ -350,6 +346,13 @@ function Timeline({
     window.addEventListener('mousemove', onMouseMove);
   }, [fileDurationNonZero, getMouseTimelinePos, seekAbs, segmentMouseModifierKey, setCutTime, zoom]);
 
+  const onMouseMove = useCallback<MouseEventHandler<HTMLDivElement>>((e) => {
+    if (!mouseDownRef.current) { // no button pressed
+      setHoveringTime(getMouseTimelinePos(e.nativeEvent));
+    }
+    e.preventDefault();
+  }, [getMouseTimelinePos, setHoveringTime]);
+
   const onMouseOut = useCallback(() => setHoveringTime(undefined), [setHoveringTime]);
 
   const contextMenuTemplate = useMemo(() => [
@@ -369,6 +372,7 @@ function Timeline({
       className="no-user-select"
       style={{ position: 'relative', borderTop: '1px solid var(--gray-7)', borderBottom: '1px solid var(--gray-7)' }}
       onMouseDown={onMouseDown}
+      onMouseMove={onMouseMove}
       // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
       onMouseOut={onMouseOut}
     >

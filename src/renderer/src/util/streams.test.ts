@@ -1,6 +1,6 @@
 import { test, expect } from 'vitest';
 
-import { getMapStreamsArgs, getStreamIdsToCopy } from './streams';
+import { getEffectiveAvoidNegativeTs, getMapStreamsArgs, getStreamIdsToCopy, isCopyingOnlyAudioStreams } from './streams';
 import type { FFprobeStreamDisposition } from '../../../common/ffprobe';
 import type { LiteFFprobeStream } from '../types';
 
@@ -163,4 +163,58 @@ test('ass output', () => {
   })).toEqual([
     '-map', '0:0', '-c:0', 'ass',
   ]);
+});
+
+// stream 0 of `streams1` is an attached_pic (cover art) mjpeg stream
+// https://github.com/mifi/lossless-cut/issues/3009
+test('getEffectiveAvoidNegativeTs, downgrades to auto when copying cover art', () => {
+  expect(getEffectiveAvoidNegativeTs({
+    avoidNegativeTs: 'make_zero',
+    allFilesMeta,
+    copyFileStreams: [{ path, streamIds: [0, 1] }],
+  })).toBe('auto');
+
+  expect(getEffectiveAvoidNegativeTs({
+    avoidNegativeTs: 'make_non_negative',
+    allFilesMeta,
+    copyFileStreams: [{ path, streamIds: [0, 1] }],
+  })).toBe('auto');
+});
+
+test('getEffectiveAvoidNegativeTs, passes through when not copying cover art', () => {
+  expect(getEffectiveAvoidNegativeTs({
+    avoidNegativeTs: 'make_zero',
+    allFilesMeta,
+    copyFileStreams: [{ path, streamIds: [1, 2] }],
+  })).toBe('make_zero');
+
+  expect(getEffectiveAvoidNegativeTs({
+    avoidNegativeTs: 'make_non_negative',
+    allFilesMeta,
+    copyFileStreams: [{ path, streamIds: [1, 2] }],
+  })).toBe('make_non_negative');
+});
+
+test('getEffectiveAvoidNegativeTs, leaves other values alone', () => {
+  const copyFileStreams = [{ path, streamIds: [0, 1] }];
+
+  expect(getEffectiveAvoidNegativeTs({ avoidNegativeTs: 'auto', allFilesMeta, copyFileStreams })).toBe('auto');
+  expect(getEffectiveAvoidNegativeTs({ avoidNegativeTs: 'disabled', allFilesMeta, copyFileStreams })).toBe('disabled');
+  expect(getEffectiveAvoidNegativeTs({ avoidNegativeTs: undefined, allFilesMeta, copyFileStreams })).toBe(undefined);
+});
+
+// see `streams1`: 0 is cover art, 1 and 4 are audio, 2 and 3 are video, 7 is subtitle
+test('isCopyingOnlyAudioStreams, true for audio (with or without cover art)', () => {
+  expect(isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams: [{ path, streamIds: [1] }] })).toBe(true);
+  expect(isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams: [{ path, streamIds: [1, 4] }] })).toBe(true);
+  expect(isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams: [{ path, streamIds: [0, 1] }] })).toBe(true);
+  expect(isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams: [{ path, streamIds: [0] }] })).toBe(true); // cover art alone is a single keyframe, so harmless
+});
+
+test('isCopyingOnlyAudioStreams, false when copying video, subtitles, unknown streams or nothing', () => {
+  expect(isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams: [{ path, streamIds: [1, 2] }] })).toBe(false);
+  expect(isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams: [{ path, streamIds: [1, 7] }] })).toBe(false);
+  expect(isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams: [{ path, streamIds: [1, 99] }] })).toBe(false);
+  expect(isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams: [{ path, streamIds: [] }] })).toBe(false);
+  expect(isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams: [] })).toBe(false);
 });

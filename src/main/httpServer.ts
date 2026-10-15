@@ -1,11 +1,11 @@
 import express from 'express';
 import morgan from 'morgan';
 import http from 'node:http';
-import asyncHandler from 'express-async-handler';
 import assert from 'node:assert';
 
 import { homepageUrl } from '../common/constants.js';
 import logger from './logger.js';
+import { isRequestAllowed } from './httpServerUtil.js';
 import type { AppEvent } from './index.js';
 
 
@@ -23,29 +23,39 @@ export default ({ port, onKeyboardAction, onAwaitAppEvent }: {
     stream: { write: (message) => logger.info(message.trim()) },
   }));
 
+  app.use((req, res, next) => {
+    const { host, origin } = req.headers;
+    if (!isRequestAllowed({ host, origin, port })) {
+      logger.warn('Rejecting HTTP API request', { host, origin });
+      res.status(403).send('Forbidden: the HTTP API can only be called by programs running on this computer, not from a web browser.');
+      return;
+    }
+    next();
+  });
+
   const apiRouter = express.Router();
 
   app.get('/', (_req, res) => res.send(`See ${homepageUrl}`));
 
   app.use('/api', apiRouter);
 
-  apiRouter.post('/action/:action', express.json(), asyncHandler(async (req, res) => {
+  apiRouter.post('/action/:action', express.json(), async (req, res) => {
     // eslint-disable-next-line prefer-destructuring
     const action = req.params['action'];
     const parameters = req.body as unknown;
     assert(action != null);
     await onKeyboardAction(action, [parameters]);
     res.end();
-  }));
+  });
 
-  apiRouter.post('/await-event/:eventName', express.json(), asyncHandler(async (req, res) => {
+  apiRouter.post('/await-event/:eventName', express.json(), async (req, res) => {
     const { eventName } = req.params;
     assert(eventName != null);
     const abortController = new AbortController();
     abortController.signal.addEventListener('abort', () => logger.info('await-event aborted', eventName));
     req.on('close', () => abortController.abort());
     res.json(await onAwaitAppEvent(eventName, abortController.signal));
-  }));
+  });
 
   const server = http.createServer(app);
 

@@ -29,7 +29,7 @@ LosslessCut file1.mp4 file2.mkv
 
 ## Override settings (experimental) 🧪
 
-See [available settings](https://github.com/mifi/lossless-cut/blob/master/src/main/configStore.ts). Note that this is subject to change in newer versions. ⚠️ If you specify incorrect values it could corrupt your configuration file. You may use JSON or JSON5. Example:
+See [available settings](https://github.com/mifi/lossless-cut/blob/master/src/main/configStore.ts). Note that this is subject to change in newer versions. Settings are validated, and if the JSON or any key or value is invalid, none of them are applied (see the log for details). You may use JSON or JSON5. Example:
 ```bash
 LosslessCut --settings-json '{captureFormat:"jpeg", "keyframeCut":true}'
 ```
@@ -52,7 +52,7 @@ LosslessCut --settings-json '{customFfPath:"/path/to/folder/containing/ffmpeg_an
 
 ## Controlling a running instance (experimental) 🧪
 
-If you have the "Allow multiple instances" setting enabled, you can control a running instance of LosslessCut from the outside, using for example a command line. You do this by issuing messages to it through the `LosslessCut` command. Currently only keyboard actions are supported, and you can open files. *Note that this is considered experimental and the API may change at any time.*
+If you have the "Allow multiple instances" setting disabled (the default), you can control a running instance of LosslessCut from the outside, using for example a command line. You do this by issuing messages to it through the `LosslessCut` command. Currently only keyboard actions are supported, and you can open files. *Note that this is considered experimental and the API may change at any time.*
 
 ### Open files in running instance
 
@@ -62,7 +62,7 @@ LosslessCut file1.mp4 file2.mkv
 
 ### Keyboard actions, `--keyboard-action`
 
-Simulate a keyboard press action in an already running instance of LosslessCut. **Note that the command will return immediately**, so if you want to run multiple actions in a sequence, you have to `sleep` for a few seconds between the commands. Alternatively if you want to wait until an action has finished processing, use the [HTTP API](api.md) instead.
+Simulate a keyboard press action in an already running instance of LosslessCut (if none is running, or "Allow multiple instances" is enabled, the action is ignored). Arguments are JSON or JSON5. **Note that the command will return immediately**, so if you want to run multiple actions in a sequence, you have to `sleep` for a few seconds between the commands. Alternatively if you want to wait until an action has finished processing, use the [HTTP API](api.md) instead.
 
 ### Available keyboard actions
 

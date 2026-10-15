@@ -25,7 +25,8 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest, windows-11-arm]
+        # todo upgrade to windows-latest (VS 2026, but it requires node-gyp 13 which is not included yet as of node 24) https://claude.ai/code/session_012stY6nPsqDo5EPAXYnZ8WJ
+        os: [macos-latest, ubuntu-latest, windows-2022, windows-11-arm]
 #        os: [windows-latest]
 
     steps:
@@ -46,22 +47,11 @@ jobs:
           cache: 'yarn'
 
       # This global ffmpeg is used for screenshots (see below)
-      - uses: FedericoCarboni/setup-ffmpeg@v3
-        if: matrix.os != 'windows-11-arm'
-        with:
-          ffmpeg-version: release
-          # arm not yet supported on macos
-          architecture: ${{ matrix.os == 'macos-latest' && 'x64' || '' }}
-          # Linking type of the binaries. Use "shared" to download shared binaries and 
-          # "static" for statically linked ones. Shared builds are currently only available
-          # for windows releases. Defaults to "static"
-          linking-type: static
-          # As of version 3 of this action, builds are no longer downloaded from GitHub
-          # except on Windows: https://github.com/GyanD/codexffmpeg/releases.
-          github-token: ${{ github.server_url == 'https://github.com' && github.token || '' }}
+      - uses: AnimMouse/setup-ffmpeg@v1
+        if: (runner.os != 'Windows' || runner.arch != 'ARM64') && env.is_tag == 'false'
 
       - run: ffmpeg -version
-        if: matrix.os != 'windows-11-arm'
+        if: runner.os != 'Windows' || runner.arch != 'ARM64'
 
        # Because of timeout issue https://github.com/yarnpkg/yarn/issues/4890
       - run: yarn install --immutable --network-timeout 1000000
@@ -91,47 +81,57 @@ jobs:
           yarn download-ffmpeg-darwin-arm64
 
       - name: (Windows x64) Download ffmpeg
-        if: matrix.os == 'windows-latest'
+        if: runner.os == 'Windows' && runner.arch == 'X64'
         run: yarn download-ffmpeg-win32-x64
 
       - name: (Windows ARM64) Download ffmpeg
-        if: matrix.os == 'windows-11-arm'
+        if: runner.os == 'Windows' && runner.arch == 'ARM64'
         run: yarn download-ffmpeg-win32-arm64
 
       - name: (Linux) Download ffmpeg
         if: runner.os == 'Linux'
         run: yarn download-ffmpeg-linux-x64
 
-      - name: Build/release Electron app
-        uses: samuelmeuli/action-electron-builder@v1
-        with:
-          # GitHub token, automatically provided to the action
-          # (No need to define this secret in the repo settings)
-          github_token: ${{ secrets.github_token }}
+      - run: ls -R ffmpeg
 
-          # If the commit is tagged with a version (e.g. "v1.0.0"),
-          # release the app after building
-          release: ${{ env.is_tag == 'true' }}
+      - run: yarn build
 
-          max_attempts: 1
-
-          mac_certs: ${{ secrets.mac_certs }}
-          mac_certs_password: ${{ secrets.mac_certs_password }}
-
-# Temporary 30 day certificate, not needed for Microsoft Store
-#          windows_certs: ${{ secrets.windows_certs }}
-#          windows_certs_password: ${{ secrets.windows_certs_password }}
+      - name: Build for macOS
+        if: runner.os == 'macOS'
+        run: yarn electron-builder --publish onTag
         env:
+          GH_TOKEN: ${{ secrets.github_token }}
+          # signing:
+          CSC_LINK: ${{ secrets.mac_certs }}
+          CSC_KEY_PASSWORD: ${{ secrets.mac_certs_password }}
+          # notarization:
           APPLE_API_KEY: ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.api_key_id }}.p8
           APPLE_API_KEY_ID: ${{ secrets.api_key_id }}
           APPLE_API_ISSUER: ${{ secrets.api_key_issuer_id }}
 
+      - name: Build for Linux
+        if: runner.os == 'Linux'
+        run: yarn electron-builder --publish onTag
+        env:
+          GH_TOKEN: ${{ secrets.github_token }}
+
+      - name: Build for Windows x64
+        if: runner.os == 'Windows' && runner.arch == 'X64'
+        run: yarn electron-builder --publish onTag --win --x64
+        env:
+          GH_TOKEN: ${{ secrets.github_token }}
+
+      - name: Build for Windows ARM64
+        if: runner.os == 'Windows' && runner.arch == 'ARM64'
+        run: yarn electron-builder --publish onTag --win --arm64
+        env:
+          GH_TOKEN: ${{ secrets.github_token }}
 
       - run: node script/e2e.ts 'dist/mac-arm64/LosslessCut.app/Contents/MacOS/LosslessCut' 0:none screenshot.jpeg
-        if: runner.os == 'macOS'
+        if: runner.os == 'macOS' && env.is_tag == 'false'
 
       - run: node script/e2e.ts 'dist\win-unpacked\LosslessCut.exe' desktop screenshot.jpeg
-        if: matrix.os == 'windows-latest'
+        if: runner.os == 'Windows' && runner.arch == 'X64' && env.is_tag == 'false'
 
       - run: |
           export DISPLAY=:0
@@ -139,7 +139,7 @@ jobs:
           sleep 5
           chmod +x dist/linux-unpacked/losslesscut
           node script/e2e.ts 'dist/linux-unpacked/losslesscut' ':0.0+0,0' screenshot.jpeg
-        if: runner.os == 'Linux'
+        if: runner.os == 'Linux' && env.is_tag == 'false'
 
       - name: (MacOS) Upload to Mac App Store
         if: runner.os == 'macOS' && env.is_tag == 'true'
@@ -170,10 +170,10 @@ jobs:
           ACTIONS_RUNTIME_TOKEN: ${{ env.ACTIONS_RUNTIME_TOKEN }}
           ACTIONS_RESULTS_URL: ${{ env.ACTIONS_RESULTS_URL }}
         run: |
-          yarn upload-artifacts dist/LosslessCut-win-${{ matrix.os == 'windows-11-arm' && 'arm64' || 'x64' }}.7z
+          yarn upload-artifacts dist/LosslessCut-win-${{ runner.arch == 'ARM64' && 'arm64' || 'x64' }}.7z
 
       - name: (Windows x64) Upload screenshot
-        if: matrix.os == 'windows-latest' && env.is_tag == 'false'
+        if: runner.os == 'Windows' && runner.arch == 'X64' && env.is_tag == 'false'
         env:
           ACTIONS_RUNTIME_TOKEN: ${{ env.ACTIONS_RUNTIME_TOKEN }}
           ACTIONS_RESULTS_URL: ${{ env.ACTIONS_RESULTS_URL }}
@@ -188,5 +188,6 @@ jobs:
           yarn upload-artifacts dist/LosslessCut-linux-arm64.tar.bz2
           yarn upload-artifacts dist/LosslessCut-linux-armv7l.tar.bz2
           yarn upload-artifacts dist/LosslessCut-linux-x64.tar.bz2
+          yarn upload-artifacts dist/LosslessCut-linux-x86_64.AppImage
           yarn upload-artifacts --name screenshot-linux.jpeg screenshot.jpeg
 

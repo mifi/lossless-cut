@@ -12,6 +12,12 @@ To enable the API, run LosslessCut from the command line with this flag:
 LosslessCut --http-api
 ```
 
+## Security
+
+The server listens on `127.0.0.1` only, so it cannot be reached from other computers. It has no authentication, so any program running on your computer can control LosslessCut while the API is enabled.
+
+Requests coming from a web browser are rejected with `403`, because a web page you visit must not be able to control LosslessCut. This means requests must have a `Host` header of `localhost`/`127.0.0.1` (this prevents [DNS rebinding](https://en.wikipedia.org/wiki/DNS_rebinding)) and must not have an `Origin` header (which browsers always send, but command line tools don't).
+
 ## Action endpoint: `POST /api/action/:action`
 
 Execute a keyboard shortcut `action`, similar to the `--keyboard-action` CLI option. This is different from the CLI in that most of the actions (but not all) will wait for the action to finish before responding to the HTTP request.

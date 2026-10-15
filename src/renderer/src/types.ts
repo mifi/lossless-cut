@@ -11,9 +11,6 @@ export interface ChromiumHTMLAudioElement extends HTMLAudioElement {
   audioTracks?: { id: string, enabled: boolean }[]
 }
 
-export const openFilesActionArgsSchema = z.tuple([z.string().array()]);
-export type OpenFilesActionArgs = z.infer<typeof openFilesActionArgsSchema>
-
 export const goToTimecodeDirectArgsSchema = z.tuple([z.object({ time: z.string() })]);
 export type GoToTimecodeDirectArgs = z.infer<typeof goToTimecodeDirectArgsSchema>
 
