@@ -1,6 +1,6 @@
 import { access, constants } from 'node:fs/promises';
 import os from 'node:os';
-import { resolve } from 'node:path';
+import { isAbsolute, resolve } from 'node:path';
 
 export const platform = os.platform();
 export const arch = os.arch();
@@ -20,4 +20,4 @@ export async function pathExists(path: string) {
 
 // File args forwarded from a second instance are relative to *its* cwd, not ours
 // https://github.com/mifi/lossless-cut/issues/1571
-export const resolveCliFileArgs = (args: string[], workingDirectory: string) => args.map((arg) => resolve(workingDirectory, arg));
+export const resolveCliFileArgs = (args: string[], workingDirectory: string) => args.map((arg) => (isAbsolute(arg) ? arg : resolve(workingDirectory, arg)));
