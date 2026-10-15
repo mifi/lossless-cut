@@ -2,7 +2,7 @@
 
 ## Commits
 
-If a commit changes user-visible behaviour (a fix, feature, or behaviour change a user would notice), add a `Changelog:` trailer to the commit message, describing the impact for users in one line. Omit it for internal changes (refactors, tests, CI, dependency bumps).
+If a commit changes user-visible behaviour (a fix, feature, or behaviour change a user would notice), add a `Changelog:` line to the end of the commit message (e.g. with the other trailers), describing the impact for users in one line. Omit it for internal changes (refactors, tests, CI, dependency bumps).
 
 ```
 Validate --settings-json with zod
