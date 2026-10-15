@@ -1,4 +1,6 @@
 import { memo, useCallback, useMemo } from 'react';
+import type { MouseEvent, MouseEventHandler } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { MotionStyle } from 'motion/react';
 import { motion, AnimatePresence } from 'motion/react';
 import { FaSave, FaTrashAlt } from 'react-icons/fa';
@@ -12,18 +14,20 @@ import type { FormatTimecode, StateSegment } from './types';
 const markerButtonStyle: React.CSSProperties = { fontSize: 10, minWidth: 0, letterSpacing: '-.1em', color: 'white' };
 
 function Marker({
-  seg, segNum, color, isActive, selected, onClick, getTimePercent, formatTimecode,
+  seg, segNum, color, isActive, selected, onClick, getTimePercent, formatTimecode, isMergeSelected,
 }: {
   seg: StateSegment,
   segNum: number,
   color: ColorInstance,
   isActive: boolean,
   selected: boolean,
-  onClick: () => void,
+  onClick: MouseEventHandler<HTMLDivElement>,
+  isMergeSelected: boolean,
   getTimePercent: (a: number) => string,
   formatTimecode: FormatTimecode,
 }) {
   const { darkMode, prefersReducedMotion, springAnimation } = useUserSettings();
+  const { t } = useTranslation();
 
   const pinColor = darkMode ? color.saturate(0.2).lightness(40).string() : color.desaturate(0.2).lightness(50).string();
 
@@ -53,8 +57,16 @@ function Marker({
   }, [darkMode, isActive]);
 
   const segNumStyle = useMemo<React.CSSProperties>(() => ({
-    borderRadius: '50%', backgroundColor: pinColor, width: 14, height: 14, marginLeft: -7, flexShrink: 0, textAlign: 'center', border: `1px solid ${borderColor}`,
-  }), [pinColor, borderColor]);
+    outline: isMergeSelected ? '2px solid var(--cyan-11)' : undefined,
+    borderRadius: '50%',
+    backgroundColor: pinColor,
+    width: 14,
+    height: 14,
+    marginLeft: -7,
+    flexShrink: 0,
+    textAlign: 'center',
+    border: `1px solid ${borderColor}`,
+  }), [pinColor, borderColor, isMergeSelected]);
 
   return (
     <motion.div
@@ -64,13 +76,13 @@ function Marker({
       initial={{ opacity: 0, scale: 0 }}
       animate={{ opacity: selected ? 1 : 0.5, scale: 1 }}
       exit={{ opacity: 0, scale: 0 }}
-      title={title}
+      title={`${title} — ${t('Ctrl-click to select multiple segments for combining')}`}
     >
       <div style={segNumStyle}>
         <div
           style={markerButtonStyle}
           role="button"
-          onClick={() => onClick()}
+          onClick={onClick}
         >
           {segNum + 1}
         </div>
@@ -80,19 +92,21 @@ function Marker({
 }
 
 function Segment({
-  seg, segNum, color, isActive, selected, onClick, getTimePercent, formatTimecode, invertCutSegments,
+  seg, segNum, color, isActive, selected, onClick, getTimePercent, formatTimecode, isMergeSelected, invertCutSegments,
 }: {
   seg: Omit<StateSegment, 'end'> & { end: number },
   segNum: number,
   color: ColorInstance,
   isActive: boolean,
   selected: boolean,
-  onClick: () => void,
+  onClick: MouseEventHandler<HTMLDivElement>,
+  isMergeSelected: boolean,
   getTimePercent: (a: number) => string,
   formatTimecode: FormatTimecode,
   invertCutSegments: boolean,
 }) {
   const { darkMode, prefersReducedMotion, springAnimation } = useUserSettings();
+  const { t } = useTranslation();
   const { name } = seg;
 
   const border = useMemo(() => {
@@ -135,6 +149,8 @@ function Segment({
   const wrapperStyle = useMemo<MotionStyle>(() => {
     const cutSectionWidth = getTimePercent(seg.end - seg.start);
     return {
+      outline: isMergeSelected ? '2px solid var(--cyan-11)' : undefined,
+      outlineOffset: -2,
       position: 'absolute',
       top: 0,
       bottom: 0,
@@ -159,7 +175,7 @@ function Segment({
       borderTop: border.horizontal,
       borderBottom: border.horizontal,
     };
-  }, [getTimePercent, seg.end, seg.start, border]);
+  }, [getTimePercent, seg.end, seg.start, border, isMergeSelected]);
 
   return (
     <motion.div
@@ -171,7 +187,7 @@ function Segment({
       exit={{ opacity: 0, scaleX: 0 }}
       role="button"
       onClick={onClick}
-      title={title}
+      title={`${title} — ${t('Ctrl-click to select multiple segments for combining')}`}
     >
       <div style={{ alignSelf: 'flex-start', flexShrink: 0, fontSize: 10, minWidth: 0, letterSpacing: '-.1em' }}>{segNum + 1}</div>
 
@@ -208,13 +224,14 @@ function Segment({
 }
 
 function SegmentOrMarker({
-  seg, fileDurationNonZero, isActive, segNum, onSegClick, invertCutSegments, formatTimecode, selected,
+  seg, fileDurationNonZero, isActive, segNum, onSegClick, invertCutSegments, formatTimecode, selected, isMergeSelected = false,
 } : {
   seg: StateSegment,
   fileDurationNonZero: number,
   isActive: boolean,
   segNum: number,
-  onSegClick: (a: number) => void,
+  onSegClick: (a: number, e: MouseEvent<HTMLDivElement>) => void,
+  isMergeSelected?: boolean,
   invertCutSegments: boolean,
   formatTimecode: FormatTimecode,
   selected: boolean,
@@ -225,14 +242,14 @@ function SegmentOrMarker({
 
   const getTimePercent = (t: number) => `${(t / fileDurationNonZero) * 100}%`;
 
-  const onThisSegClick = useCallback(() => onSegClick(segNum), [onSegClick, segNum]);
+  const onThisSegClick = useCallback<MouseEventHandler<HTMLDivElement>>((e) => onSegClick(segNum, e), [onSegClick, segNum]);
 
   if (seg.end != null) {
-    return <Segment seg={seg as Omit<StateSegment, 'end'> & { end: number }} segNum={segNum} color={segColor} selected={selected} isActive={isActive} onClick={onThisSegClick} getTimePercent={getTimePercent} formatTimecode={formatTimecode} invertCutSegments={invertCutSegments} />;
+    return <Segment seg={seg as Omit<StateSegment, 'end'> & { end: number }} segNum={segNum} color={segColor} selected={selected} isActive={isActive} isMergeSelected={isMergeSelected} onClick={onThisSegClick} getTimePercent={getTimePercent} formatTimecode={formatTimecode} invertCutSegments={invertCutSegments} />;
   }
 
   return (
-    <Marker seg={seg} segNum={segNum} color={segColor} selected={selected} isActive={isActive} onClick={onThisSegClick} getTimePercent={getTimePercent} formatTimecode={formatTimecode} />
+    <Marker seg={seg} segNum={segNum} color={segColor} selected={selected} isActive={isActive} isMergeSelected={isMergeSelected} onClick={onThisSegClick} getTimePercent={getTimePercent} formatTimecode={formatTimecode} />
   );
 }
 

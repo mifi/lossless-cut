@@ -35,6 +35,7 @@ const defaultKeyBindings: KeyBinding[] = [
   { keys: 'Backspace', action: 'removeCurrentCutpoint' },
   { keys: 'KeyD', action: 'cleanupFilesDialog' },
   { keys: 'KeyB', action: 'splitCurrentSegment' },
+  { keys: 'ControlLeft+ShiftLeft+KeyC', action: 'combineConsecutiveSegments' },
   { keys: 'KeyR', action: 'increaseRotation' },
   { keys: 'KeyG', action: 'goToTimecode' },
   { keys: 'KeyT', action: 'toggleStripAll' },
@@ -248,6 +249,15 @@ export async function init({ customConfigDir }: { customConfigDir: string | unde
   if (customStoragePath) logger.info('customStoragePath', customStoragePath);
 
   await tryCreateStore({ customStoragePath });
+
+  if (!store.get('consecutiveSegmentShortcutAdded')) {
+    const bindings = get('keyBindings');
+    const binding = defaultKeyBindings.find((kb) => kb.action === 'combineConsecutiveSegments')!;
+    if (!bindings.some((kb) => kb.action === binding.action || kb.keys === binding.keys)) {
+      set('keyBindings', [...bindings, binding]);
+    }
+    store.set('consecutiveSegmentShortcutAdded', true);
+  }
 
   // migrate old configs:
   const enableTransferTimestamps = store.get('enableTransferTimestamps'); // todo remove after a while
