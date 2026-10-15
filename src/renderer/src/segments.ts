@@ -112,6 +112,30 @@ export function combineSelectedSegments(existingSegments: StateSegment[]) {
   });
 }
 
+// Merge timeline neighbours, including any empty time between them. Export selection
+// is deliberately independent of the IDs selected for this editing operation.
+export function combineConsecutiveSegments(existingSegments: StateSegment[], selectedIds: ReadonlySet<string>) {
+  const sorted = sortSegments(existingSegments);
+  const selectedIndexes = sorted.flatMap((seg, index) => (selectedIds.has(seg.segId) ? [index] : []));
+  const firstIndex = selectedIndexes[0];
+  if (firstIndex == null || selectedIndexes.length !== selectedIds.size) return undefined;
+
+  const lastIndex = selectedIndexes.length === 1 ? firstIndex + 1 : selectedIndexes.at(-1)!;
+  if (lastIndex >= sorted.length) return undefined;
+  if (selectedIndexes.length > 1 && lastIndex - firstIndex + 1 !== selectedIndexes.length) return undefined;
+
+  const toCombine = sorted.slice(firstIndex, lastIndex + 1);
+  const firstSegment = toCombine[0]!;
+  const combinedIds = new Set(toCombine.map((seg) => seg.segId));
+  const end = Math.max(...toCombine.map((seg) => seg.end ?? seg.start));
+  const mergedSegment = { ...firstSegment, end: end > firstSegment.start ? end : undefined };
+  const segments = existingSegments.flatMap((seg) => {
+    if (seg.segId === firstSegment.segId) return [mergedSegment];
+    return combinedIds.has(seg.segId) ? [] : [seg];
+  });
+  return { segments, mergedSegmentIndex: segments.findIndex((seg) => seg.segId === firstSegment.segId) };
+}
+
 // Made by ChatGPT
 export function combineOverlappingSegments<T extends SegmentBase>(existingSegments: T[]): T[] {
   if (existingSegments.length === 0) return [];

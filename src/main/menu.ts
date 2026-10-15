@@ -326,6 +326,12 @@ export default ({ app, mainWindow, newVersion, isStoreBuild, openExternal }: {
           },
         },
         {
+          label: esc(t('Combine consecutive timeline segments (or current with next)')),
+          click() {
+            mainWindow.webContents.send('combineConsecutiveSegments');
+          },
+        },
+        {
           label: esc(t('Split segment at cursor')),
           click() {
             mainWindow.webContents.send('splitCurrentSegment');

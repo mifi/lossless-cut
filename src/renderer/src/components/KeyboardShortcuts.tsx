@@ -480,6 +480,10 @@ const KeyboardShortcuts = memo(({
         name: t('Combine overlapping segments'),
         category: segmentsAndCutpointsCategory,
       },
+      combineConsecutiveSegments: {
+        name: t('Combine consecutive timeline segments (or current with next)'),
+        category: segmentsAndCutpointsCategory,
+      },
       combineSelectedSegments: {
         name: t('Combine selected segments'),
       },

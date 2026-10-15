@@ -13,7 +13,7 @@ import { detectSceneChanges as ffmpegDetectSceneChanges, readFrames, mapTimesToS
 import { getFileSize, shuffleArray } from '../util';
 import { errorToast } from '../swal';
 import { createNumSegments as createNumSegmentsDialog, createFixedByteSixedSegments as createFixedByteSixedSegmentsDialog, createRandomSegments as createRandomSegmentsDialog, labelSegmentDialog, askForAlignSegments, selectSegmentsByLabelDialog, askForSegmentDuration, toastError } from '../dialogs';
-import { createSegment, sortSegments, invertSegments, combineOverlappingSegments as combineOverlappingSegments2, combineSelectedSegments as combineSelectedSegments2, isDurationValid, addSegmentColorIndex, filterNonMarkers, makeDurationSegments, isInitialSegment } from '../segments';
+import { createSegment, sortSegments, invertSegments, combineOverlappingSegments as combineOverlappingSegments2, combineSelectedSegments as combineSelectedSegments2, combineConsecutiveSegments as combineConsecutiveSegments2, isDurationValid, addSegmentColorIndex, filterNonMarkers, makeDurationSegments, isInitialSegment } from '../segments';
 import type { FfmpegDialog } from '../ffmpegParameters';
 import { parameters as allFfmpegParameters, getHint, getLabel } from '../ffmpegParameters';
 import { maxSegmentsAllowed } from '../util/constants';
@@ -462,6 +462,16 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
       ...combineOverlappingSegments2(existingSegments.filter((s) => s.selected)), // only process selected
     ]);
   }, [safeSetCutSegments]);
+
+  const combineConsecutiveSegments = useCallback(() => {
+    if (!checkFileOpened() || workingRef.current) return;
+    const result = combineConsecutiveSegments2(cutSegments, timelineSelectedSegIds);
+    if (result == null) return; // No history entry for a non-consecutive selection.
+    safeSetCutSegments(result.segments);
+    setCurrentSegIndex(result.mergedSegmentIndex);
+    const merged = result.segments[result.mergedSegmentIndex]!;
+    setTimelineSelection({ activeId: merged.segId, ids: [merged.segId] });
+  }, [checkFileOpened, workingRef, cutSegments, timelineSelectedSegIds, safeSetCutSegments]);
 
   const combineSelectedSegments = useCallback(() => {
     safeSetCutSegments((existingSegments) => combineSelectedSegments2(existingSegments));
@@ -991,6 +1001,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     fillSegmentsGaps,
     combineOverlappingSegments,
     combineSelectedSegments,
+    combineConsecutiveSegments,
     timelineSelectedSegIds,
     onTimelineSegmentClick,
     modifySelectedSegmentTimes,
