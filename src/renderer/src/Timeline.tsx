@@ -93,7 +93,8 @@ function Timeline({
   neighbouringKeyFrames,
   seekAbs,
   cutSegments,
-  setCurrentSegIndex,
+  onTimelineSegmentClick,
+  timelineSelectedSegIds,
   currentSegIndexSafe,
   currentCutSeg,
   inverseCutSegments,
@@ -126,7 +127,8 @@ function Timeline({
   neighbouringKeyFrames: Frame[],
   seekAbs: (a: number) => void,
   cutSegments: StateSegment[],
-  setCurrentSegIndex: (a: number) => void,
+  onTimelineSegmentClick: UseSegments['onTimelineSegmentClick'],
+  timelineSelectedSegIds: ReadonlySet<string>,
   currentSegIndexSafe: number,
   currentCutSeg: StateSegment | undefined,
   inverseCutSegments: InverseCutSegment[],
@@ -432,7 +434,8 @@ function Timeline({
                 key={seg.segId}
                 seg={seg}
                 segNum={i}
-                onSegClick={setCurrentSegIndex}
+                onSegClick={onTimelineSegmentClick}
+                isMergeSelected={timelineSelectedSegIds.has(seg.segId)}
                 isActive={i === currentSegIndexSafe}
                 fileDurationNonZero={fileDurationNonZero}
                 invertCutSegments={invertCutSegments}

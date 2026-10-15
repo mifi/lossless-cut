@@ -231,6 +231,25 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     return { start, end, duration: end - start };
   }, [currentCutSeg, fileDurationNonZero]);
 
+  // Track editing selection separately from the checkboxes used for export.
+  const [timelineSelection, setTimelineSelection] = useState<{ activeId: string, ids: string[] }>();
+  const timelineSelectedSegIds = useMemo(() => {
+    if (currentCutSeg == null) return new Set<string>();
+    if (timelineSelection?.activeId !== currentCutSeg.segId) return new Set([currentCutSeg.segId]);
+    const existingIds = new Set(cutSegments.map((seg) => seg.segId));
+    return new Set(timelineSelection.ids.filter((id) => existingIds.has(id)));
+  }, [currentCutSeg, cutSegments, timelineSelection]);
+
+  const onTimelineSegmentClick = useCallback((index: number, e: React.MouseEvent) => {
+    const segment = cutSegments[index];
+    if (segment == null) return;
+    const ids = e.ctrlKey || e.metaKey ? new Set(timelineSelectedSegIds) : new Set<string>();
+    if (ids.has(segment.segId)) ids.delete(segment.segId);
+    else ids.add(segment.segId);
+    setTimelineSelection({ activeId: segment.segId, ids: [...ids] });
+    setCurrentSegIndex(index);
+  }, [cutSegments, timelineSelectedSegIds]);
+
   const selectedSegments = useMemo(() => cutSegments.flatMap((segment, i) => (segment.selected ? [{ ...segment, originalIndex: i }] : [])), [cutSegments]);
 
   const getFfmpegParameters = useCallback((key: FfmpegDialog) => {
@@ -972,6 +991,8 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     fillSegmentsGaps,
     combineOverlappingSegments,
     combineSelectedSegments,
+    timelineSelectedSegIds,
+    onTimelineSegmentClick,
     modifySelectedSegmentTimes,
     alignSegmentTimesToKeyframes,
     updateSegOrder,
