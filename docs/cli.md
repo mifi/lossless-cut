@@ -52,7 +52,7 @@ LosslessCut --settings-json '{customFfPath:"/path/to/folder/containing/ffmpeg_an
 
 ## Controlling a running instance (experimental) 🧪
 
-If you have the "Allow multiple instances" setting enabled, you can control a running instance of LosslessCut from the outside, using for example a command line. You do this by issuing messages to it through the `LosslessCut` command. Currently only keyboard actions are supported, and you can open files. *Note that this is considered experimental and the API may change at any time.*
+If you have the "Allow multiple instances" setting disabled (the default), you can control a running instance of LosslessCut from the outside, using for example a command line. You do this by issuing messages to it through the `LosslessCut` command. Currently only keyboard actions are supported, and you can open files. *Note that this is considered experimental and the API may change at any time.*
 
 ### Open files in running instance
 
@@ -62,7 +62,7 @@ LosslessCut file1.mp4 file2.mkv
 
 ### Keyboard actions, `--keyboard-action`
 
-Simulate a keyboard press action in an already running instance of LosslessCut (if no instance is running, the action is ignored). Arguments are JSON or JSON5. **Note that the command will return immediately**, so if you want to run multiple actions in a sequence, you have to `sleep` for a few seconds between the commands. Alternatively if you want to wait until an action has finished processing, use the [HTTP API](api.md) instead.
+Simulate a keyboard press action in an already running instance of LosslessCut (if none is running, or "Allow multiple instances" is enabled, the action is ignored). Arguments are JSON or JSON5. **Note that the command will return immediately**, so if you want to run multiple actions in a sequence, you have to `sleep` for a few seconds between the commands. Alternatively if you want to wait until an action has finished processing, use the [HTTP API](api.md) instead.
 
 ### Available keyboard actions
 

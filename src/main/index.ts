@@ -260,7 +260,7 @@ function parseCliArgs(rawArgv = process.argv) {
 
   return yargsParser(argsWithoutAppName, {
     boolean: ['disable-networking'],
-    string: ['settings-json', 'config-dir', 'lossy-mode'],
+    string: ['settings-json', 'config-dir', 'lossy-mode', 'keyboard-action'],
   });
 }
 
@@ -382,8 +382,8 @@ async function init() {
     await readyPromise;
 
     logger.info('CLI arguments', argv);
+    if (argv['keyboardAction']) logger.warn('--keyboard-action only works with an already running instance (and "Allow multiple instances" disabled), ignoring it and its arguments');
     // Only if no files to open already (open-file might have already added some files)
-    if (argv['keyboardAction'] != null) logger.warn('--keyboard-action only works with an already running instance, ignoring it and its arguments');
     else if (filesToOpen.length === 0) filesToOpen = argv._.map(String);
     const { settingsJson } = argv;
 
