@@ -31,6 +31,7 @@
     "generate-icon": "mkdirp icon-build build-resources/appx && node script/generateIcon.ts",
     "generate-licenses": "yarn licenses generate-disclaimer -R > licenses.txt && echo '\n\nffmpeg is licensed under GPL v2+:\n\nhttp://www.gnu.org/licenses/old-licenses/gpl-2.0.html' >> licenses.txt",
     "generate-docs": "node script/generateDocs.ts",
+    "release-notes": "node script/releaseNotes.ts",
     "check-licenses": "node script/checkLicenses.ts",
     "upload-artifacts": "node script/uploadArtifacts.ts"
   },
