@@ -2,7 +2,7 @@
 import { describe, expect, test } from 'vitest';
 import { join, resolve, sep } from 'node:path';
 
-import { resolveCliFileArgs } from './util';
+import { resolveCliFileArgs, resolveCliKeyboardActionArgs } from './util';
 
 // build platform-native absolute paths so the test also passes on Windows
 const cwd = resolve('/home/user/videos');
@@ -15,5 +15,18 @@ describe('resolveCliFileArgs', () => {
   test('leaves absolute file args untouched (no normalization, e.g. through symlinks)', () => {
     const absolute = [resolve('/media/link'), '..', 'a.mp4'].join(sep);
     expect(resolveCliFileArgs([absolute], cwd)).toEqual([absolute]);
+  });
+});
+
+describe('resolveCliKeyboardActionArgs', () => {
+  test('resolves openFiles paths against the given cwd', () => {
+    expect(resolveCliKeyboardActionArgs('openFiles', [['video.mp4']], cwd)).toEqual([[join(cwd, 'video.mp4')]]);
+  });
+
+  test('leaves other actions and malformed openFiles args untouched', () => {
+    const args = [{ time: '12.23' }];
+    expect(resolveCliKeyboardActionArgs('goToTimecodeDirect', args, cwd)).toBe(args);
+    const malformed = ['video.mp4'];
+    expect(resolveCliKeyboardActionArgs('openFiles', malformed, cwd)).toBe(malformed);
   });
 });

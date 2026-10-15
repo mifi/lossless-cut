@@ -25,7 +25,7 @@ import mitt from 'mitt';
 import logger from './logger.js';
 import menu from './menu.js';
 import * as configStore from './configStore.js';
-import { isLinux, isWindows, isMac, platform, arch, pathExists, resolveCliFileArgs } from './util.js';
+import { isLinux, isWindows, isMac, platform, arch, pathExists, resolveCliFileArgs, resolveCliKeyboardActionArgs } from './util.js';
 import { appName } from './common.js';
 import attachContextMenu from './contextMenu.js';
 import HttpServer from './httpServer.js';
@@ -321,7 +321,7 @@ async function init() {
 
       logger.info('second-instance', argv2);
 
-      if (argv2['keyboardAction']) sendApiAction(argv2['keyboardAction'], argv2._.map((arg) => JSON.parse(String(arg))));
+      if (argv2['keyboardAction']) sendApiAction(argv2['keyboardAction'], resolveCliKeyboardActionArgs(argv2['keyboardAction'], argv2._.map((arg) => JSON.parse(String(arg))), workingDirectory));
       else if (argv2._ && argv2._.length > 0) openFilesEventually(resolveCliFileArgs(argv2._.map(String), workingDirectory));
     });
 
