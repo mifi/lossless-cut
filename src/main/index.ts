@@ -25,7 +25,7 @@ import mitt from 'mitt';
 import logger from './logger.js';
 import menu from './menu.js';
 import * as configStore from './configStore.js';
-import { isLinux, isWindows, isMac, platform, arch, pathExists, resolveCliFileArgs, resolveCliKeyboardActionArgs } from './util.js';
+import { isLinux, isWindows, isMac, platform, arch, pathExists, resolveCliFileArgs, resolveCliKeyboardActionArgs, parseSettingsJson } from './util.js';
 import { appName } from './common.js';
 import attachContextMenu from './contextMenu.js';
 import HttpServer from './httpServer.js';
@@ -35,7 +35,7 @@ import { getAboutPanelOptions } from './aboutPanel.js';
 import { checkNewVersion } from './updateChecker.js';
 import * as i18nCommon from './i18nCommon.js';
 import './i18n.js';
-import type { ApiActionRequest } from '../common/types.js';
+import type { ApiActionRequest, Config } from '../common/types.js';
 import * as ffmpeg from './ffmpeg.js';
 import * as compatPlayer from './compatPlayer.js';
 import { downloadMediaUrl } from './ffmpeg.js';
@@ -385,10 +385,9 @@ async function init() {
 
     if (settingsJson != null) {
       logger.info('initializing settings', settingsJson);
-      Object.entries(JSON5.parse(settingsJson)).forEach(([key, value]) => {
-        // @ts-expect-error todo use zod?
-        configStore.set(key, value);
-      });
+      const settings = parseSettingsJson(settingsJson);
+      if (settings.success) Object.entries(settings.data).forEach(([key, value]) => configStore.set(key as keyof Config, value));
+      else logger.error('Invalid --settings-json, ignoring it', z.prettifyError(settings.error));
     }
 
     const { httpApi } = argv;

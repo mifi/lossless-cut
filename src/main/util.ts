@@ -1,8 +1,9 @@
 import { access, constants } from 'node:fs/promises';
 import os from 'node:os';
 import { isAbsolute, resolve } from 'node:path';
+import JSON5 from 'json5';
 
-import { openFilesActionArgsSchema } from '../common/types.js';
+import { configSchema, openFilesActionArgsSchema } from '../common/types.js';
 
 export const platform = os.platform();
 export const arch = os.arch();
@@ -31,3 +32,6 @@ export function resolveCliKeyboardActionArgs(action: string, args: unknown[], wo
   if (!parsed.success) return args;
   return [resolveCliFileArgs(parsed.data[0], workingDirectory)];
 }
+
+// `--settings-json` may contain any subset of the config, but only known keys with valid values
+export const parseSettingsJson = (settingsJson: string) => configSchema.partial().strict().safeParse(JSON5.parse(settingsJson));
