@@ -315,9 +315,10 @@ async function init() {
         mainWindow.focus();
       }
 
-      if (!(additionalData != null && typeof additionalData === 'object' && 'argv' in additionalData) || !Array.isArray(additionalData.argv)) return;
+      const parsedAdditionalData = z.object({ argv: z.string().array() }).safeParse(additionalData);
+      if (!parsedAdditionalData.success) return;
 
-      const argv2 = parseCliArgs(additionalData.argv);
+      const argv2 = parseCliArgs(parsedAdditionalData.data.argv);
 
       logger.info('second-instance', argv2);
 

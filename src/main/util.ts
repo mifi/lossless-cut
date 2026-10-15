@@ -2,6 +2,8 @@ import { access, constants } from 'node:fs/promises';
 import os from 'node:os';
 import { isAbsolute, resolve } from 'node:path';
 
+import { openFilesActionArgsSchema } from '../common/types.js';
+
 export const platform = os.platform();
 export const arch = os.arch();
 
@@ -24,7 +26,7 @@ export const resolveCliFileArgs = (args: string[], workingDirectory: string) => 
 
 // `--keyboard-action openFiles '["file.mp4"]'` takes file paths too
 export function resolveCliKeyboardActionArgs(action: string, args: unknown[], workingDirectory: string) {
-  const [paths, ...rest] = args;
-  if (action !== 'openFiles' || !Array.isArray(paths) || !paths.every((p) => typeof p === 'string')) return args;
-  return [resolveCliFileArgs(paths, workingDirectory), ...rest];
+  const parsed = openFilesActionArgsSchema.safeParse(args);
+  if (action !== 'openFiles' || !parsed.success) return args;
+  return [resolveCliFileArgs(parsed.data[0], workingDirectory)];
 }
