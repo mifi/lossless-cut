@@ -2,7 +2,7 @@
 import { describe, expect, test } from 'vitest';
 import { join, resolve, sep } from 'node:path';
 
-import { parseSettingsJson, resolveCliFileArgs, resolveCliKeyboardActionArgs } from './util';
+import { parseCliKeyboardActionArgs, parseSettingsJson, resolveCliFileArgs } from './util';
 
 // build platform-native absolute paths so the test also passes on Windows
 const cwd = resolve('/home/user/videos');
@@ -18,16 +18,19 @@ describe('resolveCliFileArgs', () => {
   });
 });
 
-describe('resolveCliKeyboardActionArgs', () => {
+describe('parseCliKeyboardActionArgs', () => {
   test('resolves openFiles paths against the given cwd', () => {
-    expect(resolveCliKeyboardActionArgs('openFiles', [['video.mp4']], cwd)).toEqual([[join(cwd, 'video.mp4')]]);
+    expect(parseCliKeyboardActionArgs('openFiles', ['["video.mp4"]'], cwd)).toEqual([[join(cwd, 'video.mp4')]]);
   });
 
-  test('leaves other actions and malformed openFiles args untouched', () => {
-    const args = [{ time: '12.23' }];
-    expect(resolveCliKeyboardActionArgs('goToTimecodeDirect', args, cwd)).toEqual(args);
-    const malformed = ['video.mp4'];
-    expect(resolveCliKeyboardActionArgs('openFiles', malformed, cwd)).toEqual(malformed);
+  test('parses JSON and JSON5, leaving other actions and malformed openFiles args untouched', () => {
+    expect(parseCliKeyboardActionArgs('goToTimecodeDirect', ['{"time": "12.23"}'], cwd)).toEqual([{ time: '12.23' }]);
+    expect(parseCliKeyboardActionArgs('goToTimecodeDirect', ['{time: "12.23"}'], cwd)).toEqual([{ time: '12.23' }]);
+    expect(parseCliKeyboardActionArgs('openFiles', ['"video.mp4"'], cwd)).toEqual(['video.mp4']);
+  });
+
+  test('throws on invalid JSON5', () => {
+    expect(() => parseCliKeyboardActionArgs('goToTimecodeDirect', ['{time:'], cwd)).toThrow();
   });
 });
 

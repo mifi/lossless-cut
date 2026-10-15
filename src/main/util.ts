@@ -26,8 +26,9 @@ export async function pathExists(path: string) {
 // https://github.com/mifi/lossless-cut/issues/1571
 export const resolveCliFileArgs = (args: string[], workingDirectory: string) => args.map((arg) => (isAbsolute(arg) ? arg : resolve(workingDirectory, arg)));
 
-// `--keyboard-action openFiles '["file.mp4"]'` takes file paths too
-export function resolveCliKeyboardActionArgs(action: string, args: unknown[], workingDirectory: string) {
+// Throws if an arg is not valid JSON5. `--keyboard-action openFiles '["file.mp4"]'` takes file paths, so resolve those too
+export function parseCliKeyboardActionArgs(action: string, rawArgs: unknown[], workingDirectory: string) {
+  const args: unknown[] = rawArgs.map((arg) => JSON5.parse(String(arg)));
   if (action !== 'openFiles') return args;
   const parsed = openFilesActionArgsSchema.safeParse(args);
   if (!parsed.success) return args;
