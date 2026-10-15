@@ -10,7 +10,8 @@ import debounce from 'lodash/debounce.js';
 import yargsParser from 'yargs-parser';
 import JSON5 from 'json5';
 import remote from '@electron/remote/main/index.js';
-import { stat } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
+import { join } from 'node:path';
 import assert from 'node:assert';
 import timers from 'node:timers/promises';
 import { z } from 'zod';
@@ -19,7 +20,7 @@ import electronUnhandled from 'electron-unhandled';
 import { fileTypeFromFile } from 'file-type';
 import type { Asyncify } from 'type-fest';
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { installExtension, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
+import { downloadChromeExtension } from 'electron-devtools-installer/dist/downloadChromeExtension.js';
 import mitt from 'mitt';
 
 import logger from './logger.js';
@@ -75,6 +76,16 @@ const openFiles = (paths: string[]) => mainWindow!.webContents.send('openFiles',
 
 let apiActionRequestsId = 0;
 const apiActionRequests = new Map<number, () => void>();
+
+// Not using installExtension from electron-devtools-installer because it calls deprecated Electron session APIs
+async function installReactDevTools() {
+  const id = 'fmkadmapgofadopljbjfkapdkoienihi';
+  let extensionFolder = await downloadChromeExtension(id);
+  // The downloaded copy is cached forever, so replace it if it's an old Manifest V2 build
+  const { manifest_version: manifestVersion } = JSON.parse(await readFile(join(extensionFolder, 'manifest.json'), 'utf8'));
+  if (manifestVersion < 3) extensionFolder = await downloadChromeExtension(id, { forceDownload: true });
+  return electron.session.defaultSession.extensions.loadExtension(extensionFolder);
+}
 
 async function sendApiAction(action: string, args?: unknown[]) {
   try {
@@ -408,7 +419,7 @@ async function init() {
 
     if (isDev) {
       // eslint-disable-next-line @typescript-eslint/no-var-requires,global-require,import/no-extraneous-dependencies
-      installExtension(REACT_DEVELOPER_TOOLS)
+      installReactDevTools()
         .then((extension) => logger.info('Added Extension', extension.name))
         .catch((err: unknown) => logger.error('Failed to add extension', err));
     }
