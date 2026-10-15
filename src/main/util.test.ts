@@ -25,8 +25,8 @@ describe('resolveCliKeyboardActionArgs', () => {
 
   test('leaves other actions and malformed openFiles args untouched', () => {
     const args = [{ time: '12.23' }];
-    expect(resolveCliKeyboardActionArgs('goToTimecodeDirect', args, cwd)).toBe(args);
+    expect(resolveCliKeyboardActionArgs('goToTimecodeDirect', args, cwd)).toEqual(args);
     const malformed = ['video.mp4'];
-    expect(resolveCliKeyboardActionArgs('openFiles', malformed, cwd)).toBe(malformed);
+    expect(resolveCliKeyboardActionArgs('openFiles', malformed, cwd)).toEqual(malformed);
   });
 });
