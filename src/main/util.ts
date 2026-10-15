@@ -2,6 +2,7 @@ import { access, constants } from 'node:fs/promises';
 import os from 'node:os';
 import { isAbsolute, resolve } from 'node:path';
 import JSON5 from 'json5';
+import { z } from 'zod';
 
 import { configSchema, openFilesActionArgsSchema } from '../common/types.js';
 
@@ -34,4 +35,13 @@ export function resolveCliKeyboardActionArgs(action: string, args: unknown[], wo
 }
 
 // `--settings-json` may contain any subset of the config, but only known keys with valid values
-export const parseSettingsJson = (settingsJson: string) => configSchema.partial().strict().safeParse(JSON5.parse(settingsJson));
+const settingsJsonSchema = z.string().transform((str, ctx) => {
+  try {
+    return JSON5.parse(str);
+  } catch (err) {
+    ctx.addIssue({ code: 'custom', message: err instanceof Error ? err.message : String(err) });
+    return z.NEVER;
+  }
+}).pipe(configSchema.partial().strict());
+
+export const parseSettingsJson = (settingsJson: string) => settingsJsonSchema.safeParse(settingsJson);

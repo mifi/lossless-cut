@@ -41,4 +41,8 @@ describe('parseSettingsJson', () => {
     expect(parseSettingsJson('{captureFormat:"gif"}').success).toBe(false);
     expect(parseSettingsJson('{language:"xx"}').success).toBe(false);
   });
+
+  test('rejects invalid JSON5 without throwing', () => {
+    expect(parseSettingsJson('{captureFormat:').success).toBe(false);
+  });
 });
