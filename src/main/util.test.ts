@@ -2,7 +2,7 @@
 import { describe, expect, test } from 'vitest';
 import { join, resolve, sep } from 'node:path';
 
-import { resolveCliFileArgs, resolveCliKeyboardActionArgs } from './util';
+import { parseSettingsJson, resolveCliFileArgs, resolveCliKeyboardActionArgs } from './util';
 
 // build platform-native absolute paths so the test also passes on Windows
 const cwd = resolve('/home/user/videos');
@@ -28,5 +28,17 @@ describe('resolveCliKeyboardActionArgs', () => {
     expect(resolveCliKeyboardActionArgs('goToTimecodeDirect', args, cwd)).toEqual(args);
     const malformed = ['video.mp4'];
     expect(resolveCliKeyboardActionArgs('openFiles', malformed, cwd)).toEqual(malformed);
+  });
+});
+
+describe('parseSettingsJson', () => {
+  test('accepts a valid subset of the config (JSON5)', () => {
+    expect(parseSettingsJson('{captureFormat:"jpeg", "keyframeCut":true}')).toMatchObject({ success: true, data: { captureFormat: 'jpeg', keyframeCut: true } });
+  });
+
+  test('rejects unknown keys and invalid values', () => {
+    expect(parseSettingsJson('{captureFormt:"jpeg"}').success).toBe(false);
+    expect(parseSettingsJson('{captureFormat:"gif"}').success).toBe(false);
+    expect(parseSettingsJson('{language:"xx"}').success).toBe(false);
   });
 });
