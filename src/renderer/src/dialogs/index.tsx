@@ -8,7 +8,8 @@ import pMap from 'p-map';
 
 import { formatDuration } from '../util/duration';
 import { parseYouTube } from '../edlFormats';
-import { appPath, isMasBuild, isStoreBuild, isWindows, isWindowsStoreBuild, testFailFsOperation, trashFile, unlinkWithRetry } from '../util';
+import { appPath, isMasBuild, isStoreBuild, isWindows, isWindowsStoreBuild, testFailFsOperation, trashFile, unlinkWithRetry, isExecaError } from '../util';
+import { getInvalidFileNameChars, getInvalidOutputPath } from '../util/outputNameError';
 import type { ParseTimecode } from '../types';
 import type { FindKeyframeMode } from '../ffmpeg';
 import { dangerColor, primaryColor, warningColor } from '../colors';
@@ -389,9 +390,17 @@ const HelpSuggestion = () => <li><Trans>See <b>Help</b></Trans> menu</li>;
 const ErrorReportSuggestion = () => <li><Trans>If nothing helps, you can send an <b>Error report</b></Trans></li>;
 
 // todo Dialog component
-export async function showExportFailedDialog({ fileFormat, safeOutputFileName }: { fileFormat: string | undefined, safeOutputFileName: boolean }) {
+export async function showExportFailedDialog({ fileFormat, safeOutputFileName, err }: { fileFormat: string | undefined, safeOutputFileName: boolean, err?: unknown }) {
+  const invalidOutputFilePath = isExecaError(err) ? getInvalidOutputPath(err.stderr) : undefined;
+  const invalidChars = invalidOutputFilePath ? getInvalidFileNameChars(invalidOutputFilePath) : undefined;
+  const invalidOutputFileName = invalidOutputFilePath?.split(/[\\/]/).pop();
   const html = (
     <div style={{ textAlign: 'left' }}>
+      {invalidChars && invalidChars.length > 0 && (
+        <p style={{ marginTop: 0 }}>
+          {i18n.t('The output file name "{{fileName}}" contains invalid character(s): {{invalidChars}}', { fileName: invalidOutputFileName, invalidChars: `"${invalidChars.join('", "')}"` })}
+        </p>
+      )}
       <Trans>Try one of the following before exporting again:</Trans>
       <ol>
         {!safeOutputFileName && <li><Trans>Output file names are not sanitized. Try to enable sanitazion or check your segment labels for invalid characters.</Trans></li>}

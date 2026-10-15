@@ -874,7 +874,7 @@ function App() {
   }, [commonSettings]);
 
   const handleExportFailed = useCallback(async (err: unknown) => {
-    const sendErrorReport = await showExportFailedDialog({ fileFormat, safeOutputFileName });
+    const sendErrorReport = await showExportFailedDialog({ fileFormat, safeOutputFileName, err });
     if (sendErrorReport) openSendReportDialogWithState(err);
   }, [fileFormat, safeOutputFileName, openSendReportDialogWithState]);
 
