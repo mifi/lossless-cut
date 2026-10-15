@@ -1980,12 +1980,16 @@ function App() {
 
   const showIncludeExternalStreamsDialog = useCallback(async () => {
     await withErrorHandling(async () => {
-      const { canceled, filePaths } = await showOpenDialog({ properties: ['openFile'], title: t('Include more tracks from other file') });
+      const { canceled, filePaths } = await showOpenDialog({
+        properties: ['openFile'],
+        title: t('Include more tracks from other file'),
+        ...(filePath != null ? { defaultPath: dirname(filePath) } : {}),
+      });
       const [firstFilePath] = filePaths;
       if (canceled || firstFilePath == null) return;
       await addStreamSourceFile(firstFilePath);
     }, i18n.t('Failed to include track'));
-  }, [addStreamSourceFile, t, withErrorHandling]);
+  }, [addStreamSourceFile, filePath, t, withErrorHandling]);
 
   const toggleFullscreenVideo = useCallback(async () => {
     if (!screenfull.isEnabled) {
