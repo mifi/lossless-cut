@@ -295,6 +295,12 @@ export default ({ app, mainWindow, newVersion, isStoreBuild, openExternal }: {
             mainWindow.webContents.send('createRandomSegments');
           },
         },
+        {
+          label: esc(t('Create segments from keyframes')),
+          click() {
+            mainWindow.webContents.send('createSegmentsFromKeyframes');
+          },
+        },
 
         { type: 'separator' },
 
@@ -426,12 +432,6 @@ export default ({ app, mainWindow, newVersion, isStoreBuild, openExternal }: {
           label: esc(t('Read all keyframes')),
           click() {
             mainWindow.webContents.send('readAllKeyframes');
-          },
-        },
-        {
-          label: esc(t('Create segments from keyframes')),
-          click() {
-            mainWindow.webContents.send('createSegmentsFromKeyframes');
           },
         },
         {
