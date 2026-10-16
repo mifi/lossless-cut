@@ -5,10 +5,13 @@ import isEqual from 'lodash/isEqual';
 import isDev from '../isDev';
 import { saveLlcProject } from '../edlStore';
 import { mapSaveableSegments } from '../segments';
+import { getProjectFileSaveAction } from '../projectFileSave';
 import { getSuffixedOutPath } from '../util';
 import type { StateSegment } from '../types';
 import { errorToast } from '../swal';
 import i18n from '../i18n';
+
+const { unlink } = window.require('node:fs/promises');
 
 
 export default ({ autoSaveProjectFile, storeProjectInWorkingDir, filePath, customOutDir, cutSegments }: {
@@ -40,11 +43,29 @@ export default ({ autoSaveProjectFile, storeProjectInWorkingDir, filePath, custo
         if (!autoSaveProjectFile
           || !debouncedSaveOperation
           || debouncedSaveOperation.filePath == null
-          // Don't create llc file if no segments yet
-          || debouncedSaveOperation.cutSegments.length === 0
-          // or if initial segment (and not deselected): https://github.com/mifi/lossless-cut/issues/2745#issuecomment-3979480707
-          || (debouncedSaveOperation.cutSegments[0]?.initial && debouncedSaveOperation.cutSegments[0].selected)
         ) {
+          return;
+        }
+
+        const action = getProjectFileSaveAction({
+          lastSavedProjectFileSavePath: lastSaveOperation.current?.projectFileSavePath,
+          projectFileSavePath: debouncedSaveOperation.projectFileSavePath,
+          cutSegments: debouncedSaveOperation.cutSegments,
+        });
+
+        if (action === 'skip') return;
+
+        if (action === 'delete-stale') {
+          // All segments were deleted after a project file was saved:
+          // remove the stale project file so the deleted segments don't reappear on reopen.
+          // https://github.com/mifi/lossless-cut/issues/1294
+          console.log('All segments deleted, removing stale project file', debouncedSaveOperation.projectFileSavePath);
+          await unlink(debouncedSaveOperation.projectFileSavePath).catch((err: unknown) => {
+            // The file may already be gone; only ignore not-found errors
+            if (err instanceof Error && 'code' in err && err.code === 'ENOENT') return;
+            throw err;
+          });
+          lastSaveOperation.current = undefined;
           return;
         }
 
