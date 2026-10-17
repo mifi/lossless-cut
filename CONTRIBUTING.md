@@ -45,6 +45,28 @@ yarn check
 
 Most of these checks are automatically run in GitHub Actions.
 
+### Line endings
+
+Source files matched by `.gitattributes` (`.js`, `.jsx`, `.ts`, `.tsx`, `.mjs`, `.mts`) are
+checked out with LF line endings regardless of your platform or local `core.autocrlf` setting.
+This keeps `yarn lint`'s `linebreak-style` rule consistent with CI, which always checks out with
+LF. Windows users with the common `core.autocrlf=true` git default previously got CRLF working-tree
+files for these extensions, causing `yarn lint` to report thousands of `linebreak-style` errors
+locally that never showed up in CI.
+
+If your working copy predates `.gitattributes` and still has CRLF files, a fresh `git clone` will
+pick up LF automatically. To fix specific already-checked-out files in place instead, force a
+real re-checkout (a plain `git checkout -- <path>` is skipped if git thinks the file is already
+up to date):
+
+```bash
+rm <path> && git checkout -- <path>
+```
+
+Test fixtures under `src/renderer/src/test/fixtures/` (`.edl`, `.csv`, `.vtt`, `.xml`, `.otio`,
+etc.) are intentionally excluded, since they hold real-world sample files from other tools whose
+exact bytes - including line endings - the parsers under test may depend on.
+
 ### Other scripts
 
 See [package.json](./package.json) "scripts" section.

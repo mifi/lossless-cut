@@ -1,0 +1,18 @@
+# Force LF line endings for the source file types `yarn lint` actually checks
+# (see the `lint` script in package.json), regardless of platform or the local
+# core.autocrlf setting. CI (.github/workflows/test.yml) already checks out with
+# core.autocrlf=false (LF); without this, a Windows checkout with the common
+# core.autocrlf=true default gets CRLF working-tree files for these extensions,
+# which then fails ESLint's linebreak-style rule locally even though CI is green.
+#
+# Deliberately scoped to just these extensions: src/renderer/src/test/fixtures/
+# holds real-world sample files (e.g. from DaVinci Resolve, Final Cut Pro,
+# PotPlayer) in other formats (.edl, .csv, .vtt, .xml, .otio, ...) whose exact
+# bytes - including line endings - the parsers under test may depend on, so
+# they're intentionally left with no attribute and are unaffected by this file.
+*.js text eol=lf
+*.jsx text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.mjs text eol=lf
+*.mts text eol=lf
