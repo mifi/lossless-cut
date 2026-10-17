@@ -1,6 +1,6 @@
 import { it, expect } from 'vitest';
 
-import { formatDuration, parseDuration } from './duration';
+import { formatDuration, isExactTimecodeMatch, parseDuration } from './duration';
 
 it('should format duration properly', () => {
   expect(formatDuration({ seconds: 1.5, fps: 30 })).toBe('00:00:01.15');
@@ -52,6 +52,30 @@ it('should format and parse duration with correct rounding', () => {
   // https://github.com/mifi/lossless-cut/issues/254#issuecomment-2781652373
   expect(formatDuration({ seconds: parseDuration('71.2') })).toBe('00:01:11.200');
   expect(formatDuration({ seconds: parseDuration('1000') })).toBe('00:16:40.000');
+});
+
+it('should detect complete timecodes for the active format', () => {
+  const decimalFormat = ({ seconds }: { seconds: number }) => formatDuration({ seconds });
+  const frameFormat = ({ seconds }: { seconds: number }) => formatDuration({ seconds, fps: 30 });
+
+  expect(isExactTimecodeMatch('00:00:01.500', parseDuration, decimalFormat)).toBe(true);
+  expect(isExactTimecodeMatch('00:00:01.50', parseDuration, decimalFormat)).toBe(false);
+
+  expect(isExactTimecodeMatch('00:00:01.15', (value) => parseDuration(value, 30), frameFormat)).toBe(true);
+  expect(isExactTimecodeMatch('00:00:01.1', (value) => parseDuration(value, 30), frameFormat)).toBe(false);
+
+  const fractionalFps = 23.976;
+  expect(isExactTimecodeMatch(
+    '00:00:32.15',
+    (value) => parseDuration(value, fractionalFps),
+    ({ seconds }) => formatDuration({ seconds, fps: fractionalFps }),
+  )).toBe(true);
+
+  expect(isExactTimecodeMatch('1.500', parseFloat, ({ seconds }) => seconds.toFixed(3))).toBe(true);
+  expect(isExactTimecodeMatch('1.50', parseFloat, ({ seconds }) => seconds.toFixed(3))).toBe(false);
+
+  expect(isExactTimecodeMatch('45', (value) => parseInt(value, 10), ({ seconds }) => String(seconds))).toBe(true);
+  expect(isExactTimecodeMatch('invalid', parseFloat, ({ seconds }) => seconds.toFixed(3))).toBe(false);
 });
 
 // https://github.com/mifi/lossless-cut/issues/1603

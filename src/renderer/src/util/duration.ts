@@ -1,5 +1,7 @@
 import padStart from 'lodash/padStart';
 
+import type { FormatTimecode, ParseTimecode } from '../types';
+
 export function formatDuration({ seconds: totalSecondsIn, fileNameFriendly, showFraction = true, shorten = false, fps }: {
   seconds?: number | undefined,
   fileNameFriendly?: boolean | undefined,
@@ -43,11 +45,12 @@ export function formatDuration({ seconds: totalSecondsIn, fileNameFriendly, show
   return `${sign}${hoursPart}${minutesPadded}${delim}${secondsPadded}${fraction}`;
 }
 
-const exactDurationRegex = /^-?\d{2}:\d{2}:\d{2}\.\d{3}$/;
 const durationRegex = /^(-?)(?:(?:(\d+):)?(\d{1,2}):)?(\d+(?:[,.]\d+)?)$/;
 
-// todo adapt also to frame counts and frame fractions?
-export const isExactDurationMatch = (str: string) => exactDurationRegex.test(str);
+export const isExactTimecodeMatch = (str: string, parseTimecode: ParseTimecode, formatTimecode: FormatTimecode) => {
+  const seconds = parseTimecode(str);
+  return seconds != null && Number.isFinite(seconds) && formatTimecode({ seconds }) === str;
+};
 
 // See also parseYoutube
 export function parseDuration(str: string, fps?: number) {

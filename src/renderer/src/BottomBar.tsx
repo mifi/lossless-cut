@@ -22,7 +22,7 @@ import { withBlur, mirrorTransform } from './util';
 import getSwal from './swal';
 import { getSegColor as getSegColorRaw } from './util/colors';
 import { useSegColors } from './contexts';
-import { isExactDurationMatch } from './util/duration';
+import { isExactTimecodeMatch } from './util/duration';
 import useUserSettings from './hooks/useUserSettings';
 import useActionTitle from './hooks/useActionTitle';
 import { askForPlaybackRate, checkAppPath } from './dialogs';
@@ -169,7 +169,7 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
 
   const handleCutTimeInput = useCallback((text: string) => {
     try {
-      if (isExactDurationMatch(text) || isEmptyEndTime(text)) {
+      if (isExactTimecodeMatch(text, parseTimecode, formatTimecode) || isEmptyEndTime(text)) {
         parseAndSetCutTime(text);
         return;
       }
@@ -180,7 +180,7 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
 
     // else or if error, just set manual value, to make sure it doesn't jump to end https://github.com/mifi/lossless-cut/issues/988#issuecomment-3475870072
     setCutTimeManual(text);
-  }, [isEmptyEndTime, parseAndSetCutTime]);
+  }, [formatTimecode, isEmptyEndTime, parseAndSetCutTime, parseTimecode]);
 
   const handleInputBlur = useCallback(() => {
     setCutTimeManual(undefined);
