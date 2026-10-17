@@ -19,4 +19,12 @@ describe('parseFfmpegProgressLine', () => {
     const str = 'size=     501kB time=00:00:32.02 bitrate= 128.2kbits/s speed=2.29e+03x    ';
     expect(parseFfmpegProgressLine({ line: str, duration: 32.02 })).toBe(1);
   });
+  test('parse 3-digit millisecond precision', () => {
+    const str = 'frame=  100 fps=30 q=2.0 size=N/A time=00:00:01.050 bitrate=N/A speed=1.0x    ';
+    expect(parseFfmpegProgressLine({ line: str, duration: 10 })).toBe(0.105);
+  });
+  test('parse 1-digit fraction precision', () => {
+    const str = 'frame=  100 fps=30 q=2.0 size=N/A time=00:00:01.5 bitrate=N/A speed=1.0x    ';
+    expect(parseFfmpegProgressLine({ line: str, duration: 10 })).toBe(0.15);
+  });
 });

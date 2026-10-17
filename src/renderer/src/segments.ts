@@ -52,6 +52,7 @@ export const sortSegments = <T extends { start: number }>(segments: T[]) => sort
 
 // https://stackoverflow.com/a/30472982/6519037
 export function partitionIntoOverlappingRanges<T extends SegmentBase>(array: T[]) {
+  if (array.length === 0) return [];
   const [firstItem] = array;
   invariant(firstItem != null);
 
@@ -62,14 +63,8 @@ export function partitionIntoOverlappingRanges<T extends SegmentBase>(array: T[]
   const getSegmentEnd = (s: T) => s.end ?? s.start; // assume markers have a length of 0;
 
   const getMaxEnd = (array2: T[]) => {
-    // note: this also mutates array2
-    array2.sort((a, b) => {
-      if (getSegmentEnd(a) < getSegmentEnd(b)) return 1;
-      if (getSegmentEnd(a) > getSegmentEnd(b)) return -1;
-      return 0;
-    });
     invariant(array2[0] != null);
-    return getSegmentEnd(array2[0]);
+    return Math.max(...array2.map(getSegmentEnd));
   };
 
   for (let i = 1, g = 0; i < array.length; i += 1) {

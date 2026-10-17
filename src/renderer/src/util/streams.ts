@@ -462,10 +462,13 @@ export function isAudioDefinitelyNotSupported(streams: FFprobeStream[]) {
 }
 
 export function getVideoTimebase(videoStream: Pick<FFprobeStream, 'time_base'>) {
-  const timebaseMatch = videoStream.time_base && videoStream.time_base.split('/');
-  if (timebaseMatch) {
-    const timebaseParsed = parseInt(timebaseMatch[1]!, 10);
-    if (!Number.isNaN(timebaseParsed)) return timebaseParsed;
+  const parts = videoStream.time_base && videoStream.time_base.split('/');
+  if (parts && parts.length === 2) {
+    const num = parseInt(parts[0]!, 10);
+    const den = parseInt(parts[1]!, 10);
+    if (!Number.isNaN(num) && !Number.isNaN(den) && num > 0) {
+      return Math.round(den / num);
+    }
   }
   return undefined;
 }
