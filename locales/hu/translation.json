@@ -954,5 +954,8 @@
   "Extract segment frames as image files": "Szegmensképkockák mentése képfájlként",
   "You are in simple mode, meaning some functionality has been simplified or hidden.": "Jelenleg egyszerű módban van, ami azt jelenti, hogy egyes funkciók leegyszerűsítve vagy elrejtve vannak.",
   "Source code": "Forráskód",
-  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "Egyéni FFmpeg könyvtárat állított be. A Beállításokban módosíthatja vagy visszaállíthatja."
+  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "Egyéni FFmpeg könyvtárat állított be. A Beállításokban módosíthatja vagy visszaállíthatja.",
+  "Dark": "Sötét",
+  "Light": "Világos",
+  "Theme": "Téma"
 }
