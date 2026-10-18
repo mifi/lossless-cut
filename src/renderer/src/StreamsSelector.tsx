@@ -421,7 +421,8 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
     codecTypeHuman = stream.codec_type;
   }
 
-  const streamFps = getStreamFps(stream);
+  const streamFps = stream.codec_type === 'audio' ? undefined : getStreamFps(stream);
+  const sampleRate = Number(stream.sample_rate);
   const title = stream.tags?.title;
 
   const onClick = () => onToggle && onToggle(stream.index);
@@ -463,7 +464,7 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
       <td>{!Number.isNaN(bitrate) && (stream.codec_type === 'audio' ? `${Math.round(bitrate / 1000)} kbps` : prettyBytes(bitrate, { bits: true }))}</td>
       <td style={{ maxWidth: '2.5em', wordBreak: 'break-word' }} title={title}>{title}</td>
       <td style={{ maxWidth: '2.5em', overflow: 'hidden' }} title={effectiveLanguage}>{effectiveLanguage}</td>
-      <td>{stream.width && stream.height && `${stream.width}x${stream.height}`} {stream.channels && `${stream.channels}c`} {stream.channel_layout} {streamFps && `${streamFps.toFixed(2)}fps`}</td>
+      <td>{stream.width && stream.height && `${stream.width}x${stream.height}`} {stream.channels && `${stream.channels}c`} {stream.channel_layout} {sampleRate > 0 && `${sampleRate / 1000}kHz`} {streamFps && `${streamFps.toFixed(2)}fps`}</td>
       <td>
         <Select style={{ width: '6em' }} value={effectiveDisposition || unchangedDispositionValue} onChange={onDispositionChange}>
           <option value="" disabled>{t('Disposition')}</option>

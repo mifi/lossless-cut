@@ -84,6 +84,7 @@ import {
   getOutFileExtension,
   getSuffixedOutPath,
   calculateTimelinePercent,
+  getFileDir,
 } from './util';
 import getSwal, { errorToast, showPlaybackFailedMessage } from './swal';
 import { adjustRate } from './util/rate-calculator';
@@ -2345,10 +2346,10 @@ function App() {
     if (!checkFileOpened()) return;
 
     await withErrorHandling(async () => {
-      const edl = await askForEdlImport({ type, fps: detectedFps, fileDuration });
+      const edl = await askForEdlImport({ type, fps: detectedFps, fileDuration, defaultPath: type === 'llc' ? getOutDir(customOutDir, filePath) : getFileDir(filePath) });
       if (edl.length > 0) loadCutSegments({ segments: edl, append: true, clampDuration: fileDuration });
     }, i18n.t('Failed to import project file'));
-  }, [checkFileOpened, detectedFps, fileDuration, loadCutSegments, withErrorHandling]);
+  }, [checkFileOpened, customOutDir, detectedFps, fileDuration, filePath, loadCutSegments, withErrorHandling]);
 
   useEffect(() => {
     const openFiles = async (filePaths: string[]) => userOpenFiles(filePaths.map((p) => resolvePathIfNeeded(p)));

@@ -227,6 +227,7 @@ export default ({ app, mainWindow, newVersion, isStoreBuild, openExternal }: {
           { type: 'separator' } as const,
           {
             label: esc(t('Exit')),
+            accelerator: 'Ctrl+Q',
             click() {
               app.quit();
             },
