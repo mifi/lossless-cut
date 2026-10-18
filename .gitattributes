@@ -1,0 +1,8 @@
+# Keep files checked by `yarn lint` LF on every platform, regardless of core.autocrlf
+# (ESLint linebreak-style: unix). Keep in sync with the --ext list of the `lint` script.
+*.js text eol=lf
+*.jsx text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.mjs text eol=lf
+*.mts text eol=lf
