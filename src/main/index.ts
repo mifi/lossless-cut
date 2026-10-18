@@ -157,9 +157,6 @@ function getSavedBounds() {
 }
 
 function createWindow() {
-  // https://www.electronjs.org/docs/latest/tutorial/dark-mode
-  nativeTheme.themeSource = configStore.get('theme');
-
   const savedBounds = getSavedBounds();
 
   mainWindow = new BrowserWindow({
@@ -303,6 +300,11 @@ async function init() {
     logger.info('LosslessCut version', app.getVersion(), { isDev });
     await configStore.init({ customConfigDir: argv['configDir'] });
     logger.info('Initialized config store');
+
+    // https://www.electronjs.org/docs/latest/tutorial/dark-mode
+    // also affects what `prefers-color-scheme` reports in the renderer
+    nativeTheme.themeSource = configStore.get('theme');
+    configStore.onDidChange('theme', (theme) => { nativeTheme.themeSource = theme; });
 
     const allowMultipleInstances = configStore.get('allowMultipleInstances');
     const language = configStore.get('language');
@@ -453,11 +455,6 @@ function quitApp() {
 
 const setProgressBar = (v: number) => mainWindow?.setProgressBar(v);
 
-// also affects what `prefers-color-scheme` reports in the renderer
-function setThemeSource(theme: Config['theme']) {
-  nativeTheme.themeSource = theme;
-}
-
 function sendOsNotification(options: NotificationConstructorOptions) {
   if (!Notification.isSupported()) return;
   const notification = new Notification(options);
@@ -474,7 +471,6 @@ const remoteApi = {
   focusWindow,
   quitApp,
   setProgressBar,
-  setThemeSource,
   sendOsNotification,
   writeClipboardText: (text: string) => electron.clipboard.writeText(text),
   readClipboardText: () => electron.clipboard.readText(),

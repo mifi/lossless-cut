@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo, useSyncExternalStore } from 'react';
 import i18n from 'i18next';
 import type { Transition } from 'motion/react';
 
@@ -7,7 +7,6 @@ import type { Config } from '../../../common/types.js';
 import { errorToast } from '../swal';
 import isDev from '../isDev';
 import { mySpring, emitter as animationsEmitter } from '../animations';
-import mainApi from '../mainApi';
 
 const remote = window.require('@electron/remote');
 const { systemPreferences } = remote;
@@ -15,6 +14,10 @@ const { configStore } = remote.require('./index.js');
 
 const animationSettings = systemPreferences.getAnimationSettings();
 const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+function subscribeSystemDarkMode(onChange: () => void) {
+  darkModeMediaQuery.addEventListener('change', onChange);
+  return () => darkModeMediaQuery.removeEventListener('change', onChange);
+}
 
 export default function useUserSettingsRoot() {
   const firstUpdateRef = useRef(true);
@@ -214,17 +217,8 @@ export default function useUserSettingsRoot() {
     };
   }, []);
 
-  // note: themeSource must be 'system' for prefers-color-scheme to report the OS theme
-  useEffect(() => {
-    mainApi.setThemeSource(theme);
-  }, [theme]);
-
-  const [systemDarkMode, setSystemDarkMode] = useState(darkModeMediaQuery.matches);
-  useEffect(() => {
-    const onChange = (e: MediaQueryListEvent) => setSystemDarkMode(e.matches);
-    darkModeMediaQuery.addEventListener('change', onChange);
-    return () => darkModeMediaQuery.removeEventListener('change', onChange);
-  }, []);
+  // note: main sets nativeTheme.themeSource from `theme`, and it must be 'system' for prefers-color-scheme to report the OS theme
+  const systemDarkMode = useSyncExternalStore(subscribeSystemDarkMode, () => darkModeMediaQuery.matches);
 
   const darkMode = theme === 'system' ? systemDarkMode : theme === 'dark';
 

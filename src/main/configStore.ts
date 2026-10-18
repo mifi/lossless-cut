@@ -206,6 +206,10 @@ export function set<T extends keyof Config>(key: T, val: Config[T]) {
   else store.set(key, val);
 }
 
+export function onDidChange<T extends keyof Config>(key: T, callback: (val: Config[T]) => void) {
+  return store.onDidChange(key, (val) => callback(val as Config[T]));
+}
+
 export function reset<T extends keyof Config>(key: T) {
   set(key, defaults[key]);
 }
