@@ -307,7 +307,7 @@ async function startPlayback({ path, slaveVideo, masterVideo, videoStreamIndex, 
   processChunk();
 }
 
-function MediaSourcePlayer({ rotate, filePath, videoStream, audioStreams, masterVideoRef, mediaSourceQuality, ffmpegHwaccel }: {
+function MediaSourcePlayer({ rotate, filePath, videoStream, audioStreams, masterVideoRef, mediaSourceQuality, ffmpegHwaccel, scaleVideoToFit }: {
   rotate: number | undefined,
   filePath: string,
   videoStream: FFprobeStream | undefined,
@@ -315,6 +315,7 @@ function MediaSourcePlayer({ rotate, filePath, videoStream, audioStreams, master
   masterVideoRef: RefObject<HTMLVideoElement | null>,
   mediaSourceQuality: number,
   ffmpegHwaccel: FfmpegHwAccel,
+  scaleVideoToFit: boolean,
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -406,8 +407,8 @@ function MediaSourcePlayer({ rotate, filePath, videoStream, audioStreams, master
   }, []);
 
   const videoStyle = useMemo<CSSProperties>(() => ({
-    position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, display: 'block', width: '100%', height: '100%', objectFit: 'contain', transform: rotate ? `rotate(${rotate}deg)` : undefined,
-  }), [rotate]);
+    position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, display: 'block', width: '100%', height: '100%', objectFit: scaleVideoToFit ? 'contain' : 'scale-down', transform: rotate ? `rotate(${rotate}deg)` : undefined,
+  }), [rotate, scaleVideoToFit]);
 
   return (
     <div style={{ width: '100%', height: '100%', left: 0, right: 0, top: 0, bottom: 0, position: 'absolute', overflow: 'hidden', background: 'black', pointerEvents: 'none' }}>

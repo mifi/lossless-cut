@@ -95,6 +95,8 @@ export default function useUserSettingsRoot() {
   useEffect(() => safeSetConfig({ enableAskForFileOpenAction }), [enableAskForFileOpenAction]);
   const [playbackVolume, setPlaybackVolume] = useState(safeGetConfigInitial('playbackVolume'));
   useEffect(() => safeSetConfig({ playbackVolume }), [playbackVolume]);
+  const [scaleVideoToFit, setScaleVideoToFit] = useState(safeGetConfigInitial('scaleVideoToFit'));
+  useEffect(() => safeSetConfig({ scaleVideoToFit }), [scaleVideoToFit]);
   const [autoSaveProjectFile, setAutoSaveProjectFile] = useState(safeGetConfigInitial('autoSaveProjectFile'));
   useEffect(() => safeSetConfig({ autoSaveProjectFile }), [autoSaveProjectFile]);
   const [wheelSensitivity, setWheelSensitivity] = useState(safeGetConfigInitial('wheelSensitivity'));
@@ -274,6 +276,7 @@ export default function useUserSettingsRoot() {
     enableImportChapters,
     enableAskForFileOpenAction,
     playbackVolume,
+    scaleVideoToFit,
     autoSaveProjectFile,
     wheelSensitivity,
     waveformHeight,
@@ -355,6 +358,7 @@ export default function useUserSettingsRoot() {
     setEnableImportChapters,
     setEnableAskForFileOpenAction,
     setPlaybackVolume,
+    setScaleVideoToFit,
     setAutoSaveProjectFile,
     setWheelSensitivity,
     setWaveformHeight,

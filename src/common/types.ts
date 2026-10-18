@@ -65,6 +65,7 @@ export const configSchema = z.object({
   enableImportChapters: enableImportChaptersSchema,
   enableAskForFileOpenAction: z.boolean(),
   playbackVolume: z.number(),
+  scaleVideoToFit: z.boolean(),
   autoSaveProjectFile: z.boolean(),
   wheelSensitivity: z.number(),
   waveformHeight: z.number(),

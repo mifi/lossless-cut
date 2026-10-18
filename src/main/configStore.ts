@@ -114,6 +114,7 @@ const defaults: Config = {
   enableImportChapters: 'ask',
   enableAskForFileOpenAction: true,
   playbackVolume: 0.3, // so that we don't shock new users with loud volume
+  scaleVideoToFit: true,
   autoSaveProjectFile: true,
   wheelSensitivity: 0.2,
   waveformHeight: 40,
