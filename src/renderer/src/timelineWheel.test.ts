@@ -48,6 +48,10 @@ describe('zoom', () => {
     expect(getAction({ pixelY: -100, modifiers: { ctrlKey: true }, zoomKey: 'meta' })).toEqual({ type: 'seek', amount: 20 });
     expect(getAction({ pixelY: -100, modifiers: { ctrlKey: true }, zoomKey: 'meta', frameSeekKey: 'ctrl' })).toEqual({ type: 'frameSeek', direction: 1 });
   });
+
+  test('shift as zoom modifier, where shift+wheel arrives as horizontal scroll', () => {
+    expect(getAction({ pixelX: -100, modifiers: { shiftKey: true }, zoomKey: 'shift', keyframeSeekKey: 'meta' })).toEqual({ type: 'zoom', amount: 40 });
+  });
 });
 
 describe('seek', () => {

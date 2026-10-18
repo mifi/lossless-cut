@@ -36,7 +36,8 @@ export function getTimelineWheelAction({ pixelX, pixelY, modifiers, isPinch, whe
 
   if (isPinch) return getZoomAction(pixelY, pinchSensitivityFactor);
 
-  if (isPressed(mouseWheelZoomModifierKey)) return getZoomAction(pixelY);
+  // Chromium turns shift+wheel into horizontal scroll
+  if (isPressed(mouseWheelZoomModifierKey)) return getZoomAction(mouseWheelZoomModifierKey === 'shift' && pixelY === 0 ? pixelX : pixelY);
 
   const delta = pixelX + pixelY;
 
