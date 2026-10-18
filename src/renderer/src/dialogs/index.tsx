@@ -8,7 +8,7 @@ import pMap from 'p-map';
 
 import { formatDuration } from '../util/duration';
 import { parseYouTube } from '../edlFormats';
-import { appPath, isMasBuild, isStoreBuild, isWindows, isWindowsStoreBuild, testFailFsOperation, trashFile, unlinkWithRetry, isExecaError } from '../util';
+import { appPath, isMasBuild, isStoreBuild, isWindows, isWindowsStoreBuild, testFailFsOperation, trashFile, unlinkWithRetry, isExecaError, getStdioString } from '../util';
 import { getInvalidFileNameChars, getInvalidOutputPath } from '../util/outputNameError';
 import type { ParseTimecode } from '../types';
 import type { FindKeyframeMode } from '../ffmpeg';
@@ -391,8 +391,9 @@ const ErrorReportSuggestion = () => <li><Trans>If nothing helps, you can send an
 
 // todo Dialog component
 export async function showExportFailedDialog({ fileFormat, safeOutputFileName, err }: { fileFormat: string | undefined, safeOutputFileName: boolean, err?: unknown }) {
-  const invalidOutputFilePath = isExecaError(err) ? getInvalidOutputPath(err.stderr) : undefined;
-  const invalidChars = invalidOutputFilePath ? getInvalidFileNameChars(invalidOutputFilePath) : undefined;
+  const invalidOutputFilePath = isExecaError(err) ? getInvalidOutputPath(getStdioString(err.stderr)) : undefined;
+  // These Windows restrictions don't apply to POSIX file names
+  const invalidChars = isWindows && invalidOutputFilePath ? getInvalidFileNameChars(invalidOutputFilePath) : undefined;
   const invalidOutputFileName = invalidOutputFilePath?.split(/[\\/]/).pop();
   const html = (
     <div style={{ textAlign: 'left' }}>
