@@ -969,5 +969,8 @@
   "Width": "Šírka",
   "You are in simple mode, meaning some functionality has been simplified or hidden.": "Nachádzate sa v jednoduchom režime, čo znamená, že niektoré funkcie boli zjednodušené alebo skryté.",
   "Source code": "Zdrojový kód",
-  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "Nastavili ste vlastný adresár pre FFmpeg. V nastaveniach ho môžete zmeniť alebo obnoviť."
+  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "Nastavili ste vlastný adresár pre FFmpeg. V nastaveniach ho môžete zmeniť alebo obnoviť.",
+  "Theme": "Motív",
+  "Dark": "Tmavý",
+  "Light": "Svetlý"
 }
