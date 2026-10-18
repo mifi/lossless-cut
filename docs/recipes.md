@@ -43,7 +43,7 @@ See also [#2631](https://github.com/mifi/lossless-cut/issues/2631).
 
 ## Export all keyframes as images
 
-1. Tools -> Create segments from keyframes
+1. Segments -> Create segments from keyframes
 2. Right click on a segment in the segment list
 3. Edit segments by expression
 4. Convert segments to markers
