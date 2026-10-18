@@ -1,6 +1,6 @@
 import { it, expect } from 'vitest';
 
-import { formatDuration, parseDuration } from './duration';
+import { formatDuration, isExactTimecodeMatch, parseDuration } from './duration';
 
 it('should format duration properly', () => {
   expect(formatDuration({ seconds: 1.5, fps: 30 })).toBe('00:00:01.15');
@@ -54,6 +54,30 @@ it('should format and parse duration with correct rounding', () => {
   expect(formatDuration({ seconds: parseDuration('1000') })).toBe('00:16:40.000');
 });
 
+it('should detect complete timecodes for the active format', () => {
+  const decimalFormat = ({ seconds }: { seconds: number }) => formatDuration({ seconds });
+  const frameFormat = ({ seconds }: { seconds: number }) => formatDuration({ seconds, fps: 30 });
+
+  expect(isExactTimecodeMatch('00:00:01.500', parseDuration, decimalFormat)).toBe(true);
+  expect(isExactTimecodeMatch('00:00:01.50', parseDuration, decimalFormat)).toBe(false);
+
+  expect(isExactTimecodeMatch('00:00:01.15', (value) => parseDuration(value, 30), frameFormat)).toBe(true);
+  expect(isExactTimecodeMatch('00:00:01.1', (value) => parseDuration(value, 30), frameFormat)).toBe(false);
+
+  const fractionalFps = 23.976;
+  expect(isExactTimecodeMatch(
+    '00:00:32.15',
+    (value) => parseDuration(value, fractionalFps),
+    ({ seconds }) => formatDuration({ seconds, fps: fractionalFps }),
+  )).toBe(true);
+
+  expect(isExactTimecodeMatch('1.500', parseFloat, ({ seconds }) => seconds.toFixed(3))).toBe(true);
+  expect(isExactTimecodeMatch('1.50', parseFloat, ({ seconds }) => seconds.toFixed(3))).toBe(false);
+
+  expect(isExactTimecodeMatch('45', (value) => parseInt(value, 10), ({ seconds }) => String(seconds))).toBe(true);
+  expect(isExactTimecodeMatch('invalid', parseFloat, ({ seconds }) => seconds.toFixed(3))).toBe(false);
+});
+
 // https://github.com/mifi/lossless-cut/issues/1603
 it('should round up properly', () => {
   const fps = 30;
@@ -72,4 +96,15 @@ it('should round up properly', () => {
   expect(formatDuration({ seconds: (3600 - halfFrame) - 0.001, fps })).toBe('00:59:59.29');
   expect(formatDuration({ seconds: 3599.9999 })).toBe('01:00:00.000');
   expect(formatDuration({ seconds: (3600 - halfFrame) + 0.001, fps })).toBe('01:00:00.00');
+});
+
+// 20 minutes covers e.g. 00:16:41 at 24000/1001, where floating point rounding used to show the wrong frame
+it.each([24, 25, 30, 60, 24000 / 1001, 30000 / 1001, 48000 / 1001, 60000 / 1001])('should round-trip every frame timecode at %d fps', (fps) => {
+  const mismatches: string[] = [];
+  for (let frame = 0; frame < fps * 60 * 20; frame += 1) {
+    const formatted = formatDuration({ seconds: frame / fps, fps });
+    const roundTripped = formatDuration({ seconds: parseDuration(formatted, fps), fps });
+    if (roundTripped !== formatted) mismatches.push(`${formatted} -> ${roundTripped}`);
+  }
+  expect(mismatches).toEqual([]);
 });

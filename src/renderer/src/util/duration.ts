@@ -1,5 +1,7 @@
 import padStart from 'lodash/padStart';
 
+import type { FormatTimecode, ParseTimecode } from '../types';
+
 export function formatDuration({ seconds: totalSecondsIn, fileNameFriendly, showFraction = true, shorten = false, fps }: {
   seconds?: number | undefined,
   fileNameFriendly?: boolean | undefined,
@@ -16,14 +18,15 @@ export function formatDuration({ seconds: totalSecondsIn, fileNameFriendly, show
   // round to integer for our current unit
   const totalUnits = Math.round(totalSecondsAbs * unitsPerSec);
 
-  const seconds = Math.floor(totalUnits / unitsPerSec);
+  // epsilon: with fractional fps like 24000/1001, e.g. 24000 / fps = 1000.9999999999999
+  const seconds = Math.floor(totalUnits / unitsPerSec + 1e-9);
   const secondsPadded = padStart(String(seconds % 60), 2, '0');
-  const minutes = Math.floor(totalUnits / unitsPerSec / 60) % 60;
-  const hours = Math.floor(totalUnits / unitsPerSec / 60 / 60);
+  const minutes = Math.floor(seconds / 60) % 60;
+  const hours = Math.floor(seconds / 60 / 60);
 
   const minutesPadded = shorten && hours === 0 ? `${minutes}` : padStart(String(minutes), 2, '0');
 
-  const remainder = totalUnits % unitsPerSec;
+  const remainder = Math.max(0, totalUnits - seconds * unitsPerSec);
 
   // Be nice to filenames and use .
   const delim = fileNameFriendly ? '.' : ':';
@@ -37,17 +40,18 @@ export function formatDuration({ seconds: totalSecondsIn, fileNameFriendly, show
   let fraction = '';
   if (showFraction && !(shorten && remainder === 0)) {
     const numDigits = fps != null ? 2 : 3;
-    fraction = `.${padStart(String(Math.floor(remainder)), numDigits, '0')}`;
+    fraction = `.${padStart(String(Math.floor(remainder + 1e-6)), numDigits, '0')}`;
   }
 
   return `${sign}${hoursPart}${minutesPadded}${delim}${secondsPadded}${fraction}`;
 }
 
-const exactDurationRegex = /^-?\d{2}:\d{2}:\d{2}\.\d{3}$/;
 const durationRegex = /^(-?)(?:(?:(\d+):)?(\d{1,2}):)?(\d+(?:[,.]\d+)?)$/;
 
-// todo adapt also to frame counts and frame fractions?
-export const isExactDurationMatch = (str: string) => exactDurationRegex.test(str);
+export const isExactTimecodeMatch = (str: string, parseTimecode: ParseTimecode, formatTimecode: FormatTimecode) => {
+  const seconds = parseTimecode(str);
+  return seconds != null && Number.isFinite(seconds) && formatTimecode({ seconds }) === str;
+};
 
 // See also parseYoutube
 export function parseDuration(str: string, fps?: number) {
@@ -62,17 +66,18 @@ export function parseDuration(str: string, fps?: number) {
 
   const secWithFraction = secStrRaw!.replace(',', '.');
 
-  let sec: number;
-  if (fps == null) {
-    sec = parseFloat(secWithFraction);
-  } else {
-    const [secStr, framesStr] = secWithFraction.split('.');
-    sec = parseInt(secStr!, 10) + (framesStr != null ? parseInt(framesStr, 10) : 0) / fps;
-  }
-
   if (min > 59) return undefined;
 
-  let time = (((hour * 60) + min) * 60 + sec);
+  let time: number;
+  if (fps == null) {
+    time = ((hour * 60) + min) * 60 + parseFloat(secWithFraction);
+  } else {
+    const [secStr, framesStr] = secWithFraction.split('.');
+    const wholeSeconds = ((hour * 60) + min) * 60 + parseInt(secStr!, 10);
+    const frames = framesStr != null ? parseInt(framesStr, 10) : 0;
+    // inverse of formatDuration (which floors the frame remainder), needed for non-integer fps like 29.97
+    time = Math.max(0, Math.ceil(wholeSeconds * fps + frames - 1e-6)) / fps;
+  }
 
   if (sign === '-') time *= -1;
 
