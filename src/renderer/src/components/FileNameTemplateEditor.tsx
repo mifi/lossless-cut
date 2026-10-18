@@ -125,6 +125,13 @@ function FileNameTemplateEditor(opts: {
   }, [open]);
 
   const reset = useCallback(() => {
+    // edit through the input so that native undo works. This goes through onChange and the debounce, so that the saved template always follows the text (also after an undo)
+    const input = inputRef.current;
+    if (input != null) {
+      input.focus();
+      input.select();
+      if (document.execCommand('insertText', false, defaultTemplate)) return;
+    }
     setTemplate(defaultTemplate);
     setText(defaultTemplate);
   }, [defaultTemplate, setTemplate]);
@@ -142,6 +149,11 @@ function FileNameTemplateEditor(opts: {
     if (startPos == null || endPos == null) return;
 
     const toInsert = variable === segTagsExample ? `${segTagsExample} ?? ''` : variable;
+
+    // insert through the input so that native undo works
+    input!.focus();
+    input!.setSelectionRange(startPos, endPos);
+    if (document.execCommand('insertText', false, formatVariable(toInsert))) return;
 
     const newValue = `${text.slice(0, startPos)}${`${formatVariable(toInsert)}${text.slice(endPos)}`}`;
     setText(newValue);
