@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { describe, expect, test } from 'vitest';
 
-import { getFixChannelLayoutFilter, hasCustomChannelLayout, truncateFileName } from './util.js';
+import { getFixChannelLayoutFilter, hasCustomChannelLayout, truncateFileName, truncateUtf8 } from './util.js';
 
 describe('hasCustomChannelLayout', () => {
   test('detects layouts that ffmpeg could not express natively', () => {
@@ -59,5 +59,17 @@ describe('truncateFileName', () => {
   });
   test('ignores a dot too early in the name to be an extension', () => {
     expect(truncateFileName(`Dr. ${'a'.repeat(20)}`, 10)).toBe('Dr. aaaaaa');
+  });
+  test('counts UTF-8 bytes and does not split characters', () => {
+    expect(truncateFileName('日本語の動画.mp4', 13)).toBe('日本語.mp4'); // 3 bytes per character
+    expect(truncateFileName('😀😀😀.mkv', 13)).toBe('😀😀.mkv'); // 4 bytes per emoji
+  });
+});
+
+describe('truncateUtf8', () => {
+  test('truncates to whole characters', () => {
+    expect(truncateUtf8('abc', 5)).toBe('abc');
+    expect(truncateUtf8('😀😀', 5)).toBe('😀');
+    expect(truncateUtf8('åäö', 3)).toBe('å');
   });
 });

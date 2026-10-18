@@ -13,7 +13,7 @@ import type { FileStats, FormatTimecode, SegmentToExport } from '../types';
 import safeishEval from '../worker/eval';
 import { UserFacingError } from '../../errors';
 import type { FileFfprobeMeta } from '../ffmpeg';
-import { truncateFileName } from '../../../common/util';
+import { getUtf8Length, truncateFileName, truncateUtf8 } from '../../../common/util';
 
 
 export const segNumVariable = 'SEG_NUM';
@@ -221,18 +221,26 @@ async function interpolateOutFileName(template: string, {
   return ret;
 }
 
-function maybeTruncatePath(fileName: string, truncate: boolean) {
+function truncatePath(fileName: string) {
   // Split the path by its separator, so we can check the actual file name (last path seg)
   const pathSegs = fileName.split(pathSep);
   if (pathSegs.length === 0) return '';
   const [lastSeg] = pathSegs.slice(-1);
   const rest = pathSegs.slice(0, -1);
 
-  return [
-    ...rest,
-    // If sanitation is enabled, make sure filename (last seg of the path) is not too long
-    truncate ? truncateFileName(lastSeg!, maxFileNameLength) : lastSeg,
-  ].join(pathSep);
+  return [...rest, truncateFileName(lastSeg!, maxFileNameLength)].join(pathSep);
+}
+
+// If sanitation is enabled, make sure the file name (last seg of the path) is not too long.
+// First try to shorten the source file name (FILENAME), so that the parts that make each output name unique (cut times, segment number etc.) are kept
+async function interpolateTruncatedOutFileName(template: string, params: Parameters<typeof interpolateOutFileName>[1], truncate: boolean) {
+  const fileName = await interpolateOutFileName(template, params);
+  if (!truncate) return fileName;
+  const overflow = getUtf8Length(basename(fileName)) - maxFileNameLength;
+  if (overflow <= 0) return fileName;
+  const { inputFileNameWithoutExt } = params;
+  const shortenedFileName = await interpolateOutFileName(template, { ...params, inputFileNameWithoutExt: truncateUtf8(inputFileNameWithoutExt, getUtf8Length(inputFileNameWithoutExt) - overflow) });
+  return truncatePath(shortenedFileName);
 }
 
 async function generateWithFallback({ generate, desiredTemplate, defaultTemplate, safeOutputFileName, filePath, outputDir, maxLabelLength }: {
@@ -316,7 +324,7 @@ export async function generateCutFileNames({ fileDuration, segmentsToExport: seg
 
         const cutDuration = end - start;
 
-        const segFileName = await interpolateOutFileName(template, {
+        return interpolateTruncatedOutFileName(template, {
           epochMs,
           segNum,
           segNumPadded,
@@ -335,9 +343,7 @@ export async function generateCutFileNames({ fileDuration, segmentsToExport: seg
           tags: Object.fromEntries(Object.entries(getSegmentTags(segment)).map(([tag, value]) => [tag, sanitizeName(value)])),
           exportCount,
           currentFileExportCount,
-        });
-
-        return maybeTruncatePath(segFileName, safeOutputFileName2);
+        }, safeOutputFileName2);
       }, { concurrency: 5 });
     },
     desiredTemplate,
@@ -368,7 +374,7 @@ export async function generateCutMergedFileNames({ template: desiredTemplate, is
     generate: async ({ template, safeOutputFileName: safeOutputFileName2, sanitizeName }) => {
       const { name: inputFileNameWithoutExt } = parsePath(sourceFile.path);
 
-      const fileName = await interpolateOutFileName(template, {
+      return [await interpolateTruncatedOutFileName(template, {
         epochMs,
         sourceFiles: [sourceFile],
         inputFileNameWithoutExt,
@@ -376,9 +382,7 @@ export async function generateCutMergedFileNames({ template: desiredTemplate, is
         exportCount,
         currentFileExportCount,
         segLabels: segLabels.map((label) => sanitizeName(label)),
-      });
-
-      return [maybeTruncatePath(fileName, safeOutputFileName2)];
+      }, safeOutputFileName2)];
     },
     desiredTemplate,
     defaultTemplate: defaultCutMergedFileTemplate,
@@ -407,16 +411,14 @@ export async function generateMergedFileNames({ template: desiredTemplate, isCus
     generate: async ({ template, safeOutputFileName: safeOutputFileName2, sanitizeName }) => {
       const { name: inputFileNameWithoutExt } = parsePath(firstFile.path);
 
-      const fileName = await interpolateOutFileName(template, {
+      return [await interpolateTruncatedOutFileName(template, {
         epochMs,
         sourceFiles,
         inputFileNameWithoutExt,
         ext: getOutFileExtension({ isCustomFormatSelected, outFormat: fileFormat, filePath: firstFile.path }),
         exportCount,
         segLabels: sourceFiles.map((file) => sanitizeName(basename(file.path))),
-      });
-
-      return [maybeTruncatePath(fileName, safeOutputFileName2)];
+      }, safeOutputFileName2)];
     },
     desiredTemplate,
     defaultTemplate: defaultCutMergedFileTemplate,

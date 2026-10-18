@@ -10,13 +10,37 @@ export const getHwaccelArgs = (hwaccel: FfmpegHwAccel) => (hwaccel !== 'none' ? 
 // I don't remember why 5 was chosen initially, but if we don't truncate, ffmpeg can sometimes give an error when too many decimal places are used in the time argument, see:
 export const formatFfmpegNumber = (time: number) => time.toFixed(6);
 
-// Truncate a file name to `maxLength`, but keep its extension (if any)
-export function truncateFileName(name: string, maxLength: number) {
-  if (name.length <= maxLength) return name;
+function getCharUtf8Length(char: string) {
+  const codePoint = char.codePointAt(0)!;
+  if (codePoint < 0x80) return 1;
+  if (codePoint < 0x800) return 2;
+  if (codePoint < 0x10000) return 3;
+  return 4;
+}
+
+// file systems limit file name length in bytes (e.g. ext4) or UTF-16 code units (NTFS); UTF-8 bytes is never less than either
+export const getUtf8Length = (str: string) => [...str].reduce((acc, char) => acc + getCharUtf8Length(char), 0);
+
+// Truncate to at most `maxBytes` UTF-8 bytes, without splitting a character
+export function truncateUtf8(str: string, maxBytes: number) {
+  if (getUtf8Length(str) <= maxBytes) return str;
+  let ret = '';
+  let bytes = 0;
+  for (const char of str) {
+    bytes += getCharUtf8Length(char);
+    if (bytes > maxBytes) break;
+    ret += char;
+  }
+  return ret;
+}
+
+// Truncate a file name to `maxBytes` UTF-8 bytes, but keep its extension (if any)
+export function truncateFileName(name: string, maxBytes: number) {
+  if (getUtf8Length(name) <= maxBytes) return name;
   const extIndex = name.lastIndexOf('.');
-  // only treat a short suffix as an extension, so that a dot early in the name doesn't make us exceed maxLength
+  // only treat a short suffix as an extension, so that a dot early in the name doesn't make us exceed the limit
   const ext = extIndex > 0 && name.length - extIndex <= 10 ? name.slice(extIndex) : '';
-  return name.slice(0, maxLength - ext.length) + ext;
+  return truncateUtf8(name.slice(0, name.length - ext.length), maxBytes - getUtf8Length(ext)) + ext;
 }
 
 export function parseRatio(str: string, char = '/') {
