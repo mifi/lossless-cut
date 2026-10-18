@@ -551,7 +551,7 @@ export interface FFprobeChapter {
   /**
    * The chapter's tags
    */
-  tags: FFprobeChapterTags
+  tags?: FFprobeChapterTags
 }
 
 /**

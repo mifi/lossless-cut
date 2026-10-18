@@ -591,7 +591,7 @@ export async function createChaptersFromSegments({ paths, defaultChapterNames, u
             return {
               start: timeAt + start,
               end: timeAt + end,
-              name: ch.tags.title,
+              name: ch.tags?.title,
             };
           });
         }
