@@ -6,7 +6,7 @@ import i18n from 'i18next';
 
 import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, getHtml5ifiedPath, unlinkWithRetry, getFrameDuration, isMac, html5ifiedPrefix, html5dummySuffix, assertFileExists } from '../util';
 import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, getDuration, createChaptersFromSegments, readFileFfprobeMeta, getExperimentalArgs, getVideoTimescaleArgs, logStdoutStderr, runFfmpegConcat, RefuseOverwriteError, runFfmpeg } from '../ffmpeg';
-import { getEffectiveAvoidNegativeTs, getMapStreamsArgs, getStreamIdsToCopy, isCopyingOnlyAudioStreams } from '../util/streams';
+import { getEffectiveAvoidNegativeTs, getKeyframeCutSeekCompensation, getMapStreamsArgs, getStreamIdsToCopy, isCopyingOnlyAudioStreams } from '../util/streams';
 import { needsSmartCut, getCodecParams } from '../smartcut';
 import { getGuaranteedSegments, isDurationValid } from '../segments';
 import type { FFprobeStream } from '../../../common/ffprobe';
@@ -290,11 +290,18 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     let cutDuration = cutToWithAdjustment - cutFromWithAdjustment;
     if (detectedFps != null) cutDuration = Math.max(cutDuration, frameDuration); // ensure at least one frame duration
 
-    // Don't cut if not needed: https://github.com/mifi/lossless-cut/issues/50
-    const cutFromArgs = cuttingStart ? ['-ss', formatFfmpegNumber(cutFromWithAdjustment)] : [];
-    const cutToArgs = cuttingEnd ? ['-t', formatFfmpegNumber(cutDuration)] : [];
-
     const copyFileStreamsFiltered = copyFileStreams.filter(({ streamIds }) => streamIds.length > 0);
+
+    // Undo ffmpeg's earlier seek for Matroska with B-frames, so the cut doesn't start one keyframe too early (#1216)
+    // Shifting both `-ss` and `-t` keeps the end time unchanged. Only for a single input with `-ss` before `-i`.
+    const singleInputMeta = copyFileStreamsFiltered.length === 1 ? allFilesMeta[copyFileStreamsFiltered[0]!.path] : undefined;
+    const seekCompensation = ssBeforeInput && cuttingStart && singleInputMeta != null
+      ? getKeyframeCutSeekCompensation({ formatName: singleInputMeta.format.format_name, streams: singleInputMeta.streams, cutFrom: cutFromWithAdjustment, cutDuration: cuttingEnd ? cutDuration : undefined })
+      : 0;
+
+    // Don't cut if not needed: https://github.com/mifi/lossless-cut/issues/50
+    const cutFromArgs = cuttingStart ? ['-ss', formatFfmpegNumber(cutFromWithAdjustment + seekCompensation)] : [];
+    const cutToArgs = cuttingEnd ? ['-t', formatFfmpegNumber(cutDuration - seekCompensation)] : [];
 
     // remove -avoid_negative_ts make_zero when not cutting start (no -ss), or else some videos get blank first frame in QuickLook
     // note: `make_zero`/`make_non_negative` get downgraded to `auto` when copying a cover art stream, or else the

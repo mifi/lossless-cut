@@ -1,6 +1,6 @@
 import { test, expect } from 'vitest';
 
-import { getEffectiveAvoidNegativeTs, getMapStreamsArgs, getStreamIdsToCopy, isCopyingOnlyAudioStreams } from './streams';
+import { getEffectiveAvoidNegativeTs, getKeyframeCutSeekCompensation, getMapStreamsArgs, getStreamIdsToCopy, isCopyingOnlyAudioStreams } from './streams';
 import type { FFprobeStreamDisposition } from '../../../common/ffprobe';
 import type { LiteFFprobeStream } from '../types';
 
@@ -217,4 +217,21 @@ test('isCopyingOnlyAudioStreams, false when copying video, subtitles, unknown st
   expect(isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams: [{ path, streamIds: [1, 99] }] })).toBe(false);
   expect(isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams: [{ path, streamIds: [] }] })).toBe(false);
   expect(isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams: [] })).toBe(false);
+});
+
+test('getKeyframeCutSeekCompensation', () => {
+  const bFrames = [{ has_b_frames: 2 }, {}];
+  const compensation = 3 / 23 + 0.001;
+
+  expect(getKeyframeCutSeekCompensation({ formatName: 'matroska,webm', streams: bFrames, cutFrom: 6, cutDuration: 4 })).toBe(compensation);
+  expect(getKeyframeCutSeekCompensation({ formatName: 'matroska,webm', streams: bFrames, cutFrom: 6, cutDuration: undefined })).toBe(compensation);
+  // no B-frames
+  expect(getKeyframeCutSeekCompensation({ formatName: 'matroska,webm', streams: [{ has_b_frames: 0 }, {}], cutFrom: 6, cutDuration: 4 })).toBe(0);
+  // formats with AVFMT_SEEK_TO_PTS, or not handled
+  expect(getKeyframeCutSeekCompensation({ formatName: 'mov,mp4,m4a,3gp,3g2,mj2', streams: bFrames, cutFrom: 6, cutDuration: 4 })).toBe(0);
+  expect(getKeyframeCutSeekCompensation({ formatName: undefined, streams: bFrames, cutFrom: 6, cutDuration: 4 })).toBe(0);
+  // not cutting start
+  expect(getKeyframeCutSeekCompensation({ formatName: 'matroska,webm', streams: bFrames, cutFrom: 0, cutDuration: 4 })).toBe(0);
+  // segment too short, `-t` would become <= 0
+  expect(getKeyframeCutSeekCompensation({ formatName: 'matroska,webm', streams: bFrames, cutFrom: 6, cutDuration: 0.1 })).toBe(0);
 });
