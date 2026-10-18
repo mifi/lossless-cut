@@ -52,7 +52,10 @@ export interface GenerateMergedOutFileNamesParams {
 }
 
 // make invisible control characters readable, e.g. U+0009
-const formatInvalidChar = (char: string) => (char < ' ' ? `U+${char.codePointAt(0)!.toString(16).toUpperCase().padStart(4, '0')}` : char);
+function formatInvalidChar(char: string) {
+  const codePoint = char.codePointAt(0)!;
+  return codePoint < 0x20 ? `U+${codePoint.toString(16).toUpperCase().padStart(4, '0')}` : char;
+}
 
 function getTemplateProblems({ fileNames, filePath, outputDir, safeOutputFileName }: {
   fileNames: string[],
