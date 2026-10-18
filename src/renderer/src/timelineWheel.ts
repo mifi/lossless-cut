@@ -11,6 +11,7 @@ export const keyMap = {
 const pinchSensitivityFactor = 5;
 
 export type WheelAction =
+  | { type: 'none' }
   | { type: 'zoom', amount: number }
   | { type: 'frameSeek', direction: number }
   | { type: 'keyframeSeek', direction: number }
@@ -32,7 +33,7 @@ export function getTimelineWheelAction({ pixelX, pixelY, modifiers, isPinch, whe
 
   // Wheel up / pinch out (negative delta) zooms in, like ctrl+wheel in browsers. Not affected by invertTimelineScroll, which is for seeking only.
   // https://github.com/mifi/lossless-cut/issues/2703 https://github.com/mifi/lossless-cut/issues/2962
-  const getZoomAction = (delta: number, factor = 1): WheelAction => ({ type: 'zoom', amount: -delta * wheelSensitivity * 0.4 * factor });
+  const getZoomAction = (delta: number, factor = 1): WheelAction => (delta === 0 ? { type: 'none' } : { type: 'zoom', amount: -delta * wheelSensitivity * 0.4 * factor });
 
   if (isPinch) return getZoomAction(pixelY, pinchSensitivityFactor);
 
@@ -40,6 +41,7 @@ export function getTimelineWheelAction({ pixelX, pixelY, modifiers, isPinch, whe
   if (isPressed(mouseWheelZoomModifierKey)) return getZoomAction(mouseWheelZoomModifierKey === 'shift' && pixelY === 0 ? pixelX : pixelY);
 
   const delta = pixelX + pixelY;
+  if (delta === 0) return { type: 'none' }; // e.g. macOS momentum end events
 
   const direction = invertTimelineScroll ? 1 : -1;
   const unit = direction * delta > 0 ? 1 : -1;

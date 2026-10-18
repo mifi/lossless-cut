@@ -49,6 +49,11 @@ describe('zoom', () => {
     expect(getAction({ pixelY: -100, modifiers: { ctrlKey: true }, zoomKey: 'meta', frameSeekKey: 'ctrl' })).toEqual({ type: 'frameSeek', direction: 1 });
   });
 
+  test('horizontal scroll with ctrl does not zoom', () => {
+    expect(getAction({ pixelX: 30, modifiers: { ctrlKey: true } })).toEqual({ type: 'none' });
+    expect(getAction({ pixelX: 30, modifiers: { ctrlKey: true, shiftKey: true } })).toEqual({ type: 'none' });
+  });
+
   test('shift as zoom modifier, where shift+wheel arrives as horizontal scroll', () => {
     expect(getAction({ pixelX: -100, modifiers: { shiftKey: true }, zoomKey: 'shift', keyframeSeekKey: 'meta' })).toEqual({ type: 'zoom', amount: 40 });
   });
@@ -65,5 +70,11 @@ describe('seek', () => {
     expect(getAction({ pixelY: -100, modifiers: { altKey: true }, invertTimelineScroll: true })).toEqual({ type: 'frameSeek', direction: -1 });
     expect(getAction({ pixelX: -100, modifiers: { shiftKey: true } })).toEqual({ type: 'keyframeSeek', direction: 1 });
     expect(getAction({ pixelX: -100, modifiers: { shiftKey: true }, invertTimelineScroll: true })).toEqual({ type: 'keyframeSeek', direction: -1 });
+  });
+
+  test('no action without any net delta', () => {
+    expect(getAction({ modifiers: { altKey: true } })).toEqual({ type: 'none' });
+    expect(getAction({ pixelX: 3, pixelY: -3, modifiers: { altKey: true } })).toEqual({ type: 'none' });
+    expect(getAction({})).toEqual({ type: 'none' });
   });
 });

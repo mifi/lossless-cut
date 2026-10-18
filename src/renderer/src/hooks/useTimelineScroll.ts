@@ -64,6 +64,7 @@ function useTimelineScroll({ wheelSensitivity, mouseWheelZoomModifierKey, mouseW
     const action = getTimelineWheelAction({ pixelX, pixelY, modifiers: { ctrlKey, shiftKey, altKey, metaKey }, isPinch, wheelSensitivity, mouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, invertTimelineScroll });
 
     switch (action.type) {
+      case 'none': { break; }
       case 'zoom': { zoomRel(action.amount); break; }
       case 'frameSeek': { shortStep(action.direction); break; }
       case 'keyframeSeek': { seekClosestKeyframe(action.direction); break; }
