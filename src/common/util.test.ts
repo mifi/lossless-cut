@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { describe, expect, test } from 'vitest';
 
-import { getFixChannelLayoutFilter, hasCustomChannelLayout, truncateFileName, truncateUtf8 } from './util.js';
+import { getFixChannelLayoutFilter, hasCustomChannelLayout, truncateFileName } from './util.js';
 
 describe('hasCustomChannelLayout', () => {
   test('detects layouts that ffmpeg could not express natively', () => {
@@ -49,27 +49,20 @@ describe('truncateFileName', () => {
   test('keeps short names as is', () => {
     expect(truncateFileName('video.mp4', 10)).toBe('video.mp4');
   });
-  test('keeps the extension when truncating', () => {
-    expect(truncateFileName('a very long name.mp4', 10)).toBe('a very.mp4');
-    expect(truncateFileName('a.b.c.mkv', 7)).toBe('a.b.mkv');
+  test('cuts out the middle and keeps the extension', () => {
+    expect(truncateFileName('abcdefghij-seg1.mp4', 14)).toBe('abc…seg1.mp4'); // 3 + 3 (…) + 4 + 4
+    expect(truncateFileName('a.b.c.d.e.mkv', 12)).toBe('a.…d.e.mkv');
   });
   test('truncates names without extension', () => {
-    expect(truncateFileName('abcdefghij', 5)).toBe('abcde');
-    expect(truncateFileName('.hiddenfile', 5)).toBe('.hidd');
+    expect(truncateFileName('abcdefghij', 7)).toBe('ab…ij');
   });
   test('ignores a dot too early in the name to be an extension', () => {
-    expect(truncateFileName(`Dr. ${'a'.repeat(20)}`, 10)).toBe('Dr. aaaaaa');
+    expect(truncateFileName(`Dr. ${'a'.repeat(20)}`, 13)).toBe('Dr. a…aaaaa');
   });
-  test('counts UTF-8 bytes and does not split characters', () => {
-    expect(truncateFileName('日本語の動画.mp4', 13)).toBe('日本語.mp4'); // 3 bytes per character
-    expect(truncateFileName('😀😀😀.mkv', 13)).toBe('😀😀.mkv'); // 4 bytes per emoji
-  });
-});
-
-describe('truncateUtf8', () => {
-  test('truncates to whole characters', () => {
-    expect(truncateUtf8('abc', 5)).toBe('abc');
-    expect(truncateUtf8('😀😀', 5)).toBe('😀');
-    expect(truncateUtf8('åäö', 3)).toBe('å');
+  test('counts UTF-8 bytes, or UTF-16 code units, and never splits characters', () => {
+    expect(truncateFileName('日本語の動画です.mp4', 16)).toBe('日…です.mp4'); // 3 bytes per character
+    expect(truncateFileName('日本語の動画です.mp4', 8, true)).toBe('日…です.mp4');
+    expect(truncateFileName('😀😀😀😀.mkv', 16)).toBe('😀…😀.mkv'); // 4 bytes, or 2 code units, per emoji
+    expect(truncateFileName('😀😀😀😀.mkv', 10, true)).toBe('😀…😀.mkv');
   });
 });

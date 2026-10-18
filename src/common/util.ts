@@ -18,29 +18,38 @@ function getCharUtf8Length(char: string) {
   return 4;
 }
 
-// file systems limit file name length in bytes (e.g. ext4) or UTF-16 code units (NTFS); UTF-8 bytes is never less than either
-export const getUtf8Length = (str: string) => [...str].reduce((acc, char) => acc + getCharUtf8Length(char), 0);
+// File systems limit the length of file names in UTF-8 bytes (e.g. ext4, APFS) or UTF-16 code units (NTFS)
+const getCharLength = (char: string, utf16: boolean) => (utf16 ? char.length : getCharUtf8Length(char));
 
-// Truncate to at most `maxBytes` UTF-8 bytes, without splitting a character
-export function truncateUtf8(str: string, maxBytes: number) {
-  if (getUtf8Length(str) <= maxBytes) return str;
-  let ret = '';
-  let bytes = 0;
-  for (const char of str) {
-    bytes += getCharUtf8Length(char);
-    if (bytes > maxBytes) break;
-    ret += char;
+function takeChars(chars: string[], maxLength: number, utf16: boolean) {
+  const ret: string[] = [];
+  let length = 0;
+  for (const char of chars) {
+    length += getCharLength(char, utf16);
+    if (length > maxLength) break;
+    ret.push(char);
   }
   return ret;
 }
 
-// Truncate a file name to `maxBytes` UTF-8 bytes, but keep its extension (if any)
-export function truncateFileName(name: string, maxBytes: number) {
-  if (getUtf8Length(name) <= maxBytes) return name;
+const ellipsis = '…';
+
+// Truncate a file name to `maxLength`, keeping its extension (if any), and without splitting characters.
+// We cut out the middle, because the end of the name often has the parts that make it unique (e.g. cut times, segment number)
+export function truncateFileName(name: string, maxLength: number, utf16 = false) {
+  const getLength = (str: string) => [...str].reduce((acc, char) => acc + getCharLength(char, utf16), 0);
+  if (getLength(name) <= maxLength) return name;
+
   const extIndex = name.lastIndexOf('.');
   // only treat a short suffix as an extension, so that a dot early in the name doesn't make us exceed the limit
   const ext = extIndex > 0 && name.length - extIndex <= 10 ? name.slice(extIndex) : '';
-  return truncateUtf8(name.slice(0, name.length - ext.length), maxBytes - getUtf8Length(ext)) + ext;
+  const stem = name.slice(0, name.length - ext.length);
+  const chars = [...stem];
+
+  const budget = maxLength - getLength(ext) - getLength(ellipsis);
+  const head = takeChars(chars, Math.floor(budget / 2), utf16);
+  const tail = takeChars(chars.toReversed(), budget - getLength(head.join('')), utf16).reverse();
+  return head.join('') + ellipsis + tail.join('') + ext;
 }
 
 export function parseRatio(str: string, char = '/') {
