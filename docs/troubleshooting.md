@@ -28,7 +28,7 @@ Each segment's *start cut time* will normally (but not always) be "rounded" to t
 
 For some files, when you place segment start cutpoints at keyframes, and you export, it will instead cut from the keyframe **before** the keyframe that you wanted. This is because with some videos, FFmpeg struggles to find the nearest previous keyframe, see [#1216](https://github.com/mifi/lossless-cut/issues/1216). To workaround this, you can try to shift your segments' **start**-cutpoints forward by a few frames, so that ffmpeg correctly cuts from the *previous* keyframe.
 
-- Menu: "Edit" -> "Segments" -> "Shift all segments on timeline"
+- Menu: "Segments" -> "Shift all segments on timeline"
 - Enter `00:00:00.200` (or a larger value if it doesn't help)
 - When asked about Start or End timestamps, Select **Start**
 
@@ -127,7 +127,7 @@ If you have an issue with the Snap or Flatpak version of LosslessCut, please try
 
 ## Undo/redo
 
-Undo/redo segments doesn't work through the top menu. This is a [known issue](https://github.com/mifi/lossless-cut/issues/610) that I don't know how to fix. Please use the keyboard shortcuts instead (<kbd>CTRL</kbd>/<kbd>CMD</kbd>+<kbd>Z</kbd> and <kbd>CTRL</kbd>+<kbd>Y</kbd> / <kbd>CMD</kbd>+<kbd>SHIFT</kbd>+<kbd>Z</kbd>).
+Undo/redo segments doesn't work through the top menu. This is a [known issue](https://github.com/mifi/lossless-cut/issues/610) that I don't know how to fix. Please use the keyboard shortcuts instead (<kbd>CTRL</kbd>/<kbd>CMD</kbd>+<kbd>Z</kbd> and <kbd>CTRL</kbd>/<kbd>CMD</kbd>+<kbd>SHIFT</kbd>+<kbd>Z</kbd>).
 
 ## MP4/MOV extension
 
