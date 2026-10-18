@@ -141,14 +141,16 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
     try {
       if (isEmptyEndTime(cutTimeManual)) {
         setTime(undefined); // clear time
-        return;
+      } else if (cutTimeManual != null) {
+        // Don't proceed if not a valid time value
+        const timeWithOffset = parseTimecode(cutTimeManual);
+        if (timeWithOffset === undefined) return;
+
+        setTime(timeWithOffset);
       }
 
-      // Don't proceed if not a valid time value
-      const timeWithOffset = cutTimeManual != null ? parseTimecode(cutTimeManual) : undefined;
-      if (timeWithOffset === undefined) return;
-
-      setTime(timeWithOffset);
+      // release focus, so that keyboard shortcuts work again https://github.com/mifi/lossless-cut/issues/2942
+      e.currentTarget.querySelector('input')?.blur();
     } catch (err) {
       console.warn('Cannot submit cut time', err);
     }

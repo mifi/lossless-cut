@@ -15,6 +15,7 @@ import isDev from '../isDev';
 - Go to timecode (`g` shortcut): shouldn't insert the letter `g` into input box. This also applies to all the detect* actions
 - Seek (autorepeat) and acceleration factor should reset after keyup
 - Bind keyboard action dialog should not close when its key binding (shift+slash) is triggered
+- Escape in an input (and Enter in the cut time inputs) should release focus, so that keyboard shortcuts work again
 
 See also https://github.com/mifi/lossless-cut/issues/2515
 */
@@ -51,6 +52,12 @@ export default ({ keyBindings, keyUpActions, getKeyboardAction, closeExportConfi
       if (action !== 'export') {
         return; // stop here, don't allow other key actions than export while dialog is open
       }
+    }
+
+    // Escape releases focus from inputs, buttons etc. (outside of dialogs), so that keyboard shortcuts work again https://github.com/mifi/lossless-cut/issues/2942
+    if (isEscape && !e.defaultPrevented && e.target instanceof HTMLElement && e.target !== document.body && e.target.closest('[role="dialog"], [role="alertdialog"]') == null) {
+      e.target.blur();
+      return;
     }
 
     // From now on, only handle key events when focus is on document body
