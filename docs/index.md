@@ -78,6 +78,7 @@ If you have a problem with the app or with a file, please see the [🤔 Troubles
 - If you want to move the original file to trash, press the **trash** button.
 - For best results you may need to trial and error with another output format (Matroska can hold nearly everything), change keyframe cut mode or disable some tracks (see [known issues](troubleshooting.md)).
 - Press <kbd>SHIFT</kbd> + <kbd>/</kbd> to view and edit all keyboard & mouse shortcuts.
+  - Default shortcuts are based on the physical key positions of a US (QWERTY) keyboard, so on other layouts (e.g. QWERTZ/AZERTY) some shortcuts are on different keys. The shortcuts dialog shows the actual keys for your layout, and you can rebind them there.
 - **Note:** The original video file will not be modified. Instead, a file is created file in the same directory as the original file with from/to timestamps in the file name.
 - See Keyboard shortcuts dialog for more custom actions. (<kbd>SHIFT</kbd> + <kbd>/</kbd>)
 
