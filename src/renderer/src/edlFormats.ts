@@ -260,11 +260,11 @@ export function parsePbf(buf: Buffer) {
   });
 }
 
-// https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/FinalCutPro_XML/VersionsoftheInterchangeFormat/VersionsoftheInterchangeFormat.html
 // XMLParser returns a single object instead of an array when an element occurs only once
 type XmlList<T> = T | T[] | undefined;
 const xmlList = <T>(value: XmlList<T>): T[] => (value == null ? [] : [value].flat() as T[]);
 
+// https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/FinalCutPro_XML/VersionsoftheInterchangeFormat/VersionsoftheInterchangeFormat.html
 export function parseXmeml(xmlStr: string) {
   const xml = new XMLParser().parse(xmlStr);
 
@@ -299,7 +299,8 @@ export function parseFcpXml(xmlStr: string) {
   if (!fcpxml) throw new Error('Root element <fcpxml> not found in file');
 
   // e.g. "1001/30000s" or "10s"
-  function getTime(str: string) {
+  function getTime(str: string | undefined) {
+    if (str == null) throw new Error('Missing attribute');
     const match = str.match(/^(\d+)\/(\d+)s$/);
     if (match) return parseInt(match[1]!, 10) / parseInt(match[2]!, 10);
     const secMatch = str.match(/^(\d+(?:\.\d+)?)s$/);
