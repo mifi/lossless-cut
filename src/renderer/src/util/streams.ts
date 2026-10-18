@@ -315,6 +315,25 @@ export function getEffectiveAvoidNegativeTs({ avoidNegativeTs, allFilesMeta, cop
   return 'auto';
 }
 
+/**
+ * For input formats without AVFMT_SEEK_TO_PTS (e.g. Matroska/WebM), when any stream has B-frames, ffmpeg seeks
+ * 3/23s earlier than the input `-ss` (`dts_heuristic` in fftools/ffmpeg_demux.c). With `-ss` before `-i`, a keyframe cut
+ * starting on (or up to ~0.13s after) a keyframe then starts from the *previous* keyframe. Returns how much to add to the
+ * input `-ss` (and subtract from `-t`) to undo that. See https://github.com/mifi/lossless-cut/issues/1216
+ */
+export function getKeyframeCutSeekCompensation({ formatName, streams, cutFrom, cutDuration }: {
+  formatName: string | undefined,
+  streams: Pick<FFprobeStream, 'has_b_frames'>[],
+  cutFrom: number,
+  cutDuration: number | undefined,
+}) {
+  const compensation = 3 / 23 + 0.001;
+  if (cutFrom <= 0 || !(formatName ?? '').split(',').some((f) => isMatroska(f))) return 0;
+  if (!streams.some((stream) => (stream.has_b_frames ?? 0) > 0)) return 0;
+  if (cutDuration != null && cutDuration <= compensation) return 0; // would make `-t` <= 0
+  return compensation;
+}
+
 export const getAudioStreams = <T extends Pick<FFprobeStream, 'codec_type'>>(streams: T[]) => streams.filter((stream) => stream.codec_type === 'audio');
 export const getRealVideoStreams = <T extends Pick<FFprobeStream, 'codec_type' | 'disposition'>>(streams: T[]) => streams.filter((stream) => stream.codec_type === 'video' && !isStreamThumbnail(stream));
 export const getSubtitleStreams = <T extends Pick<FFprobeStream, 'codec_type'>>(streams: T[]) => streams.filter((stream) => stream.codec_type === 'subtitle');
