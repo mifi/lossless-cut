@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo, useSyncExternalStore } from 'react';
 import i18n from 'i18next';
 import type { Transition } from 'motion/react';
 
@@ -13,6 +13,12 @@ const { systemPreferences } = remote;
 const { configStore } = remote.require('./index.js');
 
 const animationSettings = systemPreferences.getAnimationSettings();
+const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+function subscribeSystemDarkMode(onChange: () => void) {
+  darkModeMediaQuery.addEventListener('change', onChange);
+  return () => darkModeMediaQuery.removeEventListener('change', onChange);
+}
+const resolveDarkMode = (theme: Config['theme'], systemDarkMode: boolean) => (theme === 'system' ? systemDarkMode : theme === 'dark');
 
 export default function useUserSettingsRoot() {
   const firstUpdateRef = useRef(true);
@@ -175,8 +181,8 @@ export default function useUserSettingsRoot() {
   useEffect(() => safeSetConfig({ cleanupChoices }), [cleanupChoices]);
   const [allowMultipleInstances, setAllowMultipleInstances] = useState(safeGetConfigInitial('allowMultipleInstances'));
   useEffect(() => safeSetConfig({ allowMultipleInstances }), [allowMultipleInstances]);
-  const [darkMode, setDarkMode] = useState(safeGetConfigInitial('darkMode'));
-  useEffect(() => safeSetConfig({ darkMode }), [darkMode]);
+  const [theme, setTheme] = useState(safeGetConfigInitial('theme'));
+  useEffect(() => safeSetConfig({ theme }), [theme]);
   const [preferStrongColors, setPreferStrongColors] = useState(safeGetConfigInitial('preferStrongColors'));
   useEffect(() => safeSetConfig({ preferStrongColors }), [preferStrongColors]);
   const [outputFileNameMinZeroPadding, setOutputFileNameMinZeroPadding] = useState(safeGetConfigInitial('outputFileNameMinZeroPadding'));
@@ -212,7 +218,12 @@ export default function useUserSettingsRoot() {
     };
   }, []);
 
-  const toggleDarkMode = useCallback(() => setDarkMode((v) => !v), []);
+  // note: main sets nativeTheme.themeSource from `theme`, and it must be 'system' for prefers-color-scheme to report the OS theme
+  const systemDarkMode = useSyncExternalStore(subscribeSystemDarkMode, () => darkModeMediaQuery.matches);
+
+  const darkMode = resolveDarkMode(theme, systemDarkMode);
+
+  const toggleDarkMode = useCallback(() => setTheme((t) => (resolveDarkMode(t, darkModeMediaQuery.matches) ? 'light' : 'dark')), []);
 
   const prefersReducedMotion = useMemo(() => {
     if (reducedMotion !== 'user') return reducedMotion === 'always';
@@ -305,7 +316,7 @@ export default function useUserSettingsRoot() {
     enableUpdateCheck,
     cleanupChoices,
     allowMultipleInstances,
-    darkMode,
+    theme,
     preferStrongColors,
     outputFileNameMinZeroPadding,
     cutFromAdjustmentFrames,
@@ -387,6 +398,8 @@ export default function useUserSettingsRoot() {
     setEnableUpdateCheck,
     setCleanupChoices,
     setAllowMultipleInstances,
+    darkMode,
+    setTheme,
     toggleDarkMode,
     setPreferStrongColors,
     setOutputFileNameMinZeroPadding,

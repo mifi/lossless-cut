@@ -160,7 +160,7 @@ const defaults: Config = {
     trashTmpFiles: true, askForCleanup: true, closeFile: true, cleanupAfterExport: false,
   },
   allowMultipleInstances: false,
-  darkMode: true,
+  theme: 'dark',
   preferStrongColors: false,
   outputFileNameMinZeroPadding: 1,
   cutFromAdjustmentFrames: 0,
@@ -204,6 +204,10 @@ export function get<T extends keyof Config>(key: T): Config[T] {
 export function set<T extends keyof Config>(key: T, val: Config[T]) {
   if (val === undefined) store.delete(key);
   else store.set(key, val);
+}
+
+export function onDidChange<T extends keyof Config>(key: T, callback: (val: Config[T]) => void) {
+  return store.onDidChange(key, (val) => callback(val as Config[T]));
 }
 
 export function reset<T extends keyof Config>(key: T) {
@@ -255,6 +259,13 @@ export async function init({ customConfigDir }: { customConfigDir: string | unde
     logger.info('Migrating enableTransferTimestamps');
     store.delete('enableTransferTimestamps');
     set('treatOutputFileModifiedTimeAsStart', enableTransferTimestamps ? true : undefined);
+  }
+
+  const darkMode = store.get('darkMode'); // todo remove after a while
+  if (darkMode != null) {
+    logger.info('Migrating darkMode to theme');
+    store.delete('darkMode');
+    set('theme', darkMode ? 'dark' : 'light');
   }
 
   const cleanupChoices = store.get('cleanupChoices'); // todo remove after a while

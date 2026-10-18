@@ -156,12 +156,9 @@ function getSavedBounds() {
   };
 }
 
-function createWindow() {
-  const darkMode = configStore.get('darkMode');
-  // todo follow darkMode setting when user switches
-  // https://www.electronjs.org/docs/latest/tutorial/dark-mode
-  if (darkMode) nativeTheme.themeSource = 'dark';
+const getBackgroundColor = () => (nativeTheme.shouldUseDarkColors ? '#333' : '#fff');
 
+function createWindow() {
   const savedBounds = getSavedBounds();
 
   mainWindow = new BrowserWindow({
@@ -174,7 +171,7 @@ function createWindow() {
       webSecurity: !isDev,
       preload: fileURLToPath(new URL('../preload/index.cjs', import.meta.url)),
     },
-    backgroundColor: darkMode ? '#333' : '#fff',
+    backgroundColor: getBackgroundColor(),
     minWidth: 300,
     minHeight: 300,
   });
@@ -391,6 +388,12 @@ async function init() {
 
     logger.info('Waiting for app to become ready');
     await readyPromise;
+
+    // https://www.electronjs.org/docs/latest/tutorial/dark-mode
+    // also affects what `prefers-color-scheme` reports in the renderer
+    nativeTheme.themeSource = configStore.get('theme');
+    configStore.onDidChange('theme', (theme) => { nativeTheme.themeSource = theme; });
+    nativeTheme.on('updated', () => mainWindow?.setBackgroundColor(getBackgroundColor()));
 
     logger.info('CLI arguments', argv);
     if (argv['keyboardAction']) logger.warn('--keyboard-action only works with an already running instance (and "Allow multiple instances" disabled), ignoring it and its arguments');
