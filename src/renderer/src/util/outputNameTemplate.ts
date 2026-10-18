@@ -51,6 +51,12 @@ export interface GenerateMergedOutFileNamesParams {
   epochMs: number;
 }
 
+// make invisible control characters readable, e.g. U+0009
+function formatInvalidChar(char: string) {
+  const codePoint = char.codePointAt(0)!;
+  return codePoint < 0x20 ? `U+${codePoint.toString(16).toUpperCase().padStart(4, '0')}` : char;
+}
+
 function getTemplateProblems({ fileNames, filePath, outputDir, safeOutputFileName }: {
   fileNames: string[],
   filePath: string,
@@ -73,6 +79,8 @@ function getTemplateProblems({ fileNames, filePath, outputDir, safeOutputFileNam
     // note that we allow path separators in some cases (see below)
     if (isWindows) {
       ['<', '>', ':', '"', '|', '?', '*'].forEach((char) => invalidChars.add(char));
+      // control characters https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions
+      for (let code = 0; code < 32; code += 1) invalidChars.add(String.fromCodePoint(code));
     } else if (isMac) {
       // Colon is invalid on windows https://github.com/mifi/lossless-cut/issues/631 and on MacOS, but not Linux https://github.com/mifi/lossless-cut/issues/830
       [':'].forEach((char) => invalidChars.add(char));
@@ -105,7 +113,7 @@ function getTemplateProblems({ fileNames, filePath, outputDir, safeOutputFileNam
     }
     const matchingInvalidChars = new Set([...fileName].filter((char) => invalidChars.has(char)));
     if (matchingInvalidChars.size > 0) {
-      error = i18n.t('At least one resulting file name contains invalid character(s): {{invalidChars}}', { invalidChars: `"${[...matchingInvalidChars].join('", "')}"` });
+      error = i18n.t('At least one resulting file name contains invalid character(s): {{invalidChars}}', { invalidChars: `"${[...matchingInvalidChars].map((char) => formatInvalidChar(char)).join('", "')}"` });
       break;
     }
     if (sameAsInputPath) {
