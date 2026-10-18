@@ -156,7 +156,7 @@ export async function readEdlFile({ type, path, fps }: {
   throw new Error('Invalid EDL type');
 }
 
-export async function askForEdlImport({ type, fps, fileDuration }: { type: EdlImportType, fps?: number | undefined, fileDuration?: number | undefined }) {
+export async function askForEdlImport({ type, fps, fileDuration, defaultPath }: { type: EdlImportType, fps?: number | undefined, fileDuration?: number | undefined, defaultPath?: string | undefined }) {
   if (type === 'youtube') return askForYouTubeInput({ fileDuration });
 
   let filters;
@@ -175,6 +175,7 @@ export async function askForEdlImport({ type, fps, fileDuration }: { type: EdlIm
     properties: ['openFile'],
     title: i18n.t('Import project'),
     ...(filters && { filters }),
+    ...(defaultPath != null && { defaultPath }),
   });
   const [firstFilePath] = filePaths;
   if (canceled || firstFilePath == null) return [];
