@@ -265,8 +265,8 @@ async function generateWithFallback({ generate, desiredTemplate, defaultTemplate
     };
   }
 
-  // Try again with default template if there was an error
-  if (problems.error != null && desiredTemplate !== defaultTemplate) {
+  // Try again with default template if there was an error (also if the desired template is the default, because sanitizing may fix it) https://github.com/mifi/lossless-cut/issues/2986
+  if (problems.error != null) {
     const fileNames = await generate({ template: defaultTemplate, sanitizeName: (name: string) => sanitizeName(name, true), safeOutputFileName: true });
     return { fileNames, originalFileNames, problems };
   }
