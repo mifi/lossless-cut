@@ -115,7 +115,7 @@ export const configSchema = z.object({
     trashTmpFiles: z.boolean(), askForCleanup: z.boolean(), closeFile: z.boolean(), cleanupAfterExport: z.boolean().or(z.undefined()).exactOptional(),
   }),
   allowMultipleInstances: z.boolean(),
-  darkMode: z.boolean(),
+  theme: z.enum(['dark', 'light', 'system']),
   preferStrongColors: z.boolean(),
   outputFileNameMinZeroPadding: z.number(),
   cutFromAdjustmentFrames: z.number(),

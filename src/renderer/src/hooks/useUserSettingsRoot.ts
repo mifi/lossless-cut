@@ -7,12 +7,14 @@ import type { Config } from '../../../common/types.js';
 import { errorToast } from '../swal';
 import isDev from '../isDev';
 import { mySpring, emitter as animationsEmitter } from '../animations';
+import mainApi from '../mainApi';
 
 const remote = window.require('@electron/remote');
 const { systemPreferences } = remote;
 const { configStore } = remote.require('./index.js');
 
 const animationSettings = systemPreferences.getAnimationSettings();
+const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
 export default function useUserSettingsRoot() {
   const firstUpdateRef = useRef(true);
@@ -175,8 +177,8 @@ export default function useUserSettingsRoot() {
   useEffect(() => safeSetConfig({ cleanupChoices }), [cleanupChoices]);
   const [allowMultipleInstances, setAllowMultipleInstances] = useState(safeGetConfigInitial('allowMultipleInstances'));
   useEffect(() => safeSetConfig({ allowMultipleInstances }), [allowMultipleInstances]);
-  const [darkMode, setDarkMode] = useState(safeGetConfigInitial('darkMode'));
-  useEffect(() => safeSetConfig({ darkMode }), [darkMode]);
+  const [theme, setTheme] = useState(safeGetConfigInitial('theme'));
+  useEffect(() => safeSetConfig({ theme }), [theme]);
   const [preferStrongColors, setPreferStrongColors] = useState(safeGetConfigInitial('preferStrongColors'));
   useEffect(() => safeSetConfig({ preferStrongColors }), [preferStrongColors]);
   const [outputFileNameMinZeroPadding, setOutputFileNameMinZeroPadding] = useState(safeGetConfigInitial('outputFileNameMinZeroPadding'));
@@ -212,7 +214,21 @@ export default function useUserSettingsRoot() {
     };
   }, []);
 
-  const toggleDarkMode = useCallback(() => setDarkMode((v) => !v), []);
+  // note: themeSource must be 'system' for prefers-color-scheme to report the OS theme
+  useEffect(() => {
+    mainApi.setThemeSource(theme);
+  }, [theme]);
+
+  const [systemDarkMode, setSystemDarkMode] = useState(darkModeMediaQuery.matches);
+  useEffect(() => {
+    const onChange = (e: MediaQueryListEvent) => setSystemDarkMode(e.matches);
+    darkModeMediaQuery.addEventListener('change', onChange);
+    return () => darkModeMediaQuery.removeEventListener('change', onChange);
+  }, []);
+
+  const darkMode = theme === 'system' ? systemDarkMode : theme === 'dark';
+
+  const toggleDarkMode = useCallback(() => setTheme(darkMode ? 'light' : 'dark'), [darkMode]);
 
   const prefersReducedMotion = useMemo(() => {
     if (reducedMotion !== 'user') return reducedMotion === 'always';
@@ -305,7 +321,7 @@ export default function useUserSettingsRoot() {
     enableUpdateCheck,
     cleanupChoices,
     allowMultipleInstances,
-    darkMode,
+    theme,
     preferStrongColors,
     outputFileNameMinZeroPadding,
     cutFromAdjustmentFrames,
@@ -387,6 +403,8 @@ export default function useUserSettingsRoot() {
     setEnableUpdateCheck,
     setCleanupChoices,
     setAllowMultipleInstances,
+    darkMode,
+    setTheme,
     toggleDarkMode,
     setPreferStrongColors,
     setOutputFileNameMinZeroPadding,
