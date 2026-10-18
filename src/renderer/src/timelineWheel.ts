@@ -7,16 +7,21 @@ export const keyMap = {
   meta: 'metaKey',
 } as const;
 
+// Trackpad pinch deltas are much smaller than mouse wheel deltas
+const pinchSensitivityFactor = 5;
+
 export type WheelAction =
   | { type: 'zoom', amount: number }
   | { type: 'frameSeek', direction: number }
   | { type: 'keyframeSeek', direction: number }
   | { type: 'seek', amount: number };
 
-export function getTimelineWheelAction({ pixelX, pixelY, modifiers, wheelSensitivity, mouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, invertTimelineScroll }: {
+export function getTimelineWheelAction({ pixelX, pixelY, modifiers, isPinch, wheelSensitivity, mouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, invertTimelineScroll }: {
   pixelX: number,
   pixelY: number,
   modifiers: Record<typeof keyMap[ModifierKey], boolean>,
+  // Chromium sends trackpad pinch as a wheel event with ctrlKey, without ctrl actually being held
+  isPinch: boolean,
   wheelSensitivity: number,
   mouseWheelZoomModifierKey: ModifierKey,
   mouseWheelFrameSeekModifierKey: ModifierKey,
@@ -27,7 +32,9 @@ export function getTimelineWheelAction({ pixelX, pixelY, modifiers, wheelSensiti
 
   // Wheel up / pinch out (negative delta) zooms in, like ctrl+wheel in browsers. Not affected by invertTimelineScroll, which is for seeking only.
   // https://github.com/mifi/lossless-cut/issues/2703 https://github.com/mifi/lossless-cut/issues/2962
-  const getZoomAction = (delta: number): WheelAction => ({ type: 'zoom', amount: -delta * wheelSensitivity * 0.4 });
+  const getZoomAction = (delta: number, factor = 1): WheelAction => ({ type: 'zoom', amount: -delta * wheelSensitivity * 0.4 * factor });
+
+  if (isPinch) return getZoomAction(pixelY, pinchSensitivityFactor);
 
   if (isPressed(mouseWheelZoomModifierKey)) return getZoomAction(pixelY);
 

@@ -5,10 +5,11 @@ import type { ModifierKey } from '../../common/types';
 
 const noModifiers = { ctrlKey: false, shiftKey: false, altKey: false, metaKey: false };
 
-function getAction({ pixelX = 0, pixelY = 0, modifiers = {}, invertTimelineScroll = false, zoomKey = 'ctrl', frameSeekKey = 'alt', keyframeSeekKey = 'shift' }: {
+function getAction({ pixelX = 0, pixelY = 0, modifiers = {}, isPinch = false, invertTimelineScroll = false, zoomKey = 'ctrl', frameSeekKey = 'alt', keyframeSeekKey = 'shift' }: {
   pixelX?: number,
   pixelY?: number,
   modifiers?: Partial<typeof noModifiers>,
+  isPinch?: boolean,
   invertTimelineScroll?: boolean,
   zoomKey?: ModifierKey,
   frameSeekKey?: ModifierKey,
@@ -18,6 +19,7 @@ function getAction({ pixelX = 0, pixelY = 0, modifiers = {}, invertTimelineScrol
     pixelX,
     pixelY,
     modifiers: { ...noModifiers, ...modifiers },
+    isPinch,
     wheelSensitivity: 1,
     mouseWheelZoomModifierKey: zoomKey,
     mouseWheelFrameSeekModifierKey: frameSeekKey,
@@ -37,7 +39,12 @@ describe('zoom', () => {
     expect(getAction({ pixelY: -100, modifiers: { metaKey: true }, zoomKey: 'meta' })).toEqual({ type: 'zoom', amount: 40 });
   });
 
-  test('ctrl with other zoom modifier seeks', () => {
+  test('trackpad pinch zooms with higher sensitivity, also if zoom modifier is not ctrl', () => {
+    expect(getAction({ pixelY: -10, modifiers: { ctrlKey: true }, isPinch: true })).toEqual({ type: 'zoom', amount: 20 });
+    expect(getAction({ pixelY: -10, modifiers: { ctrlKey: true }, isPinch: true, zoomKey: 'meta', frameSeekKey: 'ctrl' })).toEqual({ type: 'zoom', amount: 20 });
+  });
+
+  test('ctrl actually held with other zoom modifier seeks, as before', () => {
     expect(getAction({ pixelY: -100, modifiers: { ctrlKey: true }, zoomKey: 'meta' })).toEqual({ type: 'seek', amount: 20 });
     expect(getAction({ pixelY: -100, modifiers: { ctrlKey: true }, zoomKey: 'meta', frameSeekKey: 'ctrl' })).toEqual({ type: 'frameSeek', direction: 1 });
   });
