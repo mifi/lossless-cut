@@ -49,6 +49,9 @@ electronUnhandled({ showDialog: true, logger: (err) => logger.error('electron-un
 // https://peter.sh/experiments/chromium-command-line-switches/
 // https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5
 app.commandLine.appendSwitch('enable-blink-features', 'AudioVideoTracks');
+// OS media keys / media session don't work properly with our player (play only a single frame), so disable them https://github.com/mifi/lossless-cut/issues/3028
+// appendSwitch replaces any existing value, e.g. one passed on the command line, so keep it
+app.commandLine.appendSwitch('disable-features', [app.commandLine.getSwitchValue('disable-features'), 'HardwareMediaKeyHandling', 'MediaSessionService'].filter(Boolean).join(','));
 
 remote.initialize();
 
