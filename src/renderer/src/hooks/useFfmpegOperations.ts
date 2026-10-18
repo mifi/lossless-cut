@@ -293,15 +293,16 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     const copyFileStreamsFiltered = copyFileStreams.filter(({ streamIds }) => streamIds.length > 0);
 
     // Undo ffmpeg's earlier seek for Matroska with B-frames, so the cut doesn't start one keyframe too early (#1216)
-    // Shifting both `-ss` and `-t` keeps the end time unchanged. Only for a single input with `-ss` before `-i`.
+    // `-itsoffset` keeps the output's zero point (and so `-t`) at the original cut start. Only for a single input with `-ss` before `-i`.
     const singleInputMeta = copyFileStreamsFiltered.length === 1 ? allFilesMeta[copyFileStreamsFiltered[0]!.path] : undefined;
     const seekCompensation = ssBeforeInput && cuttingStart && singleInputMeta != null
-      ? getKeyframeCutSeekCompensation({ formatName: singleInputMeta.format.format_name, streams: singleInputMeta.streams, cutFrom: cutFromWithAdjustment, cutDuration: cuttingEnd ? cutDuration : undefined })
+      ? getKeyframeCutSeekCompensation({ formatName: singleInputMeta.format.format_name, streams: singleInputMeta.streams, cutFrom: cutFromWithAdjustment })
       : 0;
 
     // Don't cut if not needed: https://github.com/mifi/lossless-cut/issues/50
     const cutFromArgs = cuttingStart ? ['-ss', formatFfmpegNumber(cutFromWithAdjustment + seekCompensation)] : [];
-    const cutToArgs = cuttingEnd ? ['-t', formatFfmpegNumber(cutDuration - seekCompensation)] : [];
+    const seekCompensationArgs = seekCompensation > 0 ? ['-itsoffset', formatFfmpegNumber(seekCompensation)] : [];
+    const cutToArgs = cuttingEnd ? ['-t', formatFfmpegNumber(cutDuration)] : [];
 
     // remove -avoid_negative_ts make_zero when not cutting start (no -ss), or else some videos get blank first frame in QuickLook
     // note: `make_zero`/`make_non_negative` get downgraded to `auto` when copying a cover art stream, or else the
@@ -334,7 +335,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
         ];
       })
       : [
-        ...(ssBeforeInput ? cutFromArgs : []),
+        ...(ssBeforeInput ? [...cutFromArgs, ...seekCompensationArgs] : []),
         '-i', copyFileStreamsFiltered[0]!.path,
         ...(!ssBeforeInput ? cutFromArgs : []),
         ...cutToArgs,

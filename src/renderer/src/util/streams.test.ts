@@ -223,15 +223,12 @@ test('getKeyframeCutSeekCompensation', () => {
   const bFrames = [{ has_b_frames: 2 }, {}];
   const compensation = 3 / 23 + 0.001;
 
-  expect(getKeyframeCutSeekCompensation({ formatName: 'matroska,webm', streams: bFrames, cutFrom: 6, cutDuration: 4 })).toBe(compensation);
-  expect(getKeyframeCutSeekCompensation({ formatName: 'matroska,webm', streams: bFrames, cutFrom: 6, cutDuration: undefined })).toBe(compensation);
+  expect(getKeyframeCutSeekCompensation({ formatName: 'matroska,webm', streams: bFrames, cutFrom: 6 })).toBe(compensation);
   // no B-frames
-  expect(getKeyframeCutSeekCompensation({ formatName: 'matroska,webm', streams: [{ has_b_frames: 0 }, {}], cutFrom: 6, cutDuration: 4 })).toBe(0);
+  expect(getKeyframeCutSeekCompensation({ formatName: 'matroska,webm', streams: [{ has_b_frames: 0 }, {}], cutFrom: 6 })).toBe(0);
   // formats with AVFMT_SEEK_TO_PTS, or not handled
-  expect(getKeyframeCutSeekCompensation({ formatName: 'mov,mp4,m4a,3gp,3g2,mj2', streams: bFrames, cutFrom: 6, cutDuration: 4 })).toBe(0);
-  expect(getKeyframeCutSeekCompensation({ formatName: undefined, streams: bFrames, cutFrom: 6, cutDuration: 4 })).toBe(0);
+  expect(getKeyframeCutSeekCompensation({ formatName: 'mov,mp4,m4a,3gp,3g2,mj2', streams: bFrames, cutFrom: 6 })).toBe(0);
+  expect(getKeyframeCutSeekCompensation({ formatName: undefined, streams: bFrames, cutFrom: 6 })).toBe(0);
   // not cutting start
-  expect(getKeyframeCutSeekCompensation({ formatName: 'matroska,webm', streams: bFrames, cutFrom: 0, cutDuration: 4 })).toBe(0);
-  // segment too short, `-t` would become <= 0
-  expect(getKeyframeCutSeekCompensation({ formatName: 'matroska,webm', streams: bFrames, cutFrom: 6, cutDuration: 0.1 })).toBe(0);
+  expect(getKeyframeCutSeekCompensation({ formatName: 'matroska,webm', streams: bFrames, cutFrom: 0 })).toBe(0);
 });
