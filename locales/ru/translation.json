@@ -1112,5 +1112,8 @@
   "Extract segment frames as image files": "Извлечь сегменты кадров в виде файлов изображений",
   "You are in simple mode, meaning some functionality has been simplified or hidden.": "Вы находитесь в упрощённом режиме. Некоторые функции упрощены или скрыты.",
   "Source code": "Исходный код",
-  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "Вы указали пользовательскую папку FFmpeg. Её можно изменить или сбросить его в настройках."
+  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "Вы указали собственный путь к папке FFmpeg. Его можно изменить или сбросить в настройках.",
+  "Dark": "Тёмная",
+  "Light": "Светлая",
+  "Theme": "Тема"
 }
