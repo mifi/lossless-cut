@@ -42,8 +42,9 @@ function useTimelineScroll({ wheelSensitivity, mouseWheelZoomModifierKey, mouseW
     const makeUnit = (v: number) => ((direction * v) > 0 ? 1 : -1);
 
     if (wheelEvent[keyMap[mouseWheelZoomModifierKey]]) {
-      // see discussion https://github.com/mifi/lossless-cut/issues/2703
-      zoomRel(pixelY * wheelSensitivity * 0.4);
+      // Wheel up / pinch out (negative delta) zooms in, like ctrl+wheel in browsers. Not affected by invertTimelineScroll, which is for seeking only.
+      // https://github.com/mifi/lossless-cut/issues/2703 https://github.com/mifi/lossless-cut/issues/2962
+      zoomRel(-pixelY * wheelSensitivity * 0.4);
     } else if (wheelEvent[keyMap[mouseWheelFrameSeekModifierKey]]) {
       shortStep(makeUnit(pixelX + pixelY));
     } else if (wheelEvent[keyMap[mouseWheelKeyframeSeekModifierKey]]) {
