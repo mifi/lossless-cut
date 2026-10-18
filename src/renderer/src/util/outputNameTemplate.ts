@@ -13,6 +13,7 @@ import type { FileStats, FormatTimecode, SegmentToExport } from '../types';
 import safeishEval from '../worker/eval';
 import { UserFacingError } from '../../errors';
 import type { FileFfprobeMeta } from '../ffmpeg';
+import { truncateFileName } from '../../../common/util';
 
 
 export const segNumVariable = 'SEG_NUM';
@@ -230,7 +231,7 @@ function maybeTruncatePath(fileName: string, truncate: boolean) {
   return [
     ...rest,
     // If sanitation is enabled, make sure filename (last seg of the path) is not too long
-    truncate ? lastSeg!.slice(0, maxFileNameLength) : lastSeg,
+    truncate ? truncateFileName(lastSeg!, maxFileNameLength) : lastSeg,
   ].join(pathSep);
 }
 

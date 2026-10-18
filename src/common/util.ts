@@ -10,6 +10,14 @@ export const getHwaccelArgs = (hwaccel: FfmpegHwAccel) => (hwaccel !== 'none' ? 
 // I don't remember why 5 was chosen initially, but if we don't truncate, ffmpeg can sometimes give an error when too many decimal places are used in the time argument, see:
 export const formatFfmpegNumber = (time: number) => time.toFixed(6);
 
+// Truncate a file name to `maxLength`, but keep its extension (if any)
+export function truncateFileName(name: string, maxLength: number) {
+  if (name.length <= maxLength) return name;
+  const extIndex = name.lastIndexOf('.');
+  const ext = extIndex > 0 ? name.slice(extIndex) : '';
+  return name.slice(0, Math.max(0, maxLength - ext.length)) + ext;
+}
+
 export function parseRatio(str: string, char = '/') {
   const split = str.split(char);
   if (split.length !== 2) return undefined;
