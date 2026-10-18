@@ -55,7 +55,7 @@ export default ({ keyBindings, keyUpActions, getKeyboardAction, closeExportConfi
     }
 
     // Escape releases focus from inputs, buttons etc. (outside of dialogs), so that keyboard shortcuts work again https://github.com/mifi/lossless-cut/issues/2942
-    if (isEscape && !e.defaultPrevented && e.target instanceof HTMLElement && e.target !== document.body && e.target.closest('[role="dialog"], [role="alertdialog"]') == null) {
+    if (isEscape && !e.defaultPrevented && !e.isComposing && e.target instanceof HTMLElement && e.target !== document.body && e.target.closest('[role="dialog"], [role="alertdialog"]') == null) {
       e.target.blur();
       return;
     }
