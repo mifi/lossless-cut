@@ -10,13 +10,46 @@ export const getHwaccelArgs = (hwaccel: FfmpegHwAccel) => (hwaccel !== 'none' ? 
 // I don't remember why 5 was chosen initially, but if we don't truncate, ffmpeg can sometimes give an error when too many decimal places are used in the time argument, see:
 export const formatFfmpegNumber = (time: number) => time.toFixed(6);
 
-// Truncate a file name to `maxLength`, but keep its extension (if any)
-export function truncateFileName(name: string, maxLength: number) {
-  if (name.length <= maxLength) return name;
+function getCharUtf8Length(char: string) {
+  const codePoint = char.codePointAt(0)!;
+  if (codePoint < 0x80) return 1;
+  if (codePoint < 0x800) return 2;
+  if (codePoint < 0x10000) return 3;
+  return 4;
+}
+
+// File systems limit the length of file names in UTF-8 bytes (e.g. ext4, APFS) or UTF-16 code units (NTFS)
+const getCharLength = (char: string, utf16: boolean) => (utf16 ? char.length : getCharUtf8Length(char));
+
+function takeChars(chars: string[], maxLength: number, utf16: boolean) {
+  const ret: string[] = [];
+  let length = 0;
+  for (const char of chars) {
+    length += getCharLength(char, utf16);
+    if (length > maxLength) break;
+    ret.push(char);
+  }
+  return ret;
+}
+
+const ellipsis = '…';
+
+// Truncate a file name to `maxLength`, keeping its extension (if any), and without splitting characters.
+// We cut out the middle, because the end of the name often has the parts that make it unique (e.g. cut times, segment number)
+export function truncateFileName(name: string, maxLength: number, utf16 = false) {
+  const getLength = (str: string) => [...str].reduce((acc, char) => acc + getCharLength(char, utf16), 0);
+  if (getLength(name) <= maxLength) return name;
+
   const extIndex = name.lastIndexOf('.');
-  // only treat a short suffix as an extension, so that a dot early in the name doesn't make us exceed maxLength
+  // only treat a short suffix as an extension, so that a dot early in the name doesn't make us exceed the limit
   const ext = extIndex > 0 && name.length - extIndex <= 10 ? name.slice(extIndex) : '';
-  return name.slice(0, maxLength - ext.length) + ext;
+  const stem = name.slice(0, name.length - ext.length);
+  const chars = [...stem];
+
+  const budget = maxLength - getLength(ext) - getLength(ellipsis);
+  const head = takeChars(chars, Math.floor(budget / 2), utf16);
+  const tail = takeChars(chars.toReversed(), budget - getLength(head.join('')), utf16).reverse();
+  return head.join('') + ellipsis + tail.join('') + ext;
 }
 
 export function parseRatio(str: string, char = '/') {

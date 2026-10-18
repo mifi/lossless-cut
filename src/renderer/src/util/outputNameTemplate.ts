@@ -231,7 +231,7 @@ function maybeTruncatePath(fileName: string, truncate: boolean) {
   return [
     ...rest,
     // If sanitation is enabled, make sure filename (last seg of the path) is not too long
-    truncate ? truncateFileName(lastSeg!, maxFileNameLength) : lastSeg,
+    truncate ? truncateFileName(lastSeg!, maxFileNameLength, isWindows) : lastSeg,
   ].join(pathSep);
 }
 
@@ -419,7 +419,7 @@ export async function generateMergedFileNames({ template: desiredTemplate, isCus
       return [maybeTruncatePath(fileName, safeOutputFileName2)];
     },
     desiredTemplate,
-    defaultTemplate: defaultCutMergedFileTemplate,
+    defaultTemplate: defaultMergedFileTemplate,
     filePath: firstFile.path,
     outputDir,
     maxLabelLength,
