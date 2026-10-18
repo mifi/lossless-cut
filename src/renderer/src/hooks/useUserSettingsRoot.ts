@@ -18,6 +18,7 @@ function subscribeSystemDarkMode(onChange: () => void) {
   darkModeMediaQuery.addEventListener('change', onChange);
   return () => darkModeMediaQuery.removeEventListener('change', onChange);
 }
+const resolveDarkMode = (theme: Config['theme'], systemDarkMode: boolean) => (theme === 'system' ? systemDarkMode : theme === 'dark');
 
 export default function useUserSettingsRoot() {
   const firstUpdateRef = useRef(true);
@@ -220,9 +221,9 @@ export default function useUserSettingsRoot() {
   // note: main sets nativeTheme.themeSource from `theme`, and it must be 'system' for prefers-color-scheme to report the OS theme
   const systemDarkMode = useSyncExternalStore(subscribeSystemDarkMode, () => darkModeMediaQuery.matches);
 
-  const darkMode = theme === 'system' ? systemDarkMode : theme === 'dark';
+  const darkMode = resolveDarkMode(theme, systemDarkMode);
 
-  const toggleDarkMode = useCallback(() => setTheme(darkMode ? 'light' : 'dark'), [darkMode]);
+  const toggleDarkMode = useCallback(() => setTheme((t) => (resolveDarkMode(t, darkModeMediaQuery.matches) ? 'light' : 'dark')), []);
 
   const prefersReducedMotion = useMemo(() => {
     if (reducedMotion !== 'user') return reducedMotion === 'always';
