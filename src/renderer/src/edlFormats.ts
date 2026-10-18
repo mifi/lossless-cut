@@ -261,6 +261,10 @@ export function parsePbf(buf: Buffer) {
 }
 
 // https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/FinalCutPro_XML/VersionsoftheInterchangeFormat/VersionsoftheInterchangeFormat.html
+// XMLParser returns a single object instead of an array when an element occurs only once
+type XmlList<T> = T | T[] | undefined;
+const xmlList = <T>(value: XmlList<T>): T[] => (value == null ? [] : [value].flat() as T[]);
+
 export function parseXmeml(xmlStr: string) {
   const xml = new XMLParser().parse(xmlStr);
 
@@ -283,9 +287,9 @@ export function parseXmeml(xmlStr: string) {
   }
 
   // todo
-  const mainTrack: { clipitem: { in: number, out: number, rate: { timebase: number } }[] } = Array.isArray(sequence.media.video.track) ? sequence.media.video.track[0] : sequence.media.video.track;
+  const mainTrack: { clipitem?: XmlList<{ in: number, out: number, rate: { timebase: number } }> } = Array.isArray(sequence.media.video.track) ? sequence.media.video.track[0] : sequence.media.video.track;
 
-  return mainTrack.clipitem.map((item) => ({ start: item.in / item.rate.timebase, end: item.out / item.rate.timebase }));
+  return xmlList(mainTrack.clipitem).map((item) => ({ start: item.in / item.rate.timebase, end: item.out / item.rate.timebase }));
 }
 
 export function parseFcpXml(xmlStr: string) {
@@ -294,16 +298,20 @@ export function parseFcpXml(xmlStr: string) {
   const { fcpxml } = xml;
   if (!fcpxml) throw new Error('Root element <fcpxml> not found in file');
 
+  // e.g. "1001/30000s" or "10s"
   function getTime(str: string) {
-    const match = str.match(/(\d+)\/(\d+)s/);
-    if (!match) throw new Error('Invalid attribute');
-    return parseInt(match[1]!, 10) / parseInt(match[2]!, 10);
+    const match = str.match(/^(\d+)\/(\d+)s$/);
+    if (match) return parseInt(match[1]!, 10) / parseInt(match[2]!, 10);
+    const secMatch = str.match(/^(\d+(?:\.\d+)?)s$/);
+    if (secMatch) return parseFloat(secMatch[1]!);
+    throw new Error('Invalid attribute');
   }
 
   // todo
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (fcpxml.library.event.project.sequence.spine['asset-clip'] as any[]).map((assetClip) => {
-    const start = getTime(assetClip['@_start']);
+  return xmlList<any>(fcpxml.library?.event?.project?.sequence?.spine?.['asset-clip']).map((assetClip) => {
+    // start is optional and defaults to 0
+    const start = assetClip['@_start'] != null ? getTime(assetClip['@_start']) : 0;
     const duration = getTime(assetClip['@_duration']);
     const end = start + duration;
     return { start, end };
