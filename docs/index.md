@@ -38,7 +38,7 @@ Please read the documentation before creating an issue. Thank you 🙏
 - **Q:** Can you publish through [winget](https://github.com/mifi/lossless-cut/issues/1279), [Flatpak](https://github.com/mifi/lossless-cut/pull/1813), [Docker](https://github.com/mifi/lossless-cut/issues/1086) or other software mangers?
   - **A:** In general I don't want to maintain more build systems, but I could be open to linking to externally maintained build systems.
 - **Q:** How to sync/shift audio/video tracks?
-  - **A:** This is not natively supported but it can be done with a workaround, see [#216](https://github.com/mifi/lossless-cut/issues/216).
+  - **A:** Since v3.69.0 you can shift all tracks of a file relative to the other files (e.g. an external audio file that you added): open the tracks dialog and set *Shift by seconds* for that file. For other cases, see the workaround in [#216](https://github.com/mifi/lossless-cut/issues/216).
 - **Q:** How do I overwrite input file?
   - **A:** That is forbidden by design, for [several reasons](https://github.com/mifi/lossless-cut/issues/2538#issuecomment-3476574283).
 - **Q:** Can LosslessCut remember more choices, selections, settings?

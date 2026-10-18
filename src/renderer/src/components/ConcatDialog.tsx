@@ -24,7 +24,6 @@ import FileNameTemplateEditor from './FileNameTemplateEditor';
 import HighlightedText from './HighlightedText';
 import type { FileStats } from '../types';
 import OutDirSelector from './OutDirSelector';
-import { parseRatio } from '../../../common/util';
 
 const { basename } = window.require('node:path');
 
@@ -154,21 +153,12 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate: storedMerged
           return;
         }
         // check all these parameters
-        (['codec_name', 'width', 'height', 'pix_fmt', 'level', 'profile', 'sample_fmt', 'avg_frame_rate', 'r_frame_rate', 'time_base'] as const).forEach((key) => {
-          // special handling: https://github.com/mifi/lossless-cut/discussions/2740
-          if (key === 'avg_frame_rate') {
-            const val = parseRatio(stream[key]);
-            const referenceVal = parseRatio(referenceStream[key]);
-            const sigma = 0.01;
-            if ((val == null && referenceVal != null) || (val != null && referenceVal == null) || (val != null && referenceVal != null && Math.abs(val - referenceVal) >= sigma)) {
-              addProblem(path, { type: 'parameter_mismatch', index: stream.index, key, values: [String(val), referenceVal] });
-            }
-          } else {
-            const val = stream[key];
-            const referenceVal = referenceStream[key];
-            if (val !== referenceVal) {
-              addProblem(path, { type: 'parameter_mismatch', index: stream.index, key, values: [String(val), referenceVal] });
-            }
+        // avg_frame_rate is not checked, because it often differs slightly between files that merge fine https://github.com/mifi/lossless-cut/issues/2759
+        (['codec_name', 'width', 'height', 'pix_fmt', 'level', 'profile', 'sample_fmt', 'r_frame_rate', 'time_base'] as const).forEach((key) => {
+          const val = stream[key];
+          const referenceVal = referenceStream[key];
+          if (val !== referenceVal) {
+            addProblem(path, { type: 'parameter_mismatch', index: stream.index, key, values: [String(val), referenceVal] });
           }
         });
       });

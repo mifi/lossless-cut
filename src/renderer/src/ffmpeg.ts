@@ -590,8 +590,8 @@ export async function createChaptersFromSegments({ paths, defaultChapterNames, u
             invariant(!Number.isNaN(start) && !Number.isNaN(end));
             return {
               start: timeAt + start,
-              end: timeAt + start,
-              name: ch.tags.title,
+              end: timeAt + end,
+              name: ch.tags?.title,
             };
           });
         }
