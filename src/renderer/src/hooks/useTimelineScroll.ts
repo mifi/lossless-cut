@@ -5,13 +5,7 @@ import { t } from 'i18next';
 import normalizeWheel from './normalizeWheel';
 import type { ModifierKey } from '../../../common/types';
 import { getMetaKeyName } from '../util';
-
-export const keyMap = {
-  ctrl: 'ctrlKey',
-  shift: 'shiftKey',
-  alt: 'altKey',
-  meta: 'metaKey',
-} as const;
+import { getTimelineWheelAction } from '../timelineWheel';
 
 export const getModifierKeyNames = () => ({
   ctrl: t('Ctrl'),
@@ -35,22 +29,16 @@ function useTimelineScroll({ wheelSensitivity, mouseWheelZoomModifierKey, mouseW
 }) {
   const onWheel = useCallback<WheelEventHandler<Element>>((wheelEvent) => {
     const { pixelX, pixelY } = normalizeWheel(wheelEvent);
-    // console.log({ spinX, spinY, pixelX, pixelY });
+    const { ctrlKey, shiftKey, altKey, metaKey } = wheelEvent;
 
-    const direction = invertTimelineScroll ? 1 : -1;
+    const action = getTimelineWheelAction({ pixelX, pixelY, modifiers: { ctrlKey, shiftKey, altKey, metaKey }, wheelSensitivity, mouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, invertTimelineScroll });
 
-    const makeUnit = (v: number) => ((direction * v) > 0 ? 1 : -1);
-
-    if (wheelEvent[keyMap[mouseWheelZoomModifierKey]]) {
-      // Wheel up / pinch out (negative delta) zooms in, like ctrl+wheel in browsers. Not affected by invertTimelineScroll, which is for seeking only.
-      // https://github.com/mifi/lossless-cut/issues/2703 https://github.com/mifi/lossless-cut/issues/2962
-      zoomRel(-pixelY * wheelSensitivity * 0.4);
-    } else if (wheelEvent[keyMap[mouseWheelFrameSeekModifierKey]]) {
-      shortStep(makeUnit(pixelX + pixelY));
-    } else if (wheelEvent[keyMap[mouseWheelKeyframeSeekModifierKey]]) {
-      seekClosestKeyframe(makeUnit(pixelX + pixelY));
-    } else {
-      seekRel(direction * (pixelX + pixelY) * wheelSensitivity * 0.2);
+    switch (action.type) {
+      case 'zoom': { zoomRel(action.amount); break; }
+      case 'frameSeek': { shortStep(action.direction); break; }
+      case 'keyframeSeek': { seekClosestKeyframe(action.direction); break; }
+      case 'seek': { seekRel(action.amount); break; }
+      default: { const exhaustive: never = action; throw new Error(`Unknown wheel action ${JSON.stringify(exhaustive)}`); }
     }
   }, [invertTimelineScroll, mouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, zoomRel, wheelSensitivity, shortStep, seekClosestKeyframe, seekRel]);
 

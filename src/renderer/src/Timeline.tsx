@@ -19,7 +19,7 @@ import type { Frame } from './ffmpeg';
 import type { FormatTimecode, InverseCutSegment, OverviewWaveform, RenderableWaveform, WaveformSlice, StateSegment, Thumbnail } from './types';
 import Button from './components/Button';
 import type { UseSegments } from './hooks/useSegments';
-import { keyMap } from './hooks/useTimelineScroll';
+import { keyMap } from './timelineWheel';
 import { calculateTimelinePercent as calculateTimelinePercent2, calculateTimelinePos } from './util';
 
 
