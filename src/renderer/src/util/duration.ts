@@ -18,14 +18,15 @@ export function formatDuration({ seconds: totalSecondsIn, fileNameFriendly, show
   // round to integer for our current unit
   const totalUnits = Math.round(totalSecondsAbs * unitsPerSec);
 
-  const seconds = Math.floor(totalUnits / unitsPerSec);
+  // epsilon: with fractional fps like 24000/1001, e.g. 24000 / fps = 1000.9999999999999
+  const seconds = Math.floor(totalUnits / unitsPerSec + 1e-9);
   const secondsPadded = padStart(String(seconds % 60), 2, '0');
-  const minutes = Math.floor(totalUnits / unitsPerSec / 60) % 60;
-  const hours = Math.floor(totalUnits / unitsPerSec / 60 / 60);
+  const minutes = Math.floor(seconds / 60) % 60;
+  const hours = Math.floor(seconds / 60 / 60);
 
   const minutesPadded = shorten && hours === 0 ? `${minutes}` : padStart(String(minutes), 2, '0');
 
-  const remainder = totalUnits % unitsPerSec;
+  const remainder = Math.max(0, totalUnits - seconds * unitsPerSec);
 
   // Be nice to filenames and use .
   const delim = fileNameFriendly ? '.' : ':';
@@ -39,7 +40,7 @@ export function formatDuration({ seconds: totalSecondsIn, fileNameFriendly, show
   let fraction = '';
   if (showFraction && !(shorten && remainder === 0)) {
     const numDigits = fps != null ? 2 : 3;
-    fraction = `.${padStart(String(Math.floor(remainder)), numDigits, '0')}`;
+    fraction = `.${padStart(String(Math.floor(remainder + 1e-6)), numDigits, '0')}`;
   }
 
   return `${sign}${hoursPart}${minutesPadded}${delim}${secondsPadded}${fraction}`;
