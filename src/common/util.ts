@@ -14,8 +14,9 @@ export const formatFfmpegNumber = (time: number) => time.toFixed(6);
 export function truncateFileName(name: string, maxLength: number) {
   if (name.length <= maxLength) return name;
   const extIndex = name.lastIndexOf('.');
-  const ext = extIndex > 0 ? name.slice(extIndex) : '';
-  return name.slice(0, Math.max(0, maxLength - ext.length)) + ext;
+  // only treat a short suffix as an extension, so that a dot early in the name doesn't make us exceed maxLength
+  const ext = extIndex > 0 && name.length - extIndex <= 10 ? name.slice(extIndex) : '';
+  return name.slice(0, maxLength - ext.length) + ext;
 }
 
 export function parseRatio(str: string, char = '/') {

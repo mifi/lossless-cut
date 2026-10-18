@@ -57,4 +57,7 @@ describe('truncateFileName', () => {
     expect(truncateFileName('abcdefghij', 5)).toBe('abcde');
     expect(truncateFileName('.hiddenfile', 5)).toBe('.hidd');
   });
+  test('ignores a dot too early in the name to be an extension', () => {
+    expect(truncateFileName(`Dr. ${'a'.repeat(20)}`, 10)).toBe('Dr. aaaaaa');
+  });
 });
