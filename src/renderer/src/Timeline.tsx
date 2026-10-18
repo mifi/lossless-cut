@@ -26,6 +26,8 @@ import { calculateTimelinePercent as calculateTimelinePercent2, calculateTimelin
 type CalculateTimelinePercent = (time: number) => string | undefined;
 
 const currentTimeWidth = 1;
+// contrasting outline, so that the cursor/keyframes are visible on top of any segment color, in both light and dark mode #1199
+const outlineShadow = '0 0 0 1px var(--gray-1)';
 
 // eslint-disable-next-line react/display-name
 const Waveform = memo(({ waveform, calculateTimelinePercent, fileDurationNonZero, darkMode }: {
@@ -77,7 +79,7 @@ const CommandedTime = memo(({ commandedTimePercent }: { commandedTimePercent: st
   return (
     <>
       <FaCaretDown style={{ ...commonStyle, top: 0, color, fontSize: 14, marginLeft: -7, marginTop: -6 }} />
-      <div style={{ ...commonStyle, bottom: 0, top: 0, backgroundColor: color, width: currentTimeWidth }} />
+      <div style={{ ...commonStyle, bottom: 0, top: 0, backgroundColor: color, width: currentTimeWidth, boxShadow: outlineShadow }} />
       <FaCaretUp style={{ ...commonStyle, bottom: 0, color, fontSize: 14, marginLeft: -7, marginBottom: -5 }} />
     </>
   );
@@ -447,11 +449,11 @@ function Timeline({
           })}
 
           {shouldShowKeyframes && !areKeyframesTooClose && keyFramesInZoomWindow.map((f) => (
-            <div key={f.time} style={{ position: 'absolute', top: 0, bottom: 0, left: `${(f.time / fileDurationNonZero) * 100}%`, marginLeft: -1, width: 1, background: 'var(--gray-10)', pointerEvents: 'none' }} />
+            <div key={f.time} style={{ position: 'absolute', top: 0, bottom: 0, left: `${(f.time / fileDurationNonZero) * 100}%`, marginLeft: -1, width: 1, background: 'var(--gray-10)', boxShadow: '1px 0 0 var(--gray-1)', pointerEvents: 'none' }} />
           ))}
 
           {currentTimePercent !== undefined && (
-            <motion.div transition={springAnimation} animate={{ left: currentTimePercent }} style={{ position: 'absolute', bottom: 0, top: 0, backgroundColor: 'var(--gray-12)', width: currentTimeWidth, pointerEvents: 'none' }} />
+            <motion.div transition={springAnimation} animate={{ left: currentTimePercent }} style={{ position: 'absolute', bottom: 0, top: 0, backgroundColor: 'var(--gray-12)', width: currentTimeWidth, boxShadow: outlineShadow, pointerEvents: 'none' }} />
           )}
           {commandedTimePercent !== undefined && (
             <CommandedTime commandedTimePercent={commandedTimePercent} />
