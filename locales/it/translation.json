@@ -1080,5 +1080,8 @@
   "Extract segment frames as image files": "Estrai fotogrammi segmenti come file immagine",
   "You are in simple mode, meaning some functionality has been simplified or hidden.": "Sei in modalità semplice, il che significa che alcune funzionalità sono state semplificate o nascoste.",
   "Source code": "Codice sorgente",
-  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "Hai configurato una cartella FFmpeg personalizzata. Puoi modificarla o reimpostarla nelle Impostazioni."
+  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "Hai configurato una cartella FFmpeg personalizzata. Puoi modificarla o reimpostarla nelle Impostazioni.",
+  "Dark": "Scuro",
+  "Light": "Chiaro",
+  "Theme": "Tema"
 }
