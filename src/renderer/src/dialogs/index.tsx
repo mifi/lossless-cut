@@ -7,6 +7,7 @@ import ky from 'ky';
 import pMap from 'p-map';
 
 import { formatDuration } from '../util/duration';
+import { parseRatio } from '../../../common/util';
 import { parseYouTube } from '../edlFormats';
 import { appPath, isMasBuild, isStoreBuild, isWindows, isWindowsStoreBuild, testFailFsOperation, trashFile, unlinkWithRetry } from '../util';
 import type { ParseTimecode } from '../types';
@@ -504,8 +505,8 @@ export async function askForPlaybackRate({ detectedFps, outputPlaybackRate }: { 
   function parseValue(v: string) {
     if (v.trim() === '') return 1; // default to 1 if empty
 
-    const newFps = parseFloat(v);
-    if (!Number.isNaN(newFps)) {
+    const newFps = v.includes('/') ? parseRatio(v) : parseFloat(v); // allow e.g. 30000/1001
+    if (newFps != null && !Number.isNaN(newFps)) {
       return newFps / fps;
     }
     return undefined;

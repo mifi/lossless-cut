@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { describe, expect, test } from 'vitest';
 
-import { getFixChannelLayoutFilter, hasCustomChannelLayout } from './util.js';
+import { getFixChannelLayoutFilter, hasCustomChannelLayout, truncateFileName } from './util.js';
 
 describe('hasCustomChannelLayout', () => {
   test('detects layouts that ffmpeg could not express natively', () => {
@@ -42,5 +42,22 @@ describe('getFixChannelLayoutFilter', () => {
   test('needs a channel count to build the map', () => {
     expect(getFixChannelLayoutFilter({ channels: undefined, channelLayout: '4 channels (UNSD+UNSD+UNSD+UNSD)' })).toBeUndefined();
     expect(getFixChannelLayoutFilter({ channels: 0, channelLayout: '4 channels (UNSD+UNSD+UNSD+UNSD)' })).toBeUndefined();
+  });
+});
+
+describe('truncateFileName', () => {
+  test('keeps short names as is', () => {
+    expect(truncateFileName('video.mp4', 10)).toBe('video.mp4');
+  });
+  test('keeps the extension when truncating', () => {
+    expect(truncateFileName('a very long name.mp4', 10)).toBe('a very.mp4');
+    expect(truncateFileName('a.b.c.mkv', 7)).toBe('a.b.mkv');
+  });
+  test('truncates names without extension', () => {
+    expect(truncateFileName('abcdefghij', 5)).toBe('abcde');
+    expect(truncateFileName('.hiddenfile', 5)).toBe('.hidd');
+  });
+  test('ignores a dot too early in the name to be an extension', () => {
+    expect(truncateFileName(`Dr. ${'a'.repeat(20)}`, 10)).toBe('Dr. aaaaaa');
   });
 });
