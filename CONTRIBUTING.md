@@ -122,7 +122,34 @@ Before releasing, consider [Maintenance chores](#maintenance-chores) first.
 
 Usually some time after the GitHub release, once no serious regressions have been reported.
 
-#### Microsoft Store
+First write the "What's new" text for each store (see [Store release notes](./AGENTS.md#store-release-notes)) to `notes/mas-whats-new-x.y.z.txt` and `notes/msstore-whats-new-x.y.z.txt` (or pass `--notes <file>`). Then:
+
+```bash
+node script/storeRelease.ts mas x.y.z            # dry run: shows the current state and what it would change
+node script/storeRelease.ts mas x.y.z --prepare  # optional: apply the changes without submitting, to check them in App Store Connect
+node script/storeRelease.ts mas x.y.z --submit   # apply and submit for review
+node script/storeRelease.ts msstore x.y.z        # dry run
+node script/storeRelease.ts msstore x.y.z --submit
+```
+
+- **Mac App Store**: creates the version (or reuses the editable one), waits for the build to finish processing and attaches it, sets en-US "What's New", manual release, 7-day phased release, and submits for review. Once approved, release it manually in App Store Connect.
+- **Microsoft Store**: creates a submission, adds both `.appx` packages from the GitHub release (renamed without `-DONT-USE-THIS-FILE`), sets en-US "What's new", gradual rollout at 0%, "Don't publish until I select Publish now", and submits for certification. Once certified, click "Publish now" in Partner Center, then increase the rollout with `node script/storeRelease.ts msstore-rollout <percent> --submit` (dry run without `--submit`; `100` finalizes it). Don't edit a submission in Partner Center that the script created, or the API can no longer change it.
+- Description, keywords and screenshots are not touched; update them by hand if needed.
+
+If the script fails, use the manual steps below.
+
+#### Credentials
+
+Set these in your shell (never commit them). Secrets can be kept in the macOS keychain, e.g. `security add-generic-password -a "$USER" -s MSSTORE_CLIENT_SECRET -w` once, then `export MSSTORE_CLIENT_SECRET=$(security find-generic-password -s MSSTORE_CLIENT_SECRET -w)`.
+
+- **Mac App Store**: `ASC_KEY_ID`, `ASC_ISSUER_ID` and the key in `~/.appstoreconnect/private_keys/AuthKey_<ASC_KEY_ID>.p8` (or `ASC_KEY_PATH`). The key needs the **App Manager** (or Admin) role. Create one in [App Store Connect → Users and Access → Integrations → App Store Connect API](https://appstoreconnect.apple.com/access/integrations/api) → Team Keys; the Issuer ID is shown at the top of that page.
+- **Microsoft Store**: `MSSTORE_TENANT_ID`, `MSSTORE_CLIENT_ID`, `MSSTORE_CLIENT_SECRET`. One-time setup:
+  1. Partner Center → ⚙ Account settings → **Tenants**: associate a Microsoft Entra ID tenant, or create a new one there ([docs](https://learn.microsoft.com/en-us/windows/apps/publish/partner-center/associate-azure-ad-with-partner-center)). You need to be Global administrator of the tenant.
+  2. Account settings → **User management** → **Microsoft Entra applications** tab → **Add Microsoft Entra application** → **Create Microsoft Entra application**. Any name (e.g. `losslesscut-store-release`) and any unique Reply URL (e.g. `https://example.com/store-release`, it's not used). Role: **Manager**. Click **Create**.
+  3. Click the application and copy the **Tenant ID** and **Client ID**.
+  4. Click **Add new key** and copy the **Key** (the client secret, shown only once). The page shows when the key expires; add a new one before that.
+
+#### Microsoft Store (manual)
 
 1. Download `LosslessCut-win-x64-DONT-USE-THIS-FILE.appx` and `LosslessCut-win-arm64-DONT-USE-THIS-FILE.appx` from the GitHub release, and remove `-DONT-USE-THIS-FILE` from the file names
 2. Open the [Partner Center](https://partner.microsoft.com/en-us/dashboard/products/9P30LSR4705L/overview) and click "Start update"
@@ -133,7 +160,7 @@ Usually some time after the GitHub release, once no serious regressions have bee
 7. Go back and click "Submit for certification"
 8. Once certified, publish it, and increase the rollout by ~15% every day or so
 
-#### Mac App Store
+#### Mac App Store (manual)
 
 Tag builds already upload the build to App Store Connect (`(MacOS) Upload to Mac App Store` in `build.yml`).
 
