@@ -37,7 +37,7 @@ In some videos (like VP9 from `yt-dlp`), some start keyframes are being ignored 
 
 ## Start cut is ignored
 
-Check whether your video has enough keyframes before your cutpoint. You can see keyframes on the timeline as vertical lines. You may have to zoom in to see them. If there are no keyframes, then it is most likely not possible to cut your file at the desired cutpoints losslessly. You can try to enable the Smart Cut mode, alternatively you may try to disable "keyframe cut" mode. See also (#2864)(https://github.com/mifi/lossless-cut/issues/2864).
+Check whether your video has enough keyframes before your cutpoint. You can see keyframes on the timeline as vertical lines. You may have to zoom in to see them. If there are no keyframes, then it is most likely not possible to cut your file at the desired cutpoints losslessly. You can try to enable the Smart Cut mode, alternatively you may try to disable "keyframe cut" mode. See also [#2864](https://github.com/mifi/lossless-cut/issues/2864).
 
 ## Cut file has same length as input
 
