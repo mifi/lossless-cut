@@ -175,6 +175,8 @@ Use the newest stable release branch that all platforms can get (BtbN may lag be
 - `electron` and upgrade [electron.vite.config.ts](./electron.vite.config.ts) `target`s.
 - `@electron/remote`
 
+For every Electron or other dependency upgrade (especially major versions), go through its changelog / breaking changes (for Electron: [breaking changes](https://github.com/electron/electron/blob/main/docs/breaking-changes.md) and the [release notes](https://releases.electronjs.org/)) and check the APIs and behaviours LosslessCut relies on, like we do for [FFmpeg](#upgrade-ffmpeg).
+
 ### Keep dependencies up to date
 
 ```bash
