@@ -181,6 +181,7 @@
       "onlyLoadAppFromAsar": true
     },
     "appId": "no.mifi.losslesscut",
+    "afterPack": "./script/afterPack.ts",
     "artifactName": "${productName}-${os}-${arch}.${ext}",
     "extraResources": [
       {
