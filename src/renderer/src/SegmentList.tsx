@@ -617,7 +617,7 @@ function SegmentList({
       <Dialog.Root open={editingSegmentTagsSegmentIndex != null} onOpenChange={(open) => !open && onSegmentTagsCloseComplete()}>
         <Dialog.Portal>
           <Dialog.Overlay />
-          <Dialog.Content style={{ width: '40em' }} aria-describedby={undefined}>
+          <Dialog.Content style={{ width: '40em' }} aria-describedby={undefined} onEscapeKeyDown={(e) => editingTag != null && e.preventDefault()}>
             <Dialog.Title>{t('Edit segment tags')}</Dialog.Title>
 
             <TagEditor customTags={editingSegmentTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagsChange={onTagsChange} onTagReset={onTagReset} addTagTitle={t('Add segment tag')} />

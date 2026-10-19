@@ -1,10 +1,10 @@
-import type { FormEventHandler } from 'react';
+import type { FormEventHandler, KeyboardEventHandler } from 'react';
 import { memo, useRef, useState, useMemo, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import invariant from 'tiny-invariant';
 import { motion } from 'motion/react';
 import { FaCheck, FaClipboard, FaClipboardList, FaEdit, FaInfo, FaPlus, FaTrash, FaUndo } from 'react-icons/fa';
-import { IconButton, Tooltip, Button } from '@radix-ui/themes';
+import { IconButton, Tooltip, Button, TextArea } from '@radix-ui/themes';
 
 import type { SegmentTags } from '../types';
 import { segmentTagsSchema } from '../types';
@@ -24,6 +24,7 @@ export type TagInfo = Record<string, {
   description?: string,
   url?: string,
   suggestions?: Suggestion[],
+  multiline?: boolean,
   // returns an error message if invalid
   validate?: (value: string) => string | undefined,
 }>;
@@ -37,11 +38,11 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
   onTagReset: (tag: string) => void,
   addTagTitle: string,
   tagInfo?: TagInfo,
-  keySuggestions?: string[],
+  keySuggestions?: readonly string[],
   canDeleteExisting?: boolean,
 }) {
   const { t } = useTranslation();
-  const editRef = useRef<HTMLInputElement>(null);
+  const editRef = useRef<HTMLInputElement & HTMLTextAreaElement>(null);
   const addRef = useRef<HTMLInputElement>(null);
 
   const [editingTagVal, setEditingTagVal] = useState<string>();
@@ -96,6 +97,18 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
       setEditingTagVal(tag && String(effectiveTags[tag]));
     }
   }, [editingTag, editingTagVal, existingTags, effectiveTags, newTagKey, onResetClick, saveTag, setEditingTag]);
+
+  // Discard the unsaved edit (unlike reset, which also removes the custom value)
+  const onEditKeyDown = useCallback<KeyboardEventHandler>((e) => {
+    if (e.key === 'Escape') {
+      e.stopPropagation();
+      setEditingTag(undefined);
+      setNewTagKey(undefined);
+    } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { // for multiline
+      e.preventDefault();
+      onEditClick();
+    }
+  }, [onEditClick, setEditingTag]);
 
   const onDeleteExistingClick = useCallback((tag: string) => {
     onTagsChange({ [tag]: '' }); // empty string means delete metadata in ffmpeg
@@ -177,7 +190,11 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
                 <td style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '.5em' }}>
                   {editingThis ? (
                     <form style={{ marginRight: '.5em', display: 'inline' }} onSubmit={onSubmit}>
-                      <SuggestionTextField ref={editRef} placeholder={t('Enter value')} value={editingTagVal ?? ''} onValueChange={setEditingTagVal} suggestions={tagInfo?.[tag]?.suggestions ?? []} />
+                      {tagInfo?.[tag]?.multiline || editingTagVal?.includes('\n') ? (
+                        <TextArea ref={editRef} placeholder={t('Enter value')} value={editingTagVal ?? ''} onChange={(e) => setEditingTagVal(e.target.value)} onKeyDown={onEditKeyDown} resize="vertical" style={{ width: '20em' }} />
+                      ) : (
+                        <SuggestionTextField ref={editRef} placeholder={t('Enter value')} value={editingTagVal ?? ''} onValueChange={setEditingTagVal} onKeyDown={onEditKeyDown} suggestions={tagInfo?.[tag]?.suggestions ?? []} />
+                      )}
                     </form>
                   ) : (
                     renderValue({ isDeletedExisting, value, thisTagCustom })

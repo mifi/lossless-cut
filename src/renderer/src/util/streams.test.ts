@@ -1,6 +1,6 @@
 import { test, expect } from 'vitest';
 
-import { getEffectiveAvoidNegativeTs, getKeyframeCutSeekCompensation, getMapStreamsArgs, getStreamIdsToCopy, isCopyingOnlyAudioStreams, isValidCodecTag } from './streams';
+import { getEffectiveAvoidNegativeTs, getKeyframeCutSeekCompensation, getMapStreamsArgs, getStreamIdsToCopy, isCopyingOnlyAudioStreams } from './streams';
 import type { FFprobeStreamDisposition } from '../../../common/ffprobe';
 import type { LiteFFprobeStream } from '../types';
 
@@ -231,11 +231,4 @@ test('getKeyframeCutSeekCompensation', () => {
   expect(getKeyframeCutSeekCompensation({ formatName: undefined, streams: bFrames, cutFrom: 6 })).toBe(0);
   // not cutting start
   expect(getKeyframeCutSeekCompensation({ formatName: 'matroska,webm', streams: bFrames, cutFrom: 0 })).toBe(0);
-});
-
-test('isValidCodecTag', () => {
-  expect(isValidCodecTag('hvc1')).toBe(true);
-  expect(isValidCodecTag('0x31637668')).toBe(true);
-  expect(isValidCodecTag('hvc1 ')).toBe(false);
-  expect(isValidCodecTag('hvc')).toBe(false);
 });

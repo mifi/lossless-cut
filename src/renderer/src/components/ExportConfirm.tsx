@@ -132,6 +132,7 @@ function ExportConfirm({
   currentSegIndexSafe,
   segmentsOrInverse,
   mainCopiedThumbnailStreams,
+  hvc1NeededStreams,
   needSmartCut,
   isEncoding,
   encBitrate,
@@ -161,6 +162,7 @@ function ExportConfirm({
   currentSegIndexSafe: number,
   segmentsOrInverse: UseSegments['segmentsOrInverse'],
   mainCopiedThumbnailStreams: FFprobeStream[],
+  hvc1NeededStreams: FFprobeStream[],
   needSmartCut: boolean,
   isEncoding: boolean,
   encBitrate: number | undefined,
@@ -233,6 +235,10 @@ function ExportConfirm({
       generic.push({ text: t('Exporting whole file without cutting, because there are no segments to export.') });
     }
 
+    if (hvc1NeededStreams.length > 0) {
+      generic.push({ warning: true, text: t('Track {{trackNumbers}} is HEVC without the "{{tag}}" codec tag, so it may not play on Apple devices (QuickTime, Safari, iOS). You can set the tag in the track editor.', { trackNumbers: hvc1NeededStreams.map((s) => s.index + 1).join(', '), tag: 'hvc1' }) });
+    }
+
     if (areWeCutting) {
       // https://github.com/mifi/lossless-cut/issues/1809
       if (outFormat === 'flac') {
@@ -251,7 +257,7 @@ function ExportConfirm({
       specific,
       totalNum: generic.filter((n) => n.warning).length + Object.values(specific).filter((n) => n != null && n.warning).length,
     };
-  }, [effectiveExportMode, areWeCuttingProblematicStreams, mainCopiedThumbnailStreams, isMov, isIpod, movFastStart, t, preserveMovData, areWeCutting, needSmartCut, isEncoding, keyframeCut, enableOverwriteOutput, simpleMode, willMerge, avoidNegativeTs, outFormat, outputPlaybackRate, keyframesEnabled, haveSegmentWithProblematicKeyframe]);
+  }, [effectiveExportMode, areWeCuttingProblematicStreams, mainCopiedThumbnailStreams, isMov, isIpod, movFastStart, t, preserveMovData, areWeCutting, needSmartCut, isEncoding, keyframeCut, enableOverwriteOutput, simpleMode, willMerge, avoidNegativeTs, outFormat, outputPlaybackRate, keyframesEnabled, haveSegmentWithProblematicKeyframe, hvc1NeededStreams]);
 
   const exportModeDescription = useMemo(() => ({
     segments_to_chapters: t('Don\'t cut the file, but instead export an unmodified original which has chapters generated from segments'),
