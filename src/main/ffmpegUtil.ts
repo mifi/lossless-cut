@@ -17,7 +17,7 @@ function toInterval(start: number, end: number) {
   return { start, end };
 }
 
-// The log prefix is `[blackdetect @ 0x...]` before ffmpeg 8.1, and `[Parsed_blackdetect_0 @ 0x...]` since
+// The log prefix is `[blackdetect @ 0x...]` before ffmpeg 8.1, and `[Parsed_blackdetect_0 @ 0x...]` since 8.1
 const filterLogPrefix = (name: string) => `^\\[(?:Parsed_)?${name}(?:_\\d+)?\\s*@\\s*0x[0-9a-f]+\\]`;
 const blackDetectRegex = new RegExp(`${filterLogPrefix('blackdetect')} black_start:([\\d.]+) black_end:([\\d.]+) black_duration:[\\d.]+`);
 const silenceDetectRegex = new RegExp(`${filterLogPrefix('silencedetect')} silence_end: ([\\d.]+)[|\\s]+silence_duration: ([\\d.]+)`);
@@ -32,5 +32,6 @@ export function parseSilenceDetectLine(line: string) {
   const match = line.match(silenceDetectRegex);
   if (!match) return undefined;
   const end = parseFloat(match[1]!);
-  return toInterval(end - parseFloat(match[2]!), end);
+  // start can be slightly negative if the audio timestamps start below 0
+  return toInterval(Math.max(0, end - parseFloat(match[2]!)), end);
 }

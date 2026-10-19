@@ -45,6 +45,9 @@ describe('parseSilenceDetectLine', () => {
   test('ffmpeg >= 8.1', () => {
     expect(parseSilenceDetectLine('[Parsed_silencedetect_0 @ 0x5581e0c2e540] silence_end: 10 | silence_duration: 2.5')).toEqual({ start: 7.5, end: 10 });
   });
+  test('slightly negative start is clamped to 0', () => {
+    expect(parseSilenceDetectLine('[Parsed_silencedetect_1 @ 0x5581e0c2e540] silence_end: 1.522268 | silence_duration: 1.522426')).toEqual({ start: 0, end: 1.522268 });
+  });
   test('silence_start line is ignored', () => {
     expect(parseSilenceDetectLine('[Parsed_silencedetect_0 @ 0x5581e0c2e540] silence_start: 7.5')).toBeUndefined();
   });
