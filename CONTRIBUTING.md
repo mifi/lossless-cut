@@ -84,13 +84,13 @@ Windows store version is built as a Desktop Bridge app (with `runFullTrust` capa
 
 ## Releasing
 
-Before releasing, consider [Maintainence chores](#maintainence-chores) first.
+Before releasing, consider [Maintenance chores](#maintenance-chores) first.
 
 ### Prepare and build new version
 
 - `git checkout master`
 - `git merge stores` (in case there's an old unmerged stores hotfix)
-- **Manually prepare release notes** from commit history (use `node script/getCommits.ts` to assist)
+- **Prepare release notes**: `yarn release-notes` lists the `Changelog:` lines from commits since the last tag (see [AGENTS.md](./AGENTS.md)). Older commits don't have them, so also go through `node script/getCommits.ts`.
 - Create a new file `versions/x.y.z.md` and write the most important highlights from the release notes, but **remove github issue #references**
 - `node script/generateVersions.ts && git add versions/*.md src/renderer/src/versions.json && git commit -m 'Update change log'`
 - *If Store-only hotfix release*
@@ -158,7 +158,7 @@ Links:
 - https://bignerdranch.com/blog/requiring-a-minimum-version-of-os-x-for-your-application/
 - [#1386](https://github.com/mifi/lossless-cut/issues/1386)
 
-## Maintainence chores
+## Maintenance chores
 
 ### Upgrade FFmpeg
 
