@@ -22,12 +22,22 @@ export const getEffectiveMetadata = (existing: Record<string, string> | undefine
   Object.fromEntries(Object.entries({ ...existing, ...custom }).filter(([, value]) => value !== ''))
 );
 
-// Keys that describe the source's own data (mostly written by the muxer/encoder), so they shouldn't be copied to another track/file.
-// handler_name is excluded too, because it's usually a default like "SoundHandler" (and is used to detect e.g. GPS tracks)
-const nonCopyableMetadataKeyRegex = /^(encoder|major_brand|minor_version|compatible_brands|handler_name|vendor_id|timecode|iTunSMPB|iTunNORM|(DURATION|NUMBER_OF_FRAMES|NUMBER_OF_BYTES|BPS|ENCODER|ENCODER_SETTINGS|_STATISTICS_[A-Z_]+)(-\w+)?)$/i;
+// Keys written by the muxer/encoder, describing the file/track's own data
+const muxerWrittenMetadataKeys = ['encoder', 'major_brand', 'minor_version', 'compatible_brands', 'vendor_id', 'timecode', 'iTunSMPB', 'iTunNORM'] as const;
+// Matroska track statistics, optionally with a language suffix (e.g. BPS-eng), plus any _STATISTICS_* key
+const matroskaStatisticsKeys = ['DURATION', 'NUMBER_OF_FRAMES', 'NUMBER_OF_BYTES', 'BPS', 'ENCODER', 'ENCODER_SETTINGS'] as const;
 
+// handler_name is usually a default like "SoundHandler" (and is used to detect e.g. GPS tracks), so don't copy it either
+const nonCopyableMetadataKeys = new Set<string>([...muxerWrittenMetadataKeys, 'handler_name', ...matroskaStatisticsKeys].map((key) => key.toLowerCase()));
+
+const isCopyableMetadataKey = (key: string) => {
+  const [baseKey = key] = key.toLowerCase().split('-');
+  return !nonCopyableMetadataKeys.has(baseKey) && !baseKey.startsWith('_statistics_');
+};
+
+// The source's metadata without keys that describe its own data, so it can be copied to another track/file
 export const getCopyableMetadata = (metadata: Record<string, string>) => (
-  Object.fromEntries(Object.entries(metadata).filter(([key]) => !nonCopyableMetadataKeyRegex.test(key)))
+  Object.fromEntries(Object.entries(metadata).filter(([key]) => isCopyableMetadataKey(key)))
 );
 
 // Common codec tags (FourCC) for use with `-tag` when outputting MP4/MOV
