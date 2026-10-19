@@ -483,8 +483,8 @@ function Settings({
         {showAdvancedSettings && (
           <Row>
             <KeyCell>
-              {t('Video preview size')}
-              <div style={detailsStyle}>{t('Not applied in FFmpeg-assisted playback')}</div>
+              {t('Video preview scaling')}
+              <div style={detailsStyle}>{t('Not applied when FFmpeg renders the preview (FFmpeg-assisted playback or rotation preview)')}</div>
             </KeyCell>
             <td>
               <Select value={videoFit} onChange={(e) => setVideoFit(e.target.value as Config['videoFit'])}>

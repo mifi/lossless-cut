@@ -202,8 +202,9 @@ function App() {
   const { showGenericDialog, genericDialog, closeGenericDialog, confirmDialog, openExportFinishedDialog, openCutFinishedDialog, openConcatFinishedDialog, openCleanupFilesDialog, openShiftSegmentsDialog, openDecimateDialog } = useDialog();
 
   // Note that each action may be multiple key bindings and this will only be the first binding for each action
-  const mainVideoStyle = useMemo(() => ({ ...videoStyle, objectFit: videoFit }), [videoFit]);
   const keyBindingByAction = useMemo(() => Object.fromEntries(keyBindings.map((binding) => [binding.action, binding])), [keyBindings]);
+
+  const mainVideoStyle = useMemo<CSSProperties>(() => ({ ...videoStyle, objectFit: videoFit }), [videoFit]);
 
   const { working, setWorking, workingRef, abortWorking } = useLoading();
   const { videoRef, videoContainerRef, playbackRate, setPlaybackRate, outputPlaybackRate, setOutputPlaybackRate, commandedTime, seekAbs, playingRef, getRelevantTime, setPlaying, onSeeked, relevantTime, onStartPlaying, setCommandedTime, setOutputPlaybackRateState, commandedTimeRef, onStopPlaying, onVideoAbort, playerTime, setPlayerTime, playbackMode, setPlaybackMode, playbackModeRef, playing, play, pause, seekRel } = useVideo({ filePath });
