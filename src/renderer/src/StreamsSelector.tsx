@@ -334,7 +334,7 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
                         <KeyValue
                           name={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'hevc_mp4toannexb' })}
                           // eslint-disable-next-line no-param-reassign
-                          value={<Switch checked={!!streamParams?.bsfH264Mp4toannexb} onCheckedChange={(checked) => updateCurrentStreamParams((params) => { params.bsfHevcMp4toannexb = checked === true; })} />}
+                          value={<Switch checked={!!streamParams?.bsfHevcMp4toannexb} onCheckedChange={(checked) => updateCurrentStreamParams((params) => { params.bsfHevcMp4toannexb = checked === true; })} />}
                         />
 
                         <KeyValue
