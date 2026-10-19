@@ -6,7 +6,7 @@ import i18n from 'i18next';
 
 import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, getHtml5ifiedPath, unlinkWithRetry, getFrameDuration, isMac, html5ifiedPrefix, html5dummySuffix, assertFileExists } from '../util';
 import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, getDuration, createChaptersFromSegments, readFileFfprobeMeta, getExperimentalArgs, getVideoTimescaleArgs, logStdoutStderr, runFfmpegConcat, RefuseOverwriteError, runFfmpeg } from '../ffmpeg';
-import { getEffectiveAvoidNegativeTs, getKeyframeCutSeekCompensation, getMapStreamsArgs, getStreamIdsToCopy, isCopyingOnlyAudioStreams, isCropActive, isAspectRatioActive } from '../util/streams';
+import { flacEncodeArgs, getEffectiveAvoidNegativeTs, getKeyframeCutSeekCompensation, getMapStreamsArgs, getStreamIdsToCopy, isCopyingOnlyAudioStreams, isCropActive, isAspectRatioActive } from '../util/streams';
 import { needsSmartCut, getCodecParams } from '../smartcut';
 import { getGuaranteedSegments, isDurationValid } from '../segments';
 import type { FFprobeStream } from '../../../common/ffprobe';
@@ -788,7 +788,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       // This is just a fast way of generating an empty dummy file
       '-f', 'lavfi', '-i', 'anullsrc=channel_layout=stereo:sample_rate=44100',
       '-t', String(duration),
-      '-acodec', 'flac',
+      ...flacEncodeArgs,
       '-y', outPath,
     ];
 
@@ -884,7 +884,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
         if (isMac) {
           audioArgs = ['-acodec', 'aac_at', '-b:a', '192k'];
         } else {
-          audioArgs = ['-acodec', 'flac'];
+          audioArgs = [...flacEncodeArgs];
         }
         break;
       }
@@ -893,7 +893,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
         if (isMac) {
           audioArgs = ['-acodec', 'aac_at', '-ar', '44100', '-ac', '2', '-b:a', '96k'];
         } else {
-          audioArgs = ['-acodec', 'flac', '-ar', '11025', '-ac', '2'];
+          audioArgs = [...flacEncodeArgs, '-ar', '11025', '-ac', '2'];
         }
         break;
       }
