@@ -8,7 +8,7 @@ import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { execa } from 'execa';
 
-// Bump these when upgrading FFmpeg
+// Bump these when upgrading FFmpeg. This is also the minimum supported FFmpeg version (see `customFfPath` in src/main/ffmpeg.ts)
 const macRelease = '8.1.3-1'; // https://github.com/mifi/ffmpeg-build-script/releases
 const windowsLinuxRelease = '8.1-1'; // https://github.com/mifi/ffmpeg-builds/releases (mirrors BtbN's n<branch>-latest builds)
 
