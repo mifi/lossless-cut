@@ -166,7 +166,7 @@ Use the newest stable release branch that all platforms can get (BtbN may lag be
 
 1. macOS: make a new [ffmpeg-build-script](https://github.com/mifi/ffmpeg-build-script) release (see its README).
 2. Windows and Linux: make a new [ffmpeg-builds](https://github.com/mifi/ffmpeg-builds) release (see its README).
-3. Update the `download-ffmpeg-*` scripts in [package.json](./package.json).
+3. Update the versions in [script/downloadFfmpeg.ts](./script/downloadFfmpeg.ts).
 4. Read FFmpeg's `Changelog` and `doc/APIchanges` (and the release notes) since the previous version for changes that may affect LosslessCut, e.g. removed or renamed CLI options, changed muxer/demuxer defaults, seeking behaviour (`-ss`, `-avoid_negative_ts`), `ffprobe` JSON output, and codec/format support.
 5. Test a CI build on each platform: cutting (keyframe and normal), merging, smart cut, capture frame, waveform/thumbnails and FFmpeg-assisted playback.
 
