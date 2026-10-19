@@ -107,7 +107,7 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setCutTimeManual(undefined);
     setError(false);
-  }, [setCutTimeManual, currentCutSeg?.start, currentCutSeg?.end]);
+  }, [setCutTimeManual, currentCutSeg?.segId, currentCutSeg?.start, currentCutSeg?.end]);
 
   const isCutTimeManualSet = useCallback(() => cutTimeManual !== undefined, [cutTimeManual]);
 
@@ -116,7 +116,7 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
     return `.1em solid ${darkMode ? segColor.desaturate(0.4).lightness(50).string() : segColor.desaturate(0.2).lightness(60).string()}`;
   }, [currentCutSeg, darkMode, getSegColor]);
 
-  const setTime = useCallback((timeWithOffset: number | undefined) => {
+  const setTime = useCallback((timeWithOffset: number | undefined, seek: boolean) => {
     // Note: If we get an error from setCutTime, remain in the editing state (cutTimeManual)
     // https://github.com/mifi/lossless-cut/issues/988
 
@@ -130,16 +130,16 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
 
     const timeWithoutOffset = Math.max(timeWithOffset - startTimeOffset, 0);
     setCutTime(isStart ? 'start' : 'end', timeWithoutOffset);
-    seekAbs(timeWithoutOffset);
+    if (seek) seekAbs(timeWithoutOffset);
     setCutTimeManual(undefined);
     setError(false);
   }, [isStart, seekAbs, setCutTime, startTimeOffset]);
 
   const isEmptyEndTime = useCallback((v: string | undefined) => !isStart && v?.trim() === '', [isStart]);
 
-  const parseAndSetCutTime = useCallback((text: string) => {
+  const parseAndSetCutTime = useCallback((text: string, seek = true) => {
     if (isEmptyEndTime(text)) {
-      setTime(undefined); // clear time
+      setTime(undefined, seek); // clear time
       return true;
     }
 
@@ -147,7 +147,7 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
     const timeWithOffset = parseTimecode(text);
     if (timeWithOffset === undefined || !Number.isFinite(timeWithOffset)) return false;
 
-    setTime(timeWithOffset);
+    setTime(timeWithOffset, seek);
     return true;
   }, [isEmptyEndTime, parseTimecode, setTime]);
 
@@ -182,32 +182,37 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
   }, [formatTimecode, isEmptyEndTime, parseAndSetCutTime, parseTimecode, timecodeFormat]);
 
   const handleInputKeyDown = useCallback((e: KeyboardEvent<HTMLInputElement>) => {
-    // escape (which blurs, see useKeyboard) cancels the edit instead of committing it
-    if (e.key === 'Escape' && !e.nativeEvent.isComposing) skipCommitOnBlurRef.current = true;
+    // escape cancels the edit instead of committing it on blur
+    if (e.key === 'Escape' && !e.nativeEvent.isComposing) {
+      skipCommitOnBlurRef.current = true;
+      e.currentTarget.blur();
+    }
   }, []);
 
   const handleInputBlur = useCallback(() => {
     const skipCommit = skipCommitOnBlurRef.current;
     skipCommitOnBlurRef.current = false;
-    // commit valid input when focus is lost (e.g. clicking elsewhere), so that it's not silently lost
+    // keep the text if the whole window lost focus (e.g. switching app to copy a timecode)
+    if (!skipCommit && !document.hasFocus()) return;
+
+    // commit valid input when focus is lost (e.g. clicking elsewhere), so that it's not silently lost. Don't seek, because that would override where the user clicked
     if (!skipCommit && cutTimeManual != null) {
       try {
-        parseAndSetCutTime(cutTimeManual);
+        parseAndSetCutTime(cutTimeManual, false);
       } catch (err) {
         console.warn('Cannot set cut time on blur', err);
+        setError(true); // keep the text, so the user can see and fix it
+        return;
       }
     }
     setCutTimeManual(undefined);
     setError(false);
   }, [cutTimeManual, parseAndSetCutTime]);
 
-  const handleCutTimePaste = useCallback((e: ClipboardEvent<HTMLInputElement>) => {
-    e.preventDefault();
-
+  const pasteCutTime = useCallback((text: string) => {
     try {
-      const clipboardData = e.clipboardData.getData('Text');
-      setCutTimeManual(clipboardData);
-      parseAndSetCutTime(clipboardData);
+      setCutTimeManual(text);
+      parseAndSetCutTime(text);
       setError(false);
     } catch (err) {
       console.warn(err);
@@ -215,19 +220,15 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
     }
   }, [parseAndSetCutTime]);
 
+  const handleCutTimePaste = useCallback((e: ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    pasteCutTime(e.clipboardData.getData('Text'));
+  }, [pasteCutTime]);
+
   const handleContextMenu = useCallback(async () => {
     const text = await mainApi.readClipboardText();
-    if (text) {
-      try {
-        setCutTimeManual(text);
-        parseAndSetCutTime(text);
-        setError(false);
-      } catch (err) {
-        console.warn(err);
-        setError(true);
-      }
-    }
-  }, [parseAndSetCutTime]);
+    if (text) pasteCutTime(text);
+  }, [pasteCutTime]);
 
   const style = useMemo<CSSProperties>(() => ({
     border,
