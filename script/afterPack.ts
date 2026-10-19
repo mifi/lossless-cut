@@ -3,8 +3,7 @@
 import assert from 'node:assert';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import type { AfterPackContext } from 'electron-builder';
-import { Arch } from 'electron-builder';
+import { Arch, type AfterPackContext } from 'electron-builder';
 
 export default async function afterPack({ appOutDir, arch, electronPlatformName, packager }: AfterPackContext) {
   // We have no ffmpeg builds for Linux ARM (see script/downloadFfmpeg.ts)
