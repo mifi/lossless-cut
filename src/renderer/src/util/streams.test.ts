@@ -64,6 +64,22 @@ test('getMapStreamsArgs', () => {
   ]);
 });
 
+test('getMapStreamsArgs, flac re-encode sets frame size', () => {
+  const flacStreams: LiteFFprobeStream[] = [
+    { index: 0, codec_type: 'video', codec_tag: '0x0000', codec_name: 'mjpeg', time_base: '', disposition: makeDisposition({ attached_pic: 1 }) },
+    { index: 1, codec_type: 'audio', codec_tag: '0x0000', codec_name: 'flac', time_base: '', disposition: makeDisposition() },
+  ];
+  expect(getMapStreamsArgs({
+    allFilesMeta: { [path]: { streams: flacStreams } },
+    copyFileStreams: [{ path, streamIds: [0, 1] }],
+    outFormat: 'flac',
+    needFlac: true,
+  })).toEqual([
+    '-map', '0:0', '-c:0', 'copy',
+    '-map', '0:1', '-c:1', 'flac', '-frame_size:1', '4608',
+  ]);
+});
+
 test('getMapStreamsArgs, subtitles to matroska', () => {
   const outFormat = 'matroska';
 
