@@ -183,6 +183,8 @@ export default function useUserSettingsRoot() {
   useEffect(() => safeSetConfig({ allowMultipleInstances }), [allowMultipleInstances]);
   const [theme, setTheme] = useState(safeGetConfigInitial('theme'));
   useEffect(() => safeSetConfig({ theme }), [theme]);
+  const [videoFit, setVideoFit] = useState(safeGetConfigInitial('videoFit'));
+  useEffect(() => safeSetConfig({ videoFit }), [videoFit]);
   const [preferStrongColors, setPreferStrongColors] = useState(safeGetConfigInitial('preferStrongColors'));
   useEffect(() => safeSetConfig({ preferStrongColors }), [preferStrongColors]);
   const [outputFileNameMinZeroPadding, setOutputFileNameMinZeroPadding] = useState(safeGetConfigInitial('outputFileNameMinZeroPadding'));
@@ -317,6 +319,7 @@ export default function useUserSettingsRoot() {
     cleanupChoices,
     allowMultipleInstances,
     theme,
+    videoFit,
     preferStrongColors,
     outputFileNameMinZeroPadding,
     cutFromAdjustmentFrames,
@@ -400,6 +403,7 @@ export default function useUserSettingsRoot() {
     setAllowMultipleInstances,
     darkMode,
     setTheme,
+    setVideoFit,
     toggleDarkMode,
     setPreferStrongColors,
     setOutputFileNameMinZeroPadding,

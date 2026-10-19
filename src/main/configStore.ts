@@ -161,6 +161,7 @@ const defaults: Config = {
   },
   allowMultipleInstances: false,
   theme: 'dark',
+  videoFit: 'contain',
   preferStrongColors: false,
   outputFileNameMinZeroPadding: 1,
   cutFromAdjustmentFrames: 0,
