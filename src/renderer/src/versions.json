@@ -29,5 +29,9 @@
   {
     "version": "3.70.0",
     "highlightsMd": "- Upgrade bundled FFmpeg to 8.1 (fixes security vulnerability CVE-2026-8461)\n- New \"Theme\" setting: Follow the OS dark/light theme, or force dark or light\n- Metadata editor: Copy metadata from another track or file, apply a value to all tracks of the same type, and suggestions for common codec tags, language codes and keys\n- Edited tracks and files are now highlighted, and changes can be reset per track, per file or all at once\n- New setting \"Video preview scaling\", e.g. to not upscale small videos\n- Change FPS dialog now accepts fractions like `30000/1001`\n- Press Escape to leave an input field (or Enter to commit a cut time) so that keyboard shortcuts work again\n- Compensate for FFmpeg seeking too early in MKV/WebM files with B-frames, which made keyframe cuts start from the previous keyframe\n- Fix wrong duration when cutting files with cover art, and audio-only cuts starting off\n- (Linux) AppImage no longer requires libfuse2, and LosslessCut is now available as \"Open with\" app\n- Changed: \"Create segments from keyframes\" moved to the Segments menu\n- Changed: HTTP API now rejects requests coming from web browsers\n- Many other improvements and fixes\n"
+  },
+  {
+    "version": "3.70.1",
+    "highlightsMd": "- (Windows) Fix FFmpeg missing from the x64 build\n"
   }
 ]
