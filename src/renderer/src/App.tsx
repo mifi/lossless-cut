@@ -2830,6 +2830,7 @@ function App() {
                           toggleCopyAllStreamsForPath={toggleCopyAllStreamsForPath}
                           onStreamSourceFileDrop={handleStreamSourceFileDrop}
                           outFormat={fileFormat}
+                          confirmDialog={confirmDialog}
                         />
                       )}
 
