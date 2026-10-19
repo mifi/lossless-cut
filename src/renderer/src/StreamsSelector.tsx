@@ -16,7 +16,7 @@ import Select from './components/Select';
 import type { FileStream } from './ffmpeg';
 import { getStreamFps } from './ffmpeg';
 import { getActiveDisposition, attachedPicDisposition, isGpsStream, isMov, hasFileEdits, hasStreamEdits } from './util/streams';
-import { fileMetadataKeys, getCodecTagSuggestions, getLanguageSuggestions, getNonNativeMovMetadataKeys, isValidCodecTag, isValidCreationTime, isValidLanguageCode, needsHvc1Tag, streamMetadataKeys } from './util/metadata';
+import { fileMetadataKeys, getCodecTagSuggestions, getCopyableMetadata, getEffectiveMetadata, getLanguageSuggestions, getNonNativeMovMetadataKeys, isValidCodecTag, isValidCreationTime, isValidLanguageCode, needsHvc1Tag, streamMetadataKeys } from './util/metadata';
 import useUserSettings from './hooks/useUserSettings';
 import TagEditor, { cancelTagEditOnEscape, type TagInfo } from './components/TagEditor';
 import SuggestionTextField from './components/SuggestionTextField';
@@ -29,7 +29,14 @@ import Json5Dialog from './components/Json5Dialog';
 import GpsMap from './components/GpsMap';
 import Switch from './components/Switch';
 import type { ConfirmDialog } from './components/GenericDialog';
+import { basename } from './util/path';
 
+
+// for "Copy from": the source's metadata including the user's changes, without muxer-written keys
+function getCopyFromSource({ key, getLabel, existing, custom }: { key: string, getLabel: (metadata: Record<string, string>) => string, existing: Record<string, string> | undefined, custom: Record<string, string> | undefined }) {
+  const metadata = getCopyableMetadata(getEffectiveMetadata(existing, custom));
+  return Object.keys(metadata).length > 0 ? { key, label: getLabel(metadata), metadata } : undefined;
+}
 
 type ResetParams = (path: string, streamId?: number) => void;
 
@@ -284,6 +291,10 @@ const EditFileDialog = memo(({ editingFile, allFilesMeta, paramsByFile, setParam
     });
   }, [updateFileParams]);
 
+  const copyFromSources = useMemo(() => Object.entries(allFilesMeta).flatMap(([path, { format: otherFormat }]) => (
+    (path !== editingFile && getCopyFromSource({ key: path, getLabel: () => basename(path), existing: otherFormat.tags, custom: paramsByFile.get(path)?.metadata })) || []
+  )), [allFilesMeta, editingFile, paramsByFile]);
+
   const commonTagInfo = useCommonTagInfo();
   const tagInfo = useMemo<TagInfo>(() => ({
     ...commonTagInfo,
@@ -303,7 +314,7 @@ const EditFileDialog = memo(({ editingFile, allFilesMeta, paramsByFile, setParam
         {enableMetadata && (
           <Tabs.Content value="metadata">
             <MovMetadataNotice outFormat={outFormat} metadata={fileParams?.metadata} isStream={false} />
-            <TagEditor existingTags={existingMetadata} customTags={fileParams?.metadata} editingTag={editingKey} setEditingTag={setEditingKey} onTagsChange={onMetadataChange} onTagReset={onMetadataReset} addTagTitle={t('Add metadata')} tagInfo={tagInfo} keySuggestions={fileMetadataKeys} canDeleteExisting />
+            <TagEditor existingTags={existingMetadata} customTags={fileParams?.metadata} editingTag={editingKey} setEditingTag={setEditingKey} onTagsChange={onMetadataChange} onTagReset={onMetadataReset} addTagTitle={t('Add metadata')} tagInfo={tagInfo} keySuggestions={fileMetadataKeys} copyFromSources={copyFromSources} canDeleteExisting />
           </Tabs.Content>
         )}
 
@@ -369,6 +380,20 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
     });
   }, [editingFile, editingStreamId, updateStreamParams]);
 
+  const copyFromSources = useMemo(() => {
+    const multipleFiles = Object.keys(allFilesMeta).length > 1;
+    return Object.entries(allFilesMeta).flatMap(([path, { streams: fileStreams }]) => fileStreams.flatMap((s) => {
+      // attachments only have metadata describing the attached file itself
+      if ((path === editingFile && s.index === editingStreamId) || s.codec_type === 'attachment') return [];
+      return getCopyFromSource({
+        key: `${path}:${s.index}`,
+        getLabel: ({ title }) => `${multipleFiles ? `${basename(path)}: ` : ''}#${s.index + 1} ${s.codec_type}${title ? ` – ${title}` : ''}`,
+        existing: s.tags,
+        custom: getStreamParams({ paramsByFile, filePath: path, streamId: s.index })?.metadata,
+      }) ?? [];
+    }));
+  }, [allFilesMeta, editingFile, editingStreamId, paramsByFile]);
+
   const commonTagInfo = useCommonTagInfo();
   const tagInfo = useMemo<TagInfo>(() => ({
     ...commonTagInfo,
@@ -407,7 +432,7 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
             <div style={{ marginTop: '.5em' }}>
               <Tabs.Content value="metadata">
                 <MovMetadataNotice outFormat={outFormat} metadata={streamParams?.metadata} isStream />
-                <TagEditor existingTags={existingMetadata} customTags={streamParams?.metadata} editingTag={editingKey} setEditingTag={setEditingKey} onTagsChange={onMetadataChange} onTagReset={onMetadataReset} addTagTitle={t('Add metadata')} tagInfo={tagInfo} keySuggestions={streamMetadataKeys} canDeleteExisting onApplyToAll={otherStreamsOfSameType.length > 0 ? onApplyToAll : undefined} applyToAllTitle={t('Apply to all other tracks of this type')} />
+                <TagEditor existingTags={existingMetadata} customTags={streamParams?.metadata} editingTag={editingKey} setEditingTag={setEditingKey} onTagsChange={onMetadataChange} onTagReset={onMetadataReset} addTagTitle={t('Add metadata')} tagInfo={tagInfo} keySuggestions={streamMetadataKeys} canDeleteExisting onApplyToAll={otherStreamsOfSameType.length > 0 ? onApplyToAll : undefined} applyToAllTitle={t('Apply to all other tracks of this type')} copyFromSources={copyFromSources} />
               </Tabs.Content>
 
               {editingStream != null && (
@@ -687,7 +712,7 @@ function FileHeading({ path, format, onEditClick, edited, toggleCopyAllStreams, 
 
   return (
     <div style={{ display: 'flex', marginBottom: '.2em', borderBottom: '1px solid var(--gray-7)' }}>
-      <div title={path} style={{ wordBreak: 'break-all', marginRight: '1em', fontWeight: 'bold' }}>{path.replace(/.*\/([^/]+)$/, '$1')}</div>
+      <div title={path} style={{ wordBreak: 'break-all', marginRight: '1em', fontWeight: 'bold' }}>{basename(path)}</div>
 
       <div style={{ flexGrow: 1 }} />
 

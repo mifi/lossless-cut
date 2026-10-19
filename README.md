@@ -43,6 +43,9 @@ The main feature is lossless trimming and cutting of video and audio files, whic
   - Replace or re-encode only some tracks
   - Extract all tracks from a file (extract video, audio, subtitle, attachments and other tracks from one file into separate files)
 - View technical data about all tracks. Edit file metadata, per-track metadata and per-track disposition
+  - Suggestions for common metadata keys and languages
+  - Copy metadata from another track or file, or apply a value to all tracks of the same type
+  - See which tracks have been changed, and reset changes
 - Select video/audio tracks for playback. Playback multiple audio tracks simultaneously.
 - Fast multi-file workflow (note: no mass/batch export yet)
 - Keyboard shortcut workflow
@@ -82,6 +85,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Add music to a video (or replace existing audio track).
 - Combine audio and video tracks from separate recordings.
 - Include an external subtitle into a video
+- Copy track titles and languages from one file to another when combining tracks.
 - Quickly change a H264/H265 MKV video to MOV or MP4 for playback on iPhone.
 - Import a list of cut times from other tool as a EDL (edit decision list, CSV) and run these cuts with LosslessCut.
 - Export a list of cut times as a CSV EDL and process these in another tool.

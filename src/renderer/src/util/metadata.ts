@@ -17,6 +17,34 @@ export const getNonNativeMovMetadataKeys = ({ metadata, outFormat, isStream }: {
   return Object.entries(metadata ?? {}).filter(([key, value]) => value !== '' && !nativeKeys.has(key)).map(([key]) => key);
 };
 
+// Existing metadata with the user's changes applied ('' means deleted)
+export const getEffectiveMetadata = (existing: Record<string, string> | undefined, custom: Record<string, string> | undefined) => (
+  Object.fromEntries(Object.entries({ ...existing, ...custom }).filter(([, value]) => value !== ''))
+);
+
+// Keys written by the muxer/encoder (or describing an attachment), describing the file/track's own data.
+// creation_time is included, because copying it would give the output another recording's date
+const muxerWrittenMetadataKeys = ['encoder', 'major_brand', 'minor_version', 'compatible_brands', 'vendor_id', 'timecode', 'iTunSMPB', 'iTunNORM', 'creation_time', 'filename', 'mimetype'] as const;
+// Matroska track statistics, optionally with a language suffix (e.g. BPS-eng), plus any _STATISTICS_* key
+const matroskaStatisticsKeys = ['DURATION', 'NUMBER_OF_FRAMES', 'NUMBER_OF_BYTES', 'BPS', 'ENCODER', 'ENCODER_SETTINGS'] as const;
+
+const nonCopyableMetadataKeys = new Set<string>([...muxerWrittenMetadataKeys, ...matroskaStatisticsKeys].map((key) => key.toLowerCase()));
+
+// handler_name is often the track name in MP4/MOV, but is usually a muxer default like "SoundHandler",
+// "Core Media Video" or "\u0010DJI.Subtitle" (used to detect GPS tracks), which shouldn't be copied
+const isDefaultHandlerName = (value: string) => /handler|core media|iso media|dji\./i.test(value);
+
+const isCopyableMetadata = (key: string, value: string) => {
+  const baseKey = key.toLowerCase().split('-')[0]!;
+  if (baseKey === 'handler_name') return !isDefaultHandlerName(value);
+  return !nonCopyableMetadataKeys.has(baseKey) && !baseKey.startsWith('_statistics_');
+};
+
+// The source's metadata without keys that describe its own data, so it can be copied to another track/file
+export const getCopyableMetadata = (metadata: Record<string, string>) => (
+  Object.fromEntries(Object.entries(metadata).filter(([key, value]) => isCopyableMetadata(key, value)))
+);
+
 // Common codec tags (FourCC) for use with `-tag` when outputting MP4/MOV
 const codecTagsByCodec: Partial<Record<FFprobeStream['codec_name'], readonly string[]>> = {
   hevc: ['hvc1', 'hev1'],

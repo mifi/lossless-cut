@@ -16,8 +16,8 @@ import type { LossyMode } from '../../../main';
 import { UserFacingError } from '../../errors';
 import mainApi from '../mainApi';
 import { formatFfmpegNumber, getFixChannelLayoutFilter, getHwaccelArgs, hasCustomChannelLayout } from '../../../common/util';
+import { join, resolve, dirname } from '../util/path';
 
-const { join, resolve, dirname } = window.require('node:path');
 const { writeFile, mkdir, access, constants: { W_OK } } = window.require('node:fs/promises');
 
 

@@ -125,10 +125,10 @@ import WhatsNew from './components/WhatsNew';
 import mainApi from './mainApi.js';
 import type { AppEvent } from '../../main/index.js';
 import { appName } from '../../main/common.js';
+import { parse as parsePath, join as pathJoin, basename, dirname } from './util/path';
 
 const { ipcRenderer, webUtils } = window.require('electron');
 const { lstat } = window.require('node:fs/promises');
-const { parse: parsePath, join: pathJoin, basename, dirname } = window.require('node:path');
 const { hasDisabledNetworking, pathToFileURL, lossyMode, isLinux } = window.require('@electron/remote').require('./index.js');
 
 

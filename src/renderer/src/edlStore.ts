@@ -10,10 +10,10 @@ import type { EdlExportType, EdlFileType, EdlImportType, GetFrameCount, LlcProje
 import { llcProjectV1Schema, llcProjectV2Schema } from './types';
 import { mapSaveableSegments } from './segments';
 import isDev from './isDev';
+import { basename } from './util/path';
 
 const { readFile, writeFile } = window.require('node:fs/promises');
 const cueParser = window.require('cue-parser');
-const { basename } = window.require('node:path');
 
 const { dialog } = window.require('@electron/remote');
 
