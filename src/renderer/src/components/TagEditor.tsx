@@ -41,7 +41,8 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
   canDeleteExisting?: boolean,
 }) {
   const { t } = useTranslation();
-  const ref = useRef<HTMLInputElement>(null);
+  const editRef = useRef<HTMLInputElement>(null);
+  const addRef = useRef<HTMLInputElement>(null);
 
   const [editingTagVal, setEditingTagVal] = useState<string>();
   const [newTagKey, setNewTagKey] = useState<string>();
@@ -126,7 +127,7 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
   }, [add]);
 
   useEffect(() => {
-    ref.current?.focus();
+    (editingTag != null ? editRef : addRef).current?.focus();
   }, [editingTag]);
 
   const editingTagError = editingTag != null && editingTagVal ? tagInfo?.[editingTag]?.validate?.(editingTagVal) : undefined;
@@ -176,7 +177,7 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
                 <td style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '.5em' }}>
                   {editingThis ? (
                     <form style={{ marginRight: '.5em', display: 'inline' }} onSubmit={onSubmit}>
-                      <SuggestionTextField ref={ref} placeholder={t('Enter value')} value={editingTagVal ?? ''} onValueChange={setEditingTagVal} suggestions={tagInfo?.[tag]?.suggestions ?? []} />
+                      <SuggestionTextField ref={editRef} placeholder={t('Enter value')} value={editingTagVal ?? ''} onValueChange={setEditingTagVal} suggestions={tagInfo?.[tag]?.suggestions ?? []} />
                     </form>
                   ) : (
                     renderValue({ isDeletedExisting, value, thisTagCustom })
@@ -211,7 +212,7 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
       {editingTagError && <Warning style={{ marginBottom: '1em' }}>{editingTagError}</Warning>}
 
       <form onSubmit={onAddSubmit} style={{ opacity: canAdd ? undefined : 0.5, marginBottom: '1em', display: 'flex', alignItems: 'center' }}>
-        <SuggestionTextField ref={ref} disabled={!canAdd} value={newTagKeyInput} onValueChange={setNewTagKeyInput} suggestions={availableKeySuggestions} placeholder={addTagTitle} style={{ marginRight: '1em' }} />
+        <SuggestionTextField ref={addRef} disabled={!canAdd} value={newTagKeyInput} onValueChange={setNewTagKeyInput} suggestions={availableKeySuggestions} placeholder={addTagTitle} style={{ marginRight: '1em' }} />
         <IconButton size="2" type="submit" disabled={!canAdd} title={addTagTitle} onClick={add}><FaPlus /></IconButton>
       </form>
 

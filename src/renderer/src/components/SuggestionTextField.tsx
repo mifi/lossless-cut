@@ -2,6 +2,7 @@ import type { ComponentProps } from 'react';
 import { useImperativeHandle, useRef } from 'react';
 import { DropdownMenu, IconButton, TextField } from '@radix-ui/themes';
 import { FaChevronDown } from 'react-icons/fa';
+import { useTranslation } from 'react-i18next';
 
 
 export interface Suggestion {
@@ -14,8 +15,9 @@ export default function SuggestionTextField({ ref, suggestions, onValueChange, d
   suggestions: Suggestion[],
   onValueChange: (value: string) => void,
 }) {
+  const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
-  useImperativeHandle(ref, () => inputRef.current!);
+  useImperativeHandle(ref, () => inputRef.current!, []);
 
   return (
     // eslint-disable-next-line react/jsx-props-no-spreading
@@ -24,7 +26,7 @@ export default function SuggestionTextField({ ref, suggestions, onValueChange, d
         <TextField.Slot side="right">
           <DropdownMenu.Root>
             <DropdownMenu.Trigger disabled={disabled}>
-              <IconButton type="button" size="1" variant="ghost" color="gray"><FaChevronDown /></IconButton>
+              <IconButton type="button" size="1" variant="ghost" color="gray" aria-label={t('Suggestions')} title={t('Suggestions')}><FaChevronDown /></IconButton>
             </DropdownMenu.Trigger>
             {/* Focus the input (not the trigger) after selecting, so that Enter submits */}
             <DropdownMenu.Content size="1" style={{ maxHeight: '20em' }} onCloseAutoFocus={(e) => { e.preventDefault(); inputRef.current?.focus(); }}>

@@ -105,13 +105,13 @@ export const isMov = (format: string | undefined) => format != null && ['ismv', 
 
 export const isMatroska = (format: string | undefined) => format != null && ['matroska', 'webm'].includes(format);
 
-// Common codec tags (FourCC) for use with `-tag`. Mostly relevant for MP4/MOV output
+// Common codec tags (FourCC) for use with `-tag` when outputting MP4/MOV
 const codecTagsByCodec: Record<string, string[]> = {
-  hevc: ['hvc1', 'hev1', 'dvh1', 'dvhe'],
+  hevc: ['hvc1', 'hev1'],
   h264: ['avc1', 'avc3'],
   av1: ['av01'],
   vp9: ['vp09'],
-  mpeg4: ['mp4v', 'XVID', 'DIVX'],
+  mpeg4: ['mp4v'],
   aac: ['mp4a'],
   ac3: ['ac-3'],
   eac3: ['ec-3'],
@@ -121,7 +121,8 @@ const codecTagsByCodec: Record<string, string[]> = {
 
 export const getCodecTagSuggestions = (codecName: string | undefined) => (codecName != null && codecTagsByCodec[codecName]) || [];
 
-export const isValidCodecTag = (tag: string) => tag.length === 4;
+// ffmpeg accepts a FourCC or a numeric tag like 0x31637668
+export const isValidCodecTag = (tag: string) => tag.length === 4 || /^0x[\da-f]+$/i.test(tag);
 
 type GetVideoArgsFn = (a: { streamIndex: number, outputIndex: number }) => string[] | undefined;
 

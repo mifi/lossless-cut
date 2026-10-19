@@ -294,10 +294,9 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
     },
   }), [i18n.language, t]);
 
-  const codecTagSuggestions = useMemo(() => getCodecTagSuggestions(editingStream?.codec_name).map((value) => ({ value })), [editingStream?.codec_name]);
-  const effectiveCodecTag = streamParams?.tag ?? editingStream?.codec_tag_string;
+  const codecTagSuggestions = useMemo(() => (isMov(outFormat) ? getCodecTagSuggestions(editingStream?.codec_name).map((value) => ({ value })) : []), [editingStream?.codec_name, outFormat]);
   // https://developer.apple.com/documentation/http-live-streaming/hls-authoring-specification-for-apple-devices
-  const suggestHvc1 = editingStream?.codec_name === 'hevc' && isMov(outFormat) && effectiveCodecTag !== 'hvc1';
+  const suggestHvc1 = editingStream?.codec_name === 'hevc' && isMov(outFormat) && streamParams?.tag == null && editingStream.codec_tag_string !== 'hvc1';
 
   const updateCurrentStreamParams = (setter: (a: StreamParams) => void) => updateStreamParams(editingFile, editingStreamId, setter);
 
