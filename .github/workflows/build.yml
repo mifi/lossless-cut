@@ -55,7 +55,7 @@ jobs:
         if: runner.os == 'macOS' && env.is_tag == 'false'
 
       - run: ffmpeg -version
-        if: runner.os != 'Windows' || runner.arch != 'ARM64'
+        if: (runner.os != 'Windows' || runner.arch != 'ARM64') && env.is_tag == 'false'
 
        # Because of timeout issue https://github.com/yarnpkg/yarn/issues/4890
       - run: yarn install --immutable --network-timeout 1000000
