@@ -6,7 +6,7 @@ import i18n from 'i18next';
 
 import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, getHtml5ifiedPath, unlinkWithRetry, getFrameDuration, isMac, html5ifiedPrefix, html5dummySuffix, assertFileExists } from '../util';
 import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, getDuration, createChaptersFromSegments, readFileFfprobeMeta, getExperimentalArgs, getVideoTimescaleArgs, logStdoutStderr, runFfmpegConcat, RefuseOverwriteError, runFfmpeg } from '../ffmpeg';
-import { getEffectiveAvoidNegativeTs, getKeyframeCutSeekCompensation, getMapStreamsArgs, getStreamIdsToCopy, isCopyingOnlyAudioStreams } from '../util/streams';
+import { getEffectiveAvoidNegativeTs, getKeyframeCutSeekCompensation, getMapStreamsArgs, getStreamIdsToCopy, isCopyingOnlyAudioStreams, isCropActive, isAspectRatioActive } from '../util/streams';
 import { needsSmartCut, getCodecParams } from '../smartcut';
 import { getGuaranteedSegments, isDurationValid } from '../segments';
 import type { FFprobeStream } from '../../../common/ffprobe';
@@ -394,37 +394,33 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
             const getStream = () => getFileStreams()?.find((s) => s.index === streamId);
 
             // Lossless crop via codec bitstream metadata (#643)
-            if (streamParams.crop) {
+            if (isCropActive(streamParams.crop)) {
               const { left, right, top, bottom } = streamParams.crop;
-              if (left > 0 || right > 0 || top > 0 || bottom > 0) {
-                // Look up codec_name from allFilesMeta to determine the correct bitstream filter
-                const streamInfo = getStream();
-                const codecName = streamInfo?.codec_name;
+              // Look up codec_name from allFilesMeta to determine the correct bitstream filter
+              const streamInfo = getStream();
+              const codecName = streamInfo?.codec_name;
 
-                const cropParams = `crop_left=${left}:crop_right=${right}:crop_top=${top}:crop_bottom=${bottom}`;
-                if (codecName === 'h264') {
-                  bitstreamFilters.push(`h264_metadata=${cropParams}`);
-                } else if (codecName === 'hevc') {
-                  bitstreamFilters.push(`hevc_metadata=${cropParams}`);
-                }
+              const cropParams = `crop_left=${left}:crop_right=${right}:crop_top=${top}:crop_bottom=${bottom}`;
+              if (codecName === 'h264') {
+                bitstreamFilters.push(`h264_metadata=${cropParams}`);
+              } else if (codecName === 'hevc') {
+                bitstreamFilters.push(`hevc_metadata=${cropParams}`);
               }
             }
 
             // Lossless aspect ratio (SAR) via codec bitstream metadata (#643)
-            if (streamParams.aspectRatio) {
+            if (isAspectRatioActive(streamParams.aspectRatio)) {
               const { num, den } = streamParams.aspectRatio;
-              if (num > 0 && den > 0) {
-                const streamInfo = getStream();
-                const codecName = streamInfo?.codec_name;
+              const streamInfo = getStream();
+              const codecName = streamInfo?.codec_name;
 
-                if (codecName === 'h264') {
-                  bitstreamFilters.push(`h264_metadata=sample_aspect_ratio=${num}/${den}`);
-                } else if (codecName === 'hevc') {
-                  bitstreamFilters.push(`hevc_metadata=sample_aspect_ratio=${num}/${den}`);
-                } else {
-                  // For non-H264/HEVC codecs, use container-level -aspect flag
-                  ret.push('-aspect', `${num}:${den}`);
-                }
+              if (codecName === 'h264') {
+                bitstreamFilters.push(`h264_metadata=sample_aspect_ratio=${num}/${den}`);
+              } else if (codecName === 'hevc') {
+                bitstreamFilters.push(`hevc_metadata=sample_aspect_ratio=${num}/${den}`);
+              } else {
+                // For non-H264/HEVC codecs, use container-level -aspect flag
+                ret.push('-aspect', `${num}:${den}`);
               }
             }
 

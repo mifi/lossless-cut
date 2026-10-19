@@ -1,7 +1,7 @@
 import invariant from 'tiny-invariant';
 import type { FFprobeStream, FFprobeStreamDisposition } from '../../../common/ffprobe';
 import type { AvoidNegativeTs } from '../../../common/types';
-import type { AllFilesMeta, ChromiumHTMLAudioElement, ChromiumHTMLVideoElement, CopyfileStreams, LiteFFprobeStream } from '../types';
+import type { AllFilesMeta, BsfAspectRatioParams, BsfCropParams, ChromiumHTMLAudioElement, ChromiumHTMLVideoElement, CopyfileStreams, FileParams, LiteFFprobeStream, StreamParams } from '../types';
 import type { FileStream } from '../ffmpeg';
 
 
@@ -104,6 +104,22 @@ export function getActiveDisposition(disposition: FFprobeStreamDisposition | und
 export const isMov = (format: string | undefined) => format != null && ['ismv', 'ipod', 'mp4', 'mov'].includes(format);
 
 export const isMatroska = (format: string | undefined) => format != null && ['matroska', 'webm'].includes(format);
+
+// all zero means no crop / aspect ratio (the editors store zeros when cleared)
+export const isCropActive = (crop: BsfCropParams | undefined): crop is BsfCropParams => crop != null && (crop.left > 0 || crop.right > 0 || crop.top > 0 || crop.bottom > 0);
+export const isAspectRatioActive = (aspectRatio: BsfAspectRatioParams | undefined): aspectRatio is BsfAspectRatioParams => aspectRatio != null && aspectRatio.num > 0 && aspectRatio.den > 0;
+
+// whether the user has made any changes that affect the export (params can linger after being undone, e.g. a switch turned off)
+// Disposition doesn't count: it's shown and changed in the track row, and is also set automatically (e.g. for captured cover art)
+export const hasStreamEdits = (params: StreamParams | undefined) => params != null && (
+  Object.keys(params.metadata).length > 0
+  || !!params.bsfH264Mp4toannexb || !!params.bsfHevcMp4toannexb || !!params.bsfHevcAudInsert
+  || params.tag != null
+  || isCropActive(params.crop)
+  || isAspectRatioActive(params.aspectRatio)
+);
+
+export const hasFileEdits = (params: FileParams | undefined) => params != null && (Object.keys(params.metadata).length > 0 || !!params.offset);
 
 type GetVideoArgsFn = (a: { streamIndex: number, outputIndex: number }) => string[] | undefined;
 
