@@ -1789,7 +1789,7 @@ function App() {
     return fileMeta;
   }, [allFilesMeta, setCopyStreamIdsForPath]);
 
-  const hvc1NeededStreams = useMemo(() => mainCopiedStreams.filter((stream) => needsHvc1Tag({ stream, outFormat: fileFormat, customTag: filePath != null ? paramsByFile.get(filePath)?.paramsByStream.get(stream.index)?.tag : undefined })), [fileFormat, filePath, mainCopiedStreams, paramsByFile]);
+  const hvc1NeededStreams = useMemo(() => copyFileStreams.flatMap(({ path, streamIds }) => (allFilesMeta[path]?.streams ?? []).filter((stream) => streamIds.includes(stream.index) && needsHvc1Tag({ stream, outFormat: fileFormat, customTag: paramsByFile.get(path)?.paramsByStream.get(stream.index)?.tag }))), [allFilesMeta, copyFileStreams, fileFormat, paramsByFile]);
 
   const updateStreamParams = useCallback<Parameters<typeof StreamsSelector>[0]['updateStreamParams']>((fileId, streamId, setter) => setParamsByFile(produce((draft) => {
     if (!draft.has(fileId)) draft.set(fileId, { metadata: {}, paramsByStream: new Map() });

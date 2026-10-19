@@ -19,7 +19,7 @@ import useActionTitle from './hooks/useActionTitle';
 import { saveColor, controlsBackground, primaryTextColor, darkModeTransition } from './colors';
 import { useSegColors } from './contexts';
 import { getSegmentTags } from './segments';
-import TagEditor from './components/TagEditor';
+import TagEditor, { cancelTagEditOnEscape } from './components/TagEditor';
 import type { ContextMenuTemplate, DefiniteSegmentBase, FormatTimecode, GetFrameCount, InverseCutSegment, SegmentBase, SegmentColorIndex, SegmentTags, StateSegment } from './types';
 import type { UseSegments } from './hooks/useSegments';
 import * as Dialog from './components/Dialog';
@@ -617,7 +617,7 @@ function SegmentList({
       <Dialog.Root open={editingSegmentTagsSegmentIndex != null} onOpenChange={(open) => !open && onSegmentTagsCloseComplete()}>
         <Dialog.Portal>
           <Dialog.Overlay />
-          <Dialog.Content style={{ width: '40em' }} aria-describedby={undefined} onEscapeKeyDown={(e) => editingTag != null && e.preventDefault()}>
+          <Dialog.Content style={{ width: '40em' }} aria-describedby={undefined} onEscapeKeyDown={cancelTagEditOnEscape(editingTag, setEditingTag)}>
             <Dialog.Title>{t('Edit segment tags')}</Dialog.Title>
 
             <TagEditor customTags={editingSegmentTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagsChange={onTagsChange} onTagReset={onTagReset} addTagTitle={t('Add segment tag')} />

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { getLanguageSuggestions, getNonNativeMovMetadataKeys, isValidCodecTag, isValidLanguageCode, needsHvc1Tag, streamMetadataKeys } from './metadata';
+import { getLanguageSuggestions, getNonNativeMovMetadataKeys, isValidCodecTag, isValidCreationTime, isValidLanguageCode, needsHvc1Tag } from './metadata';
 
 
 describe('getLanguageSuggestions', () => {
@@ -9,6 +9,10 @@ describe('getLanguageSuggestions', () => {
     expect(suggestions).toContainEqual({ value: 'ger', label: 'German (ger)' });
     expect(getLanguageSuggestions('de')).toContainEqual({ value: 'ger', label: 'Deutsch (ger)' });
     expect(suggestions.every(({ value }) => isValidLanguageCode(value))).toBe(true);
+  });
+
+  test('underscore ui language', () => {
+    expect(getLanguageSuggestions('pt_BR')).toContainEqual({ value: 'ger', label: 'alemão (ger)' });
   });
 
   test('invalid ui language falls back to codes', () => {
@@ -33,6 +37,17 @@ test('needsHvc1Tag', () => {
 });
 
 test('getNonNativeMovMetadataKeys', () => {
-  expect(getNonNativeMovMetadataKeys({ title: 'a', custom: 'b', deleted: '' }, streamMetadataKeys)).toEqual(['custom']);
-  expect(getNonNativeMovMetadataKeys(undefined, streamMetadataKeys)).toEqual([]);
+  expect(getNonNativeMovMetadataKeys({ metadata: { title: 'a', custom: 'b', deleted: '' }, outFormat: 'mov', isStream: true })).toEqual(['custom']);
+  expect(getNonNativeMovMetadataKeys({ metadata: { title: 'a' }, outFormat: 'mp4', isStream: true })).toEqual(['title']);
+  expect(getNonNativeMovMetadataKeys({ metadata: { title: 'a', lyrics: 'b', custom: 'c' }, outFormat: 'mp4', isStream: false })).toEqual(['custom']);
+  expect(getNonNativeMovMetadataKeys({ metadata: undefined, outFormat: 'mp4', isStream: true })).toEqual([]);
+});
+
+test('isValidCreationTime', () => {
+  expect(isValidCreationTime('now')).toBe(true);
+  expect(isValidCreationTime(new Date().toISOString())).toBe(true);
+  expect(isValidCreationTime('2024-12-31 23:59:59')).toBe(true);
+  expect(isValidCreationTime('12:00:00')).toBe(true);
+  expect(isValidCreationTime('12/31/2024')).toBe(false);
+  expect(isValidCreationTime('1')).toBe(false);
 });

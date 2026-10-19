@@ -3,13 +3,19 @@ import type { Suggestion } from '../components/SuggestionTextField';
 import { isMov } from './streams';
 
 
-// Common metadata keys (as named by ffmpeg) that the MP4/MOV muxer stores natively (without `-movflags use_metadata_tags`)
+// Common metadata keys (as named by ffmpeg) to suggest
 export const fileMetadataKeys = ['title', 'artist', 'album_artist', 'album', 'composer', 'genre', 'date', 'track', 'comment', 'description', 'copyright', 'creation_time'] as const;
 export const streamMetadataKeys = ['title', 'language', 'handler_name', 'creation_time'] as const;
 
-export const getNonNativeMovMetadataKeys = (metadata: Record<string, string> | undefined, nativeKeys: readonly string[]) => (
-  Object.entries(metadata ?? {}).filter(([key, value]) => value !== '' && !nativeKeys.includes(key)).map(([key]) => key)
-);
+// Keys that the MP4/MOV muxer stores natively (without `-movflags use_metadata_tags`)
+const movNativeFileKeys = new Set<string>([...fileMetadataKeys, 'grouping', 'lyrics', 'synopsis', 'show', 'episode_id', 'network', 'disc', 'encoder']);
+// track title is only written in MOV mode
+const getMovNativeStreamKeys = (outFormat: string | undefined) => new Set<string>(['language', 'handler_name', 'creation_time', ...(outFormat === 'mov' ? ['title'] : [])]);
+
+export const getNonNativeMovMetadataKeys = ({ metadata, outFormat, isStream }: { metadata: Record<string, string> | undefined, outFormat: string | undefined, isStream: boolean }) => {
+  const nativeKeys = isStream ? getMovNativeStreamKeys(outFormat) : movNativeFileKeys;
+  return Object.entries(metadata ?? {}).filter(([key, value]) => value !== '' && !nativeKeys.has(key)).map(([key]) => key);
+};
 
 // Common codec tags (FourCC) for use with `-tag` when outputting MP4/MOV
 const codecTagsByCodec: Partial<Record<FFprobeStream['codec_name'], readonly string[]>> = {
@@ -36,7 +42,8 @@ export const needsHvc1Tag = ({ stream, outFormat, customTag }: { stream: Pick<FF
   stream.codec_name === 'hevc' && isMov(outFormat) && customTag == null && stream.codec_tag_string !== 'hvc1'
 );
 
-export const isValidCreationTime = (value: string) => !Number.isNaN(Date.parse(value));
+// Formats accepted by ffmpeg's av_parse_time: `now` or [YYYY-MM-DD|YYYYMMDD][T| ]HH:MM:SS[.m...][Z]
+export const isValidCreationTime = (value: string) => /^(now|((\d{4}-\d{2}-\d{2}|\d{8})[Tt ])?(\d{2}:\d{2}:\d{2}|\d{6})(\.\d+)?[Zz]?)$/.test(value);
 
 // Common ISO 639-2/B codes (as used by Matroska and ffmpeg) mapped to BCP 47, for displaying localized names
 const languages: [iso6392: string, bcp47: string][] = [
@@ -51,7 +58,8 @@ const languages: [iso6392: string, bcp47: string][] = [
 export function getLanguageSuggestions(uiLanguage: string): Suggestion[] {
   let displayNames: Intl.DisplayNames | undefined;
   try {
-    displayNames = new Intl.DisplayNames([uiLanguage, 'en'], { type: 'language' });
+    // our locale codes use underscores (e.g. pt_BR), which Intl doesn't accept
+    displayNames = new Intl.DisplayNames([uiLanguage.replaceAll('_', '-'), 'en'], { type: 'language' });
   } catch {
     // ignore, fall back to codes only
   }
