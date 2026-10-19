@@ -118,6 +118,33 @@ Before releasing, consider [Maintenance chores](#maintenance-chores) first.
 - Bump [snap version](https://snapcraft.io/losslesscut/releases)
 - Copy paste release notes and post to discord & twitter and re-tweet
 
+### Release in Stores
+
+Usually some time after the GitHub release, once no serious regressions have been reported.
+
+#### Microsoft Store
+
+1. Download `LosslessCut-win-x64-DONT-USE-THIS-FILE.appx` and `LosslessCut-win-arm64-DONT-USE-THIS-FILE.appx` from the GitHub release, and remove `-DONT-USE-THIS-FILE` from the file names
+2. Open the [Partner Center](https://partner.microsoft.com/en-us/dashboard/products/9P30LSR4705L/overview) and click "Start update"
+3. "Packages": click the caret next to "Unchanged", then drag-drop both renamed files into the upload area. Both architectures go in the same submission and the Store serves the right one to each device (if a submission ever used an `.appxbundle`, later ones must too, see [#2789](https://github.com/mifi/lossless-cut/issues/2789))
+4. Tick "Roll out update gradually", start rollout with 0%, wait for the uploads to finish and click "Save"
+5. "Submission Options" (caret): tick "Don't publish this submission until I select Publish now"
+6. "Store listings" → "Languages supported in packages" → "English (United States)": replace "What's new in this version". If needed, also update "Description", "Product features" and screenshots
+7. Go back and click "Submit for certification"
+8. Once certified, publish it, and increase the rollout by ~15% every day or so
+
+#### Mac App Store
+
+Tag builds already upload the build to App Store Connect (`(MacOS) Upload to Mac App Store` in `build.yml`).
+
+1. In App Store Connect, create a new version
+2. "Build": click "Add Build" and pick the build of this version
+3. Update "What's New in This Version". If needed, also update "Description" and screenshots
+4. "App Store Version Release": tick "Manually release this version"
+5. "Phased Release for App Store Automatic Updates": tick "Release update over 7-day period using phased release"
+6. Save, then "Add for Review"
+7. Once approved, release it
+
 ### After releasing existing GitHub version in Stores
 
 - `git checkout stores`
