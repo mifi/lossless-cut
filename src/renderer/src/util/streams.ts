@@ -6,6 +6,10 @@ import type { FileStream } from '../ffmpeg';
 
 
 // taken from `ffmpeg -codecs`
+// Since ffmpeg 9, the CLI forces fixed-frame-size encoders like FLAC to use the input's frame size (e.g. 1024 for AAC),
+// which makes FLAC files much bigger. 4608 is FLAC's standard block size, and compresses best also at low sample rates.
+export const flacFrameSize = '4608';
+
 export const pcmAudioCodecs = [
   'adpcm_4xm',
   'adpcm_adx',
@@ -187,6 +191,7 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
       addArgs(`-ar:${outputIndex}`, '48000'); // maybe technically not lossless?
     } else if (outFormat === 'flac' && needFlac && stream.codec_name === 'flac') { // https://github.com/mifi/lossless-cut/issues/1809
       addCodecArgs('flac'); // lossless because flac is a lossless codec
+      addArgs(`-frame_size:${outputIndex}`, flacFrameSize);
     } else {
       addCodecArgs('copy');
     }
