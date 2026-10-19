@@ -19,7 +19,8 @@ import Select from './components/Select';
 
 import SimpleModeButton from './components/SimpleModeButton';
 import { withBlur, mirrorTransform } from './util';
-import getSwal from './swal';
+import getSwal, { errorToast } from './swal';
+import { UserFacingError } from '../errors';
 import { getSegColor as getSegColorRaw } from './util/colors';
 import { useSegColors } from './contexts';
 import { isExactTimecodeMatch } from './util/duration';
@@ -107,9 +108,9 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setCutTimeManual(undefined);
     setError(false);
-  }, [setCutTimeManual, currentCutSeg?.segId, currentCutSeg?.start, currentCutSeg?.end]);
+  }, [currentCutSeg?.segId, currentCutSeg?.start, currentCutSeg?.end]);
 
-  const isCutTimeManualSet = useCallback(() => cutTimeManual !== undefined, [cutTimeManual]);
+  const isCutTimeManualSet = cutTimeManual !== undefined;
 
   const border = useMemo(() => {
     const segColor = getSegColor(currentCutSeg);
@@ -123,14 +124,11 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
     if (timeWithOffset == null) { // clear time
       invariant(!isStart);
       setCutTime('end', undefined);
-      setCutTimeManual(undefined);
-      setError(false);
-      return;
+    } else {
+      const timeWithoutOffset = Math.max(timeWithOffset - startTimeOffset, 0);
+      setCutTime(isStart ? 'start' : 'end', timeWithoutOffset);
+      if (seek) seekAbs(timeWithoutOffset);
     }
-
-    const timeWithoutOffset = Math.max(timeWithOffset - startTimeOffset, 0);
-    setCutTime(isStart ? 'start' : 'end', timeWithoutOffset);
-    if (seek) seekAbs(timeWithoutOffset);
     setCutTimeManual(undefined);
     setError(false);
   }, [isStart, seekAbs, setCutTime, startTimeOffset]);
@@ -162,6 +160,7 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
       e.currentTarget.querySelector('input')?.blur();
     } catch (err) {
       console.warn('Cannot submit cut time', err);
+      setError(true);
     }
   }, [cutTimeManual, parseAndSetCutTime]);
 
@@ -192,17 +191,23 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
   const handleInputBlur = useCallback(() => {
     const skipCommit = skipCommitOnBlurRef.current;
     skipCommitOnBlurRef.current = false;
-    // keep the text if the whole window lost focus (e.g. switching app to copy a timecode)
-    if (!skipCommit && !document.hasFocus()) return;
+    if (!skipCommit) {
+      // keep the text if the whole window lost focus (e.g. switching app to copy a timecode). Focus will be restored to the input
+      if (!document.hasFocus()) return;
 
-    // commit valid input when focus is lost (e.g. clicking elsewhere), so that it's not silently lost. Don't seek, because that would override where the user clicked
-    if (!skipCommit && cutTimeManual != null) {
-      try {
-        parseAndSetCutTime(cutTimeManual, false);
-      } catch (err) {
-        console.warn('Cannot set cut time on blur', err);
-        setError(true); // keep the text, so the user can see and fix it
-        return;
+      // commit input when focus is lost (e.g. clicking elsewhere), so that it's not silently lost. Don't seek, because that would override where the user clicked
+      if (cutTimeManual != null) {
+        try {
+          if (!parseAndSetCutTime(cutTimeManual, false)) {
+            setError(true); // keep the text, so the user can see and fix it
+            return;
+          }
+        } catch (err) {
+          console.warn('Cannot set cut time on blur', err);
+          if (err instanceof UserFacingError) errorToast(err.message);
+          setError(true);
+          return;
+        }
       }
     }
     setCutTimeManual(undefined);
@@ -247,11 +252,11 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
     letterSpacing: '-.05em',
     width: 94,
     outline: 'none',
-    color: error ? dangerColor : (isCutTimeManualSet() ? 'var(--gray-12)' : 'var(--gray-11)'),
+    color: error ? dangerColor : (isCutTimeManualSet ? 'var(--gray-12)' : 'var(--gray-11)'),
   }), [border, error, isCutTimeManualSet, isStart]);
 
   function renderValue() {
-    if (isCutTimeManualSet()) return cutTimeManual;
+    if (isCutTimeManualSet) return cutTimeManual;
     if (cutTime == null) return formatTimecode({ seconds: 0 }); // marker, see https://github.com/mifi/lossless-cut/issues/2590
     return formatTimecode({ seconds: cutTime + startTimeOffset });
   }
