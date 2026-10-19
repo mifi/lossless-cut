@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import invariant from 'tiny-invariant';
 import { motion } from 'motion/react';
 import { FaCheck, FaClipboard, FaClipboardList, FaEdit, FaInfo, FaPlus, FaTrash, FaUndo } from 'react-icons/fa';
-import { IconButton, Tooltip, Button, TextField } from '@radix-ui/themes';
+import { IconButton, Tooltip, Button } from '@radix-ui/themes';
 
 import type { SegmentTags } from '../types';
 import { segmentTagsSchema } from '../types';
@@ -28,7 +28,7 @@ export type TagInfo = Record<string, {
   validate?: (value: string) => string | undefined,
 }>;
 
-function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editingTag, setEditingTag, onTagsChange, onTagReset, addTagTitle, tagInfo, canDeleteExisting }: {
+function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editingTag, setEditingTag, onTagsChange, onTagReset, addTagTitle, tagInfo, keySuggestions, canDeleteExisting }: {
   existingTags?: SegmentTags,
   customTags?: SegmentTags | undefined,
   editingTag: string | undefined,
@@ -37,6 +37,7 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
   onTagReset: (tag: string) => void,
   addTagTitle: string,
   tagInfo?: TagInfo,
+  keySuggestions?: string[],
   canDeleteExisting?: boolean,
 }) {
   const { t } = useTranslation();
@@ -130,6 +131,8 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
 
   const editingTagError = editingTag != null && editingTagVal ? tagInfo?.[editingTag]?.validate?.(editingTagVal) : undefined;
 
+  const availableKeySuggestions = useMemo(() => (keySuggestions ?? []).filter((key) => effectiveTags[key] == null).map((value) => ({ value })), [effectiveTags, keySuggestions]);
+
   const canAdd = !newTagKey && (editingTag == null || effectiveTags[editingTag] == null);
 
   function renderValue({ isDeletedExisting, value, thisTagCustom }: {
@@ -208,7 +211,7 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
       {editingTagError && <Warning style={{ marginBottom: '1em' }}>{editingTagError}</Warning>}
 
       <form onSubmit={onAddSubmit} style={{ opacity: canAdd ? undefined : 0.5, marginBottom: '1em', display: 'flex', alignItems: 'center' }}>
-        <TextField.Root ref={ref} disabled={!canAdd} value={newTagKeyInput} onChange={(e) => setNewTagKeyInput(e.target.value)} placeholder={addTagTitle} style={{ marginRight: '1em' }} />
+        <SuggestionTextField ref={ref} disabled={!canAdd} value={newTagKeyInput} onValueChange={setNewTagKeyInput} suggestions={availableKeySuggestions} placeholder={addTagTitle} style={{ marginRight: '1em' }} />
         <IconButton size="2" type="submit" disabled={!canAdd} title={addTagTitle} onClick={add}><FaPlus /></IconButton>
       </form>
 

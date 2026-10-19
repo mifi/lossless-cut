@@ -37,6 +37,10 @@ interface EditingStream {
   path: string;
 }
 
+// Common metadata keys (as named by ffmpeg) to suggest when adding metadata
+const fileMetadataKeySuggestions = ['title', 'artist', 'album_artist', 'album', 'composer', 'genre', 'date', 'track', 'comment', 'description', 'copyright', 'creation_time'];
+const streamMetadataKeySuggestions = ['title', 'language', 'handler_name', 'comment', 'creation_time'];
+
 const getStreamDispositionsObj = (stream: FFprobeStream) => ((stream && stream.disposition) || {});
 
 const getStreamParams = ({ paramsByFile, filePath, streamId }: { paramsByFile: ParamsByFile, filePath: string, streamId: number }) => (
@@ -229,7 +233,7 @@ const EditFileDialog = memo(({ editingFile, allFilesMeta, paramsByFile, setParam
       <div style={{ marginTop: '.5em' }}>
         {enableMetadata && (
           <Tabs.Content value="metadata">
-            <TagEditor existingTags={existingMetadata} customTags={fileParams?.metadata} editingTag={editingKey} setEditingTag={setEditingKey} onTagsChange={onMetadataChange} onTagReset={onMetadataReset} addTagTitle={t('Add metadata')} tagInfo={tagInfo} canDeleteExisting />
+            <TagEditor existingTags={existingMetadata} customTags={fileParams?.metadata} editingTag={editingKey} setEditingTag={setEditingKey} onTagsChange={onMetadataChange} onTagReset={onMetadataReset} addTagTitle={t('Add metadata')} tagInfo={tagInfo} keySuggestions={fileMetadataKeySuggestions} canDeleteExisting />
           </Tabs.Content>
         )}
 
@@ -318,7 +322,7 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
 
             <div style={{ marginTop: '.5em' }}>
               <Tabs.Content value="metadata">
-                <TagEditor existingTags={existingMetadata} customTags={streamParams?.metadata} editingTag={editingKey} setEditingTag={setEditingKey} onTagsChange={onMetadataChange} onTagReset={onMetadataReset} addTagTitle={t('Add metadata')} tagInfo={tagInfo} canDeleteExisting />
+                <TagEditor existingTags={existingMetadata} customTags={streamParams?.metadata} editingTag={editingKey} setEditingTag={setEditingKey} onTagsChange={onMetadataChange} onTagReset={onMetadataReset} addTagTitle={t('Add metadata')} tagInfo={tagInfo} keySuggestions={streamMetadataKeySuggestions} canDeleteExisting />
               </Tabs.Content>
 
               {editingStream != null && (
