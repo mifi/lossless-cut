@@ -116,6 +116,7 @@ export const configSchema = z.object({
   }),
   allowMultipleInstances: z.boolean(),
   theme: z.enum(['dark', 'light', 'system']),
+  videoFit: z.enum(['contain', 'scale-down', 'cover', 'fill', 'none']),
   preferStrongColors: z.boolean(),
   outputFileNameMinZeroPadding: z.number(),
   cutFromAdjustmentFrames: z.number(),
