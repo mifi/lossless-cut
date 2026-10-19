@@ -47,8 +47,12 @@ jobs:
           cache: 'yarn'
 
       # This global ffmpeg is used for screenshots (see below)
+      # macOS: setup-ffmpeg scrapes osxexperts.net for ARM64 builds, which is unreliable
       - uses: AnimMouse/setup-ffmpeg@v1
-        if: (runner.os != 'Windows' || runner.arch != 'ARM64') && env.is_tag == 'false'
+        if: runner.os != 'macOS' && (runner.os != 'Windows' || runner.arch != 'ARM64') && env.is_tag == 'false'
+
+      - run: brew install ffmpeg
+        if: runner.os == 'macOS' && env.is_tag == 'false'
 
       - run: ffmpeg -version
         if: runner.os != 'Windows' || runner.arch != 'ARM64'
