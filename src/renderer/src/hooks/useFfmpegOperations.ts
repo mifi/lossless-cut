@@ -287,8 +287,8 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     const areWeCutting = cuttingStart || cuttingEnd;
     if (areWeCutting) console.log('Cutting from', cuttingStart ? `${cutFrom} (${cutFromWithAdjustment} adjusted ${cutFromAdjustmentFrames} frames)` : 'start', 'to', cuttingEnd ? `${cutTo} (adjusted ${cutToAdjustmentFrames} frames)` : 'end');
 
-    let cutDuration = cutToWithAdjustment - cutFromWithAdjustment;
-    if (detectedFps != null) cutDuration = Math.max(cutDuration, frameDuration); // ensure at least one frame duration
+    // ensure at least one frame duration (ffmpeg >= 8.1 rejects a negative `-t`, e.g. with cut from/to adjustment on a short segment)
+    const cutDuration = Math.max(cutToWithAdjustment - cutFromWithAdjustment, frameDuration);
 
     const copyFileStreamsFiltered = copyFileStreams.filter(({ streamIds }) => streamIds.length > 0);
 
