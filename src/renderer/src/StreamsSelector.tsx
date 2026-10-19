@@ -38,6 +38,20 @@ function EditButton({ title, onClick, highlighted }: { title: string, onClick: (
   return <Button title={title} onClick={onClick}><FaEdit style={{ verticalAlign: 'middle', color: highlighted ? 'var(--accent-11)' : undefined }} /></Button>;
 }
 
+// Without streamId: resets the file's own params (not its tracks). Keeps disposition (see hasStreamEdits)
+function resetParamsDraft(fileParams: FileParams, streamId?: number) {
+  if (streamId == null) {
+    // eslint-disable-next-line no-param-reassign
+    fileParams.metadata = {};
+    // eslint-disable-next-line no-param-reassign
+    delete fileParams.offset;
+    return;
+  }
+  const disposition = fileParams.paramsByStream.get(streamId)?.disposition;
+  if (disposition != null) fileParams.paramsByStream.set(streamId, { metadata: {}, disposition });
+  else fileParams.paramsByStream.delete(streamId);
+}
+
 type UpdateStreamParams = (fileId: string, streamId: number, setter: (a: StreamParams) => void) => void;
 
 interface EditingStream {
@@ -461,7 +475,7 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
           </Tabs.Root>
 
           <Dialog.ButtonRow>
-            <ResetButton disabled={!hasStreamEdits(streamParams)} onClick={() => resetParams(editingFile, editingStreamId)} />
+            <ResetButton disabled={editingKey != null || !hasStreamEdits(streamParams)} onClick={() => resetParams(editingFile, editingStreamId)} />
             <Dialog.Close asChild>
               <DialogButton disabled={editingKey != null} primary>{t('Done')}</DialogButton>
             </Dialog.Close>
@@ -773,22 +787,21 @@ function StreamsSelector({
 
   const externalFilesEntries = Object.entries(externalFilesMeta);
 
-  // without streamId: resets the file's own params (not its tracks)
   const resetParams = useCallback<ResetParams>((path, streamId) => setParamsByFile(produce((draft) => {
     const fileParams = draft.get(path);
-    if (fileParams == null) return;
-    if (streamId != null) {
-      fileParams.paramsByStream.delete(streamId);
-    } else {
-      fileParams.metadata = {};
-      delete fileParams.offset;
-    }
+    if (fileParams != null) resetParamsDraft(fileParams, streamId);
   })), [setParamsByFile]);
 
-  const haveEdits = [...paramsByFile.values()].some((fileParams) => hasFileEdits(fileParams) || [...fileParams.paramsByStream.values()].some((streamParams) => hasStreamEdits(streamParams)));
+  const haveEdits = useMemo(() => [...paramsByFile.values()].some((fileParams) => hasFileEdits(fileParams) || [...fileParams.paramsByStream.values()].some((streamParams) => hasStreamEdits(streamParams))), [paramsByFile]);
 
   const onResetAllClick = useCallback(async () => {
-    if (await confirmDialog({ description: t('Reset all changes to files and tracks?') })) setParamsByFile(new Map());
+    if (!(await confirmDialog({ description: t('Reset all changes to files and tracks?') }))) return;
+    setParamsByFile(produce((draft) => {
+      for (const fileParams of draft.values()) {
+        resetParamsDraft(fileParams);
+        for (const streamId of fileParams.paramsByStream.keys()) resetParamsDraft(fileParams, streamId);
+      }
+    }));
   }, [confirmDialog, setParamsByFile, t]);
 
   return (
@@ -886,7 +899,7 @@ function StreamsSelector({
               <EditFileDialog editingFile={editingFile} editingKey={editingKey} setEditingKey={setEditingKey} allFilesMeta={allFilesMeta} paramsByFile={paramsByFile} setParamsByFile={setParamsByFile} enableMetadata={editingFile === mainFilePath} outFormat={outFormat} />
 
               <Dialog.ButtonRow>
-                <ResetButton disabled={!hasFileEdits(paramsByFile.get(editingFile))} onClick={() => resetParams(editingFile)} />
+                <ResetButton disabled={editingKey != null || !hasFileEdits(paramsByFile.get(editingFile))} onClick={() => resetParams(editingFile)} />
                 <Dialog.Close asChild>
                   <DialogButton primary disabled={editingKey != null}>{t('Done')}</DialogButton>
                 </Dialog.Close>

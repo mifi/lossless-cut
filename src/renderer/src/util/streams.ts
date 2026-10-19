@@ -110,9 +110,9 @@ export const isCropActive = (crop: BsfCropParams | undefined): crop is BsfCropPa
 export const isAspectRatioActive = (aspectRatio: BsfAspectRatioParams | undefined): aspectRatio is BsfAspectRatioParams => aspectRatio != null && aspectRatio.num > 0 && aspectRatio.den > 0;
 
 // whether the user has made any changes that affect the export (params can linger after being undone, e.g. a switch turned off)
+// Disposition doesn't count: it's shown and changed in the track row, and is also set automatically (e.g. for captured cover art)
 export const hasStreamEdits = (params: StreamParams | undefined) => params != null && (
   Object.keys(params.metadata).length > 0
-  || params.disposition != null
   || !!params.bsfH264Mp4toannexb || !!params.bsfHevcMp4toannexb || !!params.bsfHevcAudInsert
   || params.tag != null
   || isCropActive(params.crop)

@@ -240,6 +240,7 @@ test('hasStreamEdits', () => {
   expect(hasStreamEdits({ metadata: { language: 'eng' } })).toBe(true);
   expect(hasStreamEdits({ metadata: { title: '' } })).toBe(true); // empty means delete
   expect(hasStreamEdits({ metadata: {}, tag: 'hvc1' })).toBe(true);
+  expect(hasStreamEdits({ metadata: {}, disposition: 'attached_pic' })).toBe(false);
   expect(hasStreamEdits({ metadata: {}, crop: { left: 2, right: 0, top: 0, bottom: 0 } })).toBe(true);
 });
 
