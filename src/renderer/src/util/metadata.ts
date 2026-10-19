@@ -22,22 +22,27 @@ export const getEffectiveMetadata = (existing: Record<string, string> | undefine
   Object.fromEntries(Object.entries({ ...existing, ...custom }).filter(([, value]) => value !== ''))
 );
 
-// Keys written by the muxer/encoder, describing the file/track's own data
-const muxerWrittenMetadataKeys = ['encoder', 'major_brand', 'minor_version', 'compatible_brands', 'vendor_id', 'timecode', 'iTunSMPB', 'iTunNORM'] as const;
+// Keys written by the muxer/encoder (or describing an attachment), describing the file/track's own data.
+// creation_time is included, because copying it would give the output another recording's date
+const muxerWrittenMetadataKeys = ['encoder', 'major_brand', 'minor_version', 'compatible_brands', 'vendor_id', 'timecode', 'iTunSMPB', 'iTunNORM', 'creation_time', 'filename', 'mimetype'] as const;
 // Matroska track statistics, optionally with a language suffix (e.g. BPS-eng), plus any _STATISTICS_* key
 const matroskaStatisticsKeys = ['DURATION', 'NUMBER_OF_FRAMES', 'NUMBER_OF_BYTES', 'BPS', 'ENCODER', 'ENCODER_SETTINGS'] as const;
 
-// handler_name is usually a default like "SoundHandler" (and is used to detect e.g. GPS tracks), so don't copy it either
-const nonCopyableMetadataKeys = new Set<string>([...muxerWrittenMetadataKeys, 'handler_name', ...matroskaStatisticsKeys].map((key) => key.toLowerCase()));
+const nonCopyableMetadataKeys = new Set<string>([...muxerWrittenMetadataKeys, ...matroskaStatisticsKeys].map((key) => key.toLowerCase()));
 
-const isCopyableMetadataKey = (key: string) => {
-  const [baseKey = key] = key.toLowerCase().split('-');
+// handler_name is often the track name in MP4/MOV, but is usually a muxer default like "SoundHandler",
+// "Core Media Video" or "\u0010DJI.Subtitle" (used to detect GPS tracks), which shouldn't be copied
+const isDefaultHandlerName = (value: string) => /handler|core media|iso media|dji\./i.test(value);
+
+const isCopyableMetadata = (key: string, value: string) => {
+  const baseKey = key.toLowerCase().split('-')[0]!;
+  if (baseKey === 'handler_name') return !isDefaultHandlerName(value);
   return !nonCopyableMetadataKeys.has(baseKey) && !baseKey.startsWith('_statistics_');
 };
 
 // The source's metadata without keys that describe its own data, so it can be copied to another track/file
 export const getCopyableMetadata = (metadata: Record<string, string>) => (
-  Object.fromEntries(Object.entries(metadata).filter(([key]) => isCopyableMetadataKey(key)))
+  Object.fromEntries(Object.entries(metadata).filter(([key, value]) => isCopyableMetadata(key, value)))
 );
 
 // Common codec tags (FourCC) for use with `-tag` when outputting MP4/MOV

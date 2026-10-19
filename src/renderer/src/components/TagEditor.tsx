@@ -89,10 +89,13 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
     }
   }, [onTagsChange]);
 
-  // only the keys that differ, so unchanged tags aren't shown as edited
+  // Only the keys that differ, so unchanged tags aren't shown as edited.
+  // A copied value equal to the original resets the user's edit instead
   const onCopyFrom = useCallback((metadata: Record<string, string>) => {
-    onTagsChange(Object.fromEntries(Object.entries(metadata).filter(([key, value]) => effectiveTags[key] !== value)));
-  }, [effectiveTags, onTagsChange]);
+    const changes = Object.entries(metadata).filter(([key, value]) => effectiveTags[key] !== value);
+    changes.filter(([key, value]) => existingTags[key] === value).forEach(([key]) => onTagReset(key));
+    onTagsChange(Object.fromEntries(changes.filter(([key, value]) => existingTags[key] !== value)));
+  }, [effectiveTags, existingTags, onTagReset, onTagsChange]);
 
   const saveTag = useCallback(() => {
     invariant(editingTag != null);

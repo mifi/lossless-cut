@@ -68,5 +68,9 @@ test('getCopyableMetadata', () => {
     major_brand: 'isom',
     handler_name: 'SoundHandler',
     iTunSMPB: ' 00000000 00000840',
+    creation_time: '2024-01-01T00:00:00.000000Z',
+    filename: 'font.ttf',
   })).toEqual({ title: 'a', language: 'eng' });
+  expect(getCopyableMetadata({ handler_name: 'English Commentary' })).toEqual({ handler_name: 'English Commentary' });
+  expect(getCopyableMetadata({ handler_name: '\u0010DJI.Subtitle' })).toEqual({});
 });

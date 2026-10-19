@@ -35,7 +35,7 @@ import { basename } from './util/path';
 // for "Copy from": the source's metadata including the user's changes, without muxer-written keys
 function getCopyFromSource({ key, getLabel, existing, custom }: { key: string, getLabel: (metadata: Record<string, string>) => string, existing: Record<string, string> | undefined, custom: Record<string, string> | undefined }) {
   const metadata = getCopyableMetadata(getEffectiveMetadata(existing, custom));
-  return Object.keys(metadata).length > 0 ? { key, label: getLabel(metadata), metadata } : [];
+  return Object.keys(metadata).length > 0 ? { key, label: getLabel(metadata), metadata } : undefined;
 }
 
 type ResetParams = (path: string, streamId?: number) => void;
@@ -292,7 +292,7 @@ const EditFileDialog = memo(({ editingFile, allFilesMeta, paramsByFile, setParam
   }, [updateFileParams]);
 
   const copyFromSources = useMemo(() => Object.entries(allFilesMeta).flatMap(([path, { format: otherFormat }]) => (
-    path !== editingFile ? getCopyFromSource({ key: path, getLabel: () => basename(path), existing: otherFormat.tags, custom: paramsByFile.get(path)?.metadata }) : []
+    (path !== editingFile && getCopyFromSource({ key: path, getLabel: () => basename(path), existing: otherFormat.tags, custom: paramsByFile.get(path)?.metadata })) || []
   )), [allFilesMeta, editingFile, paramsByFile]);
 
   const commonTagInfo = useCommonTagInfo();
@@ -383,13 +383,14 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
   const copyFromSources = useMemo(() => {
     const multipleFiles = Object.keys(allFilesMeta).length > 1;
     return Object.entries(allFilesMeta).flatMap(([path, { streams: fileStreams }]) => fileStreams.flatMap((s) => {
-      if (path === editingFile && s.index === editingStreamId) return [];
+      // attachments only have metadata describing the attached file itself
+      if ((path === editingFile && s.index === editingStreamId) || s.codec_type === 'attachment') return [];
       return getCopyFromSource({
         key: `${path}:${s.index}`,
         getLabel: ({ title }) => `${multipleFiles ? `${basename(path)}: ` : ''}#${s.index + 1} ${s.codec_type}${title ? ` – ${title}` : ''}`,
         existing: s.tags,
         custom: getStreamParams({ paramsByFile, filePath: path, streamId: s.index })?.metadata,
-      });
+      }) ?? [];
     }));
   }, [allFilesMeta, editingFile, editingStreamId, paramsByFile]);
 
