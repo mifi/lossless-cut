@@ -15,7 +15,7 @@ const windowsLinuxRelease = '8.1-1'; // https://github.com/mifi/ffmpeg-builds/re
 const target = process.argv[2];
 const btbnTargets: Record<string, string> = { 'linux-x64': 'linux64', 'win32-x64': 'win64', 'win32-arm64': 'winarm64' };
 const macArchs: Record<string, string> = { 'darwin-x64': 'X64', 'darwin-arm64': 'ARM64' };
-assert(target != null && (target in btbnTargets || target in macArchs), `Usage: downloadFfmpeg.ts ${[...Object.keys(macArchs), ...Object.keys(btbnTargets)].join('|')}`);
+assert(target != null && (Object.hasOwn(btbnTargets, target) || Object.hasOwn(macArchs, target)), `Usage: downloadFfmpeg.ts ${[...Object.keys(macArchs), ...Object.keys(btbnTargets)].join('|')}`);
 
 const dir = join('ffmpeg', target);
 
@@ -44,11 +44,12 @@ if (macArch != null) {
   const branch = windowsLinuxRelease.split('-')[0];
   const isWindows = target.startsWith('win32');
   const name = `ffmpeg-n${branch}-latest-${btbnTargets[target]}-gpl-shared-${branch}`;
-  const archive = join(dir, `${name}${isWindows ? '.zip' : '.tar.xz'}`);
-  await download(`https://github.com/mifi/ffmpeg-builds/releases/download/${windowsLinuxRelease}/${name}${isWindows ? '.zip' : '.tar.xz'}`, archive);
+  const archiveName = `${name}${isWindows ? '.zip' : '.tar.xz'}`;
+  const archive = join(dir, archiveName);
+  await download(`https://github.com/mifi/ffmpeg-builds/releases/download/${windowsLinuxRelease}/${archiveName}`, archive);
 
   // 7z, because tar on Windows may be GNU tar (from Git), which doesn't support zip
-  await (isWindows ? execa('7z', ['x', archive, `-o${dir}`], { stdout: 'ignore' }) : execa('tar', ['-xf', archive, '-C', dir]));
+  await (isWindows ? execa('7z', ['x', '-y', archive, `-o${dir}`], { stdout: 'ignore' }) : execa('tar', ['-xf', archive, '-C', dir]));
 
   await mkdir(binDir);
   const extractedBinDir = join(dir, name, 'bin');
@@ -62,10 +63,11 @@ if (macArch != null) {
   await rm(archive);
 }
 
-// Smoke test, if the binaries can run on this machine
+// Smoke test, if the binaries can run on this machine (on Linux this also checks that their RPATH finds the libs)
 if (target === `${process.platform}-${process.arch}`) {
-  const exe = join(binDir, process.platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg');
-  const { stdout } = await execa(exe, ['-hide_banner', '-version'], { env: { LD_LIBRARY_PATH: binDir } });
-  console.log(stdout.split('\n')[0]);
+  for (const name of ['ffmpeg', 'ffprobe']) {
+    const { stdout } = await execa(join(binDir, process.platform === 'win32' ? `${name}.exe` : name), ['-hide_banner', '-version']);
+    console.log(stdout.split('\n')[0]);
+  }
 }
 console.log('Done', binDir);
