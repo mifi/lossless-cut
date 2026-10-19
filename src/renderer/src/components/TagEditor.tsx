@@ -3,8 +3,8 @@ import { memo, useRef, useState, useMemo, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import invariant from 'tiny-invariant';
 import { motion } from 'motion/react';
-import { FaCheck, FaClipboard, FaClipboardList, FaClone, FaEdit, FaInfo, FaPlus, FaTrash, FaUndo } from 'react-icons/fa';
-import { IconButton, Tooltip, Button, TextArea } from '@radix-ui/themes';
+import { FaCheck, FaChevronDown, FaClipboard, FaClipboardList, FaClone, FaCopy, FaEdit, FaInfo, FaPlus, FaTrash, FaUndo } from 'react-icons/fa';
+import { IconButton, Tooltip, Button, TextArea, DropdownMenu } from '@radix-ui/themes';
 
 import type { SegmentTags } from '../types';
 import { segmentTagsSchema } from '../types';
@@ -37,7 +37,7 @@ export const cancelTagEditOnEscape = (editingTag: string | undefined, setEditing
   setEditingTag(undefined);
 };
 
-function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editingTag, setEditingTag, onTagsChange, onTagReset, addTagTitle, tagInfo, keySuggestions, canDeleteExisting, onApplyToAll, applyToAllTitle }: {
+function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editingTag, setEditingTag, onTagsChange, onTagReset, addTagTitle, tagInfo, keySuggestions, canDeleteExisting, onApplyToAll, applyToAllTitle, copyFromSources = [] }: {
   existingTags?: SegmentTags,
   customTags?: SegmentTags | undefined,
   editingTag: string | undefined,
@@ -50,6 +50,8 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
   canDeleteExisting?: boolean,
   onApplyToAll?: ((tag: string, value: string) => void) | undefined,
   applyToAllTitle?: string,
+  // other tracks/files to copy metadata from
+  copyFromSources?: { label: string, metadata: Record<string, string> }[],
 }) {
   const { t } = useTranslation();
   const editRef = useRef<HTMLInputElement & HTMLTextAreaElement>(null);
@@ -252,7 +254,20 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
           {({ onClick }) => <Button color="gray" size="1" onClick={onClick}><FaClipboardList />{t('Copy to clipboard')}</Button>}
         </CopyClipboardButton>
 
-        <Button color="gray" size="1" onClick={onPasteClick}><FaClipboard />{t('Paste')}</Button>
+        <Button color="gray" size="1" onClick={onPasteClick} style={{ marginRight: '.3em' }}><FaClipboard />{t('Paste')}</Button>
+
+        {copyFromSources.length > 0 && (
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger>
+              <Button color="gray" size="1"><FaCopy />{t('Copy from')}<FaChevronDown /></Button>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content size="1" style={{ maxHeight: '20em' }}>
+              {copyFromSources.map(({ label, metadata }) => (
+                <DropdownMenu.Item key={label} onSelect={() => onTagsChange(metadata)}>{label}</DropdownMenu.Item>
+              ))}
+            </DropdownMenu.Content>
+          </DropdownMenu.Root>
+        )}
       </div>
     </>
   );

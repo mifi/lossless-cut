@@ -17,6 +17,18 @@ export const getNonNativeMovMetadataKeys = ({ metadata, outFormat, isStream }: {
   return Object.entries(metadata ?? {}).filter(([key, value]) => value !== '' && !nativeKeys.has(key)).map(([key]) => key);
 };
 
+// Existing metadata with the user's changes applied ('' means deleted)
+export const getEffectiveMetadata = (existing: Record<string, string> | undefined, custom: Record<string, string> | undefined) => (
+  Object.fromEntries(Object.entries({ ...existing, ...custom }).filter(([, value]) => value !== ''))
+);
+
+// Keys that describe the source's own data (written by the muxer), so they shouldn't be copied to another track/file
+const nonCopyableMetadataKeyRegex = /^(encoder|major_brand|minor_version|compatible_brands|(DURATION|NUMBER_OF_FRAMES|NUMBER_OF_BYTES|BPS|_STATISTICS_[A-Z_]+)(-\w+)?)$/i;
+
+export const getCopyableMetadata = (metadata: Record<string, string>) => (
+  Object.fromEntries(Object.entries(metadata).filter(([key]) => !nonCopyableMetadataKeyRegex.test(key)))
+);
+
 // Common codec tags (FourCC) for use with `-tag` when outputting MP4/MOV
 const codecTagsByCodec: Partial<Record<FFprobeStream['codec_name'], readonly string[]>> = {
   hevc: ['hvc1', 'hev1'],

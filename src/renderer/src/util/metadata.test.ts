@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { getLanguageSuggestions, getNonNativeMovMetadataKeys, isValidCodecTag, isValidCreationTime, isValidLanguageCode, needsHvc1Tag } from './metadata';
+import { getCopyableMetadata, getEffectiveMetadata, getLanguageSuggestions, getNonNativeMovMetadataKeys, isValidCodecTag, isValidCreationTime, isValidLanguageCode, needsHvc1Tag } from './metadata';
 
 
 describe('getLanguageSuggestions', () => {
@@ -50,4 +50,21 @@ test('isValidCreationTime', () => {
   expect(isValidCreationTime('12:00:00')).toBe(true);
   expect(isValidCreationTime('12/31/2024')).toBe(false);
   expect(isValidCreationTime('1')).toBe(false);
+});
+
+test('getEffectiveMetadata', () => {
+  expect(getEffectiveMetadata({ title: 'a', language: 'eng', comment: 'c' }, { title: 'b', comment: '' })).toEqual({ title: 'b', language: 'eng' });
+  expect(getEffectiveMetadata(undefined, undefined)).toEqual({});
+});
+
+test('getCopyableMetadata', () => {
+  expect(getCopyableMetadata({
+    title: 'a',
+    language: 'eng',
+    DURATION: '00:01:00.000',
+    'BPS-eng': '128000',
+    _STATISTICS_WRITING_APP: 'mkvmerge',
+    encoder: 'Lavf',
+    major_brand: 'isom',
+  })).toEqual({ title: 'a', language: 'eng' });
 });
