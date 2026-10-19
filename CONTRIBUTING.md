@@ -137,7 +137,7 @@ Usually some time after the GitHub release, once no serious regressions have bee
 
 Tag builds already upload the build to App Store Connect (`(MacOS) Upload to Mac App Store` in `build.yml`).
 
-1. In App Store Connect, create a new version
+1. In [App Store Connect](https://appstoreconnect.apple.com/apps/1505323402/distribution), create a new version
 2. "Build": click "Add Build" and pick the build of this version
 3. Update "What's New in This Version". If needed, also update "Description" and screenshots
 4. "App Store Version Release": tick "Manually release this version"
