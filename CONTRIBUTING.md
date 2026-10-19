@@ -162,9 +162,12 @@ Links:
 
 ### Upgrade FFmpeg
 
-- [ffmpeg-build-script](https://github.com/mifi/ffmpeg-build-script)
-- [ffmpeg-builds](https://github.com/mifi/ffmpeg-builds)
-- [package.json](./package.json) download scripts.
+Keep all platforms on the same FFmpeg release branch (e.g. 8.1).
+
+1. macOS: bump `FFMPEG_VERSION` (and deps) in [ffmpeg-build-script](https://github.com/mifi/ffmpeg-build-script), then tag a release there (see its README).
+2. Windows and Linux: mirror the [BtbN](https://github.com/BtbN/FFmpeg-Builds) `gpl-shared` builds for that branch in a new [ffmpeg-builds](https://github.com/mifi/ffmpeg-builds) release (see its README). BtbN only builds the newest release branches, so check that the branch you want is still built.
+3. Update the `download-ffmpeg-*` scripts in [package.json](./package.json): the release tags, file names and extracted folder names.
+4. Test a nightly build on each platform: cutting (keyframe and normal), merging, smart cut and FFmpeg-assisted playback.
 
 ### Upgrade Electron
 
