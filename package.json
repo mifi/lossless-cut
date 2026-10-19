@@ -353,22 +353,8 @@
     },
     "win": {
       "target": [
-        {
-          "arch": "x64",
-          "target": "7z"
-        },
-        {
-          "arch": "x64",
-          "target": "appx"
-        },
-        {
-          "arch": "arm64",
-          "target": "7z"
-        },
-        {
-          "arch": "arm64",
-          "target": "appx"
-        }
+        "7z",
+        "appx"
       ],
       "extraResources": [
         {
