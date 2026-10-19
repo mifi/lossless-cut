@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction, CSSProperties, ReactNode, ChangeEventHandler, DragEventHandler } from 'react';
 import { memo, useState, useMemo, useCallback } from 'react';
 
-import { FaImage, FaPaperclip, FaVideo, FaVideoSlash, FaFileImport, FaVolumeUp, FaVolumeMute, FaBan, FaFileExport, FaBook, FaInfoCircle, FaFilter, FaEye, FaEdit, FaTrash, FaSortNumericDown, FaSortNumericUp, FaHamburger, FaMap, FaLanguage } from 'react-icons/fa';
+import { FaImage, FaPaperclip, FaVideo, FaVideoSlash, FaFileImport, FaVolumeUp, FaVolumeMute, FaBan, FaFileExport, FaBook, FaInfoCircle, FaFilter, FaEye, FaEdit, FaTrash, FaSortNumericDown, FaSortNumericUp, FaHamburger, FaMap, FaLanguage, FaUndo } from 'react-icons/fa';
 import { GoFileBinary } from 'react-icons/go';
 import { MdSubtitles } from 'react-icons/md';
 import { useTranslation, Trans } from 'react-i18next';
@@ -15,7 +15,7 @@ import AutoExportToggler from './components/AutoExportToggler';
 import Select from './components/Select';
 import type { FileStream } from './ffmpeg';
 import { getStreamFps } from './ffmpeg';
-import { getActiveDisposition, attachedPicDisposition, isGpsStream, isMov } from './util/streams';
+import { getActiveDisposition, attachedPicDisposition, isGpsStream, isMov, hasFileEdits, hasStreamEdits } from './util/streams';
 import { fileMetadataKeys, getCodecTagSuggestions, getLanguageSuggestions, getNonNativeMovMetadataKeys, isValidCodecTag, isValidCreationTime, isValidLanguageCode, needsHvc1Tag, streamMetadataKeys } from './util/metadata';
 import useUserSettings from './hooks/useUserSettings';
 import TagEditor, { cancelTagEditOnEscape, type TagInfo } from './components/TagEditor';
@@ -28,7 +28,15 @@ import styles from './StreamsSelector.module.css';
 import Json5Dialog from './components/Json5Dialog';
 import GpsMap from './components/GpsMap';
 import Switch from './components/Switch';
+import type { ConfirmDialog } from './components/GenericDialog';
 
+
+type ResetParams = (path: string, streamId?: number) => void;
+
+// highlighted when there are changes
+function EditButton({ title, onClick, highlighted }: { title: string, onClick: () => void, highlighted: boolean }) {
+  return <Button title={title} onClick={onClick}><FaEdit style={{ verticalAlign: 'middle', color: highlighted ? 'var(--accent-11)' : undefined }} /></Button>;
+}
 
 type UpdateStreamParams = (fileId: string, streamId: number, setter: (a: StreamParams) => void) => void;
 
@@ -93,6 +101,11 @@ function MovMetadataNotice({ outFormat, metadata, isStream }: { outFormat: strin
       onAction={() => setPreserveMovData(true)}
     />
   );
+}
+
+function ResetButton({ disabled, onClick }: { disabled: boolean, onClick: () => void }) {
+  const { t } = useTranslation();
+  return <DialogButton disabled={disabled} onClick={onClick}><FaUndo style={{ verticalAlign: 'baseline', fontSize: '.8em', marginRight: '.3em' }} />{t('Reset')}</DialogButton>;
 }
 
 function KeyValue({ name, value }: { name: ReactNode, value: ReactNode }) {
@@ -289,13 +302,14 @@ const EditFileDialog = memo(({ editingFile, allFilesMeta, paramsByFile, setParam
 });
 
 // eslint-disable-next-line react/display-name
-const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, path: editingFile }, setEditingStream, allFilesMeta, paramsByFile, updateStreamParams, outFormat }: {
+const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, path: editingFile }, setEditingStream, allFilesMeta, paramsByFile, updateStreamParams, outFormat, resetParams }: {
   editingStream: EditingStream,
   setEditingStream: Dispatch<SetStateAction<EditingStream | undefined>>,
   allFilesMeta: FilesMeta,
   paramsByFile: ParamsByFile,
   updateStreamParams: UpdateStreamParams,
   outFormat: string | undefined,
+  resetParams: ResetParams,
 }) => {
   const { t, i18n } = useTranslation();
   const [editingKey, setEditingKey] = useState<string>();
@@ -447,6 +461,7 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
           </Tabs.Root>
 
           <Dialog.ButtonRow>
+            <ResetButton disabled={!hasStreamEdits(streamParams)} onClick={() => resetParams(editingFile, editingStreamId)} />
             <Dialog.Close asChild>
               <DialogButton disabled={editingKey != null} primary>{t('Done')}</DialogButton>
             </Dialog.Close>
@@ -478,7 +493,8 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
   const { t } = useTranslation();
 
   const effectiveDisposition = useMemo(() => getStreamEffectiveDisposition(paramsByFile, filePath, stream), [filePath, paramsByFile, stream]);
-  const effectiveLanguage = getStreamParams({ paramsByFile, filePath, streamId: stream.index })?.metadata['language'] ?? stream.tags?.language;
+  const streamParams = getStreamParams({ paramsByFile, filePath, streamId: stream.index });
+  const effectiveLanguage = streamParams?.metadata['language'] ?? stream.tags?.language;
 
   const bitrate = parseInt(stream.bit_rate!, 10);
   const streamDuration = parseInt(stream.duration, 10);
@@ -565,7 +581,8 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
         </Select>
       </td>
 
-      <td style={{ textAlign: 'right', fontSize: '1.1em' }}>
+      <td style={{ textAlign: 'right', fontSize: '1.1em', whiteSpace: 'nowrap' }}>
+        {hasStreamEdits(streamParams) && <EditButton title={t('This track has been edited')} onClick={() => setEditingStream({ streamId: stream.index, path: filePath })} highlighted />}
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
             <Button><FaHamburger style={{ verticalAlign: 'middle', padding: '.4em' }} /></Button>
@@ -641,8 +658,9 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
   );
 });
 
-function FileHeading({ path, format, onEditClick, toggleCopyAllStreams, chapters, onTrashClick, onExtractAllStreamsPress, changeEnabledStreamsFilter }: {
+function FileHeading({ path, format, onEditClick, edited, toggleCopyAllStreams, chapters, onTrashClick, onExtractAllStreamsPress, changeEnabledStreamsFilter }: {
   path: string,
+  edited: boolean,
   format: FFprobeFormat | undefined,
   onEditClick?: (() => void) | undefined,
   toggleCopyAllStreams: () => void,
@@ -668,7 +686,7 @@ function FileHeading({ path, format, onEditClick, toggleCopyAllStreams, chapters
         <Json5Dialog title={t('File info')} json={format}>
           <Button title={t('File info')}><FaInfoCircle style={{ verticalAlign: 'middle' }} /></Button>
         </Json5Dialog>
-        {onEditClick && <Button title={t('Edit file metadata')} onClick={onEditClick}><FaEdit style={{ verticalAlign: 'middle' }} /></Button>}
+        {onEditClick && <EditButton title={t('Edit file metadata')} onClick={onEditClick} highlighted={edited} />}
         <Button title={t('Toggle all tracks')} onClick={() => toggleCopyAllStreams()}><FaEye style={{ verticalAlign: 'middle' }} /></Button>
         {changeEnabledStreamsFilter && <Button title={t('Filter tracks')} onClick={changeEnabledStreamsFilter}><FaFilter style={{ verticalAlign: 'middle' }} /></Button>}
         {onExtractAllStreamsPress && <Button title={t('Export each track as individual files')} onClick={onExtractAllStreamsPress}><FaFileExport style={{ verticalAlign: 'middle' }} /></Button>}
@@ -702,7 +720,7 @@ const fileStyle: CSSProperties = { marginBottom: '2em', padding: '.5em 0', overf
 
 
 function StreamsSelector({
-  mainFilePath, mainFileFormat, mainFileStreams, mainFileChapters, isCopyingStreamId, toggleCopyStreamId, setCopyStreamIdsForPath, onExtractStreamPress, onExtractAllStreamsPress, allFilesMeta, externalFilesMeta, setExternalFilesMeta, showAddStreamSourceDialog, shortestFlag, setShortestFlag, nonCopiedExtraStreams, paramsByFile, setParamsByFile, updateStreamParams, formatTimecode, loadSubtitleTrackToSegments, toggleCopyStreamIds, changeEnabledStreamsFilter, toggleCopyAllStreamsForPath, onStreamSourceFileDrop, outFormat,
+  mainFilePath, mainFileFormat, mainFileStreams, mainFileChapters, isCopyingStreamId, toggleCopyStreamId, setCopyStreamIdsForPath, onExtractStreamPress, onExtractAllStreamsPress, allFilesMeta, externalFilesMeta, setExternalFilesMeta, showAddStreamSourceDialog, shortestFlag, setShortestFlag, nonCopiedExtraStreams, paramsByFile, setParamsByFile, updateStreamParams, formatTimecode, loadSubtitleTrackToSegments, toggleCopyStreamIds, changeEnabledStreamsFilter, toggleCopyAllStreamsForPath, onStreamSourceFileDrop, outFormat, confirmDialog,
 }: {
   mainFilePath: string,
   mainFileFormat: FFprobeFormat | undefined,
@@ -730,6 +748,7 @@ function StreamsSelector({
   toggleCopyAllStreamsForPath: (path: string) => void,
   onStreamSourceFileDrop: DragEventHandler<HTMLDivElement>,
   outFormat: string | undefined,
+  confirmDialog: ConfirmDialog,
 }) {
   const [editingFile, setEditingFile] = useState<string>();
   const [editingStream, setEditingStream] = useState<EditingStream>();
@@ -754,11 +773,29 @@ function StreamsSelector({
 
   const externalFilesEntries = Object.entries(externalFilesMeta);
 
+  // without streamId: resets the file's own params (not its tracks)
+  const resetParams = useCallback<ResetParams>((path, streamId) => setParamsByFile(produce((draft) => {
+    const fileParams = draft.get(path);
+    if (fileParams == null) return;
+    if (streamId != null) {
+      fileParams.paramsByStream.delete(streamId);
+    } else {
+      fileParams.metadata = {};
+      delete fileParams.offset;
+    }
+  })), [setParamsByFile]);
+
+  const haveEdits = [...paramsByFile.values()].some((fileParams) => hasFileEdits(fileParams) || [...fileParams.paramsByStream.values()].some((streamParams) => hasStreamEdits(streamParams)));
+
+  const onResetAllClick = useCallback(async () => {
+    if (await confirmDialog({ description: t('Reset all changes to files and tracks?') })) setParamsByFile(new Map());
+  }, [confirmDialog, setParamsByFile, t]);
+
   return (
     <>
       <div style={fileStyle} onDrop={onStreamSourceFileDrop}>
         {/* We only support editing main file metadata for now */}
-        <FileHeading path={mainFilePath} format={mainFileFormat} chapters={mainFileChapters} onEditClick={() => setEditingFile(mainFilePath)} toggleCopyAllStreams={() => toggleCopyAllStreamsForPath(mainFilePath)} onExtractAllStreamsPress={onExtractAllStreamsPress} changeEnabledStreamsFilter={changeEnabledStreamsFilter} />
+        <FileHeading path={mainFilePath} format={mainFileFormat} edited={hasFileEdits(paramsByFile.get(mainFilePath))} chapters={mainFileChapters} onEditClick={() => setEditingFile(mainFilePath)} toggleCopyAllStreams={() => toggleCopyAllStreamsForPath(mainFilePath)} onExtractAllStreamsPress={onExtractAllStreamsPress} changeEnabledStreamsFilter={changeEnabledStreamsFilter} />
         <table className={styles['table']}>
           <Thead />
 
@@ -786,7 +823,7 @@ function StreamsSelector({
 
       {externalFilesEntries.map(([path, { streams: externalFileStreams, format }]) => (
         <div key={path} style={fileStyle}>
-          <FileHeading path={path} format={format} onEditClick={() => setEditingFile(path)} toggleCopyAllStreams={() => toggleCopyAllStreamsForPath(path)} onTrashClick={() => removeFile(path)} />
+          <FileHeading path={path} format={format} edited={hasFileEdits(paramsByFile.get(path))} onEditClick={() => setEditingFile(path)} toggleCopyAllStreams={() => toggleCopyAllStreamsForPath(path)} onTrashClick={() => removeFile(path)} />
 
           <table className={styles['table']}>
             <Thead />
@@ -816,6 +853,12 @@ function StreamsSelector({
           <FaFileImport style={{ verticalAlign: 'middle', marginRight: '.5em' }} /> {t('Include more tracks from other file')}
         </Button>
 
+        {haveEdits && (
+          <Button style={{ marginBottom: '1em', marginLeft: '.5em', padding: '0.3em 1em' }} onClick={onResetAllClick}>
+            <FaUndo style={{ verticalAlign: 'middle', marginRight: '.5em' }} /> {t('Reset all changes')}
+          </Button>
+        )}
+
         {nonCopiedExtraStreams.length > 0 && (
           <div style={{ marginBottom: '1em' }}>
             <span style={{ marginRight: 10 }}>{t('Discard or extract unprocessable tracks to separate files?')}</span>
@@ -843,6 +886,7 @@ function StreamsSelector({
               <EditFileDialog editingFile={editingFile} editingKey={editingKey} setEditingKey={setEditingKey} allFilesMeta={allFilesMeta} paramsByFile={paramsByFile} setParamsByFile={setParamsByFile} enableMetadata={editingFile === mainFilePath} outFormat={outFormat} />
 
               <Dialog.ButtonRow>
+                <ResetButton disabled={!hasFileEdits(paramsByFile.get(editingFile))} onClick={() => resetParams(editingFile)} />
                 <Dialog.Close asChild>
                   <DialogButton primary disabled={editingKey != null}>{t('Done')}</DialogButton>
                 </Dialog.Close>
@@ -862,6 +906,7 @@ function StreamsSelector({
           paramsByFile={paramsByFile}
           updateStreamParams={updateStreamParams}
           outFormat={outFormat}
+          resetParams={resetParams}
         />
       )}
     </>
