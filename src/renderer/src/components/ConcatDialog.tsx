@@ -24,8 +24,7 @@ import FileNameTemplateEditor from './FileNameTemplateEditor';
 import HighlightedText from './HighlightedText';
 import type { FileStats } from '../types';
 import OutDirSelector from './OutDirSelector';
-
-const { basename } = window.require('node:path');
+import { basename } from '../util/path';
 
 
 const rowStyle: CSSProperties = {

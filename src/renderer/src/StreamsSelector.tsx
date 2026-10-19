@@ -29,9 +29,8 @@ import Json5Dialog from './components/Json5Dialog';
 import GpsMap from './components/GpsMap';
 import Switch from './components/Switch';
 import type { ConfirmDialog } from './components/GenericDialog';
+import { basename } from './util/path';
 
-
-const { basename } = window.require('node:path');
 
 // for "Copy from": the source's metadata including the user's changes, without muxer-written keys
 function getCopyFromSource({ key, getLabel, existing, custom }: { key: string, getLabel: (metadata: Record<string, string>) => string, existing: Record<string, string> | undefined, custom: Record<string, string> | undefined }) {
