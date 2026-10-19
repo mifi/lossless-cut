@@ -1143,5 +1143,8 @@
   "Value must be shorter than total duration ({{totalDuration}})": "数值必须小于总时长（{{totalDuration}}）",
   "Width": "宽度",
   "You are in simple mode, meaning some functionality has been simplified or hidden.": "你现在处于简单模式，这意味着有些功能被简化或隐藏了。",
-  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "你已经配置了自定义的 FFmpeg 目录。你可以在设置中更改或重置它。"
+  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "你已经配置了自定义的 FFmpeg 目录。你可以在设置中更改或重置它。",
+  "Dark": "深色",
+  "Light": "浅色",
+  "Theme": "主题"
 }
