@@ -307,8 +307,8 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
 
   const streamParams = useMemo(() => getStreamParams({ paramsByFile, filePath: editingFile, streamId: editingStreamId }), [editingFile, editingStreamId, paramsByFile]);
 
-  const onMetadataChange = useCallback((keyValues: Record<string, string>) => {
-    updateStreamParams(editingFile, editingStreamId, (params) => {
+  const setStreamMetadata = useCallback((streamId: number, keyValues: Record<string, string>) => {
+    updateStreamParams(editingFile, streamId, (params) => {
       // eslint-disable-next-line no-param-reassign
       if (params.metadata == null) params.metadata = {};
       const { metadata } = params;
@@ -316,7 +316,15 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
         metadata[tag] = tag === 'language' ? value.toLowerCase() : value;
       });
     });
-  }, [editingFile, editingStreamId, updateStreamParams]);
+  }, [editingFile, updateStreamParams]);
+
+  const onMetadataChange = useCallback((keyValues: Record<string, string>) => setStreamMetadata(editingStreamId, keyValues), [editingStreamId, setStreamMetadata]);
+
+  const otherStreamsOfSameType = useMemo(() => streams.filter((s) => s.codec_type === editingStream?.codec_type && s.index !== editingStreamId), [editingStream?.codec_type, editingStreamId, streams]);
+
+  const onApplyToAll = useCallback((tag: string, value: string) => {
+    otherStreamsOfSameType.forEach((s) => setStreamMetadata(s.index, { [tag]: value }));
+  }, [otherStreamsOfSameType, setStreamMetadata]);
 
   const onMetadataReset = useCallback((key: string) => {
     updateStreamParams(editingFile, editingStreamId, (params) => {
@@ -366,7 +374,7 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
             <div style={{ marginTop: '.5em' }}>
               <Tabs.Content value="metadata">
                 <MovMetadataNotice outFormat={outFormat} metadata={streamParams?.metadata} nativeKeys={streamMetadataKeys} />
-                <TagEditor existingTags={existingMetadata} customTags={streamParams?.metadata} editingTag={editingKey} setEditingTag={setEditingKey} onTagsChange={onMetadataChange} onTagReset={onMetadataReset} addTagTitle={t('Add metadata')} tagInfo={tagInfo} keySuggestions={streamMetadataKeys} canDeleteExisting />
+                <TagEditor existingTags={existingMetadata} customTags={streamParams?.metadata} editingTag={editingKey} setEditingTag={setEditingKey} onTagsChange={onMetadataChange} onTagReset={onMetadataReset} addTagTitle={t('Add metadata')} tagInfo={tagInfo} keySuggestions={streamMetadataKeys} canDeleteExisting onApplyToAll={otherStreamsOfSameType.length > 0 ? onApplyToAll : undefined} applyToAllTitle={t('Apply to all other tracks of this type')} />
               </Tabs.Content>
 
               {editingStream != null && (

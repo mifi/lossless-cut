@@ -3,7 +3,7 @@ import { memo, useRef, useState, useMemo, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import invariant from 'tiny-invariant';
 import { motion } from 'motion/react';
-import { FaCheck, FaClipboard, FaClipboardList, FaEdit, FaInfo, FaPlus, FaTrash, FaUndo } from 'react-icons/fa';
+import { FaCheck, FaClipboard, FaClipboardList, FaClone, FaEdit, FaInfo, FaPlus, FaTrash, FaUndo } from 'react-icons/fa';
 import { IconButton, Tooltip, Button, TextArea } from '@radix-ui/themes';
 
 import type { SegmentTags } from '../types';
@@ -29,7 +29,7 @@ export type TagInfo = Record<string, {
   validate?: (value: string) => string | undefined,
 }>;
 
-function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editingTag, setEditingTag, onTagsChange, onTagReset, addTagTitle, tagInfo, keySuggestions, canDeleteExisting }: {
+function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editingTag, setEditingTag, onTagsChange, onTagReset, addTagTitle, tagInfo, keySuggestions, canDeleteExisting, onApplyToAll, applyToAllTitle }: {
   existingTags?: SegmentTags,
   customTags?: SegmentTags | undefined,
   editingTag: string | undefined,
@@ -40,6 +40,8 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
   tagInfo?: TagInfo,
   keySuggestions?: readonly string[],
   canDeleteExisting?: boolean,
+  onApplyToAll?: ((tag: string, value: string) => void) | undefined,
+  applyToAllTitle?: string,
 }) {
   const { t } = useTranslation();
   const editRef = useRef<HTMLInputElement & HTMLTextAreaElement>(null);
@@ -214,6 +216,10 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
 
                   {editingThis && !thisTagNew && (
                     <IconButton size="1" color="red" variant="ghost" title={t('Reset')} onClick={onResetClick}><FaUndo /></IconButton>
+                  )}
+
+                  {onApplyToAll && !editingThis && (
+                    <IconButton disabled={editingOther} size="1" variant="ghost" color="gray" title={applyToAllTitle} onClick={() => onApplyToAll(tag, value ?? '')}><FaClone /></IconButton>
                   )}
 
                   {canDeleteExisting && !isDeletedExisting && !editingThis && existingTags[tag] != null && (

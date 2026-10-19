@@ -55,6 +55,7 @@
   "Apple devices (QuickTime, Safari, iOS) require the \"{{tag}}\" codec tag to play HEVC in MP4/MOV.": "Apple devices (QuickTime, Safari, iOS) require the \"{{tag}}\" codec tag to play HEVC in MP4/MOV.",
   "Apply change": "Apply change",
   "Apply filter": "Apply filter",
+  "Apply to all other tracks of this type": "Apply to all other tracks of this type",
   "Are you sure you want to close the current file?": "Are you sure you want to close the current file?",
   "Are you sure you want to close the loaded batch of files?": "Are you sure you want to close the loaded batch of files?",
   "Are you sure you want to quit?": "Are you sure you want to quit?",
