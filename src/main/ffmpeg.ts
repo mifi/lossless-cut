@@ -481,7 +481,7 @@ export async function captureFrames({ from, to, videoPath, outPathTemplate, qual
           '-vf', filter,
           // https://superuser.com/questions/1336285/use-ffmpeg-for-thumbnail-selections
           ...(framePts ? ['-frame_pts', '1'] : []),
-          '-vsync', '0', // else we get a ton of duplicates (thumbnail filter)
+          '-fps_mode', 'passthrough', // else we get a ton of duplicates (thumbnail filter). `-vsync` was removed in ffmpeg 9
         ] : [])
     ),
     ...getCodecOpts(captureFormat),
