@@ -1,4 +1,4 @@
-import type { CSSProperties, ClipboardEvent, Dispatch, FormEvent, SetStateAction } from 'react';
+import type { CSSProperties, ClipboardEvent, Dispatch, FormEvent, KeyboardEvent, SetStateAction } from 'react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
@@ -95,9 +95,11 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
 }) => {
   const { t } = useTranslation();
   const { getSegColor } = useSegColors();
+  const { timecodeFormat } = useUserSettings();
 
   const [cutTimeManual, setCutTimeManual] = useState<string>();
   const [error, setError] = useState<boolean>(false);
+  const skipCommitOnBlurRef = useRef(false);
 
   // Clear manual overrides if upstream cut time has changed
   useEffect(() => {
@@ -135,43 +137,38 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
 
   const isEmptyEndTime = useCallback((v: string | undefined) => !isStart && v?.trim() === '', [isStart]);
 
-  const handleSubmit = useCallback((e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    try {
-      if (isEmptyEndTime(cutTimeManual)) {
-        setTime(undefined); // clear time
-      } else if (cutTimeManual != null) {
-        // Don't proceed if not a valid time value
-        const timeWithOffset = parseTimecode(cutTimeManual);
-        if (timeWithOffset === undefined) return;
-
-        setTime(timeWithOffset);
-      }
-
-      // release focus, so that keyboard shortcuts work again https://github.com/mifi/lossless-cut/issues/2942
-      e.currentTarget.querySelector('input')?.blur();
-    } catch (err) {
-      console.warn('Cannot submit cut time', err);
-    }
-  }, [cutTimeManual, isEmptyEndTime, parseTimecode, setTime]);
-
   const parseAndSetCutTime = useCallback((text: string) => {
     if (isEmptyEndTime(text)) {
       setTime(undefined); // clear time
-      return;
+      return true;
     }
 
     // Don't proceed if not a valid time value
     const timeWithOffset = parseTimecode(text);
-    if (timeWithOffset === undefined) return;
+    if (timeWithOffset === undefined || !Number.isFinite(timeWithOffset)) return false;
 
     setTime(timeWithOffset);
+    return true;
   }, [isEmptyEndTime, parseTimecode, setTime]);
+
+  const handleSubmit = useCallback((e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    try {
+      if (cutTimeManual != null && !parseAndSetCutTime(cutTimeManual)) return;
+
+      // release focus, so that keyboard shortcuts work again https://github.com/mifi/lossless-cut/issues/2942
+      skipCommitOnBlurRef.current = true; // already committed
+      e.currentTarget.querySelector('input')?.blur();
+    } catch (err) {
+      console.warn('Cannot submit cut time', err);
+    }
+  }, [cutTimeManual, parseAndSetCutTime]);
 
   const handleCutTimeInput = useCallback((text: string) => {
     try {
-      if (isExactTimecodeMatch(text, parseTimecode, formatTimecode) || isEmptyEndTime(text)) {
+      // In frame count mode, every prefix of a number is also a valid frame number (typing 123 would commit 1, 12, 123), so wait for enter/blur
+      if ((timecodeFormat !== 'frameCount' && isExactTimecodeMatch(text, parseTimecode, formatTimecode)) || isEmptyEndTime(text)) {
         parseAndSetCutTime(text);
         return;
       }
@@ -182,12 +179,27 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
 
     // else or if error, just set manual value, to make sure it doesn't jump to end https://github.com/mifi/lossless-cut/issues/988#issuecomment-3475870072
     setCutTimeManual(text);
-  }, [formatTimecode, isEmptyEndTime, parseAndSetCutTime, parseTimecode]);
+  }, [formatTimecode, isEmptyEndTime, parseAndSetCutTime, parseTimecode, timecodeFormat]);
+
+  const handleInputKeyDown = useCallback((e: KeyboardEvent<HTMLInputElement>) => {
+    // escape (which blurs, see useKeyboard) cancels the edit instead of committing it
+    if (e.key === 'Escape' && !e.nativeEvent.isComposing) skipCommitOnBlurRef.current = true;
+  }, []);
 
   const handleInputBlur = useCallback(() => {
+    const skipCommit = skipCommitOnBlurRef.current;
+    skipCommitOnBlurRef.current = false;
+    // commit valid input when focus is lost (e.g. clicking elsewhere), so that it's not silently lost
+    if (!skipCommit && cutTimeManual != null) {
+      try {
+        parseAndSetCutTime(cutTimeManual);
+      } catch (err) {
+        console.warn('Cannot set cut time on blur', err);
+      }
+    }
     setCutTimeManual(undefined);
     setError(false);
-  }, []);
+  }, [cutTimeManual, parseAndSetCutTime]);
 
   const handleCutTimePaste = useCallback((e: ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
@@ -253,6 +265,7 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
         onChange={(e) => handleCutTimeInput(e.target.value)}
         onPaste={handleCutTimePaste}
         onBlur={handleInputBlur}
+        onKeyDown={handleInputKeyDown}
         onContextMenu={handleContextMenu}
         value={renderValue()}
       />
