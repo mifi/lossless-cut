@@ -103,6 +103,7 @@ Before releasing, consider [Maintenance chores](#maintenance-chores) first.
 
 ### Release built version
 
+- Optionally, install the Mac App Store build from TestFlight (it shows up in App Store Connect after processing) and check that it starts and can open and export a file. This catches problems that only happen in the sandboxed MAS build.
 - Open draft in github and add the prepared release notes
 - *If GitHub release*
   - Release the draft
