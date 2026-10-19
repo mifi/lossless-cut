@@ -18,8 +18,7 @@ import { getStreamFps } from './ffmpeg';
 import { getActiveDisposition, attachedPicDisposition, isGpsStream, isMov } from './util/streams';
 import { fileMetadataKeys, getCodecTagSuggestions, getLanguageSuggestions, getNonNativeMovMetadataKeys, isValidCodecTag, isValidCreationTime, isValidLanguageCode, needsHvc1Tag, streamMetadataKeys } from './util/metadata';
 import useUserSettings from './hooks/useUserSettings';
-import TagEditor from './components/TagEditor';
-import type { TagInfo } from './components/TagEditor';
+import TagEditor, { cancelTagEditOnEscape, type TagInfo } from './components/TagEditor';
 import SuggestionTextField from './components/SuggestionTextField';
 import Warning from './components/Warning';
 import type { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../common/ffprobe';
@@ -58,8 +57,9 @@ function useCommonTagInfo(): TagInfo {
   const { t } = useTranslation();
   return useMemo(() => ({
     creation_time: {
-      suggestions: [{ value: new Date().toISOString(), label: t('Now') }],
-      validate: (value) => (isValidCreationTime(value) ? undefined : t('Invalid date, use ISO 8601 format, e.g. {{example}}', { example: '2024-12-31T23:59:59Z' })),
+      // resolved by ffmpeg at export time
+      suggestions: [{ value: 'now', label: t('Now') }],
+      validate: (value) => (isValidCreationTime(value) ? undefined : t('Invalid date, use e.g. {{example}} or {{now}}', { example: '2024-12-31T23:59:59Z', now: 'now' })),
     },
     comment: { multiline: true },
     description: { multiline: true },
@@ -79,10 +79,10 @@ function ActionCallout({ color, style, text, actionText, onAction }: { color: 'a
 }
 
 // MP4/MOV only stores certain keys, unless "use_metadata_tags" is enabled
-function MovMetadataNotice({ outFormat, metadata, nativeKeys }: { outFormat: string | undefined, metadata: Record<string, string> | undefined, nativeKeys: readonly string[] }) {
+function MovMetadataNotice({ outFormat, metadata, isStream }: { outFormat: string | undefined, metadata: Record<string, string> | undefined, isStream: boolean }) {
   const { t } = useTranslation();
   const { preserveMovData, setPreserveMovData } = useUserSettings();
-  const nonNativeKeys = getNonNativeMovMetadataKeys(metadata, nativeKeys);
+  const nonNativeKeys = getNonNativeMovMetadataKeys({ metadata, outFormat, isStream });
   if (!isMov(outFormat) || preserveMovData || nonNativeKeys.length === 0) return null;
   return (
     <ActionCallout
@@ -275,7 +275,7 @@ const EditFileDialog = memo(({ editingFile, allFilesMeta, paramsByFile, setParam
       <div style={{ marginTop: '.5em' }}>
         {enableMetadata && (
           <Tabs.Content value="metadata">
-            <MovMetadataNotice outFormat={outFormat} metadata={fileParams?.metadata} nativeKeys={fileMetadataKeys} />
+            <MovMetadataNotice outFormat={outFormat} metadata={fileParams?.metadata} isStream={false} />
             <TagEditor existingTags={existingMetadata} customTags={fileParams?.metadata} editingTag={editingKey} setEditingTag={setEditingKey} onTagsChange={onMetadataChange} onTagReset={onMetadataReset} addTagTitle={t('Add metadata')} tagInfo={tagInfo} keySuggestions={fileMetadataKeys} canDeleteExisting />
           </Tabs.Content>
         )}
@@ -348,7 +348,7 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
     <Dialog.Root open={editingStream != null} onOpenChange={(v) => v === false && setEditingStream(undefined)}>
       <Dialog.Portal>
         <Dialog.Overlay />
-        <Dialog.Content style={{ width: '40em' }} aria-describedby={undefined} onEscapeKeyDown={(e) => editingKey != null && e.preventDefault()}>
+        <Dialog.Content style={{ width: '40em' }} aria-describedby={undefined} onEscapeKeyDown={cancelTagEditOnEscape(editingKey, setEditingKey)}>
           <Dialog.Title>{t('Edit track {{trackNum}} metadata', { trackNum: editingStream && (editingStream.index + 1) })}</Dialog.Title>
 
           <Tabs.Root defaultValue="metadata" style={{ minHeight: '20em' }}>
@@ -365,7 +365,7 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
 
             <div style={{ marginTop: '.5em' }}>
               <Tabs.Content value="metadata">
-                <MovMetadataNotice outFormat={outFormat} metadata={streamParams?.metadata} nativeKeys={streamMetadataKeys} />
+                <MovMetadataNotice outFormat={outFormat} metadata={streamParams?.metadata} isStream />
                 <TagEditor existingTags={existingMetadata} customTags={streamParams?.metadata} editingTag={editingKey} setEditingTag={setEditingKey} onTagsChange={onMetadataChange} onTagReset={onMetadataReset} addTagTitle={t('Add metadata')} tagInfo={tagInfo} keySuggestions={streamMetadataKeys} canDeleteExisting />
               </Tabs.Content>
 
@@ -824,7 +824,7 @@ function StreamsSelector({
         <Dialog.Root defaultOpen onOpenChange={(v) => v === false && setEditingFile(undefined)}>
           <Dialog.Portal>
             <Dialog.Overlay />
-            <Dialog.Content style={{ width: '40em' }} aria-describedby={undefined} onEscapeKeyDown={(e) => editingKey != null && e.preventDefault()}>
+            <Dialog.Content style={{ width: '40em' }} aria-describedby={undefined} onEscapeKeyDown={cancelTagEditOnEscape(editingKey, setEditingKey)}>
               <Dialog.Title>{t('Edit file metadata')}</Dialog.Title>
 
               <EditFileDialog editingFile={editingFile} editingKey={editingKey} setEditingKey={setEditingKey} allFilesMeta={allFilesMeta} paramsByFile={paramsByFile} setParamsByFile={setParamsByFile} enableMetadata={editingFile === mainFilePath} outFormat={outFormat} />

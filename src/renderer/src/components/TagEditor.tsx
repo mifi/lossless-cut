@@ -29,6 +29,14 @@ export type TagInfo = Record<string, {
   validate?: (value: string) => string | undefined,
 }>;
 
+// For the containing dialog's `onEscapeKeyDown`: Esc discards the unsaved edit instead of closing the dialog.
+// Handled at the dialog level so that it also works when the input doesn't have focus (or is not mounted, e.g. another tab)
+export const cancelTagEditOnEscape = (editingTag: string | undefined, setEditingTag: (v: string | undefined) => void) => (e: KeyboardEvent) => {
+  if (editingTag == null) return;
+  e.preventDefault();
+  setEditingTag(undefined);
+};
+
 function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editingTag, setEditingTag, onTagsChange, onTagReset, addTagTitle, tagInfo, keySuggestions, canDeleteExisting }: {
   existingTags?: SegmentTags,
   customTags?: SegmentTags | undefined,
@@ -46,7 +54,9 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
   const addRef = useRef<HTMLInputElement>(null);
 
   const [editingTagVal, setEditingTagVal] = useState<string>();
-  const [newTagKey, setNewTagKey] = useState<string>();
+  const [newTagKeyState, setNewTagKey] = useState<string>();
+  // the edit can also be discarded from outside (see cancelTagEditOnEscape), so only use it while editing
+  const newTagKey = editingTag != null ? newTagKeyState : undefined;
   const [newTagKeyInput, setNewTagKeyInput] = useState<string>('');
 
   const newTagKeyInputError = useMemo(() => !!newTagKeyInput && newTagKeyInput.includes('='), [newTagKeyInput]);
@@ -98,17 +108,13 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
     }
   }, [editingTag, editingTagVal, existingTags, effectiveTags, newTagKey, onResetClick, saveTag, setEditingTag]);
 
-  // Discard the unsaved edit (unlike reset, which also removes the custom value)
+  // Ctrl/Cmd+Enter saves (needed for multiline)
   const onEditKeyDown = useCallback<KeyboardEventHandler>((e) => {
-    if (e.key === 'Escape') {
-      e.stopPropagation();
-      setEditingTag(undefined);
-      setNewTagKey(undefined);
-    } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { // for multiline
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
       onEditClick();
     }
-  }, [onEditClick, setEditingTag]);
+  }, [onEditClick]);
 
   const onDeleteExistingClick = useCallback((tag: string) => {
     onTagsChange({ [tag]: '' }); // empty string means delete metadata in ffmpeg

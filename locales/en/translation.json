@@ -395,7 +395,7 @@
   "Input has {{numStreamsTotal}} tracks": "Input has {{numStreamsTotal}} tracks",
   "Instead of video apparently starting at 0, you can offset by a specified value. This only applies to the preview inside LosslessCut and does not modify the file in any way. (Useful for viewing/cutting videos according to timecodes)": "Instead of video apparently starting at 0, you can offset by a specified value. This only applies to the preview inside LosslessCut and does not modify the file in any way. (Useful for viewing/cutting videos according to timecodes).",
   "Invalid character(s) found in key": "Invalid character found in key",
-  "Invalid date, use ISO 8601 format, e.g. {{example}}": "Invalid date, use ISO 8601 format, e.g. {{example}}",
+  "Invalid date, use e.g. {{example}} or {{now}}": "Invalid date, use e.g. {{example}} or {{now}}",
   "Invalid duration": "Invalid duration",
   "Invalid EDL data found": "Invalid EDL data found",
   "Invalid input": "Invalid input",
