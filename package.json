@@ -321,6 +321,7 @@
         }
       ],
       "extendInfo": {
+        "ITSAppUsesNonExemptEncryption": false,
         "UTExportedTypeDeclarations": [
           {
             "UTTypeIdentifier": "no.mifi.losslesscut.project",
