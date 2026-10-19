@@ -527,7 +527,6 @@
   "None": "None",
   "Normal cut": "Normal cut",
   "Not all formats support all track types, and LosslessCut is unable to properly cut some track types, so you may have to sacrifice some tracks by disabling them in order to get correct result.": "Not all formats support all track types, and LosslessCut is unable to properly cut some track types, so you may have to sacrifice some tracks by disabling them in order to get correct result.",
-  "Not applied when FFmpeg renders the preview (FFmpeg-assisted playback or rotation preview)": "Not applied when FFmpeg renders the preview (FFmpeg-assisted playback or rotation preview)",
   "Note that also other settings from the normal export dialog apply to this merge function. For more information about all options, see the export dialog.": "Note that also other settings from the normal export dialog apply to this merge function. For more information about all options, see the export dialog.",
   "Note that depending on input parameters, up to {{estimatedMaxNumFiles}} files may be produced!": "Note that depending on input parameters, up to {{estimatedMaxNumFiles}} files may be produced!",
   "Note that this is not supported in all video players.": "Note that this is not supported in all video players.",

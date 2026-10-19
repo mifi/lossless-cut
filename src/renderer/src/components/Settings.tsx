@@ -482,10 +482,7 @@ function Settings({
 
         {showAdvancedSettings && (
           <Row>
-            <KeyCell>
-              {t('Video preview scaling')}
-              <div style={detailsStyle}>{t('Not applied when FFmpeg renders the preview (FFmpeg-assisted playback or rotation preview)')}</div>
-            </KeyCell>
+            <KeyCell>{t('Video preview scaling')}</KeyCell>
             <td>
               <Select value={videoFit} onChange={(e) => setVideoFit(e.target.value as Config['videoFit'])}>
                 {Object.entries({ contain: t('Fit to window'), 'scale-down': t('Fit to window, but don\'t enlarge'), cover: t('Fill window (crop)'), fill: t('Stretch to window'), none: t('Original size') } satisfies Record<Config['videoFit'], string>).map(([key, value]) => (
