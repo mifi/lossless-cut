@@ -162,12 +162,13 @@ Links:
 
 ### Upgrade FFmpeg
 
-Keep all platforms on the same FFmpeg release branch (e.g. 8.1).
+Use the newest stable release branch that all platforms can get (BtbN may lag behind), and keep all platforms on the same branch.
 
 1. macOS: bump `FFMPEG_VERSION` (and deps) in [ffmpeg-build-script](https://github.com/mifi/ffmpeg-build-script), then tag a release there (see its README).
 2. Windows and Linux: mirror the [BtbN](https://github.com/BtbN/FFmpeg-Builds) `gpl-shared` builds for that branch in a new [ffmpeg-builds](https://github.com/mifi/ffmpeg-builds) release (see its README). BtbN only builds the newest release branches, so check that the branch you want is still built.
 3. Update the `download-ffmpeg-*` scripts in [package.json](./package.json): the release tags, file names and extracted folder names.
-4. Test a nightly build on each platform: cutting (keyframe and normal), merging, smart cut and FFmpeg-assisted playback.
+4. Read FFmpeg's `Changelog` and `doc/APIchanges` (and the release notes) since the previous version for changes that may affect LosslessCut, e.g. removed or renamed CLI options, changed muxer/demuxer defaults, seeking behaviour (`-ss`, `-avoid_negative_ts`), `ffprobe` JSON output, and codec/format support.
+5. Test a nightly build on each platform: cutting (keyframe and normal), merging, smart cut, capture frame, waveform/thumbnails and FFmpeg-assisted playback.
 
 ### Upgrade Electron
 
