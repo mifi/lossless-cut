@@ -66,5 +66,7 @@ test('getCopyableMetadata', () => {
     _STATISTICS_WRITING_APP: 'mkvmerge',
     encoder: 'Lavf',
     major_brand: 'isom',
+    handler_name: 'SoundHandler',
+    iTunSMPB: ' 00000000 00000840',
   })).toEqual({ title: 'a', language: 'eng' });
 });

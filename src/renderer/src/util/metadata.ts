@@ -22,8 +22,9 @@ export const getEffectiveMetadata = (existing: Record<string, string> | undefine
   Object.fromEntries(Object.entries({ ...existing, ...custom }).filter(([, value]) => value !== ''))
 );
 
-// Keys that describe the source's own data (written by the muxer), so they shouldn't be copied to another track/file
-const nonCopyableMetadataKeyRegex = /^(encoder|major_brand|minor_version|compatible_brands|(DURATION|NUMBER_OF_FRAMES|NUMBER_OF_BYTES|BPS|_STATISTICS_[A-Z_]+)(-\w+)?)$/i;
+// Keys that describe the source's own data (mostly written by the muxer/encoder), so they shouldn't be copied to another track/file.
+// handler_name is excluded too, because it's usually a default like "SoundHandler" (and is used to detect e.g. GPS tracks)
+const nonCopyableMetadataKeyRegex = /^(encoder|major_brand|minor_version|compatible_brands|handler_name|vendor_id|timecode|iTunSMPB|iTunNORM|(DURATION|NUMBER_OF_FRAMES|NUMBER_OF_BYTES|BPS|ENCODER|ENCODER_SETTINGS|_STATISTICS_[A-Z_]+)(-\w+)?)$/i;
 
 export const getCopyableMetadata = (metadata: Record<string, string>) => (
   Object.fromEntries(Object.entries(metadata).filter(([key]) => !nonCopyableMetadataKeyRegex.test(key)))

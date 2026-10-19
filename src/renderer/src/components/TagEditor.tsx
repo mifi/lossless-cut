@@ -51,7 +51,7 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
   onApplyToAll?: ((tag: string, value: string) => void) | undefined,
   applyToAllTitle?: string,
   // other tracks/files to copy metadata from
-  copyFromSources?: { label: string, metadata: Record<string, string> }[],
+  copyFromSources?: { key: string, label: string, metadata: Record<string, string> }[],
 }) {
   const { t } = useTranslation();
   const editRef = useRef<HTMLInputElement & HTMLTextAreaElement>(null);
@@ -88,6 +88,11 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
       if (e instanceof Error) errorToast(e.message);
     }
   }, [onTagsChange]);
+
+  // only the keys that differ, so unchanged tags aren't shown as edited
+  const onCopyFrom = useCallback((metadata: Record<string, string>) => {
+    onTagsChange(Object.fromEntries(Object.entries(metadata).filter(([key, value]) => effectiveTags[key] !== value)));
+  }, [effectiveTags, onTagsChange]);
 
   const saveTag = useCallback(() => {
     invariant(editingTag != null);
@@ -254,16 +259,16 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
           {({ onClick }) => <Button color="gray" size="1" onClick={onClick}><FaClipboardList />{t('Copy to clipboard')}</Button>}
         </CopyClipboardButton>
 
-        <Button color="gray" size="1" onClick={onPasteClick} style={{ marginRight: '.3em' }}><FaClipboard />{t('Paste')}</Button>
+        <Button color="gray" size="1" disabled={editingTag != null} onClick={onPasteClick} style={{ marginRight: '.3em' }}><FaClipboard />{t('Paste')}</Button>
 
         {copyFromSources.length > 0 && (
           <DropdownMenu.Root>
-            <DropdownMenu.Trigger>
+            <DropdownMenu.Trigger disabled={editingTag != null}>
               <Button color="gray" size="1"><FaCopy />{t('Copy from')}<FaChevronDown /></Button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content size="1" style={{ maxHeight: '20em' }}>
-              {copyFromSources.map(({ label, metadata }) => (
-                <DropdownMenu.Item key={label} onSelect={() => onTagsChange(metadata)}>{label}</DropdownMenu.Item>
+              {copyFromSources.map(({ key, label, metadata }) => (
+                <DropdownMenu.Item key={key} onSelect={() => onCopyFrom(metadata)}>{label}</DropdownMenu.Item>
               ))}
             </DropdownMenu.Content>
           </DropdownMenu.Root>

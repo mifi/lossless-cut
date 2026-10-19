@@ -30,12 +30,12 @@ import GpsMap from './components/GpsMap';
 import Switch from './components/Switch';
 
 
-const getFileName = (path: string) => path.replace(/.*\/([^/]+)$/, '$1');
+const { basename } = window.require('node:path');
 
 // for "Copy from": the source's metadata including the user's changes, without muxer-written keys
-function getCopyFromSource(label: string, existing: Record<string, string> | undefined, custom: Record<string, string> | undefined) {
+function getCopyFromSource({ key, getLabel, existing, custom }: { key: string, getLabel: (metadata: Record<string, string>) => string, existing: Record<string, string> | undefined, custom: Record<string, string> | undefined }) {
   const metadata = getCopyableMetadata(getEffectiveMetadata(existing, custom));
-  return Object.keys(metadata).length > 0 ? { label, metadata } : undefined;
+  return Object.keys(metadata).length > 0 ? { key, label: getLabel(metadata), metadata } : [];
 }
 
 type UpdateStreamParams = (fileId: string, streamId: number, setter: (a: StreamParams) => void) => void;
@@ -266,7 +266,7 @@ const EditFileDialog = memo(({ editingFile, allFilesMeta, paramsByFile, setParam
   }, [updateFileParams]);
 
   const copyFromSources = useMemo(() => Object.entries(allFilesMeta).flatMap(([path, { format: otherFormat }]) => (
-    path !== editingFile ? getCopyFromSource(getFileName(path), otherFormat.tags, paramsByFile.get(path)?.metadata) ?? [] : []
+    path !== editingFile ? getCopyFromSource({ key: path, getLabel: () => basename(path), existing: otherFormat.tags, custom: paramsByFile.get(path)?.metadata }) : []
   )), [allFilesMeta, editingFile, paramsByFile]);
 
   const commonTagInfo = useCommonTagInfo();
@@ -357,10 +357,12 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
     const multipleFiles = Object.keys(allFilesMeta).length > 1;
     return Object.entries(allFilesMeta).flatMap(([path, { streams: fileStreams }]) => fileStreams.flatMap((s) => {
       if (path === editingFile && s.index === editingStreamId) return [];
-      const custom = getStreamParams({ paramsByFile, filePath: path, streamId: s.index })?.metadata;
-      const title = custom?.['title'] ?? s.tags?.title;
-      const label = `${multipleFiles ? `${getFileName(path)}: ` : ''}#${s.index + 1} ${s.codec_type}${title ? ` – ${title}` : ''}`;
-      return getCopyFromSource(label, s.tags, custom) ?? [];
+      return getCopyFromSource({
+        key: `${path}:${s.index}`,
+        getLabel: ({ title }) => `${multipleFiles ? `${basename(path)}: ` : ''}#${s.index + 1} ${s.codec_type}${title ? ` – ${title}` : ''}`,
+        existing: s.tags,
+        custom: getStreamParams({ paramsByFile, filePath: path, streamId: s.index })?.metadata,
+      });
     }));
   }, [allFilesMeta, editingFile, editingStreamId, paramsByFile]);
 
@@ -678,7 +680,7 @@ function FileHeading({ path, format, onEditClick, toggleCopyAllStreams, chapters
 
   return (
     <div style={{ display: 'flex', marginBottom: '.2em', borderBottom: '1px solid var(--gray-7)' }}>
-      <div title={path} style={{ wordBreak: 'break-all', marginRight: '1em', fontWeight: 'bold' }}>{getFileName(path)}</div>
+      <div title={path} style={{ wordBreak: 'break-all', marginRight: '1em', fontWeight: 'bold' }}>{basename(path)}</div>
 
       <div style={{ flexGrow: 1 }} />
 
