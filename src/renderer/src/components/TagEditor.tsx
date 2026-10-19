@@ -12,11 +12,21 @@ import CopyClipboardButton from './CopyClipboardButton';
 import { errorToast } from '../swal';
 import Warning from './Warning';
 import mainApi from '../mainApi';
+import type { Suggestion } from './SuggestionTextField';
+import SuggestionTextField from './SuggestionTextField';
 
 
 const activeColor = 'var(--gray-12)';
 
 const emptyObject = {};
+
+export type TagInfo = Record<string, {
+  description?: string,
+  url?: string,
+  suggestions?: Suggestion[],
+  // returns an error message if invalid
+  validate?: (value: string) => string | undefined,
+}>;
 
 function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editingTag, setEditingTag, onTagsChange, onTagReset, addTagTitle, tagInfo, canDeleteExisting }: {
   existingTags?: SegmentTags,
@@ -26,7 +36,7 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
   onTagsChange: (keyValues: Record<string, string>) => void,
   onTagReset: (tag: string) => void,
   addTagTitle: string,
-  tagInfo?: Record<string, { description: string, url?: string }>,
+  tagInfo?: TagInfo,
   canDeleteExisting?: boolean,
 }) {
   const { t } = useTranslation();
@@ -118,6 +128,8 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
     ref.current?.focus();
   }, [editingTag]);
 
+  const editingTagError = editingTag != null && editingTagVal ? tagInfo?.[editingTag]?.validate?.(editingTagVal) : undefined;
+
   const canAdd = !newTagKey && (editingTag == null || effectiveTags[editingTag] == null);
 
   function renderValue({ isDeletedExisting, value, thisTagCustom }: {
@@ -161,13 +173,13 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
                 <td style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '.5em' }}>
                   {editingThis ? (
                     <form style={{ marginRight: '.5em', display: 'inline' }} onSubmit={onSubmit}>
-                      <TextField.Root ref={ref} placeholder={t('Enter value')} value={editingTagVal ?? ''} onChange={(e) => setEditingTagVal(e.target.value)} />
+                      <SuggestionTextField ref={ref} placeholder={t('Enter value')} value={editingTagVal ?? ''} onValueChange={setEditingTagVal} suggestions={tagInfo?.[tag]?.suggestions ?? []} />
                     </form>
                   ) : (
                     renderValue({ isDeletedExisting, value, thisTagCustom })
                   )}
 
-                  {tagInfo?.[tag] && !editingThis && (
+                  {tagInfo?.[tag]?.description && !editingThis && (
                     <Tooltip content={tagInfo[tag].description}>
                       <IconButton size="1" variant="ghost" color="gray" style={{ cursor: tagInfo[tag]?.url ? 'pointer' : undefined }} onClick={() => tagInfo[tag]?.url && mainApi.openExternal(tagInfo[tag].url)}><FaInfo /></IconButton>
                     </Tooltip>
@@ -192,6 +204,8 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
           })}
         </tbody>
       </table>
+
+      {editingTagError && <Warning style={{ marginBottom: '1em' }}>{editingTagError}</Warning>}
 
       <form onSubmit={onAddSubmit} style={{ opacity: canAdd ? undefined : 0.5, marginBottom: '1em', display: 'flex', alignItems: 'center' }}>
         <TextField.Root ref={ref} disabled={!canAdd} value={newTagKeyInput} onChange={(e) => setNewTagKeyInput(e.target.value)} placeholder={addTagTitle} style={{ marginRight: '1em' }} />

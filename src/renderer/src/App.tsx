@@ -2824,6 +2824,7 @@ function App() {
                           changeEnabledStreamsFilter={changeEnabledStreamsFilter}
                           toggleCopyAllStreamsForPath={toggleCopyAllStreamsForPath}
                           onStreamSourceFileDrop={handleStreamSourceFileDrop}
+                          outFormat={fileFormat}
                         />
                       )}
 

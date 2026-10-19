@@ -6,7 +6,7 @@ import { GoFileBinary } from 'react-icons/go';
 import { MdSubtitles } from 'react-icons/md';
 import { useTranslation, Trans } from 'react-i18next';
 import prettyBytes from 'pretty-bytes';
-import { Tabs, TextField } from '@radix-ui/themes';
+import { Button as ThemesButton, Callout, Tabs, TextField } from '@radix-ui/themes';
 import { produce } from 'immer';
 
 import * as DropdownMenu from './components/DropdownMenu';
@@ -15,8 +15,12 @@ import AutoExportToggler from './components/AutoExportToggler';
 import Select from './components/Select';
 import type { FileStream } from './ffmpeg';
 import { getStreamFps } from './ffmpeg';
-import { getActiveDisposition, attachedPicDisposition, isGpsStream } from './util/streams';
+import { getActiveDisposition, attachedPicDisposition, isGpsStream, getCodecTagSuggestions, isMov, isValidCodecTag } from './util/streams';
+import { getLanguageSuggestions, isValidLanguageCode } from './util/languages';
 import TagEditor from './components/TagEditor';
+import type { TagInfo } from './components/TagEditor';
+import SuggestionTextField from './components/SuggestionTextField';
+import Warning from './components/Warning';
 import type { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../common/ffprobe';
 import { contentDispositionOptionsSchema, deleteDispositionValue, dispositionOptions, type ContentDispositionOptions, type FileParams, type FilesMeta, type FormatTimecode, type ParamsByFile, type StreamParams } from './types';
 import Button, { DialogButton } from './components/Button';
@@ -238,14 +242,15 @@ const EditFileDialog = memo(({ editingFile, allFilesMeta, paramsByFile, setParam
 });
 
 // eslint-disable-next-line react/display-name
-const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, path: editingFile }, setEditingStream, allFilesMeta, paramsByFile, updateStreamParams }: {
+const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, path: editingFile }, setEditingStream, allFilesMeta, paramsByFile, updateStreamParams, outFormat }: {
   editingStream: EditingStream,
   setEditingStream: Dispatch<SetStateAction<EditingStream | undefined>>,
   allFilesMeta: FilesMeta,
   paramsByFile: ParamsByFile,
   updateStreamParams: UpdateStreamParams,
+  outFormat: string | undefined,
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [editingKey, setEditingKey] = useState<string>();
 
   const { streams } = allFilesMeta[editingFile]!;
@@ -276,12 +281,19 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
     });
   }, [editingFile, editingStreamId, updateStreamParams]);
 
-  const tagInfo = useMemo(() => ({
+  const tagInfo = useMemo<TagInfo>(() => ({
     language: {
       description: t('The language tag (ISO 639-2 code). For example "eng" for English. This is used by some players to select the appropriate audio/subtitle track based on the user\'s language preferences.'),
       url: 'https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes',
+      suggestions: getLanguageSuggestions(i18n.language),
+      validate: (value) => (isValidLanguageCode(value.toLowerCase()) ? undefined : t('Language should be a 3-letter ISO 639-2 code')),
     },
-  }), [t]);
+  }), [i18n.language, t]);
+
+  const codecTagSuggestions = useMemo(() => getCodecTagSuggestions(editingStream?.codec_name).map((value) => ({ value })), [editingStream?.codec_name]);
+  const effectiveCodecTag = streamParams?.tag ?? editingStream?.codec_tag_string;
+  // https://developer.apple.com/documentation/http-live-streaming/hls-authoring-specification-for-apple-devices
+  const suggestHvc1 = editingStream?.codec_name === 'hevc' && isMov(outFormat) && effectiveCodecTag !== 'hvc1';
 
   const updateCurrentStreamParams = (setter: (a: StreamParams) => void) => updateStreamParams(editingFile, editingStreamId, setter);
 
@@ -346,11 +358,26 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
                     )}
 
                     {(editingStream.codec_type === 'video' || editingStream.codec_type === 'audio') && (
-                      <KeyValue
-                        name={t('Codec tag')}
-                        // eslint-disable-next-line no-param-reassign
-                        value={<TextField.Root placeholder={editingStream?.codec_tag_string ?? t('Default')} value={streamParams?.tag ?? ''} onChange={(e) => updateCurrentStreamParams((params) => { params.tag = e.target.value.trim() === '' ? undefined : e.target.value; })} />}
-                      />
+                      <>
+                        <KeyValue
+                          name={t('Codec tag')}
+                          // eslint-disable-next-line no-param-reassign
+                          value={<SuggestionTextField placeholder={editingStream?.codec_tag_string ?? t('Default')} value={streamParams?.tag ?? ''} suggestions={codecTagSuggestions} onValueChange={(value) => updateCurrentStreamParams((params) => { params.tag = value.trim() === '' ? undefined : value; })} />}
+                        />
+
+                        {streamParams?.tag != null && !isValidCodecTag(streamParams.tag) && <Warning>{t('Codec tag should be 4 characters')}</Warning>}
+
+                        {suggestHvc1 && (
+                          <Callout.Root size="1" color="blue" style={{ marginTop: '.5em' }}>
+                            <Callout.Icon><FaInfoCircle /></Callout.Icon>
+                            <Callout.Text>
+                              {t('Apple devices (QuickTime, Safari, iOS) require the "{{tag}}" codec tag to play HEVC in MP4/MOV.', { tag: 'hvc1' })}{' '}
+                              {/* eslint-disable-next-line no-param-reassign */}
+                              <ThemesButton size="1" variant="soft" onClick={() => updateCurrentStreamParams((params) => { params.tag = 'hvc1'; })}>{t('Use "{{tag}}"', { tag: 'hvc1' })}</ThemesButton>
+                            </Callout.Text>
+                          </Callout.Root>
+                        )}
+                      </>
                     )}
                   </Tabs.Content>
                 </>
@@ -614,7 +641,7 @@ const fileStyle: CSSProperties = { marginBottom: '2em', padding: '.5em 0', overf
 
 
 function StreamsSelector({
-  mainFilePath, mainFileFormat, mainFileStreams, mainFileChapters, isCopyingStreamId, toggleCopyStreamId, setCopyStreamIdsForPath, onExtractStreamPress, onExtractAllStreamsPress, allFilesMeta, externalFilesMeta, setExternalFilesMeta, showAddStreamSourceDialog, shortestFlag, setShortestFlag, nonCopiedExtraStreams, paramsByFile, setParamsByFile, updateStreamParams, formatTimecode, loadSubtitleTrackToSegments, toggleCopyStreamIds, changeEnabledStreamsFilter, toggleCopyAllStreamsForPath, onStreamSourceFileDrop,
+  mainFilePath, mainFileFormat, mainFileStreams, mainFileChapters, isCopyingStreamId, toggleCopyStreamId, setCopyStreamIdsForPath, onExtractStreamPress, onExtractAllStreamsPress, allFilesMeta, externalFilesMeta, setExternalFilesMeta, showAddStreamSourceDialog, shortestFlag, setShortestFlag, nonCopiedExtraStreams, paramsByFile, setParamsByFile, updateStreamParams, formatTimecode, loadSubtitleTrackToSegments, toggleCopyStreamIds, changeEnabledStreamsFilter, toggleCopyAllStreamsForPath, onStreamSourceFileDrop, outFormat,
 }: {
   mainFilePath: string,
   mainFileFormat: FFprobeFormat | undefined,
@@ -641,6 +668,7 @@ function StreamsSelector({
   changeEnabledStreamsFilter: () => void,
   toggleCopyAllStreamsForPath: (path: string) => void,
   onStreamSourceFileDrop: DragEventHandler<HTMLDivElement>,
+  outFormat: string | undefined,
 }) {
   const [editingFile, setEditingFile] = useState<string>();
   const [editingStream, setEditingStream] = useState<EditingStream>();
@@ -772,6 +800,7 @@ function StreamsSelector({
           allFilesMeta={allFilesMeta}
           paramsByFile={paramsByFile}
           updateStreamParams={updateStreamParams}
+          outFormat={outFormat}
         />
       )}
     </>

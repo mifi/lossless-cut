@@ -105,6 +105,24 @@ export const isMov = (format: string | undefined) => format != null && ['ismv', 
 
 export const isMatroska = (format: string | undefined) => format != null && ['matroska', 'webm'].includes(format);
 
+// Common codec tags (FourCC) for use with `-tag`. Mostly relevant for MP4/MOV output
+const codecTagsByCodec: Record<string, string[]> = {
+  hevc: ['hvc1', 'hev1', 'dvh1', 'dvhe'],
+  h264: ['avc1', 'avc3'],
+  av1: ['av01'],
+  vp9: ['vp09'],
+  mpeg4: ['mp4v', 'XVID', 'DIVX'],
+  aac: ['mp4a'],
+  ac3: ['ac-3'],
+  eac3: ['ec-3'],
+  opus: ['Opus'],
+  flac: ['fLaC'],
+};
+
+export const getCodecTagSuggestions = (codecName: string | undefined) => (codecName != null && codecTagsByCodec[codecName]) || [];
+
+export const isValidCodecTag = (tag: string) => tag.length === 4;
+
 type GetVideoArgsFn = (a: { streamIndex: number, outputIndex: number }) => string[] | undefined;
 
 function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition = false, getVideoArgs = () => undefined, needFlac }: {
