@@ -78,9 +78,9 @@ async function getBackground() {
     // Without a photo, use a dark gradient in the accent hue
     return { base: svg(`<defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="hsl(${hue}, 30%, 12%)" /><stop offset="1" stop-color="hsl(${(hue + 40) % 360}, 45%, 28%)" /></linearGradient></defs><rect width="100%" height="100%" fill="url(#g)" />`), layers: [] };
   }
-  // Blur only behind the text, fading into the sharp photo
-  const blurMask = svg(`<defs>${fade('m', [[0, 1], [0.45, 1], [0.7, 0]])}</defs><rect width="100%" height="100%" fill="url(#m)" />`);
-  const blurred = await sharp(photo).blur(25).composite([{ input: blurMask, blend: 'dest-in' }]).png().toBuffer();
+  // Blur only behind the text, lightly, fading into the sharp photo
+  const blurMask = svg(`<defs>${fade('m', [[0, 1], [0.35, 1], [0.55, 0]])}</defs><rect width="100%" height="100%" fill="url(#m)" />`);
+  const blurred = await sharp(photo).blur(8).composite([{ input: blurMask, blend: 'dest-in' }]).png().toBuffer();
   return { base: photo, layers: [{ input: blurred }] };
 }
 
