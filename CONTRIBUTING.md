@@ -116,7 +116,7 @@ Before releasing, consider [Maintenance chores](#maintenance-chores) first.
   - `git checkout master`
   - `git merge stores`
 - Bump [snap version](https://snapcraft.io/losslesscut/releases)
-- Post the announcement to Discord, X, Bluesky and Mastodon (see [Release announcement](./AGENTS.md#release-announcement))
+- Post the announcement to Discord, X, Bluesky, Mastodon and Instagram (see [Release announcement](./AGENTS.md#release-announcement))
 
 ### Release in Stores
 
