@@ -101,7 +101,7 @@ Instead, to create segments from a script, write a [project file](index.md#impor
 }
 ```
 
-Then open the file and export using `--keyboard-action export`, or better the [HTTP API](api.md), which waits for most actions to finish before responding. You can also open an `.llc` file directly: `LosslessCut /path/to/video-proj.llc`.
+Then open the file and export it using `--keyboard-action export`, or better the [HTTP API](api.md), which waits for most actions to finish before responding. Note that by default `export` first opens the export options dialog, so either turn that dialog off (`--settings-json '{exportConfirmEnabled:false}'`) or send `export` twice. You can also open an `.llc` file directly (`LosslessCut /path/to/video-proj.llc`), see the [batch example](api.md#batch-example).
 
 ### HTTP API
 

@@ -24,7 +24,7 @@ Please read the documentation before creating an issue. Thank you 🙏
   - **A:** Because lossless cuts start from the keyframe before the cut point. See [Export starts a few seconds before my cut point](troubleshooting.md#export-starts-a-few-seconds-before-my-cut-point).
 - **Q:** File not supported, black preview or playback stutters?
   - **A:** See [Preview / playback problems](troubleshooting.md#preview--playback-problems). The preview does not affect the exported file.
-- **Q:** My merged file only plays the first part, or later parts have only audio or are corrupt.
+- **Q:** Why does my merged file only play the first part, or have later parts with only audio or corrupt video?
   - **A:** The files must have identical codec parameters. See [Merge / concat results in corrupt or broken parts](troubleshooting.md#merge--concat-results-in-corrupt-or-broken-parts).
 - **Q:** How can I export all segments with the same label into their own file, or quickly select many segments?
   - **A:** See [Export segments with the same label into their own file](recipes.md#export-segments-with-the-same-label-into-their-own-file).
@@ -76,7 +76,7 @@ If you have a problem with the app or with a file, please see the [🤔 Troubles
 - <kbd>BACKSPACE</kbd> to remove cutpoint/segment.
 - If you create segments without an end time, it is a [marker](#markers) instead of a segment.
   - Note that when exporting, all segments you create will be **preserved** and exported as new files. You can change this behavior with the **Yin Yang** symbol ☯️, in which case the behaviour is inverted and LosslessCut will instead **skip** all selected segments and export the parts **between** segments as files.
-  - Also note that start times will not be accurate, see [Known issues](troubleshooting.md#export-starts-a-few-seconds-before-my-cut-point).
+  - Also note that start times will not be accurate, see [Export starts a few seconds before my cut point](troubleshooting.md#export-starts-a-few-seconds-before-my-cut-point).
 - *(optional)* <kbd>+</kbd> to add another segment at the current cursor time. Then select the segment end time with <kbd>O</kbd>.
 - *(optional)* If you want to merge all the selected segments into one file after cutting, change the `Export mode` from `Separate files` to `Merge cuts`.
 - *(optional)* If you want to export to a certain output folder, press the `Working dir unset` button (defaults to same folder as source file).
