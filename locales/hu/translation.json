@@ -961,7 +961,7 @@
   "Apple devices (QuickTime, Safari, iOS) require the \"{{tag}}\" codec tag to play HEVC in MP4/MOV.": "Az Apple eszközök (QuickTime, Safari, iOS) a HEVC MP4/MOV lejátszásához a(z) \"{{tag}}\" kodek címkét igénylik.",
   "Apply to all other tracks of this type": "Alkalmazza az összes többi, ezen típusú sávra",
   "Codec tag should be 4 characters": "A kodek-címkének 4 karakterből kell állnia",
-  "Copy from": "Másolás innen:",
+  "Copy from": "Másolás innen",
   "Enable": "Engedélyezés",
   "Fill window (crop)": "Ablak kitöltése (vágás)",
   "Fit to window": "Ablakhoz igazítás",
