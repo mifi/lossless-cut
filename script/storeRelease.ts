@@ -3,15 +3,15 @@
 //
 // node script/storeRelease.ts mas <version> [--notes file] [--prepare | --submit]
 // node script/storeRelease.ts msstore <version> [--notes file] [--submit]
-// node script/storeRelease.ts msstore-rollout <percent> [--submit]
+// node script/storeRelease.ts msstore-rollout <percent|next> [--submit]
 //
 // Credentials come from the environment:
-// Mac App Store: ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_PATH (default ~/.appstoreconnect/private_keys/AuthKey_<ASC_KEY_ID>.p8)
+// Mac App Store: ASC_KEY_ID, ASC_ISSUER_ID, and ASC_KEY (the .p8 key's contents) or ASC_KEY_PATH (default ~/.appstoreconnect/private_keys/AuthKey_<ASC_KEY_ID>.p8)
 // Microsoft Store: MSSTORE_TENANT_ID, MSSTORE_CLIENT_ID, MSSTORE_CLIENT_SECRET
 import assert from 'node:assert';
 import { createPrivateKey, sign } from 'node:crypto';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
-import { openAsBlob } from 'node:fs';
+import { existsSync, openAsBlob } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
@@ -24,14 +24,16 @@ const masAppId = '1505323402';
 const msStoreAppId = '9P30LSR4705L';
 const githubRepo = 'mifi/lossless-cut';
 const msStoreArchs = ['x64', 'arm64'];
+// Same steps as Apple's 7-day phased release
+const msStoreRolloutSteps = [1, 2, 5, 10, 20, 50, 100];
 
 const args = yargs(hideBin(process.argv))
   .command('mas <version>', 'Mac App Store')
   .command('msstore <version>', 'Microsoft Store')
-  .command('msstore-rollout <percent>', 'Change the Microsoft Store gradual rollout percentage of the last published submission (100 finalizes it)')
+  .command('msstore-rollout <percent>', `Change the Microsoft Store gradual rollout percentage of the last published submission (100 finalizes it). "next" goes to the next of ${msStoreRolloutSteps.join(', ')}%, and does nothing if no rollout is in progress`)
   .demandCommand(1)
   .version(false)
-  .option('notes', { type: 'string', describe: 'What\'s New text file (default: notes/<store>-whats-new-<version>.txt)' })
+  .option('notes', { type: 'string', describe: 'What\'s New text file (default: store-release-notes/<store>-<version>.txt)' })
   .option('prepare', { type: 'boolean', default: false, describe: 'Mac App Store: write the changes, but don\'t submit for review' })
   .option('submit', { type: 'boolean', default: false, describe: 'Write the changes and submit for review' })
   .strict()
@@ -61,7 +63,11 @@ async function fetchJson(url: string, init: RequestInit & { hint?: string } = {}
 }
 
 async function readNotes(version: string, maxLength: number) {
-  const path = args.notes ?? `notes/${store}-whats-new-${version}.txt`;
+  const path = args.notes ?? `store-release-notes/${store}-${version}.txt`;
+  if (!write && !existsSync(path)) {
+    log(`What's New: ${path} doesn't exist yet\n`);
+    return '';
+  }
   const notes = (await readFile(path, 'utf8')).trim();
   assert(notes.length > 0, `${path} is empty`);
   assert(notes.length <= maxLength, `${path} is ${notes.length} characters, the max is ${maxLength}`);
@@ -81,7 +87,7 @@ let ascKey: ReturnType<typeof createPrivateKey> | undefined;
 
 async function ascToken() {
   const keyId = requireEnv('ASC_KEY_ID');
-  ascKey ??= createPrivateKey(await readFile(process.env['ASC_KEY_PATH'] ?? join(homedir(), '.appstoreconnect/private_keys', `AuthKey_${keyId}.p8`)));
+  ascKey ??= createPrivateKey(process.env['ASC_KEY'] ?? await readFile(process.env['ASC_KEY_PATH'] ?? join(homedir(), '.appstoreconnect/private_keys', `AuthKey_${keyId}.p8`)));
   const base64url = (obj: object) => Buffer.from(JSON.stringify(obj)).toString('base64url');
   const now = Math.floor(Date.now() / 1000);
   const unsigned = `${base64url({ alg: 'ES256', kid: keyId, typ: 'JWT' })}.${base64url({ iss: requireEnv('ASC_ISSUER_ID'), iat: now, exp: now + 15 * 60, aud: 'appstoreconnect-v1' })}`;
@@ -325,10 +331,16 @@ async function msstore(version: string) {
   }
 }
 
-async function msstoreRollout(percent: number) {
-  assert(percent > 0 && percent <= 100, 'Percent must be in (0, 100]');
+async function msstoreRollout(percentArg: string) {
   const { published } = await getMsApp();
-  assert(published.packageDeliveryOptions.packageRollout.packageRolloutStatus === 'PackageRolloutInProgress', 'The last published submission has no gradual rollout in progress (did you click "Publish now"?)');
+  const { packageRolloutStatus, packageRolloutPercentage } = published.packageDeliveryOptions.packageRollout;
+  if (packageRolloutStatus !== 'PackageRolloutInProgress') {
+    assert(percentArg === 'next', 'The last published submission has no gradual rollout in progress (did you click "Publish now"?)');
+    log('No rollout in progress, nothing to do');
+    return;
+  }
+  const percent = percentArg === 'next' ? (msStoreRolloutSteps.find((step) => step > packageRolloutPercentage) ?? 100) : Number(percentArg);
+  assert(percent > 0 && percent <= 100, 'Percent must be in (0, 100]');
   const action = percent === 100 ? 'finalizepackagerollout' : `updatepackagerolloutpercentage?percentage=${percent}`;
   plan(percent === 100 ? 'finalize the rollout (100%)' : `set rollout to ${percent}%`);
   if (!args.submit) return;
@@ -339,7 +351,7 @@ async function msstoreRollout(percent: number) {
 switch (store) {
   case 'mas': { await mas(String(args['version'])); break; }
   case 'msstore': { await msstore(String(args['version'])); break; }
-  case 'msstore-rollout': { await msstoreRollout(Number(args['percent'])); break; }
+  case 'msstore-rollout': { await msstoreRollout(String(args['percent'])); break; }
   default: { throw new Error(`Unknown command ${store}`); }
 }
 if (!write) log('\nDry run, nothing was changed. Use --submit to apply.');

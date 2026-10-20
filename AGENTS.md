@@ -26,4 +26,4 @@ The stores lag behind GitHub releases, so their "What's new" text must cover eve
 - Plain text, no Markdown, code formatting, issue references or links. Use plain-language feature names instead of internal action/variable names.
 - Leave out what doesn't apply to that store's build: items for other platforms (App Review rejects mentions of other platforms), GitHub-only builds, custom FFmpeg path (not in the Mac App Store build), update checks.
 - Microsoft Store: max 1500 characters. Mac App Store: max 4000 characters.
-- Write them to `notes/mas-whats-new-<version>.txt` and `notes/msstore-whats-new-<version>.txt` (gitignored), where `script/storeRelease.ts` reads them, and ask the user to review them. Only run the script with `--prepare` or `--submit` after the user approves the text and the dry-run output.
+- Write them to `store-release-notes/mas-<version>.txt` and `store-release-notes/msstore-<version>.txt`, where `script/storeRelease.ts` reads them, and ask the user to review them before committing. Only run the script with `--prepare` or `--submit` (or the Store release workflow with "submit") after the user approves the text and the dry-run output.
