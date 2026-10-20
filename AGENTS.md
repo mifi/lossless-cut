@@ -30,7 +30,7 @@ The stores lag behind GitHub releases, so their "What's new" text must cover eve
 
 ## Release announcement
 
-After a GitHub release is published, draft one post per channel from `versions/<version>.md` and the release link, and show them to me before posting:
+After a GitHub release is published, draft one post per channel from `versions/<version>.md` and the release link, and show them to the user before posting:
 
 | Channel | Where | Limit |
 |---|---|---|
@@ -40,5 +40,5 @@ After a GitHub release is published, draft one post per channel from `versions/<
 | Mastodon | https://mastodon.social/@losslesscut | 500 chars |
 
 - Start with "LosslessCut x.y.z is out", then the 1–3 most interesting changes for users, then the release link (https://github.com/mifi/lossless-cut/releases/tag/vx.y.z). Discord can take the full list.
-- Plain text, no issue references. A patch release that only fixes one platform can be a single line.
-- Post through my logged-in browser (Claude's browser automation or the built-in browser). Fill in the post and let me confirm before clicking Post.
+- Plain text, no issue references. The link counts toward the limit (on X as 23 chars). A patch release that only fixes one platform can be a single line.
+- Post through the user's logged-in browser. Fill in the post and let the user confirm before clicking Post.
