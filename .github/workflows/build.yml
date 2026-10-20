@@ -94,7 +94,9 @@ jobs:
 
       - name: (Linux) Download ffmpeg
         if: runner.os == 'Linux'
-        run: yarn download-ffmpeg-linux-x64
+        run: |
+          yarn download-ffmpeg-linux-x64
+          yarn download-ffmpeg-linux-arm64
 
       - run: ls -R ffmpeg
 
@@ -195,3 +197,18 @@ jobs:
           yarn upload-artifacts dist/LosslessCut-linux-x86_64.AppImage
           yarn upload-artifacts --name screenshot-linux.jpeg screenshot.jpeg
 
+
+  # Catches e.g. an asset that was built without ffmpeg (#3147)
+  check-release-assets:
+    needs: release
+    # Also when a build job failed, to check the assets that were uploaded
+    if: ${{ !cancelled() && startsWith(github.ref, 'refs/tags/v') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - run: node script/checkReleaseAssets.ts "$GITHUB_REF_NAME"
+        env:
+          GH_TOKEN: ${{ secrets.github_token }}

@@ -1,5 +1,5 @@
 // Downloads the bundled ffmpeg/ffprobe for a platform into ffmpeg/<platform>-<arch>, see CONTRIBUTING.md
-// Usage: node script/downloadFfmpeg.ts darwin-x64|darwin-arm64|linux-x64|win32-x64|win32-arm64
+// Usage: node script/downloadFfmpeg.ts darwin-x64|darwin-arm64|linux-x64|linux-arm64|win32-x64|win32-arm64
 import assert from 'node:assert';
 import { createWriteStream } from 'node:fs';
 import { chmod, mkdir, readdir, rename, rm } from 'node:fs/promises';
@@ -10,10 +10,10 @@ import { execa } from 'execa';
 
 // Bump these when upgrading FFmpeg. This is also the minimum supported FFmpeg version (see `customFfPath` in src/main/ffmpeg.ts)
 const macRelease = '8.1.3-1'; // https://github.com/mifi/ffmpeg-build-script/releases
-const windowsLinuxRelease = '8.1-1'; // https://github.com/mifi/ffmpeg-builds/releases (mirrors BtbN's n<branch>-latest builds)
+const windowsLinuxRelease = '8.1-2'; // https://github.com/mifi/ffmpeg-builds/releases (mirrors BtbN's n<branch>-latest builds)
 
 const target = process.argv[2];
-const btbnTargets: Record<string, string> = { 'linux-x64': 'linux64', 'win32-x64': 'win64', 'win32-arm64': 'winarm64' };
+const btbnTargets: Record<string, string> = { 'linux-x64': 'linux64', 'linux-arm64': 'linuxarm64', 'win32-x64': 'win64', 'win32-arm64': 'winarm64' };
 const macArchs: Record<string, string> = { 'darwin-x64': 'X64', 'darwin-arm64': 'ARM64' };
 assert(target != null && (Object.hasOwn(btbnTargets, target) || Object.hasOwn(macArchs, target)), `Usage: downloadFfmpeg.ts ${[...Object.keys(macArchs), ...Object.keys(btbnTargets)].join('|')}`);
 

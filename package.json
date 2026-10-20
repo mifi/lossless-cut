@@ -14,6 +14,7 @@
     "download-ffmpeg-darwin-x64": "node script/downloadFfmpeg.ts darwin-x64",
     "download-ffmpeg-darwin-arm64": "node script/downloadFfmpeg.ts darwin-arm64",
     "download-ffmpeg-linux-x64": "node script/downloadFfmpeg.ts linux-x64",
+    "download-ffmpeg-linux-arm64": "node script/downloadFfmpeg.ts linux-arm64",
     "download-ffmpeg-win32-x64": "node script/downloadFfmpeg.ts win32-x64",
     "download-ffmpeg-win32-arm64": "node script/downloadFfmpeg.ts win32-arm64",
     "build": "yarn generate-icon && electron-vite build",

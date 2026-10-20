@@ -23,6 +23,7 @@ Run one of the below commands:
 yarn download-ffmpeg-darwin-x64
 yarn download-ffmpeg-darwin-arm64
 yarn download-ffmpeg-linux-x64
+yarn download-ffmpeg-linux-arm64
 yarn download-ffmpeg-win32-x64
 yarn download-ffmpeg-win32-arm64
 ```
