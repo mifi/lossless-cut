@@ -22,6 +22,9 @@ on:
 
 concurrency: store-release
 
+permissions:
+  contents: read
+
 jobs:
   store-release:
     if: github.repository == 'mifi/lossless-cut'

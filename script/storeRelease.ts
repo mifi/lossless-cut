@@ -82,7 +82,7 @@ async function readNotes(version: string, maxLength: number) {
 const ascBase = 'https://api.appstoreconnect.apple.com';
 const ascRoleHint = 'The API key needs the "App Manager" (or "Admin") role. Create one in App Store Connect → Users and Access → Integrations → App Store Connect API → Team Keys.';
 
-interface AscResource { id: string, type: string, attributes: Record<string, unknown> }
+interface AscResource { id: string, type: string, attributes: Record<string, unknown>, relationships?: Record<string, { data?: { id: string } | null }> }
 
 let ascKey: ReturnType<typeof createPrivateKey> | undefined;
 
@@ -135,7 +135,7 @@ async function mas(version: string) {
     log(`Build ${version} is already in App Store version ${attachedTo.attributes['versionString']} (${attachedTo.attributes['appVersionState']}), nothing to do`);
     return;
   }
-  const inFlight = versions.find((v) => ['WAITING_FOR_REVIEW', 'IN_REVIEW', 'ACCEPTED', 'PENDING_DEVELOPER_RELEASE', 'PENDING_APPLE_RELEASE', 'PROCESSING_FOR_DISTRIBUTION'].includes(String(v.attributes['appVersionState'])));
+  const inFlight = versions.find((v) => ['WAITING_FOR_REVIEW', 'WAITING_FOR_EXPORT_COMPLIANCE', 'IN_REVIEW', 'ACCEPTED', 'PENDING_DEVELOPER_RELEASE', 'PENDING_APPLE_RELEASE', 'PROCESSING_FOR_DISTRIBUTION'].includes(String(v.attributes['appVersionState'])));
   assert(editable || !inFlight, `App Store version ${inFlight?.attributes['versionString']} is ${inFlight?.attributes['appVersionState']}; release it (or remove it from review) before creating a new version`);
   const [major, minor] = String(versions[0]!.attributes['versionString']).split('.').map(Number);
   const versionString = editable ? String(editable.attributes['versionString']) : `${major}.${minor! + 1}`;
@@ -201,9 +201,12 @@ async function mas(version: string) {
   // Reuse an unsubmitted or rejected submission (left by an earlier run or App Review), only one can be open
   const [openSubmission] = (await asc<AscResource[]>('GET', `/v1/reviewSubmissions?filter[app]=${masAppId}&filter[platform]=MAC_OS&filter[state]=READY_FOR_REVIEW,UNRESOLVED_ISSUES`))!;
   const submission = openSubmission ?? (await asc('POST', '/v1/reviewSubmissions', { type: 'reviewSubmissions', attributes: { platform: 'MAC_OS' }, relationships: { app: ref('apps', masAppId) } }))!;
-  const items = openSubmission ? await asc<AscResource[]>('GET', `/v1/reviewSubmissions/${submission.id}/items`) : [];
-  if (items?.length === 0) {
+  const items = openSubmission ? (await asc<AscResource[]>('GET', `/v1/reviewSubmissions/${submission.id}/items?include=appStoreVersion`))! : [];
+  const item = items.find((i) => i.relationships?.['appStoreVersion']?.data?.id === versionId);
+  if (!item) {
     await asc('POST', '/v1/reviewSubmissionItems', { type: 'reviewSubmissionItems', relationships: { reviewSubmission: ref('reviewSubmissions', submission.id), appStoreVersion: ref('appStoreVersions', versionId) } });
+  } else if (item.attributes['state'] === 'REJECTED') {
+    await asc('PATCH', `/v1/reviewSubmissionItems/${item.id}`, { type: 'reviewSubmissionItems', id: item.id, attributes: { resolved: true } });
   }
   const submitted = await asc('PATCH', `/v1/reviewSubmissions/${submission.id}`, { type: 'reviewSubmissions', id: submission.id, attributes: { submitted: true } });
   log(`Submitted for review: ${submitted?.attributes['state']}`);
