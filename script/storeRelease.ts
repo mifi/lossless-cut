@@ -33,6 +33,7 @@ const args = yargs(hideBin(process.argv))
   .command('msstore-rollout <percent>', `Change the Microsoft Store gradual rollout percentage of the last published submission (100 finalizes it). "next" goes to the next of ${msStoreRolloutSteps.join(', ')}%, and does nothing if no rollout is in progress`)
   .demandCommand(1)
   .version(false)
+  .string(['version', 'percent'])
   .option('notes', { type: 'string', describe: 'What\'s New text file (default: store-release-notes/<store>-<version>.txt)' })
   .option('prepare', { type: 'boolean', default: false, describe: 'Mac App Store: write the changes, but don\'t submit for review' })
   .option('submit', { type: 'boolean', default: false, describe: 'Write the changes and submit for review' })
@@ -112,7 +113,6 @@ async function findMasBuild(version: string) {
 }
 
 async function mas(version: string) {
-  assert(/^\d+\.\d+\.\d+$/.test(version), `Invalid version ${version}`);
   const notes = await readNotes(version, 4000);
 
   const app = await asc('GET', `/v1/apps/${masAppId}`);
@@ -127,15 +127,15 @@ async function mas(version: string) {
   let build = await findMasBuild(version);
   log(`Build ${version}: ${build ? `${build.attributes['processingState']}, uploaded ${build.attributes['uploadedDate']}` : 'not uploaded yet'}`);
 
-  // Only one version can be editable at a time, so reuse it
-  const isEditable = (v: AscResource) => ['PREPARE_FOR_SUBMISSION', 'DEVELOPER_REJECTED', 'REJECTED', 'METADATA_REJECTED', 'INVALID_BINARY'].includes(String(v.attributes['appVersionState']));
+  // Only one version can be editable at a time, so reuse it. READY_FOR_REVIEW: added to a review submission that wasn't submitted
+  const isEditable = (v: AscResource) => ['PREPARE_FOR_SUBMISSION', 'READY_FOR_REVIEW', 'DEVELOPER_REJECTED', 'REJECTED', 'METADATA_REJECTED', 'INVALID_BINARY'].includes(String(v.attributes['appVersionState']));
   const editable = versions.find((v) => isEditable(v));
   const attachedTo = build && await asc('GET', `/v1/builds/${build.id}/appStoreVersion`);
   if (attachedTo && !isEditable(attachedTo)) {
     log(`Build ${version} is already in App Store version ${attachedTo.attributes['versionString']} (${attachedTo.attributes['appVersionState']}), nothing to do`);
     return;
   }
-  const inFlight = versions.find((v) => ['WAITING_FOR_REVIEW', 'IN_REVIEW', 'READY_FOR_REVIEW', 'ACCEPTED', 'PENDING_DEVELOPER_RELEASE', 'PENDING_APPLE_RELEASE', 'PROCESSING_FOR_DISTRIBUTION'].includes(String(v.attributes['appVersionState'])));
+  const inFlight = versions.find((v) => ['WAITING_FOR_REVIEW', 'IN_REVIEW', 'ACCEPTED', 'PENDING_DEVELOPER_RELEASE', 'PENDING_APPLE_RELEASE', 'PROCESSING_FOR_DISTRIBUTION'].includes(String(v.attributes['appVersionState'])));
   assert(editable || !inFlight, `App Store version ${inFlight?.attributes['versionString']} is ${inFlight?.attributes['appVersionState']}; release it (or remove it from review) before creating a new version`);
   const [major, minor] = String(versions[0]!.attributes['versionString']).split('.').map(Number);
   const versionString = editable ? String(editable.attributes['versionString']) : `${major}.${minor! + 1}`;
@@ -198,10 +198,14 @@ async function mas(version: string) {
     if (!write) plan('submit for review');
     return;
   }
-  const openSubmissions = await asc<AscResource[]>('GET', `/v1/reviewSubmissions?filter[app]=${masAppId}&filter[platform]=MAC_OS&filter[state]=READY_FOR_REVIEW`);
-  const submission = openSubmissions?.[0] ?? await asc('POST', '/v1/reviewSubmissions', { type: 'reviewSubmissions', attributes: { platform: 'MAC_OS' }, relationships: { app: ref('apps', masAppId) } });
-  await asc('POST', '/v1/reviewSubmissionItems', { type: 'reviewSubmissionItems', relationships: { reviewSubmission: ref('reviewSubmissions', submission!.id), appStoreVersion: ref('appStoreVersions', versionId) } });
-  const submitted = await asc('PATCH', `/v1/reviewSubmissions/${submission!.id}`, { type: 'reviewSubmissions', id: submission!.id, attributes: { submitted: true } });
+  // Reuse an unsubmitted or rejected submission (left by an earlier run or App Review), only one can be open
+  const [openSubmission] = (await asc<AscResource[]>('GET', `/v1/reviewSubmissions?filter[app]=${masAppId}&filter[platform]=MAC_OS&filter[state]=READY_FOR_REVIEW,UNRESOLVED_ISSUES`))!;
+  const submission = openSubmission ?? (await asc('POST', '/v1/reviewSubmissions', { type: 'reviewSubmissions', attributes: { platform: 'MAC_OS' }, relationships: { app: ref('apps', masAppId) } }))!;
+  const items = openSubmission ? await asc<AscResource[]>('GET', `/v1/reviewSubmissions/${submission.id}/items`) : [];
+  if (items?.length === 0) {
+    await asc('POST', '/v1/reviewSubmissionItems', { type: 'reviewSubmissionItems', relationships: { reviewSubmission: ref('reviewSubmissions', submission.id), appStoreVersion: ref('appStoreVersions', versionId) } });
+  }
+  const submitted = await asc('PATCH', `/v1/reviewSubmissions/${submission.id}`, { type: 'reviewSubmissions', id: submission.id, attributes: { submitted: true } });
   log(`Submitted for review: ${submitted?.attributes['state']}`);
 }
 
@@ -211,17 +215,18 @@ async function mas(version: string) {
 const msBase = `https://manage.devcenter.microsoft.com/v1.0/my/applications/${msStoreAppId}`;
 const msRoleHint = 'The Entra ID application needs the "Manager" role in Partner Center → Account settings → User management → Microsoft Entra applications.';
 
-let msTokenPromise: Promise<string> | undefined;
+let msTokenCache: { token: string, expires: number } | undefined;
 
 async function msToken() {
-  msTokenPromise ??= (async () => {
+  if (!msTokenCache || Date.now() > msTokenCache.expires) {
     const response = await fetchJson(`https://login.microsoftonline.com/${requireEnv('MSSTORE_TENANT_ID')}/oauth2/token`, {
       method: 'POST',
       body: new URLSearchParams({ grant_type: 'client_credentials', client_id: requireEnv('MSSTORE_CLIENT_ID'), client_secret: requireEnv('MSSTORE_CLIENT_SECRET'), resource: 'https://manage.devcenter.microsoft.com' }),
     });
-    return response.access_token as string;
-  })();
-  return msTokenPromise; // valid for 60 minutes
+    // valid for 60 minutes, renew a bit before
+    msTokenCache = { token: response.access_token, expires: Date.now() + (Number(response.expires_in) - 300) * 1000 };
+  }
+  return msTokenCache.token;
 }
 
 async function ms(method: string, path: string, body?: object) {
@@ -235,19 +240,22 @@ async function ms(method: string, path: string, body?: object) {
 
 interface MsPackage { fileName: string, fileStatus: string, version?: string, architecture?: string, minimumDirectXVersion?: string, minimumSystemRam?: string }
 
+function logMsSubmission(label: string, submission: { id: string, friendlyName: string, status: string, applicationPackages: MsPackage[] }, extra = '') {
+  log(`${label} submission ${submission.id} (${submission.friendlyName}): ${submission.status}${extra}`);
+  for (const p of submission.applicationPackages) log(`  ${p.fileName} ${p.version} ${p.architecture}`);
+}
+
 async function getMsApp() {
   const app = await ms('GET', '');
   log(`App: ${app.primaryName} (${app.id})`);
   assert(app.lastPublishedApplicationSubmission, 'No published submission');
   const published = await ms('GET', `/submissions/${app.lastPublishedApplicationSubmission.id}`);
   const { packageRollout } = published.packageDeliveryOptions;
-  log(`Last published submission ${published.id} (${published.friendlyName}): ${published.status}, rollout ${packageRollout.isPackageRollout ? `${packageRollout.packageRolloutPercentage}% ${packageRollout.packageRolloutStatus}` : 'off'}`);
-  for (const p of published.applicationPackages as MsPackage[]) log(`  ${p.fileName} ${p.version} ${p.architecture}`);
+  logMsSubmission('Last published', published, `, rollout ${packageRollout.isPackageRollout ? `${packageRollout.packageRolloutPercentage}% ${packageRollout.packageRolloutStatus}` : 'off'}`);
   return { app, published };
 }
 
 async function msstore(version: string) {
-  assert(/^\d+\.\d+\.\d+$/.test(version), `Invalid version ${version}`);
   const notes = await readNotes(version, 1500);
   const { app, published } = await getMsApp();
   const hasVersion = (submission: { applicationPackages: MsPackage[] }) => submission.applicationPackages.some((p) => p.version === `${version}.0`);
@@ -257,16 +265,19 @@ async function msstore(version: string) {
   }
   if (app.pendingApplicationSubmission) {
     const pending = await ms('GET', `/submissions/${app.pendingApplicationSubmission.id}`);
-    log(`Pending submission ${pending.id} (${pending.friendlyName}): ${pending.status}`);
-    for (const p of pending.applicationPackages as MsPackage[]) log(`  ${p.fileName} ${p.version} ${p.architecture}`);
+    logMsSubmission('Pending', pending);
     if (hasVersion(pending)) {
       log(`${version} is already submitted, nothing to do. Once certified, click "Publish now" in Partner Center`);
       return;
     }
-    assert(!write, 'Finish or delete the pending submission in Partner Center first');
+    assert(!write, pending.status === 'PendingCommit'
+      ? 'The pending submission was never submitted (maybe left by a failed run). Delete it in Partner Center and run again'
+      : 'Finish or delete the pending submission in Partner Center first');
   }
   if (published.packageDeliveryOptions.packageRollout.packageRolloutStatus === 'PackageRolloutInProgress') {
-    log('Warning: the last published submission\'s rollout is still in progress; Partner Center may require finalizing or halting it first (msstore-rollout 100)');
+    const msg = 'The last published submission\'s gradual rollout is still in progress; finalize it first (msstore-rollout 100) or halt it in Partner Center';
+    assert(!write, msg);
+    log(`Warning: ${msg}`);
   }
 
   const packages = msStoreArchs.map((arch) => ({
@@ -312,18 +323,25 @@ async function msstore(version: string) {
     await ms('PUT', `/submissions/${submission.id}`, submission);
 
     log('Uploading packages…');
-    const upload = await fetch(submission.fileUploadUrl, { method: 'PUT', headers: { 'x-ms-blob-type': 'BlockBlob' }, body: await openAsBlob(zipPath) });
+    const upload = await fetch(submission.fileUploadUrl, {
+      method: 'PUT',
+      // 2019-12-12 and newer allow single uploads up to 5000 MiB (the packages are ~500 MB)
+      headers: { 'x-ms-blob-type': 'BlockBlob', 'x-ms-version': '2021-12-02' },
+      body: await openAsBlob(zipPath),
+    });
     assert(upload.ok, `Upload failed: HTTP ${upload.status} ${await upload.text()}`);
 
     await ms('POST', `/submissions/${submission.id}/commit`);
     let status: { status: string, statusDetails: unknown };
-    do {
+    for (let i = 0; ; i += 1) {
+      assert(i < 60, 'Commit didn\'t finish in time, check the submission in Partner Center');
       // eslint-disable-next-line no-await-in-loop
       await sleep(10_000);
       // eslint-disable-next-line no-await-in-loop
       status = await ms('GET', `/submissions/${submission.id}/status`);
       log(status.status);
-    } while (status.status === 'CommitStarted');
+      if (!['PendingCommit', 'CommitStarted'].includes(status.status)) break;
+    }
     assert(status.status !== 'CommitFailed', `Commit failed: ${JSON.stringify(status.statusDetails, null, 2)}`);
     log(`Submitted for certification: https://partner.microsoft.com/en-us/dashboard/products/${msStoreAppId}/submissions/${submission.id}`);
   } finally {
@@ -348,9 +366,11 @@ async function msstoreRollout(percentArg: string) {
 }
 
 
+const version = String(args['version']);
+assert(store === 'msstore-rollout' || /^\d+\.\d+\.\d+$/.test(version), `Invalid version ${version}`);
 switch (store) {
-  case 'mas': { await mas(String(args['version'])); break; }
-  case 'msstore': { await msstore(String(args['version'])); break; }
+  case 'mas': { await mas(version); break; }
+  case 'msstore': { await msstore(version); break; }
   case 'msstore-rollout': { await msstoreRollout(String(args['percent'])); break; }
   default: { throw new Error(`Unknown command ${store}`); }
 }
