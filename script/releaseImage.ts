@@ -27,20 +27,14 @@ const escapeXml = (str: string) => str.replaceAll(/[<>&'"]/g, (c) => `&#${c.code
 const svg = (content: string) => Buffer.from(`<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">${content}</svg>`);
 
 // Crop the photo (e.g. a portrait) to the image's aspect ratio. By default keep the most interesting part (sharp's attention strategy), or the part given by --position (e.g. top, bottom, left, right, center)
-const photo = bg != null ? await sharp(bg).rotate().resize(width, height, { fit: 'cover', position: position ?? sharp.strategy.attention }).flatten({ background: '#000' }).toBuffer() : undefined;
+const photo = bg != null ? await sharp(bg).rotate().resize(width, height, { fit: 'cover', position: position ?? sharp.strategy.attention }).flatten({ background: '#000' }).png().toBuffer() : undefined;
 
 // Accent color: the photo's dominant color, or else a hue derived from the version, so every release looks a bit different
 async function getAccentHue(seed: string) {
   if (photo != null) {
     const { dominant: { r, g, b } } = await sharp(photo).stats();
-    const max = Math.max(r, g, b);
-    const d = max - Math.min(r, g, b);
-    if (d > 20) {
-      let h = (r - g) / d + 4;
-      if (max === r) h = ((g - b) / d) % 6;
-      else if (max === g) h = (b - r) / d + 2;
-      return Math.round((h * 60 + 360) % 360);
-    }
+    // Unless it's (nearly) grey
+    if (Math.max(r, g, b) - Math.min(r, g, b) > 20) return Math.round(((Math.atan2(Math.sqrt(3) * (g - b), 2 * r - g - b) * 180) / Math.PI + 360) % 360);
   }
   return [...seed].reduce((acc, c) => (acc * 31 + c.codePointAt(0)!) % 360, 7);
 }
@@ -56,7 +50,7 @@ async function getTextAreaBrightness() {
   return channels[0]!.mean;
 }
 const brightness = await getTextAreaBrightness();
-// At least 0.7, more for bright photos, so the area ends up dark (roughly 40-55 of 255)
+// At least 0.7, more for bright photos, so the area ends up dark (at most roughly 55 of 255)
 const shadeOpacity = Math.max(0.7, 1 - 40 / brightness);
 
 // Darkens (and blurs) the left side, fading out towards the right
@@ -78,23 +72,25 @@ const overlay = svg(`
   ${caption != null ? text(width - margin, height - 40, 20, 'fill="#fff" fill-opacity="0.85" stroke="#000" stroke-opacity="0.6" stroke-width="3" paint-order="stroke"', escapeXml(caption), 'end') : ''}
 `);
 
+// The background and the layers to put on top of it (before the text overlay)
 async function getBackground() {
   if (photo == null) {
     // Without a photo, use a dark gradient in the accent hue
-    return svg(`<defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="hsl(${hue}, 30%, 12%)" /><stop offset="1" stop-color="hsl(${(hue + 40) % 360}, 45%, 28%)" /></linearGradient></defs><rect width="100%" height="100%" fill="url(#g)" />`);
+    return { base: svg(`<defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="hsl(${hue}, 30%, 12%)" /><stop offset="1" stop-color="hsl(${(hue + 40) % 360}, 45%, 28%)" /></linearGradient></defs><rect width="100%" height="100%" fill="url(#g)" />`), layers: [] };
   }
   // Blur only behind the text, fading into the sharp photo
   const blurMask = svg(`<defs>${fade('m', [[0, 1], [0.45, 1], [0.7, 0]])}</defs><rect width="100%" height="100%" fill="url(#m)" />`);
   const blurred = await sharp(photo).blur(25).composite([{ input: blurMask, blend: 'dest-in' }]).png().toBuffer();
-  return sharp(photo).composite([{ input: blurred }]).toBuffer();
+  return { base: photo, layers: [{ input: blurred }] };
 }
 
 const icon = await sharp('src/renderer/src/icon.svg').resize(iconSize, iconSize).png().toBuffer();
 
 const outPath = out ?? `dist/release-${version}${square ? '-square' : ''}.png`;
 await mkdir(dirname(outPath), { recursive: true });
-await sharp(await getBackground())
-  .composite([{ input: overlay }, { input: icon, left: margin, top }])
+const { base, layers } = await getBackground();
+await sharp(base)
+  .composite([...layers, { input: overlay }, { input: icon, left: margin, top }])
   .png()
   .toFile(outPath);
 console.log('Wrote', outPath);
