@@ -41,4 +41,5 @@ After a GitHub release is published, draft one post per channel from `versions/<
 
 - Start with "LosslessCut x.y.z is out", then the 1–3 most interesting changes for users, then the release link (https://github.com/mifi/lossless-cut/releases/tag/vx.y.z). Discord can take the full list.
 - Plain text, no issue references. The link counts toward the limit (on X as 23 chars). A patch release that only fixes one platform can be a single line.
+- Attach an image made with `node script/releaseImage.ts <version> [--bg photo.jpg] "highlight 1" "highlight 2" "highlight 3"` (1600×900 PNG in `dist/`). Ask the user for a recent photo of theirs to use as the background (optional; it gets a dark gradient for legibility); keep highlights short so they fit on one line. Never commit the photo or the image. Add alt text, e.g. "LosslessCut 3.70.1: <highlights>".
 - Post through the user's logged-in browser. Fill in the post and let the user confirm before clicking Post.
