@@ -67,3 +67,14 @@ If you need to e.g. always select certain tracks, then always select certain seg
 8. ⌨️`export`
 
 Now for every file you want to do this, you repeat the steps. See also [#2699](https://github.com/mifi/lossless-cut/discussions/2699).
+
+## Export segments with the same label into their own file
+
+For example you have labelled segments `Sound Bite`, `Interview` etc. and you want one merged file per label.
+
+1. Right click a segment in the segment list -> *Deselect all segments*.
+2. Right click a segment -> *Select segments by label* and enter the label, e.g. `Sound Bite`. Or use *Select segments by expression* with e.g. `segment.label === 'Sound Bite'` (see [expressions](expressions.md#select-segments-by-expression)).
+3. Set export mode to *Merge cuts* (or *Separate files* if you want one file per segment) and export. Only the selected segments are exported.
+4. Repeat from step 1 for each label. Include the label in the [output file name template](file-name-template.md) so that each run gets a different file name, e.g. `${SEG_LABEL[0]}` when merging (it's an array of the merged segments' labels).
+
+Note that the selection is *added* to the existing selection, which is why you deselect all first. To do this faster, bind `deselectAllSegments`, `selectSegmentsByLabel` and `selectSegmentsByExpr` to keys in the Keyboard shortcuts dialog. See also [Efficient workflow for repeated single file operation](#efficient-workflow-for-repeated-single-file-operation).

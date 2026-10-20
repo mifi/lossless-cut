@@ -84,6 +84,25 @@ Seek to specific time in the media:
 LosslessCut --keyboard-action goToTimecodeDirect '{"time": "12.23"}'
 ```
 
+### Actions that open a dialog cannot be scripted
+
+Some actions, for example `createNumSegments`, `createFixedDurationSegments` or `selectSegmentsByExpr`, open a dialog where you have to enter something. These cannot be fully automated, because there's no way to pass the dialog's values from the command line: the action will just open the dialog in the app.
+
+Instead, to create segments from a script, write a [project file](index.md#importexport-projects) next to the media file. If the media file is `/path/to/video.mp4`, name the project file `/path/to/video-proj.llc`, and LosslessCut will load it automatically when you open the media file. Times are in seconds, `name` is the segment label:
+
+```json5
+{
+  version: 2,
+  mediaFileName: 'video.mp4',
+  cutSegments: [
+    { start: 0, end: 10, name: 'First' },
+    { start: 20, end: 30, name: 'Second' },
+  ],
+}
+```
+
+Then open the file and export using `--keyboard-action export`, or better the [HTTP API](api.md), which waits for most actions to finish before responding. You can also open an `.llc` file directly: `LosslessCut /path/to/video-proj.llc`.
+
 ### HTTP API
 
 You can also control a running instance with the [HTTP API](api.md).
