@@ -132,7 +132,7 @@ node script/storeRelease.ts msstore x.y.z        # dry run
 node script/storeRelease.ts msstore x.y.z --submit
 ```
 
-- **Mac App Store**: creates the version (or reuses the editable one), waits for the build to finish processing and attaches it, sets en-US "What's New", manual release, 7-day phased release, and submits for review. Once approved, release it manually in App Store Connect.
+- **Mac App Store**: App Store versions have their own numbering (1.x, e.g. 1.14), separate from the GitHub/build version (`package.json`, e.g. 3.70.1), which is the build attached to it. The script takes the build version, and creates the next App Store version (1.14 → 1.15) or reuses the editable one. It waits for the build to finish processing and attaches it, sets en-US "What's New", manual release, 7-day phased release, and submits for review. Once approved, release it manually in App Store Connect.
 - **Microsoft Store**: creates a submission, adds both `.appx` packages from the GitHub release (renamed without `-DONT-USE-THIS-FILE`), sets en-US "What's new", gradual rollout at 0%, "Don't publish until I select Publish now", and submits for certification. Once certified, click "Publish now" in Partner Center, then increase the rollout with `node script/storeRelease.ts msstore-rollout <percent> --submit` (dry run without `--submit`; `100` finalizes it). Don't edit a submission in Partner Center that the script created, or the API can no longer change it.
 - Description, keywords and screenshots are not touched; update them by hand if needed.
 
@@ -164,7 +164,7 @@ Set these in your shell (never commit them). Secrets can be kept in the macOS ke
 
 Tag builds already upload the build to App Store Connect (`(MacOS) Upload to Mac App Store` in `build.yml`).
 
-1. In [App Store Connect](https://appstoreconnect.apple.com/apps/1505323402/distribution), create a new version
+1. In [App Store Connect](https://appstoreconnect.apple.com/apps/1505323402/distribution), create a new version, numbered after the previous App Store version (e.g. 1.14 → 1.15), not the GitHub version
 2. "Build": click "Add Build" and pick the build of this version
 3. Update "What's New in This Version" (see [Store release notes](./AGENTS.md#store-release-notes)). If needed, also update "Description" and screenshots
 4. "App Store Version Release": tick "Manually release this version"

@@ -112,18 +112,28 @@ async function mas(version: string) {
   const app = await asc('GET', `/v1/apps/${masAppId}`);
   log(`App: ${app?.attributes['name']} (${app?.attributes['bundleId']})`);
 
-  const versions = (await asc<AscResource[]>('GET', `/v1/apps/${masAppId}/appStoreVersions?filter[platform]=MAC_OS&limit=10`))!
+  // App Store versions have their own numbering (1.x), independent of the build (package.json) version
+  const versions = (await asc<AscResource[]>('GET', `/v1/apps/${masAppId}/appStoreVersions?filter[platform]=MAC_OS&limit=200`))!
     .toSorted((a, b) => String(b.attributes['createdDate']).localeCompare(String(a.attributes['createdDate'])));
-  log('Latest macOS versions:');
-  for (const v of versions.slice(0, 5)) log(`  ${v.attributes['versionString']}: ${v.attributes['appVersionState']}, release type ${v.attributes['releaseType']}`);
-
-  // Only one version can be editable at a time, so reuse it (renaming it if needed)
-  const editable = versions.find((v) => ['PREPARE_FOR_SUBMISSION', 'DEVELOPER_REJECTED', 'REJECTED', 'METADATA_REJECTED', 'INVALID_BINARY'].includes(String(v.attributes['appVersionState'])));
-  const existing = versions.find((v) => v.attributes['versionString'] === version);
-  assert(!existing || existing === editable, `Version ${version} already exists and is not editable (${existing?.attributes['appVersionState']})`);
+  log('Latest App Store versions:');
+  for (const v of versions.slice(0, 3)) log(`  ${v.attributes['versionString']}: ${v.attributes['appVersionState']}`);
 
   let build = await findMasBuild(version);
   log(`Build ${version}: ${build ? `${build.attributes['processingState']}, uploaded ${build.attributes['uploadedDate']}` : 'not uploaded yet'}`);
+
+  // Only one version can be editable at a time, so reuse it
+  const isEditable = (v: AscResource) => ['PREPARE_FOR_SUBMISSION', 'DEVELOPER_REJECTED', 'REJECTED', 'METADATA_REJECTED', 'INVALID_BINARY'].includes(String(v.attributes['appVersionState']));
+  const editable = versions.find((v) => isEditable(v));
+  const attachedTo = build && await asc('GET', `/v1/builds/${build.id}/appStoreVersion`);
+  if (attachedTo && !isEditable(attachedTo)) {
+    log(`Build ${version} is already in App Store version ${attachedTo.attributes['versionString']} (${attachedTo.attributes['appVersionState']}), nothing to do`);
+    return;
+  }
+  const inFlight = versions.find((v) => ['WAITING_FOR_REVIEW', 'IN_REVIEW', 'READY_FOR_REVIEW', 'ACCEPTED', 'PENDING_DEVELOPER_RELEASE', 'PENDING_APPLE_RELEASE', 'PROCESSING_FOR_DISTRIBUTION'].includes(String(v.attributes['appVersionState'])));
+  assert(editable || !inFlight, `App Store version ${inFlight?.attributes['versionString']} is ${inFlight?.attributes['appVersionState']}; release it (or remove it from review) before creating a new version`);
+  const [major, minor] = String(versions[0]!.attributes['versionString']).split('.').map(Number);
+  const versionString = editable ? String(editable.attributes['versionString']) : `${major}.${minor! + 1}`;
+
   if (write) {
     for (let i = 0; build?.attributes['processingState'] !== 'VALID'; i += 1) {
       assert(build == null || build.attributes['processingState'] === 'PROCESSING', `Build ${version} is ${build?.attributes['processingState']}`);
@@ -137,16 +147,15 @@ async function mas(version: string) {
   }
 
   let versionId: string;
-  const attributes = { versionString: version, releaseType: 'MANUAL' };
+  const attributes = { versionString, releaseType: 'MANUAL' };
   if (editable) {
-    log(`Editable version: ${editable.attributes['versionString']}`);
-    plan(`update version ${editable.attributes['versionString']}: ${JSON.stringify(attributes)}, build ${version}`);
+    plan(`update the editable App Store version ${versionString}: manual release, build ${version}`);
     if (write) {
       await asc('PATCH', `/v1/appStoreVersions/${editable.id}`, { type: 'appStoreVersions', id: editable.id, attributes, relationships: { build: ref('builds', build!.id) } });
     }
     versionId = editable.id;
   } else {
-    plan(`create version ${version}: ${JSON.stringify(attributes)}, build ${version}`);
+    plan(`create App Store version ${versionString}: manual release, build ${version}`);
     if (!write) {
       plan('set en-US What\'s New, enable 7-day phased release, submit for review');
       return;
