@@ -244,7 +244,21 @@ async function msstore(version: string) {
   assert(/^\d+\.\d+\.\d+$/.test(version), `Invalid version ${version}`);
   const notes = await readNotes(version, 1500);
   const { app, published } = await getMsApp();
-  assert(!app.pendingApplicationSubmission, `There is already a pending submission (${app.pendingApplicationSubmission?.id}). Finish or delete it in Partner Center first`);
+  const hasVersion = (submission: { applicationPackages: MsPackage[] }) => submission.applicationPackages.some((p) => p.version === `${version}.0`);
+  if (hasVersion(published)) {
+    log(`${version} is already published, nothing to do`);
+    return;
+  }
+  if (app.pendingApplicationSubmission) {
+    const pending = await ms('GET', `/submissions/${app.pendingApplicationSubmission.id}`);
+    log(`Pending submission ${pending.id} (${pending.friendlyName}): ${pending.status}`);
+    for (const p of pending.applicationPackages as MsPackage[]) log(`  ${p.fileName} ${p.version} ${p.architecture}`);
+    if (hasVersion(pending)) {
+      log(`${version} is already submitted, nothing to do. Once certified, click "Publish now" in Partner Center`);
+      return;
+    }
+    assert(!write, 'Finish or delete the pending submission in Partner Center first');
+  }
   if (published.packageDeliveryOptions.packageRollout.packageRolloutStatus === 'PackageRolloutInProgress') {
     log('Warning: the last published submission\'s rollout is still in progress; Partner Center may require finalizing or halting it first (msstore-rollout 100)');
   }
@@ -260,7 +274,7 @@ async function msstore(version: string) {
     log(`${url} (${(Number(response.headers.get('content-length')) / 1e6).toFixed(0)} MB)`);
   }
 
-  plan(`create a submission (a copy of ${published.id}), add packages ${packages.map((p) => p.fileName).join(', ')} (keeping the existing ones), roll out gradually starting at 0%, don't publish until "Publish now", set en-US What's new (currently: ${JSON.stringify(published.listings['en-us']?.baseListing.releaseNotes ?? null).slice(0, 100)}…)`);
+  plan(`create a submission (a copy of ${published.id}), replace the packages with ${packages.map((p) => p.fileName).join(', ')}, roll out gradually starting at 0%, don't publish until "Publish now", set en-US What's new (currently: ${JSON.stringify(published.listings['en-us']?.baseListing.releaseNotes ?? null).slice(0, 100)}…)`);
   plan('submit for certification');
   if (!args.submit) return;
 
@@ -283,7 +297,8 @@ async function msstore(version: string) {
     assert(submission.listings['en-us'], `No en-us listing, found: ${Object.keys(submission.listings).join(', ')}`);
     submission.listings['en-us'].baseListing.releaseNotes = notes;
     submission.applicationPackages = [
-      ...submission.applicationPackages,
+      // like Partner Center does when uploading new packages for the same architectures
+      ...(submission.applicationPackages as MsPackage[]).map((p) => ({ ...p, fileStatus: 'PendingDelete' })),
       ...packages.map(({ fileName }) => ({ fileName, fileStatus: 'PendingUpload', minimumDirectXVersion: 'None', minimumSystemRam: 'None' })),
     ];
     submission.packageDeliveryOptions.packageRollout = { isPackageRollout: true, packageRolloutPercentage: 0 };
@@ -313,6 +328,7 @@ async function msstore(version: string) {
 async function msstoreRollout(percent: number) {
   assert(percent > 0 && percent <= 100, 'Percent must be in (0, 100]');
   const { published } = await getMsApp();
+  assert(published.packageDeliveryOptions.packageRollout.packageRolloutStatus === 'PackageRolloutInProgress', 'The last published submission has no gradual rollout in progress (did you click "Publish now"?)');
   const action = percent === 100 ? 'finalizepackagerollout' : `updatepackagerolloutpercentage?percentage=${percent}`;
   plan(percent === 100 ? 'finalize the rollout (100%)' : `set rollout to ${percent}%`);
   if (!args.submit) return;
