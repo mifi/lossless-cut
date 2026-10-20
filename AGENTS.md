@@ -38,6 +38,7 @@ After a GitHub release is published, draft one post per channel from `versions/<
 | X | https://x.com/losslesscut (then repost from @mifi_no) | 280 chars |
 | Bluesky | https://bsky.app/profile/losslesscut.app | 300 chars |
 | Mastodon | https://mastodon.social/@losslesscut | 500 chars |
+| Instagram | https://www.instagram.com/losslesscut.app/ (Create → Post on the website) | 2200 chars, links aren't clickable: say "link in bio" |
 
 - Start with "LosslessCut x.y.z is out", then the 1–3 most interesting changes for users, then the release link (https://github.com/mifi/lossless-cut/releases/tag/vx.y.z). Discord can take the full list.
 - Plain text, no issue references. The link counts toward the limit (on X as 23 chars). A patch release that only fixes one platform can be a single line.
