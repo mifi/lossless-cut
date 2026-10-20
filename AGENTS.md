@@ -27,3 +27,18 @@ The stores lag behind GitHub releases, so their "What's new" text must cover eve
 - Leave out what doesn't apply to that store's build: items for other platforms (App Review rejects mentions of other platforms), GitHub-only builds, custom FFmpeg path (not in the Mac App Store build), update checks.
 - Microsoft Store: max 1500 characters. Mac App Store: max 4000 characters.
 - Write them to `store-release-notes/mas-<version>.txt` and `store-release-notes/msstore-<version>.txt`, where `script/storeRelease.ts` reads them, and ask the user to review them before committing. Only run the script with `--prepare` or `--submit` (or the Store release workflow with "submit") after the user approves the text and the dry-run output.
+
+## Release announcement
+
+After a GitHub release is published, draft one post per channel from `versions/<version>.md` and the release link, and show them to me before posting:
+
+| Channel | Where | Limit |
+|---|---|---|
+| Discord | the announcements channel of https://discord.gg/fhnEREfUJ3 | 2000 chars |
+| X | https://x.com/losslesscut (then repost from @mifi_no) | 280 chars |
+| Bluesky | https://bsky.app/profile/losslesscut.app | 300 chars |
+| Mastodon | https://mastodon.social/@losslesscut | 500 chars |
+
+- Start with "LosslessCut x.y.z is out", then the 1–3 most interesting changes for users, then the release link (https://github.com/mifi/lossless-cut/releases/tag/vx.y.z). Discord can take the full list.
+- Plain text, no issue references. A patch release that only fixes one platform can be a single line.
+- Post through my logged-in browser (Claude's browser automation or the built-in browser). Fill in the post and let me confirm before clicking Post.
