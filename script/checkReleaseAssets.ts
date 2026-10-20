@@ -4,7 +4,7 @@
 import assert from 'node:assert';
 
 const tag = process.argv[2];
-const token = process.env['GH_TOKEN'];
+const token = process.env['GH_TOKEN'] || undefined;
 assert(tag != null, 'Usage: node script/checkReleaseAssets.ts <tag>');
 
 const repo = process.env['GITHUB_REPOSITORY'] ?? 'mifi/lossless-cut';
@@ -19,14 +19,13 @@ async function get<T>(path: string) {
   return await response.json() as T;
 }
 
-// Drafts don't have a tag yet as far as the "release by tag" endpoint is concerned, so look in the list
-const release = (await get<Release[]>('releases?per_page=20')).find((r) => r.tag_name === tag);
+// The "release by tag" endpoint only returns published releases, so look in the list (drafts come first)
+const release = (await get<Release[]>('releases?per_page=100')).find((r) => r.tag_name === tag);
 assert(release != null, `No release found for ${tag}`);
 const previous = await get<Release>('releases/latest');
-assert(previous.tag_name !== tag, `${tag} is already the latest published release, nothing to compare with`);
-
 const formatMb = (bytes: number) => `${(bytes / 1e6).toFixed(0)} MB`;
-const problems = previous.assets.flatMap(({ name, size }) => {
+// Nothing to compare with when re-running after the release was published
+const problems = previous.tag_name === tag ? [] : previous.assets.flatMap(({ name, size }) => {
   const asset = release.assets.find((a) => a.name === name);
   if (asset == null) return [`${name} is missing (${formatMb(size)} in ${previous.tag_name})`];
   if (asset.size < size * minRatio) return [`${name} is ${formatMb(asset.size)}, was ${formatMb(size)} in ${previous.tag_name}`];
