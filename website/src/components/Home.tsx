@@ -1,5 +1,5 @@
 // The homepage content. Rendered to static HTML at build time (no client-side JavaScript).
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { AudioWaveform, Camera, Clock, CodeXml, Combine, Layers, ListOrdered, Monitor, PackageOpen, RefreshCw, RotateCw, Save, Scissors, Star, Tag, Terminal, ZoomIn } from 'lucide-react';
 
@@ -103,6 +103,17 @@ function List({ items }: { items: string[] }) {
   );
 }
 
+// On phones, shows only the first collapsedHeight px of children (a single element), fading out, until the "label" button is
+// clicked. CSS only (a <details> and :has(), see .collapsible in home.css): wider screens and browsers without :has() show everything.
+function Collapsible({ label, collapsedHeight, children }: { label: string, collapsedHeight: number, children: ReactNode }) {
+  return (
+    <div className="collapsible" style={{ '--collapsed-height': `${collapsedHeight}px` } as CSSProperties}>
+      {children}
+      <details className="collapsible-more"><summary className="button">{label}</summary></details>
+    </div>
+  );
+}
+
 function FooterLink({ href, children }: { href: string, children: ReactNode }) {
   return <><a className="footer-link" href={href}>{children}</a>{' '}</>;
 }
@@ -163,9 +174,11 @@ export default function Home({ stars }: { stars: number }) {
 
       <section className="quotes">
         <h2>Thousands of happy users</h2>
-        <div className="quote-grid">
-          {quotes.map((quote) => <blockquote key={quote} className="quote-card">{quote}</blockquote>)}
-        </div>
+        <Collapsible label="Show all reviews" collapsedHeight={480}>
+          <div className="quote-grid">
+            {quotes.map((quote) => <blockquote key={quote} className="quote-card">{quote}</blockquote>)}
+          </div>
+        </Collapsible>
       </section>
 
       <WhiteSection>
@@ -204,8 +217,7 @@ export default function Home({ stars }: { stars: number }) {
       <WhiteSection>
         <h2 style={{ margin: '20px 0' }}>Features</h2>
 
-        {/* on phones, collapsed until "Show all features" is clicked (CSS only, see home.css) */}
-        <div className="feature-collapse">
+        <Collapsible label="Show all features" collapsedHeight={460}>
           <div className="feature-grid">
             {features.map(({ text, Icon }) => (
               <div key={text} className="feature-card">
@@ -214,13 +226,14 @@ export default function Home({ stars }: { stars: number }) {
               </div>
             ))}
           </div>
-          <details className="feature-more"><summary className="button">Show all features</summary></details>
-        </div>
+        </Collapsible>
 
         <h2 style={{ margin: '20px 0' }}>Other usage scenarios</h2>
 
         <div className="list">
-          <List items={usageScenarios} />
+          <Collapsible label="Show all usage scenarios" collapsedHeight={300}>
+            <List items={usageScenarios} />
+          </Collapsible>
 
           <div style={{ marginLeft: '40px' }}>
             * Which function is available depends on the file in question and which format/codec this file has<br />
