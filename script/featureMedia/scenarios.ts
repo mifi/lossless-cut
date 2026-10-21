@@ -55,6 +55,8 @@ const scenarios: Record<string, Scenario> = {
   'merge-files': {
     description: 'Open several files and merge them into one',
     clips: ['DJI_0009.MOV', 'DJI_0121.MOV', 'DJI_0740.MP4', 'DJI_0759.MP4'],
+    // The simple mode merge dialog checks the files, which shows nicer
+    config: { simpleMode: true },
     async run({ open, action, shot, wait }) {
       await open('DJI_0009.MOV', 'DJI_0121.MOV', 'DJI_0740.MP4', 'DJI_0759.MP4');
       await wait(1500);
@@ -203,6 +205,7 @@ const scenarios: Record<string, Scenario> = {
         await action('setCutEnd');
         await wait(500);
         await actionWithDialog('labelCurrentSegment', label);
+        await wait(800);
       }
       await shot('segments');
       // Shows the export confirmation (with "Merge cuts"), then exports
