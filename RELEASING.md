@@ -128,7 +128,7 @@ This fails if the branch has a hotfix that isn't in the tag. Merge the branch in
 
 *Written for agents, who draft the text for the user to review.*
 
-The stores lag behind GitHub releases, so their "What's new" text must cover every version since the one currently live in that store. Ask which version that is (Mac App Store: App Store Connect; Microsoft Store: Partner Center → the product's current submission → Packages), then combine `versions/*.md` after it up to the version being released. Mac App Store versions have their own numbering (1.x); the GitHub version is that of the build attached to it.
+The stores lag behind GitHub releases, so their "What's new" text must cover every version since the one currently live in that store. The `apple-store` and `ms-store` branches point to it (`git describe --tags origin/apple-store`); if unsure whether they're up to date, ask the user (Mac App Store: App Store Connect; Microsoft Store: Partner Center → the product's current submission → Packages), then combine `versions/*.md` after it up to the version being released. Mac App Store versions have their own numbering (1.x); the GitHub version is that of the build attached to it.
 
 - Write for customers: lead with the most impactful new features and visible fixes. Leave out internals (dependency/FFmpeg upgrades, security fixes, refactors) and niche power-user details; they're covered by a final "Many other improvements and fixes". The longer since the last store release, the more of the interesting changes can be included.
 - Plain text, no Markdown, code formatting, issue references or links. Use plain-language feature names instead of internal action/variable names.
