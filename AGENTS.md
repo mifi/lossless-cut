@@ -21,3 +21,5 @@ Only the bundled FFmpeg version (`script/downloadFfmpeg.ts`) is supported. Don't
 ## Releasing
 
 When helping with a release, follow [RELEASING.md](./RELEASING.md), including the sections written for agents (store release notes, release announcement).
+
+Never submit to a store, publish a release or post an announcement without the user's approval of the exact text first.

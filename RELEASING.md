@@ -2,20 +2,19 @@
 
 Overview, in order:
 
+0. Consider the [Maintenance chores](./CONTRIBUTING.md#maintenance-chores) first.
 1. [Prepare and build new version](#prepare-and-build-new-version): release notes, version bump, tag.
 2. [Release built version](#release-built-version): check the draft, then publish it on GitHub.
 3. [After releasing in GitHub](#after-releasing-in-github): snap, [release announcement](#release-announcement).
-4. [Release in Stores](#release-in-stores), usually a couple of weeks later once no serious regressions have been reported, with [store release notes](#store-release-notes).
+4. [Release in Stores](#release-in-stores), some time after the GitHub release, once no serious regressions have been reported, with [store release notes](#store-release-notes).
 5. [After releasing existing GitHub version in Stores](#after-releasing-existing-github-version-in-stores).
-
-Before releasing, consider [Maintenance chores](./CONTRIBUTING.md#maintenance-chores) first.
 
 ## Prepare and build new version
 
 - `git checkout master`
 - `git merge stores` (in case there's an old unmerged stores hotfix)
 - **Prepare release notes**: `yarn release-notes` lists the `Changelog:` lines from commits since the last tag (see [AGENTS.md](./AGENTS.md#commits)). Older commits don't have them, so also go through `node script/getCommits.ts`.
-- Create a new file `versions/x.y.z.md` and write the most important highlights from the release notes, but **remove github issue #references**
+- Create a new file `versions/x.y.z.md` (shown in the app's What's New dialog) and write the most important highlights from the release notes, but **remove github issue #references**
 - `node script/generateVersions.ts && git add versions/*.md src/renderer/src/versions.json && git commit -m 'Update change log'`
 - *If Store-only hotfix release*
   - `git checkout stores`
@@ -23,20 +22,20 @@ Before releasing, consider [Maintenance chores](./CONTRIBUTING.md#maintenance-ch
 - *If normal GitHub-first release*
   - `npm version minor && git --no-pager show`
 - `git push --follow-tags`
-- Wait for build and draft in Github actions. After a tag build, the `check-release-assets` job fails if an asset is missing or more than 10% smaller than in the latest release (e.g. a build without ffmpeg); check it before publishing
+- Wait for build and draft in GitHub Actions. After a tag build, the `check-release-assets` job fails if an asset is missing or more than 10% smaller than in the latest release (e.g. a build without ffmpeg); check it before publishing
 
 ## Release built version
 
 - Optionally, install the Mac App Store build from TestFlight (it shows up in App Store Connect after processing) and check that it starts and can open and export a file. This catches problems that only happen in the sandboxed MAS build.
-- Open draft in github and add the prepared release notes
+- Open draft in GitHub and add the prepared release notes
 - *If GitHub release*
   - Release the draft
 - *If Store-only hotfix release*
   - Remove all other artifacts and release the draft as **pre-release**
 
-### After releasing in GitHub
+## After releasing in GitHub
 
-- *If Stores-only hotfix release*
+- *If Store-only hotfix release*
   - `git checkout master`
   - `git merge stores`
 - Bump [snap version](https://snapcraft.io/losslesscut/releases)
@@ -120,16 +119,6 @@ Tag builds already upload the build to App Store Connect (`(MacOS) Upload to Mac
 - `git push`
 - `git checkout master`
 
-## More info
-
-For per-platform build/signing setup, see [this article](https://mifi.no/blog/automated-electron-build-with-release-to-mac-app-store-microsoft-store-snapcraft/).
-
-## Yearly Apple certificate renewal
-
-Apple sends an email when certificates are about to expire. Follow the "Certificate creation/renewal" section of [the article above](https://mifi.no/blog/automated-electron-build-with-release-to-mac-app-store-microsoft-store-snapcraft/). LosslessCut specifics:
-
-- The Development provisioning profile is kept in the project root as `LosslessCut_Dev.provisionprofile` (gitignored) — replace it with the newly downloaded one, for use with `yarn pack-mas-dev`.
-
 ## Store release notes
 
 *Written for agents, who draft the text for the user to review.*
@@ -169,3 +158,13 @@ After a GitHub release is published, draft one post per channel from `versions/<
   - Discord sends on Enter, and typing a long multi-line message into it in the built-in browser drops lines. Put the message on the clipboard with `pbcopy`, ask the user to paste it into the message box with Cmd+V, and check the box before sending.
   - After posting, open the profile and note the post's URL.
   - After the X post, remind the user to repost it from their personal account @mifi_no (it's usually not signed in in the built-in browser, so the user does it). Check the post's reposts list (`/status/<id>/retweets`) to confirm.
+
+## More info
+
+For per-platform build/signing setup, see [this article](https://mifi.no/blog/automated-electron-build-with-release-to-mac-app-store-microsoft-store-snapcraft/).
+
+## Yearly Apple certificate renewal
+
+Apple sends an email when certificates are about to expire. Follow the "Certificate creation/renewal" section of [the article above](https://mifi.no/blog/automated-electron-build-with-release-to-mac-app-store-microsoft-store-snapcraft/). LosslessCut specifics:
+
+- The Development provisioning profile is kept in the project root as `LosslessCut_Dev.provisionprofile` (gitignored) — replace it with the newly downloaded one, for use with `yarn pack-mas-dev`.
