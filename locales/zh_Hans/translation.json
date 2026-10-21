@@ -1154,5 +1154,18 @@
   "Copy from": "从…复制",
   "Enable": "启用",
   "Fill window (crop)": "填充窗口（裁剪）",
-  "Fit to window": "适合窗口"
+  "Fit to window": "自适应窗口",
+  "Fit to window, but don't enlarge": "自适应窗口，但不要放大",
+  "Invalid date, use e.g. {{example}} or {{now}}": "无效的日期，请使用例如 {{example}} 或 {{now}}",
+  "Language should be a 3-letter ISO 639-2 code": "语言应该是一个三字母的 ISO 639-2 代码",
+  "MP4/MOV may not keep these keys unless \"{{option}}\" is enabled: {{keys}}": "除非启用“{{option}}”，否则 MP4/MOV 可能无法保留这些键：{{keys}}",
+  "Now": "现在",
+  "Original size": "原始尺寸",
+  "Reset all changes": "重置所有更改",
+  "Reset all changes to files and tracks?": "重置所有文件和轨道的更改吗？",
+  "Stretch to window": "伸向窗口",
+  "Suggestions": "建议",
+  "This track has been edited": "这条轨道已经被编辑过了",
+  "Use \"{{tag}}\"": "使用 \"{{tag}}\"",
+  "Video preview scaling": "视频预览缩放"
 }
