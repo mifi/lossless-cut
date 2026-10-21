@@ -1,4 +1,5 @@
-// The homepage content. Rendered to static HTML at build time (no client-side JavaScript).
+// The homepage content. Rendered to static HTML at build time (no client-side JavaScript, except a small script for the feature icon
+// animation in index.astro).
 import type { CSSProperties, ReactNode } from 'react';
 import type { IconNode } from 'lucide';
 import { Combine, Film, Layers, ListOrdered, RefreshCw, ScanSearch, Scissors, SquarePen, Terminal } from 'lucide';

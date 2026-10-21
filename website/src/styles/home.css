@@ -291,8 +291,8 @@ go into extra columns to the side, which Safari didn't lay out again when opened
   color: var(--accent);
   background-color: color-mix(in srgb, var(--accent) 13%, white);
 }
-/* The icon draws itself: on hover (desktop), and on phones when the card scrolls into view (where scroll-driven animations
-work; elsewhere the icons are just shown). Every line of the icon has pathLength 1 (Home.tsx), so a dash of 1 (with a gap of 2,
+/* The icon draws itself: on hover (desktop), and on touch screens once, when the card reaches the middle of the screen (.draw,
+set by the script in index.astro, which first sets .draw-on-scroll to hide the icons until then). Every line of the icon has pathLength 1 (Home.tsx), so a dash of 1 (with a gap of 2,
 so that no dot of the next dash shows) draws each line from start to end in the same time. */
 @keyframes feature-icon-draw {
   from { stroke-dasharray: 1 2; stroke-dashoffset: 1; }
@@ -310,20 +310,12 @@ so that no dot of the next dash shows) draws each line from start to end in the 
       animation: feature-icon-draw 0.9s ease-out;
     }
   }
-  @media (hover: none) {
-    @supports (animation-timeline: view()) {
-      .feature-card {
-        view-timeline: --feature-card block;
-      }
-      /* separate properties: the minifier would otherwise merge animation-timeline into the animation shorthand, which browsers reject */
-      .feature-icon svg * {
-        animation-name: feature-icon-draw;
-        animation-timing-function: linear;
-        animation-fill-mode: both;
-        animation-timeline: --feature-card;
-        animation-range: entry 30% cover 45%;
-      }
-    }
+  .draw-on-scroll .feature-card:not(.draw) .feature-icon svg * {
+    stroke-dasharray: 1 2;
+    stroke-dashoffset: 1;
+  }
+  .feature-card.draw .feature-icon svg * {
+    animation: feature-icon-draw 0.9s ease-out;
   }
 }
 /* phones: the icon next to the text, so the 9 cards take less space */

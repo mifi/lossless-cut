@@ -34,5 +34,21 @@ const description = 'LosslessCut - Official downloads - free or paid version. Ed
 </head>
 <body>
   <Home stars={stars} />
+  <script>
+    // On touch screens, draw each feature card's icon once when the card reaches the middle of the screen (.draw in home.css).
+    // (Scroll-driven CSS animations can't do this yet in all browsers, e.g. on iOS.) With a mouse, the icons draw on hover instead.
+    if (matchMedia('(hover: none) and (prefers-reduced-motion: no-preference)').matches && 'IntersectionObserver' in window) {
+      const observer = new IntersectionObserver((entries) => {
+        for (const { target, isIntersecting } of entries) {
+          if (isIntersecting) {
+            target.classList.add('draw');
+            observer.unobserve(target);
+          }
+        }
+      }, { rootMargin: '-35% 0px -35% 0px' }); // the middle 30% of the screen
+      document.querySelector('.feature-grid')?.classList.add('draw-on-scroll');
+      document.querySelectorAll('.feature-card').forEach((card) => observer.observe(card));
+    }
+  </script>
 </body>
 </html>
