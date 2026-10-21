@@ -6,7 +6,7 @@ body:
     attributes:
       label: The fewer issues I have to read, the more new features I will have time to implement, so I ask that you please try these things first
       options:
-        - label: Try with the [newest version from GitHub](https://github.com/mifi/lossless-cut/releases/latest) (also it might have already been fixed in latest [nightly build](https://github.com/mifi/lossless-cut#nightly-builds-))
+        - label: Try with the [newest version from GitHub](https://github.com/mifi/lossless-cut/releases/latest) (also it might have already been fixed in latest [nightly build](https://mifi.no/llc/nightly/))
           required: true
         - label: Read the [documentation](https://losslesscut.app/docs), [FAQ](https://losslesscut.app/docs#faq) and [Troubleshooting, known issues](https://losslesscut.app/docs/troubleshooting)
           required: true

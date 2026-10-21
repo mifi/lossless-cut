@@ -1,6 +1,6 @@
 blank_issues_enabled: false
 contact_links:
-  - name: 📖 Documentation and troubleshooting
+  - name: 📖 Troubleshooting and known issues
     url: https://losslesscut.app/docs/troubleshooting
     about: Known issues and solutions to common problems.
   - name: ❓ Discussions and questions
