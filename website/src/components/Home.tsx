@@ -1,7 +1,7 @@
 // The homepage content. Rendered to static HTML at build time (no client-side JavaScript).
 import type { CSSProperties, ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { Camera, CodeXml, Combine, Layers, ListOrdered, Monitor, RefreshCw, ScanSearch, Scissors, SquarePen, Star, Terminal } from 'lucide-react';
+import { CodeXml, Combine, Film, Languages, Layers, ListOrdered, Monitor, RefreshCw, ScanSearch, Scissors, SquarePen, Star, Terminal } from 'lucide-react';
 
 import macAppStoreBadge from '../../../mac-app-store-badge.svg?url';
 import msStoreBadge from '../../../ms-store-badge.svg?url';
@@ -36,14 +36,14 @@ const quotes = [
 // Highlights only, the full list is docs/features.md (https://losslesscut.app/docs/features). Keep in sync with the README's.
 const features: { text: string, Icon: LucideIcon }[] = [
   { text: 'Cut and trim video and audio losslessly, in seconds', Icon: Scissors },
-  { text: 'Merge files with identical codecs, for example from the same camera', Icon: Combine },
+  { text: 'Merge cut segments, or whole files with identical codecs, losslessly', Icon: Combine },
   { text: 'Add, remove, replace or extract tracks: audio, subtitles and more', Icon: Layers },
   { text: 'Change the format (remux), for example from MKV to MP4, without re-encoding', Icon: RefreshCw },
-  { text: 'Segments with labels and tags, and import/export of chapters, CSV, EDL, YouTube timestamps and more', Icon: ListOrdered },
+  { text: 'Segments, markers and tags, with import/export of chapters, CSV, EDL and more', Icon: ListOrdered },
   { text: 'Detect scenes, black frames and silence, and split by them', Icon: ScanSearch },
-  { text: 'Edit metadata, rotation and chapter marks', Icon: SquarePen },
-  { text: 'Export snapshots and video frames as images', Icon: Camera },
-  { text: 'Keyboard shortcut workflow, a CLI and an HTTP API', Icon: Terminal },
+  { text: 'Edit metadata and rotation, and create chapters', Icon: SquarePen },
+  { text: "Opens almost any format, even ones your player can't play", Icon: Film },
+  { text: 'Snapshots and frame export, keyboard shortcuts, a CLI and an HTTP API', Icon: Terminal },
 ];
 
 // a few common ones, the full list is in docs/features.md
@@ -51,7 +51,7 @@ const usageScenarios = [
   'Cut out commercials from a recorded TV show (and change it from TS to MP4)',
   'Extract the music track from a video and cut it to your needs',
   'Add music to a video, or replace its audio track',
-  'Change an H264/H265 MKV video to MOV or MP4, for example for playback on an iPhone',
+  'Join clips from the same camera or phone into one file',
   'Cut a file by its MP4/MKV chapters',
 ];
 
@@ -146,6 +146,8 @@ export default function Home({ stars }: { stars: number }) {
               <li><Star aria-hidden size={16} className="star" /> {formatStars(stars)} stars on <a href={githubUrl}>GitHub</a></li>
               <li><CodeXml aria-hidden size={16} /> Free and open source</li>
               <li><Monitor aria-hidden size={16} /> Windows, macOS, Linux</li>
+              {/* the number of langNames in src/common/i18n.ts, also in docs/features.md */}
+              <li><Languages aria-hidden size={16} /> 26 languages</li>
             </ul>
             <div className="hero-author">Official app by <a href={authorUrl}>Mikael Finstad</a></div>
           </div>

@@ -33,14 +33,14 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 
 <!-- Highlights only, the full list is docs/features.md. Keep in sync with the homepage's (website/src/components/Home.tsx) -->
 - Cut and trim video and audio losslessly, in seconds
-- Merge files with identical codecs, for example from the same camera
+- Merge cut segments, or whole files with identical codecs, losslessly
 - Add, remove, replace or extract tracks: audio, subtitles and more
 - Change the format (remux), for example from MKV to MP4, without re-encoding
-- Segments with labels and tags, and import/export of chapters, CSV, EDL, YouTube timestamps and more
+- Segments, markers and tags, with import/export of chapters, CSV, EDL and more
 - Detect scenes, black frames and silence, and split by them
-- Edit metadata, rotation and chapter marks
-- Export snapshots and video frames as images
-- Keyboard shortcut workflow, a [CLI](https://losslesscut.app/docs/cli) and an [HTTP API](https://losslesscut.app/docs/api)
+- Edit metadata and rotation, and create chapters
+- Opens almost any format, even ones your player can't play
+- Snapshots and frame export, keyboard shortcuts, a [CLI](https://losslesscut.app/docs/cli) and an [HTTP API](https://losslesscut.app/docs/api)
 
 **[All features and example use cases →](https://losslesscut.app/docs/features)**
 
@@ -74,7 +74,7 @@ LosslessCut is maintained by me alone and will always remain free and open sourc
 
 ## Supported formats
 
-LosslessCut uses the Chromium browser's HTML5 video player, and not all formats/codecs are [natively supported](https://www.chromium.org/audio-video). Generally, the following file formats work: `MP4`, `MOV`, `WebM`, `Matroska`, `OGG` and `WAV`. Audio codecs: `FLAC`, `MP3`, `Opus`, `PCM`, `Vorbis` and `AAC`. Video codecs: `H264`, `AV1`, `Theora`, `VP8`, `VP9` and `H265` (with hardware decoder). Learn the [difference between a codec and a format](https://losslesscut.app/docs#primer-videoaudio-codecs-vs-formats). Codecs and formats not listed above can still be converted to a supported format/codec from the `File` menu (try the option *Fastest: FFmpeg-assisted playback* first). A low quality version of the file will then be created and opened in the player. Note that the actual cut/export operation will still be performed on the original file, so it will be lossless. This allows for potentially opening any file that FFmpeg is able to decode.
+LosslessCut uses the Chromium browser's HTML5 video player, and not all formats/codecs are [natively supported](https://www.chromium.org/audio-video). Generally, the following file formats work: `MP4`, `MOV`, `WebM`, `Matroska`, `OGG` and `WAV`. Audio codecs: `FLAC`, `MP3`, `Opus`, `PCM`, `Vorbis` and `AAC`. Video codecs: `H264`, `AV1`, `Theora`, `VP8`, `VP9` and `H265` (with hardware decoder). Learn the [difference between a codec and a format](https://losslesscut.app/docs#primer-videoaudio-codecs-vs-formats). Files with other codecs and formats are played through FFmpeg instead (*FFmpeg-assisted playback*), automatically when LosslessCut knows they're unsupported, or from `File` → *Convert to supported format*. The export is still done from the original file, so it's still lossless. This means you can open almost any file that FFmpeg can decode.
 
 ## Documentation
 
