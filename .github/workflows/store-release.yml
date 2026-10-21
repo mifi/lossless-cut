@@ -1,4 +1,4 @@
-# Runs script/storeRelease.ts, see CONTRIBUTING.md → "Release in Stores"
+# Runs script/storeRelease.ts, see RELEASING.md → "Release in Stores"
 name: Store release
 
 on:
