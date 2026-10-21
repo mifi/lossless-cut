@@ -1,7 +1,7 @@
 // The homepage content. Rendered to static HTML at build time (no client-side JavaScript).
 import type { CSSProperties, ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { AudioWaveform, Camera, Clock, CodeXml, Combine, Layers, ListOrdered, Monitor, PackageOpen, RefreshCw, RotateCw, Save, Scissors, Star, Tag, Terminal, ZoomIn } from 'lucide-react';
+import { Camera, CodeXml, Combine, Layers, ListOrdered, Monitor, RefreshCw, ScanSearch, Scissors, SquarePen, Star, Terminal } from 'lucide-react';
 
 import macAppStoreBadge from '../../../mac-app-store-badge.svg?url';
 import msStoreBadge from '../../../ms-store-badge.svg?url';
@@ -33,35 +33,26 @@ const quotes = [
   'In Chinese, the word "Lossless" (pronounced like "Lao-Si-Le-Si") sounds incredibly similar to the luxury car brand "Rolls-Royce" ("Lao-Si-Lai-Si"). I think this is a beautiful coincidence because this software truly is the Rolls-Royce of the video-cutting world — smooth, premium, pure, and absolutely perfect.',
 ];
 
+// Highlights only, the full list is docs/features.md (https://losslesscut.app/docs/features). Keep in sync with the README's.
 const features: { text: string, Icon: LucideIcon }[] = [
-  { text: 'Losslessly trim or cut out parts of video/audio', Icon: Scissors },
-  { text: 'Lossless merge/concatenation of arbitrary files (identical codec parameters)', Icon: Combine },
-  { text: 'Lossless stream editing: Combine arbitrary tracks from multiple files', Icon: Layers },
-  { text: 'Losslessly extract all tracks from a file', Icon: PackageOpen },
-  { text: 'Remux into any compatible output format', Icon: RefreshCw },
-  { text: 'Take full-resolution snapshots from videos in JPEG/PNG format', Icon: Camera },
-  { text: 'Apply a per-file timecode offset in the preview', Icon: Clock },
-  { text: 'Change rotation/orientation metadata in videos', Icon: RotateCw },
-  { text: 'Powerful timeline with zoom and frame/keyframe jumping', Icon: ZoomIn },
-  { text: 'Auto-saves per project cut segments to file', Icon: Save },
-  { text: 'View ffmpeg last command log so you can modify and re-run recent commands on the command line', Icon: Terminal },
-  { text: 'Give labels to cut segments', Icon: Tag },
-  { text: 'Segment panel showing segments with details, export/import cut segments as CSV', Icon: ListOrdered },
-  { text: 'Video thumbnails and audio waveform', Icon: AudioWaveform },
+  { text: 'Cut and trim video and audio losslessly, in seconds', Icon: Scissors },
+  { text: 'Merge files with identical codecs, for example from the same camera', Icon: Combine },
+  { text: 'Add, remove, replace or extract tracks: audio, subtitles and more', Icon: Layers },
+  { text: 'Change the format (remux), for example from MKV to MP4, without re-encoding', Icon: RefreshCw },
+  { text: 'Segments with labels and tags, and import/export of chapters, CSV, EDL, YouTube timestamps and more', Icon: ListOrdered },
+  { text: 'Detect scenes, black frames and silence, and split by them', Icon: ScanSearch },
+  { text: 'Edit metadata, rotation and chapter marks', Icon: SquarePen },
+  { text: 'Export snapshots and video frames as images', Icon: Camera },
+  { text: 'Keyboard shortcut workflow, a CLI and an HTTP API', Icon: Terminal },
 ];
 
+// a few common ones, the full list is in docs/features.md
 const usageScenarios = [
-  'Cut out commercials from a recorded TV show',
-  'Remove audio or video track from a file',
-  'Add music to a video (or replace existing audio track)',
-  'Include a subtitle into a video',
-  'Extract music, video or subtitle track from a video and cut it to your needs',
-  'Change format of a H264 TV recording from TS to MP4',
-  'Fix rotation of a video that has the wrong orientation flag set, e.g. phone recording',
-  'Quickly change a H264 MKV video to MOV or MP4 for playback on iPhone',
-  'Import a list of cut times from other tool as a EDL (edit decision list, CSV) and run these cuts with LosslessCut',
-  'Export a list of cut times as a CSV EDL and run these in another tool',
-  'Loop a video / audio clip X times quickly without re-encoding',
+  'Cut out commercials from a recorded TV show (and change it from TS to MP4)',
+  'Extract the music track from a video and cut it to your needs',
+  'Add music to a video, or replace its audio track',
+  'Change an H264/H265 MKV video to MOV or MP4, for example for playback on an iPhone',
+  'Cut a file by its MP4/MKV chapters',
 ];
 
 const storeBadges = [
@@ -217,29 +208,26 @@ export default function Home({ stars }: { stars: number }) {
       <WhiteSection>
         <h2 style={{ margin: '20px 0' }}>Features</h2>
 
-        <Collapsible label="Show all features" collapsedHeight={460}>
-          <div className="feature-grid">
-            {features.map(({ text, Icon }) => (
-              <div key={text} className="feature-card">
-                <Icon aria-hidden size={28} strokeWidth={1.75} className="feature-icon" />
-                <div>{text}</div>
-              </div>
-            ))}
-          </div>
-        </Collapsible>
+        <div className="feature-grid">
+          {features.map(({ text, Icon }) => (
+            <div key={text} className="feature-card">
+              <Icon aria-hidden size={28} strokeWidth={1.75} className="feature-icon" />
+              <div>{text}</div>
+            </div>
+          ))}
+        </div>
 
-        <h2 style={{ margin: '20px 0' }}>Other usage scenarios</h2>
+        <h2 style={{ margin: '20px 0' }}>Example use cases</h2>
 
         <div className="list">
-          <Collapsible label="Show all usage scenarios" collapsedHeight={300}>
-            <List items={usageScenarios} />
-          </Collapsible>
+          <List items={usageScenarios} />
 
-          <div style={{ marginLeft: '40px' }}>
-            * Which function is available depends on the file in question and which format/codec this file has<br />
-            * This app is not for exact cutting. Start cut time will be &quot;rounded&quot; to the nearest previous keyframe, which may be a fraction of a second before your desired cut point, or up to several seconds, depending on the encoding.
-          </div>
+          <p className="note">
+            Which functions are available depends on the file and its format and codecs. Lossless cuts can only start at a keyframe, so a cut starts at the keyframe before your cut point, a fraction of a second up to several seconds earlier depending on the encoding.
+          </p>
         </div>
+
+        <a className="button" href="/docs/features">See all features and use cases</a>
       </WhiteSection>
 
       <div className="padded" style={{ padding: '110px 30px 80px 30px' }}>

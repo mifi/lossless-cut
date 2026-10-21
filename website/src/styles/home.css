@@ -225,9 +225,16 @@ body {
   width: 1000px;
   max-width: 100%;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  /* 3 columns for the 9 highlights on wide screens */
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 16px;
   margin-bottom: 40px;
+}
+.note {
+  margin: 10px 0 30px 40px;
+  font-size: 15px;
+  line-height: 1.5;
+  opacity: 0.8;
 }
 .feature-card {
   display: flex;
@@ -241,6 +248,21 @@ body {
 }
 .feature-icon {
   color: #1d8a96;
+}
+/* phones: the icon next to the text, so the 9 cards take less space */
+@media (max-width: 700px) {
+  .feature-grid {
+    gap: 10px;
+  }
+  .feature-card {
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+  }
+  .feature-icon {
+    flex-shrink: 0;
+  }
 }
 /* <Collapsible> in Home.tsx: on phones, the first --collapsed-height of its content element, fading out, until the <details> is
 opened. Only where :has() works, so other browsers show everything. The wrapper takes no space of its own (display: contents),

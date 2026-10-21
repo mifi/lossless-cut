@@ -38,6 +38,7 @@ export default defineConfig({
       // Docs pages (the files in ../docs) by URL path. A new doc is built, but only listed here once added.
       sidebar: [
         'docs',
+        'docs/features',
         'docs/installation',
         'docs/requirements',
         'docs/troubleshooting',
