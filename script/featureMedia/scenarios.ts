@@ -6,20 +6,28 @@ import type { Scenario } from './types.ts';
 
 const scenarios: Record<string, Scenario> = {
   'cut-segments': {
-    description: 'Mark two segments to keep, play them and export',
+    description: 'Mark and label two segments to keep, play them and export',
     clips: ['DJI_0759.MP4'],
-    async run({ open, action, shot, wait }) {
+    async run({ open, action, key, type, shot, wait }) {
       await open('DJI_0759.MP4');
       await wait(2000);
       await shot('opened');
       // Setting a start after the last segment starts a new segment
-      for (const [start, end] of [['00:00:03', '00:00:08'], ['00:00:14', '00:00:20']]) {
+      for (const [start, end, label] of [['00:00:03', '00:00:08', 'Sunset'], ['00:00:14', '00:00:20', 'Cliffs']] as const) {
         await action('goToTimecodeDirect', { time: start });
         await action('setCutStart');
         await wait(700);
         await action('goToTimecodeDirect', { time: end });
         await action('setCutEnd');
-        await wait(1000);
+        await wait(700);
+        // Opens a dialog asking for the label
+        const labeling = action('labelCurrentSegment');
+        await wait(800);
+        await key('ctrl+a');
+        await type(label);
+        await key('Return');
+        await labeling;
+        await wait(800);
       }
       await shot('segments');
       await action('togglePlaySelectedSegments');
