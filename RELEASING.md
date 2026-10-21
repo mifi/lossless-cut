@@ -7,17 +7,19 @@ Overview, in order:
 2. [Release built version](#release-built-version): check the draft, then publish it on GitHub.
 3. [After releasing in GitHub](#after-releasing-in-github): snap, [release announcement](#release-announcement).
 4. [Release in Stores](#release-in-stores), some time after the GitHub release, once no serious regressions have been reported, with [store release notes](#store-release-notes).
-5. [After releasing existing GitHub version in Stores](#after-releasing-existing-github-version-in-stores).
+5. [After releasing existing GitHub version in Stores](#after-releasing-existing-github-version-in-stores): move the store branch.
+
+The branches `apple-store` and `ms-store` point to the version that's currently live in the Mac App Store and the Microsoft Store. They're for store-only hotfixes: a fix on top of the version that's in a store, without releasing everything that's on `master`.
 
 ## Prepare and build new version
 
 - `git checkout master`
-- `git merge stores` (in case there's an old unmerged stores hotfix)
+- `git merge apple-store ms-store` (in case there's an unmerged store hotfix)
 - **Prepare release notes**: `yarn release-notes` lists the `Changelog:` lines from commits since the last tag (see [AGENTS.md](./AGENTS.md#commits)). Older commits don't have them, so also go through `node script/getCommits.ts`.
 - Create a new file `versions/x.y.z.md` (shown in the app's What's New dialog) and write the most important highlights from the release notes, but **remove github issue #references**
 - `node script/generateVersions.ts && git add versions/*.md src/renderer/src/versions.json && git commit -m 'Update change log'`
 - *If Store-only hotfix release*
-  - `git checkout stores`
+  - `git checkout apple-store` (or `ms-store`), commit the fix there
   - `npm version patch`
 - *If normal GitHub-first release*
   - `npm version minor && git --no-pager show`
@@ -37,7 +39,7 @@ Overview, in order:
 
 - *If Store-only hotfix release*
   - `git checkout master`
-  - `git merge stores`
+  - `git merge apple-store` (or `ms-store`)
 - Bump [snap version](https://snapcraft.io/losslesscut/releases)
 - Post the announcement to Discord, X, Bluesky, Mastodon and Instagram (see [Release announcement](#release-announcement))
 
@@ -113,11 +115,14 @@ Tag builds already upload the build to App Store Connect (`(MacOS) Upload to Mac
 
 ## After releasing existing GitHub version in Stores
 
-- `git checkout stores`
-- Find the tag just released in the Stores
-- Merge this tag (from `master`) into `stores`: `git merge vX.Y.Z`
-- `git push`
-- `git checkout master`
+Move the store's branch to the tag of the version that was just released there:
+
+```bash
+git push origin vX.Y.Z^{commit}:apple-store  # Mac App Store
+git push origin vX.Y.Z^{commit}:ms-store     # Microsoft Store
+```
+
+This fails if the branch has a hotfix that isn't in the tag. Merge the branch into `master` first, see [After releasing in GitHub](#after-releasing-in-github).
 
 ## Store release notes
 
