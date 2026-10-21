@@ -231,6 +231,66 @@ const scenarios: Record<string, Scenario> = {
       await shot('segments');
     },
   },
+  'youtube-chapters': {
+    description: 'Label parts of a video and get YouTube chapters',
+    clips: ['tears-of-steel.mkv'],
+    async run({ open, action, key, type, shot, wait }) {
+      await open('tears-of-steel.mkv');
+      await wait(3000);
+      // Opens a dialog asking for the number of segments
+      const creating = action('createNumSegments');
+      await wait(1500);
+      await key('ctrl+a');
+      await type('3');
+      await key('Return');
+      await creating;
+      await wait(1000);
+      for (const [i, label] of ['On the bridge', '40 years later', 'In the lab'].entries()) {
+        await action(i === 0 ? 'jumpSeekFirstSegment' : 'jumpSeekNextSegment');
+        await wait(800);
+        // Opens a dialog asking for the label
+        const labeling = action('labelCurrentSegment');
+        await wait(1000);
+        await key('ctrl+a');
+        await type(label);
+        await key('Return');
+        await labeling;
+        await wait(800);
+      }
+      await shot('labels');
+      // The dialog stays open until it's closed
+      const showing = action('exportYouTube');
+      await wait(3000);
+      await shot('chapters');
+      await key('Escape');
+      await showing;
+    },
+  },
+  'keyboard-shortcuts': {
+    description: 'Every action has a keyboard shortcut that you can change',
+    clips: ['DJI_0759.MP4'],
+    async run({ open, action, shot, wait }) {
+      await open('DJI_0759.MP4');
+      await wait(2000);
+      await action('toggleKeyboardShortcuts');
+      await wait(3000);
+      await shot('shortcuts');
+    },
+  },
+  'dark-mode': {
+    description: 'Switch between dark and light mode',
+    clips: ['DJI_0759.MP4'],
+    async run({ open, action, shot, wait }) {
+      await open('DJI_0759.MP4');
+      await wait(2000);
+      await shot('dark');
+      await action('toggleDarkMode');
+      await wait(2000);
+      await shot('light');
+      await action('toggleDarkMode');
+      await wait(1500);
+    },
+  },
 };
 
 export default scenarios;
