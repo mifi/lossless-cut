@@ -40,13 +40,14 @@ for (const clip of scenario.clips) {
   }
 }
 
-// A fresh config, so the demo doesn't depend on (or change) your own settings
+// A fresh config, so the demo doesn't depend on (or change) your own settings, and no project file is saved next to the clip (it would be loaded next time)
 const configDir = await mkdtemp(join(tmpdir(), 'losslesscut-feature-media-'));
-await writeFile(join(configDir, 'config.json'), JSON.stringify({ windowBounds: { x: 0, y: 0, width, height }, enableUpdateCheck: false }));
+await writeFile(join(configDir, 'config.json'), JSON.stringify({ windowBounds: { x: 0, y: 0, width, height }, enableUpdateCheck: false, autoSaveProjectFile: false }));
 
 // The app's own log, to see what went wrong if a step doesn't work
 const appLog = join(outDir, `${scenarioName}-app.log`);
-const app = execa('node_modules/electron/dist/electron', ['--no-sandbox', '.', '--config-dir', configDir, '--disable-networking', '--http-api', String(port)], { reject: false, stdout: { file: appLog }, stderr: { file: appLog } });
+// The app path must come first: the app skips the first two arguments when run as `electron <app>` (process.defaultApp)
+const app = execa('node_modules/electron/dist/electron', ['.', '--no-sandbox', '--config-dir', configDir, '--disable-networking', '--http-api', String(port)], { reject: false, stdout: { file: appLog }, stderr: { file: appLog } });
 
 async function post(path: string, body?: unknown) {
   const response = await fetch(`http://127.0.0.1:${port}/api/${path}`, {
@@ -79,11 +80,7 @@ try {
     open: async (clip) => post('action/openFiles', [join(process.cwd(), clips, clip)]),
     action: async (name, args) => {
       console.log('Action', name, args ?? '');
-      // Some actions (e.g. seeking) sometimes don't report back when done, so carry on instead of failing the recording
-      await post(`action/${name}`, args).catch((err: unknown) => {
-        if (!(err instanceof Error && err.name === 'TimeoutError')) throw err;
-        console.warn(`${name} didn't respond in time, continuing`);
-      });
+      await post(`action/${name}`, args);
     },
     shot: async (name) => {
       await execa(ffmpeg, ['-v', 'error', '-y', ...grab, '-frames:v', '1', join(outDir, `${scenarioName}-${name}.png`)]);
