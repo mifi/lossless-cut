@@ -117,15 +117,15 @@ async function findMasBuild(version: string) {
   return builds?.[0];
 }
 
-// The privacy policy URL is in the app info (per app, not per version), which can only be changed while a version is being prepared
+// The privacy policy URL is in the app info (per app, not per version), which can only be changed while a version is being prepared (or was rejected)
 async function masPrivacyPolicy() {
-  const appInfos = (await asc<AscResource[]>('GET', `/v1/apps/${masAppId}/appInfos`))!;
+  const appInfos = (await asc<AscResource[]>('GET', `/v1/apps/${masAppId}/appInfos?limit=200`))!;
   const editable = appInfos.find((i) => ['PREPARE_FOR_SUBMISSION', 'READY_FOR_REVIEW', 'DEVELOPER_REJECTED', 'REJECTED'].includes(String(i.attributes['state'])));
   if (!editable) {
-    log(`No editable app info (states: ${appInfos.map((i) => i.attributes['state']).join(', ')}), so the privacy policy URL can't be checked`);
+    log(`Warning: no editable app info (states: ${appInfos.map((i) => i.attributes['state']).join(', ')}), so the privacy policy URL can't be checked. Check it in App Store Connect → App Information (should be ${privacyPolicyUrl})`);
     return;
   }
-  const localizations = (await asc<AscResource[]>('GET', `/v1/appInfos/${editable.id}/appInfoLocalizations`))!;
+  const localizations = (await asc<AscResource[]>('GET', `/v1/appInfos/${editable.id}/appInfoLocalizations?limit=200`))!;
   for (const localization of localizations) {
     const { locale, privacyPolicyUrl: current } = localization.attributes;
     if (current === privacyPolicyUrl) {
