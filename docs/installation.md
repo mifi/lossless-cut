@@ -25,6 +25,10 @@ Settings, keyboard shortcuts, logs and temporary cache files are stored in your 
 
 App settings and keyboard shortcuts are stored inside the `config.json` file inside your `appData` folder.
 
+### Copy settings and keyboard shortcuts to another computer
+
+Quit LosslessCut on both computers, then copy `config.json` from the `appData` folder (see table above) on the old computer to the same folder on the new computer. Note that settings containing paths (e.g. a custom working directory or FFmpeg path) may need to be changed afterwards if the folders are different on the new computer.
+
 ### Custom `config.json` path
 
 On Windows, if you create a `config.json` file with the contents `{}` next to the `LosslessCut.exe` file, LosslessCut will read/store settings from this file instead of the one inside `appData`. Note that other temporary files will still be stored in `appData`. Alternatively you can specify a custom path to a folder containing `config.json` by using the [CLI option](cli.md) `--config-dir`. See also [#645](https://github.com/mifi/lossless-cut/issues/645).
