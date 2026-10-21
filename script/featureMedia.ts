@@ -41,10 +41,13 @@ for (const clip of scenario.clips) {
   }
 }
 
+// Show more of the UI than the defaults do
+const demoConfig = { simpleMode: false, thumbnailsEnabled: true };
+
 // A fresh config, so the demo doesn't depend on (or change) your own settings, doesn't hand over to your running LosslessCut, and saves no project file next to the clip (it would be loaded next time)
 const configDir = await mkdtemp(join(tmpdir(), 'losslesscut-feature-media-'));
 // Exports go to the temp dir too
-await writeFile(join(configDir, 'config.json'), JSON.stringify({ windowBounds: { x: 0, y: 0, width, height }, allowMultipleInstances: true, autoSaveProjectFile: false, enableCustomOutDir: true, recentCustomOutDirs: [configDir], ...scenario.config }));
+await writeFile(join(configDir, 'config.json'), JSON.stringify({ windowBounds: { x: 0, y: 0, width, height }, allowMultipleInstances: true, autoSaveProjectFile: false, enableCustomOutDir: true, recentCustomOutDirs: [configDir], ...demoConfig, ...scenario.config }));
 
 // The app's log, including the renderer's console. Failed actions don't fail the HTTP request, so check the screenshots and this log
 const appLog = join(outDir, `${scenarioName}-app.log`);
@@ -77,19 +80,35 @@ try {
   const recorder = execa(ffmpeg, ['-v', 'error', ...grab, '-c:v', 'libx264', '-preset', 'ultrafast', '-qp', '0', rawVideo], { reject: false, stderr: 'inherit' });
   await timers.setTimeout(500);
 
+  const action = async (name: string, args?: unknown) => {
+    console.log('Action', name, args ?? '');
+    await post(`action/${name}`, args);
+  };
+  const key = async (keys: string) => {
+    await execa('xdotool', ['key', keys]);
+  };
+  const type = async (text: string) => {
+    await execa('xdotool', ['type', '--delay', '80', text]);
+  };
+
   try {
     await scenario.run({
       open: async (...names) => post('action/openFiles', names.map((name) => resolve(clips, name))),
-      action: async (name, args) => {
-        console.log('Action', name, args ?? '');
-        await post(`action/${name}`, args);
+      action,
+      actionWithDialog: async (name, text) => {
+        // The action finishes when the dialog is closed
+        const done = action(name);
+        await timers.setTimeout(1000);
+        if (text != null) {
+          await key('ctrl+a');
+          await type(text);
+          await timers.setTimeout(500);
+        }
+        await key('Return');
+        await done;
       },
-      key: async (keys) => {
-        await execa('xdotool', ['key', keys]);
-      },
-      type: async (text) => {
-        await execa('xdotool', ['type', '--delay', '80', text]);
-      },
+      key,
+      type,
       click: async (x, y) => {
         await execa('xdotool', ['mousemove', String(x), String(y), 'click', '1']);
       },

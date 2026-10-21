@@ -3,6 +3,8 @@ export interface ScenarioContext {
   open: (...clips: string[]) => Promise<void>,
   /** Runs a keyboard action (see the Keyboard & mouse shortcuts dialog for names), optionally with arguments */
   action: (name: string, args?: unknown) => Promise<void>,
+  /** Runs an action that opens a dialog with a text field, types the text (if any) and confirms */
+  actionWithDialog: (name: string, text?: string) => Promise<void>,
   /** Presses keys with xdotool, e.g. 'Return' to confirm a dialog that an action opened (start the action without awaiting it) */
   key: (keys: string) => Promise<void>,
   /** Types text with xdotool */

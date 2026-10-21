@@ -8,7 +8,7 @@ const scenarios: Record<string, Scenario> = {
   'cut-segments': {
     description: 'Mark and label two segments to keep, play them and export',
     clips: ['DJI_0759.MP4'],
-    async run({ open, action, key, type, shot, wait }) {
+    async run({ open, action, actionWithDialog, shot, wait }) {
       await open('DJI_0759.MP4');
       await wait(2000);
       await shot('opened');
@@ -20,13 +20,7 @@ const scenarios: Record<string, Scenario> = {
         await action('goToTimecodeDirect', { time: end });
         await action('setCutEnd');
         await wait(700);
-        // Opens a dialog asking for the label
-        const labeling = action('labelCurrentSegment');
-        await wait(800);
-        await key('ctrl+a');
-        await type(label);
-        await key('Return');
-        await labeling;
+        await actionWithDialog('labelCurrentSegment', label);
         await wait(800);
       }
       await shot('segments');
@@ -75,6 +69,7 @@ const scenarios: Record<string, Scenario> = {
   tracks: {
     description: 'Choose which tracks to keep, then export',
     clips: ['tears-of-steel.mkv'],
+    config: { waveformMode: 'waveform' },
     async run({ open, action, click, shot, wait }) {
       await open('tears-of-steel.mkv');
       await wait(3000);
@@ -101,6 +96,7 @@ const scenarios: Record<string, Scenario> = {
   'track-metadata': {
     description: 'Edit the metadata of a track',
     clips: ['tears-of-steel.mkv'],
+    config: { waveformMode: 'waveform' },
     async run({ open, action, click, key, type, shot, wait }) {
       await open('tears-of-steel.mkv');
       await wait(3000);
@@ -132,15 +128,12 @@ const scenarios: Record<string, Scenario> = {
   'detect-scene-changes': {
     description: 'Create segments from the scene changes',
     clips: ['tears-of-steel.mkv'],
-    async run({ open, action, key, shot, wait }) {
+    config: { waveformMode: 'waveform' },
+    async run({ open, actionWithDialog, shot, wait }) {
       await open('tears-of-steel.mkv');
       await wait(3000);
-      // Opens a parameters dialog, confirm it with the defaults
-      const detecting = action('detectSceneChanges');
-      await wait(2000);
-      await shot('parameters');
-      await key('Return');
-      await detecting;
+      // Confirm the parameters dialog with the defaults
+      await actionWithDialog('detectSceneChanges');
       await wait(5000);
       await shot('segments');
     },
@@ -200,15 +193,16 @@ const scenarios: Record<string, Scenario> = {
     description: 'Cut out three parts and merge them into one file',
     clips: ['DJI_0759.MP4'],
     config: { autoMerge: true },
-    async run({ open, action, shot, wait }) {
+    async run({ open, action, actionWithDialog, shot, wait }) {
       await open('DJI_0759.MP4');
       await wait(2000);
-      for (const [start, end] of [['00:00:02', '00:00:05'], ['00:00:10', '00:00:13'], ['00:00:18', '00:00:22']]) {
+      for (const [start, end, label] of [['00:00:02', '00:00:05', 'Sea'], ['00:00:10', '00:00:13', 'Cliffs'], ['00:00:18', '00:00:22', 'Sunset']] as const) {
         await action('goToTimecodeDirect', { time: start });
         await action('setCutStart');
         await action('goToTimecodeDirect', { time: end });
         await action('setCutEnd');
-        await wait(1000);
+        await wait(500);
+        await actionWithDialog('labelCurrentSegment', label);
       }
       await shot('segments');
       // Shows the export confirmation (with "Merge cuts"), then exports
@@ -223,18 +217,10 @@ const scenarios: Record<string, Scenario> = {
   'fixed-duration-segments': {
     description: 'Split a video into 5 second parts, e.g. for stories',
     clips: ['DJI_0759.MP4'],
-    async run({ open, action, key, type, shot, wait }) {
+    async run({ open, actionWithDialog, shot, wait }) {
       await open('DJI_0759.MP4');
       await wait(2000);
-      // Opens a dialog asking for the duration
-      const creating = action('createFixedDurationSegments');
-      await wait(1500);
-      await key('ctrl+a');
-      await type('00:00:05');
-      await wait(800);
-      await shot('dialog');
-      await key('Return');
-      await creating;
+      await actionWithDialog('createFixedDurationSegments', '00:00:05');
       await wait(2000);
       await shot('segments');
     },
@@ -242,27 +228,16 @@ const scenarios: Record<string, Scenario> = {
   'youtube-chapters': {
     description: 'Label parts of a video and get YouTube chapters',
     clips: ['tears-of-steel.mkv'],
-    async run({ open, action, key, type, shot, wait }) {
+    config: { waveformMode: 'waveform' },
+    async run({ open, action, actionWithDialog, key, shot, wait }) {
       await open('tears-of-steel.mkv');
       await wait(3000);
-      // Opens a dialog asking for the number of segments
-      const creating = action('createNumSegments');
-      await wait(1500);
-      await key('ctrl+a');
-      await type('3');
-      await key('Return');
-      await creating;
+      await actionWithDialog('createNumSegments', '3');
       await wait(1000);
       for (const [i, label] of ['On the bridge', '40 years later', 'In the lab'].entries()) {
         await action(i === 0 ? 'jumpSeekFirstSegment' : 'jumpSeekNextSegment');
         await wait(800);
-        // Opens a dialog asking for the label
-        const labeling = action('labelCurrentSegment');
-        await wait(1000);
-        await key('ctrl+a');
-        await type(label);
-        await key('Return');
-        await labeling;
+        await actionWithDialog('labelCurrentSegment', label);
         await wait(800);
       }
       await shot('labels');
