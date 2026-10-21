@@ -2,6 +2,11 @@
 {
   "name": "losslesscut-app",
   "compatibility_date": "2026-08-03",
+  // served at https://losslesscut.app (a custom domain, set in the Cloudflare dashboard), not at losslesscut-app.<account>.workers.dev.
+  // Without this, deploys turn workers.dev back on (the default when the config has no routes).
+  "workers_dev": false,
+  // but keep the workers.dev preview URLs of branches and pull requests
+  "preview_urls": true,
   "assets": {
     "directory": "./dist",
     // /docs/cli is served from docs/cli/index.html, and /docs/cli/ redirects to it
