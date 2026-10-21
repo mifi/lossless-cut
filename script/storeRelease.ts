@@ -1,4 +1,4 @@
-// Prepares (and with --submit, submits for review) a store release. See CONTRIBUTING.md → "Release in Stores".
+// Prepares (and with --submit, submits for review) a store release. See RELEASING.md → "Release in Stores".
 // Without --prepare or --submit, it only reads and prints what it would change.
 //
 // node script/storeRelease.ts mas <version> [--notes file] [--prepare | --submit]

@@ -1,4 +1,4 @@
-// Generates an image for release announcements, see AGENTS.md "Release announcement"
+// Generates an image for release announcements, see RELEASING.md "Release announcement"
 import assert from 'node:assert';
 import { mkdir } from 'node:fs/promises';
 import { dirname } from 'node:path';
