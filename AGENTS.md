@@ -33,6 +33,6 @@ yarn build && yarn download-ffmpeg-linux-x64
 xvfb-run -a -s "-screen 0 1280x800x24" node script/featureMedia.ts cut-segments
 ```
 
-The clips come from `dist/feature-media-clips`, or are downloaded from `FEATURE_MEDIA_CLIPS_URL`. The results go to `dist/feature-media`. Look at the screenshots to check that the demo did what it should. Never commit clips or results.
+The clips come from `dist/feature-media-clips`, or are downloaded from `FEATURE_MEDIA_CLIPS_URL`. The results go to `dist/feature-media`. Failed actions don't fail the script, so look at the screenshots (and `<scenario>-app.log`) to check that the demo did what it should. Never commit clips or results.
 
 When a user-visible feature lands on master, suggest adding a scenario for it and recording it.

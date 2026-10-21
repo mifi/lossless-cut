@@ -11,9 +11,8 @@ const scenarios: Record<string, Scenario> = {
       await open('demo.mp4');
       await wait(2000);
       await shot('opened');
-      // The file starts with one segment; addSegment starts the next one
-      for (const [i, [start, end]] of ([['00:00:02', '00:00:05'], ['00:00:09', '00:00:13']] as const).entries()) {
-        if (i > 0) await action('addSegment');
+      // Setting a start after the last segment starts a new segment
+      for (const [start, end] of [['00:00:02', '00:00:05'], ['00:00:09', '00:00:13']]) {
         await action('goToTimecodeDirect', { time: start });
         await action('setCutStart');
         await wait(700);
