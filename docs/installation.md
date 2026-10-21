@@ -37,7 +37,7 @@ On Windows, if you create a `config.json` file with the contents `{}` next to th
 
 Just delete the folder/app that you extracted when you installed it.
 
-If you want to also delete all settings, logs and caches, see [Settings and temporary files](#settings-and-temporary-files) above. See also [#2058](https://github.com/mifi/lossless-cut/issues/).
+If you want to also delete all settings, logs and caches, see [Settings and temporary files](#settings-and-temporary-files) above. See also [#2058](https://github.com/mifi/lossless-cut/issues/2058).
 
 ## Unofficial versions
 

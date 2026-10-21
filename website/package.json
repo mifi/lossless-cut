@@ -1,0 +1,33 @@
+{
+  "name": "losslesscut-website",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build && node scripts/appLinks.ts",
+    "preview": "astro preview",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/markdown-remark": "^7.3.3",
+    "@astrojs/react": "^7.1.0",
+    "@astrojs/starlight": "^0.42.6",
+    "astro": "^7.4.0",
+    "mdast-util-from-markdown": "^2.1.0",
+    "mdast-util-to-string": "^4.0.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "starlight-links-validator": "^0.27.0",
+    "unist-util-visit": "^5.1.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@emnapi/core": "^1.11.3",
+    "@emnapi/runtime": "^1.11.3",
+    "@types/mdast": "^4.0.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "typescript": "~6.0.3",
+    "wrangler": "^4.151.1"
+  }
+}

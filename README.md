@@ -64,7 +64,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Undo/redo
 - Advanced segment query and mutation JS-based expression language.
 - Give labels to cut segments, annotate with tags
-- [Import/export](docs/index.md#importexport-projects) segments: MP4/MKV chapter marks, Text file, YouTube, CSV, CUE, XML (DaVinci, Final Cut Pro) and more
+- [Import/export](https://losslesscut.app/docs#importexport-projects) segments: MP4/MKV chapter marks, Text file, YouTube, CSV, CUE, XML (DaVinci, Final Cut Pro) and more
 - MKV/MP4 embedded chapters marks editor
 - View subtitles
 - Customizable keyboard hotkeys
@@ -72,7 +72,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Divide timeline into segments of length L, size (X MB), N number of segments or even randomized segments!
 - Speed up / slow down video or audio file ([changing FPS](https://github.com/mifi/lossless-cut/issues/1712))
 - Lossless crop and aspect ratio modification
-- Basic [CLI](docs/cli.md) and [HTTP API](docs/api.md)
+- Basic [CLI](https://losslesscut.app/docs/cli) and [HTTP API](https://losslesscut.app/docs/api)
 - Show (DJI) embedded GPS track on a map
 - Losslessly Download videos over HTTP (e.g. HLS `.m3u8`)
 - Extremely fast removal of all non-keyframes (e.g. timelapse)
@@ -102,7 +102,7 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 - Split video into segments to for example respect Twitter's 140 second limit.
 - Annotate each segment with one or more tags, then use those tags to organize your segments or use it to create an output folder structure or hierarchy for your segments.
 
-See also [Recipe cookbook](docs/recipes.md)
+See also [Recipe cookbook](https://losslesscut.app/docs/recipes)
 
 ## Download
 
@@ -114,15 +114,15 @@ For Linux I publish to the Snap Store:
 
 <a href="https://snapcraft.io/losslesscut"><img src="https://github.com/mifi/lossless-cut/raw/master/snap-store-black.svg?sanitize=true" alt="Snapcraft" height="50"/></a>
 
-If you prefer to download the executables manually, this will of course always be free (see also [supported operating systems](docs/requirements.md)):
+If you prefer to download the executables manually, this will of course always be free (see also [supported operating systems](https://losslesscut.app/docs/requirements)):
 
 - macOS: [Intel](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-mac-x64.dmg) / [Apple Silicon](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-mac-arm64.dmg) DMG (note that PKG does **not** work)
-- Windows: [7zip](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win-x64.7z) (Windows 7, 8 and 8.1 is [no longer supported after v3.50.0](docs/requirements.md))
-- Linux: [x64 tar.bz2](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux-x64.tar.bz2) / [x64 AppImage](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux-x86_64.AppImage) / [arm64 tar.bz2](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux-arm64.tar.bz2) / [Raspberry Pi armv7l](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux-armv7l.tar.bz2) (arm64 and armv7l builds don't include FFmpeg)
+- Windows: [7zip](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win-x64.7z) (Windows 7, 8 and 8.1 is [no longer supported after v3.50.0](https://losslesscut.app/docs/requirements))
+- Linux: [x64 tar.bz2](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux-x64.tar.bz2) / [x64 AppImage](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux-x86_64.AppImage) / [arm64 tar.bz2](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux-arm64.tar.bz2) / [Raspberry Pi armv7l](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-linux-armv7l.tar.bz2) (armv7l doesn't include FFmpeg)
 - [More releases](https://github.com/mifi/lossless-cut/releases) - Note that APPX (Windows) and PKG (macOS) do **not** work
 - [Latest nightly builds 🧪](https://mifi.no/llc/nightly/)
 
-Note that the above are the [only official downloads](docs/index.md#faq). There are also unofficial releases like [Flathub](https://flathub.org/apps/details/no.mifi.losslesscut) (not maintained by me). Difference between App Stores and GitHub download? [Please see FAQ](docs/index.md#faq).
+Note that the above are the [only official downloads](https://losslesscut.app/docs#faq). There are also unofficial releases like [Flathub](https://flathub.org/apps/details/no.mifi.losslesscut) (not maintained by me). Difference between App Stores and GitHub download? [Please see FAQ](https://losslesscut.app/docs#faq).
 
 [![](./donate.svg)](https://mifi.no/thanks)
 
@@ -132,13 +132,13 @@ LosslessCut is maintained by me alone and will always remain free and open sourc
 
 ## Supported formats
 
-LosslessCut uses the Chromium browser's HTML5 video player, and not all formats/codecs are [natively supported](https://www.chromium.org/audio-video). Generally, the following file formats work: `MP4`, `MOV`, `WebM`, `Matroska`, `OGG` and `WAV`. Audio codecs: `FLAC`, `MP3`, `Opus`, `PCM`, `Vorbis` and `AAC`. Video codecs: `H264`, `AV1`, `Theora`, `VP8`, `VP9` and `H265` (with hardware decoder). Learn the [difference between a codec and a format](docs/index.md#primer-videoaudio-codecs-vs-formats). Codecs and formats not listed above can still be converted to a supported format/codec from the `File` menu (try the option *Fastest: FFmpeg-assisted playback* first). A low quality version of the file will then be created and opened in the player. Note that the actual cut/export operation will still be performed on the original file, so it will be lossless. This allows for potentially opening any file that FFmpeg is able to decode.
+LosslessCut uses the Chromium browser's HTML5 video player, and not all formats/codecs are [natively supported](https://www.chromium.org/audio-video). Generally, the following file formats work: `MP4`, `MOV`, `WebM`, `Matroska`, `OGG` and `WAV`. Audio codecs: `FLAC`, `MP3`, `Opus`, `PCM`, `Vorbis` and `AAC`. Video codecs: `H264`, `AV1`, `Theora`, `VP8`, `VP9` and `H265` (with hardware decoder). Learn the [difference between a codec and a format](https://losslesscut.app/docs#primer-videoaudio-codecs-vs-formats). Codecs and formats not listed above can still be converted to a supported format/codec from the `File` menu (try the option *Fastest: FFmpeg-assisted playback* first). A low quality version of the file will then be created and opened in the player. Note that the actual cut/export operation will still be performed on the original file, so it will be lossless. This allows for potentially opening any file that FFmpeg is able to decode.
 
 ## Documentation
 
 - Official website: [LosslessCut.app](https://losslesscut.app)
-- **[Getting started, FAQ and usage documentation](docs/index.md)**
-- [Troubleshooting and known issues and limitations](docs/troubleshooting.md)
+- **[Getting started, FAQ and usage documentation](https://losslesscut.app/docs)**
+- [Troubleshooting and known issues and limitations](https://losslesscut.app/docs/troubleshooting)
 - [Contributing](CONTRIBUTING.md)
 
 ### Video demos
@@ -162,7 +162,7 @@ LosslessCut uses the Chromium browser's HTML5 video player, and not all formats/
 - App icon made by [Dimi Kazak](http://www.flaticon.com/authors/dimi-kazak "Dimi Kazak") from [www.flaticon.com](http://www.flaticon.com "Flaticon") is licensed by [CC 3.0 BY](http://creativecommons.org/licenses/by/3.0/ "Creative Commons BY 3.0").
 - [Lottie animation by Chris Gannon](https://lottiefiles.com/7077-magic-flow).
 - Thanks to Adi Abinun and [@abdul-alhasany](https://github.com/mifi/lossless-cut/issues/2561) for UI work.
-- Thanks to translators who helped translate the app. [You can too!](docs/translation.md)
+- Thanks to translators who helped translate the app. [You can too!](https://losslesscut.app/docs/translation)
 - [Thanks to everyone for supporting](https://mifi.no/thanks/) my open source work 🙌
 
 ---

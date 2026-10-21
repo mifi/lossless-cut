@@ -1,0 +1,263 @@
+/* Styles for the homepage (src/pages/index.astro). */
+
+body, html {
+  margin: 0;
+  padding: 0;
+}
+body {
+  background: #444;
+  color: white;
+
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.padded {
+  max-width: 100%;
+  padding: 0 30px;
+  box-sizing: border-box;
+}
+
+.top-nav {
+  align-self: stretch;
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 4px 24px;
+  padding: 16px 30px;
+}
+.top-nav a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+}
+.top-nav a:hover {
+  text-decoration: underline;
+}
+
+.hero {
+  max-width: 100%;
+  margin-top: 20px;
+  margin-bottom: 40px;
+  text-align: center;
+  padding: 0 30px;
+  box-sizing: border-box;
+}
+.hero h1 {
+  margin-bottom: 10px;
+  /* smaller on narrow phones, so it fits */
+  font-size: min(60px, 14vw);
+  font-weight: 200;
+}
+.tagline {
+  font-size: 18px;
+  font-weight: 300;
+}
+.hero-buttons {
+  margin-top: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+.button {
+  display: inline-block;
+  padding: 10px 24px;
+  border-radius: 6px;
+  border: 1px solid #1d8a96;
+  background-color: #1d8a96;
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+}
+.button:hover {
+  background-color: #1a7b86;
+}
+.button.secondary {
+  background-color: transparent;
+}
+.button.secondary:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.screenshot {
+  max-width: 100%;
+  overflow: hidden;
+  box-shadow: rgba(0, 0, 0, 0.3) 0 0 10px 10px;
+}
+
+.quotes {
+  font-weight: 600;
+  width: 800px;
+  box-sizing: border-box;
+  padding: 40px 30px;
+  max-width: 100%;
+}
+.quotes h2 {
+  padding-bottom: 20px;
+  padding-top: 20px;
+  padding-left: 35px;
+  color: #33deef;
+  font-weight: 200;
+}
+
+.white-section {
+  width: 100%;
+  padding: 70px 30px 80px 30px;
+  box-sizing: border-box;
+  background-color: white;
+  color: #444;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-weight: 300;
+}
+.comparison {
+  text-align: center;
+  font-size: 20px;
+}
+.comparison-image {
+  width: 400px;
+  max-width: 100%;
+  border-radius: 10px;
+}
+.list {
+  width: 650px;
+  max-width: 100%;
+}
+
+.download {
+  padding: 30px 20px;
+  width: 100%;
+  box-sizing: border-box;
+  background-color: white;
+  color: #444;
+}
+.download-inner {
+  margin: 50px 0;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+.store-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.app-store {
+  overflow: hidden;
+  margin: 0 2px;
+}
+.app-store img {
+  display: block;
+}
+
+.background {
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-size: cover;
+  width: 100%;
+  height: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.image-subtitle {
+  background-color: rgba(0, 0, 0, 0.4); margin: 30px 20px; border-radius: 7px; padding: 6px 10px; font-weight: 600; text-align: center;
+}
+
+.quote {
+  margin-left: 40px;
+  padding: 15px 0;
+}
+.quote::before {
+  content: '"';
+  font-size: 70px;
+  font-weight: 200;
+  vertical-align: middle;
+  margin-right: 20px;
+  margin-left: -45px;
+  color: #33deef;
+  display: inline-block;
+  height: 10px;
+  line-height: 25px;
+  font-family: cursive;
+}
+
+.key-point {
+  color: #2ebece;
+  font-weight: 500;
+}
+
+a {
+  color: hsl(186, 63%, 39%);
+}
+
+h2 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: inherit;
+}
+
+.faq {
+  padding: 50px 30px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+.faq h2 {
+  margin: 1em 0;
+  font-size: 1.17em;
+  font-weight: bold;
+}
+.faq-answer {
+  font-size: 85%;
+  color: rgba(255, 255, 255, 0.8);
+}
+.more-faq {
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: .9em;
+  font-weight: bold;
+}
+
+.footer {
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 50px 30px;
+  text-align: center;
+}
+.footer-link {
+  text-decoration: none;
+  color: white;
+  margin: 0 5px;
+}
+.social-links {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+.social-links a {
+  color: white;
+  opacity: 0.8;
+}
+.social-links a:hover {
+  opacity: 1;
+}
+.social-links svg {
+  display: block;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+.footer-secondary {
+  color: rgba(255, 255, 255, 0.7);
+}

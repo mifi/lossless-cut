@@ -23,6 +23,7 @@ Run one of the below commands:
 yarn download-ffmpeg-darwin-x64
 yarn download-ffmpeg-darwin-arm64
 yarn download-ffmpeg-linux-x64
+yarn download-ffmpeg-linux-arm64
 yarn download-ffmpeg-win32-x64
 yarn download-ffmpeg-win32-arm64
 ```
@@ -133,7 +134,7 @@ This is automated with [`script/storeRelease.ts`](./script/storeRelease.ts), run
 
 What the script does:
 
-- **Mac App Store**: App Store versions have their own numbering (1.x, e.g. 1.14), separate from the GitHub/build version (`package.json`, e.g. 3.70.1), which is the build attached to it. The script takes the build version, and creates the next App Store version (1.14 → 1.15) or reuses the editable one. It waits for the build to finish processing and attaches it, sets en-US "What's New", manual release, 7-day phased release, and submits for review.
+- **Mac App Store**: App Store versions have their own numbering (1.x, e.g. 1.14), separate from the GitHub/build version (`package.json`, e.g. 3.70.1), which is the build attached to it. The script takes the build version, and creates the next App Store version (1.14 → 1.15) or reuses the editable one. It waits for the build to finish processing and attaches it, sets en-US "What's New", the privacy policy URL (from `src/common/websiteUrls.ts`), manual release, 7-day phased release, and submits for review.
 - **Microsoft Store**: creates a submission, replaces the packages with both `.appx` files from the GitHub release (renamed without `-DONT-USE-THIS-FILE`), sets en-US "What's new", gradual rollout at 0%, "Don't publish until I select Publish now", and submits for certification. Don't edit a submission in Partner Center that the script created, or the API can no longer change it.
 - If the version is already submitted or released, it says so and does nothing.
 - It stops before changing anything when a store isn't ready for a new version: Mac App Store while another version is in review or waiting to be released, Microsoft Store while another submission is pending or the previous gradual rollout hasn't finished (finalize it with `msstore-rollout 100`, or halt it).
@@ -284,13 +285,9 @@ Find the [latest PR](https://github.com/mifi/lossless-cut/pulls) from Weblate an
 
 **Warning:** Do not squash and merge (see [here why](docs/translation.md#weblate))!
 
-### Regenerate licenses file
+### Licenses file
 
-```bash
-yarn generate-licenses
-#cp licenses.txt losslesscut.mifi.no/public/
-```
-Then deploy.
+`licenses.txt` (the licenses of the app's dependencies, linked from the app's Help menu) is generated and uploaded to each GitHub release by the release build (`.github/workflows/build.yml`). To look at it locally: `yarn generate-licenses`.
 
 ### Dependabot
 

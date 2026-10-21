@@ -14,6 +14,7 @@
     "download-ffmpeg-darwin-x64": "node script/downloadFfmpeg.ts darwin-x64",
     "download-ffmpeg-darwin-arm64": "node script/downloadFfmpeg.ts darwin-arm64",
     "download-ffmpeg-linux-x64": "node script/downloadFfmpeg.ts linux-x64",
+    "download-ffmpeg-linux-arm64": "node script/downloadFfmpeg.ts linux-arm64",
     "download-ffmpeg-win32-x64": "node script/downloadFfmpeg.ts win32-x64",
     "download-ffmpeg-win32-arm64": "node script/downloadFfmpeg.ts win32-arm64",
     "build": "yarn generate-icon && electron-vite build",
@@ -140,7 +141,6 @@
   },
   "dependencies": {
     "@electron/remote": "^2.1.3",
-    "@octokit/core": "7.0.6",
     "cue-parser": "^0.3.0",
     "electron-devtools-installer": "^4.0.0",
     "electron-store": "5.1.1",
