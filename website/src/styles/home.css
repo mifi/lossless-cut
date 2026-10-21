@@ -175,6 +175,13 @@ body {
   columns: 3 280px;
   column-gap: 20px;
 }
+/* one column on phones anyway. Not multi-column there, because collapsed (<Collapsible>, max-height) the cards that don't fit
+go into extra columns to the side, which Safari didn't lay out again when opened: the page then scrolled sideways */
+@media (max-width: 700px) {
+  .quote-grid {
+    columns: auto;
+  }
+}
 .quote-card {
   break-inside: avoid;
   margin: 0 0 20px;
@@ -248,10 +255,13 @@ body {
   line-height: 1.45;
   transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
-.feature-card:hover {
-  transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--accent) 35%, #e4ebeb);
-  box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 14%, transparent);
+/* only with a mouse: on phones, a tapped card would stay lifted */
+@media (hover: hover) {
+  .feature-card:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--accent) 35%, #e4ebeb);
+    box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 14%, transparent);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .feature-card {
@@ -281,15 +291,11 @@ body {
   background-color: color-mix(in srgb, var(--accent) 13%, white);
 }
 /* The icon draws itself: on hover (desktop), and on phones when the card scrolls into view (where scroll-driven animations
-work; elsewhere the icons are just shown). Lucide icons are strokes, shorter than 100 units, so a 100-long dash hides/shows a
-whole line. */
-.feature-icon svg * {
-  stroke-dasharray: 100;
-  stroke-dashoffset: 0;
-}
+work; elsewhere the icons are just shown). Every line of the icon has pathLength 1 (Home.tsx), so a dash of 1 (with a gap of 2,
+so that no dot of the next dash shows) draws each line from start to end in the same time. */
 @keyframes feature-icon-draw {
-  from { stroke-dashoffset: 100; }
-  to { stroke-dashoffset: 0; }
+  from { stroke-dasharray: 1 2; stroke-dashoffset: 1; }
+  to { stroke-dasharray: 1 2; stroke-dashoffset: 0; }
 }
 @media (prefers-reduced-motion: no-preference) {
   .feature-icon {
@@ -348,10 +354,14 @@ so the content element keeps its layout. */
       mask-image: linear-gradient(to bottom, black calc(100% - 120px), transparent);
       margin-bottom: 0;
     }
-    .collapsible-more:not([open]) {
+    .collapsible-more {
       display: flex;
       justify-content: center;
       margin: 8px 0 30px;
+    }
+    .collapsible-more[open] .collapsible-show,
+    .collapsible-more:not([open]) .collapsible-hide {
+      display: none;
     }
     .collapsible-more summary {
       list-style: none;

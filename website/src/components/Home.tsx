@@ -1,7 +1,9 @@
 // The homepage content. Rendered to static HTML at build time (no client-side JavaScript).
 import type { CSSProperties, ReactNode } from 'react';
-import type { LucideIcon } from 'lucide-react';
-import { CodeXml, Combine, Film, Languages, Layers, ListOrdered, Monitor, RefreshCw, ScanSearch, Scissors, SquarePen, Star, Terminal } from 'lucide-react';
+import type { IconNode } from 'lucide';
+import { Combine, Film, Layers, ListOrdered, RefreshCw, ScanSearch, Scissors, SquarePen, Terminal } from 'lucide';
+import type { IconNode as ReactIconNode } from 'lucide-react';
+import { CodeXml, Icon, Languages, Monitor, Star } from 'lucide-react';
 
 import macAppStoreBadge from '../../../mac-app-store-badge.svg?url';
 import msStoreBadge from '../../../ms-store-badge.svg?url';
@@ -34,17 +36,21 @@ const quotes = [
 ];
 
 // Highlights only, the full list is docs/features.md (https://losslesscut.app/docs/features). Keep in sync with the README's.
-const features: { text: string, Icon: LucideIcon }[] = [
-  { text: 'Cut and trim video and audio losslessly, in seconds', Icon: Scissors },
-  { text: 'Merge cut segments, or whole files with identical codecs, losslessly', Icon: Combine },
-  { text: 'Add, remove, replace or extract tracks: audio, subtitles and more', Icon: Layers },
-  { text: 'Change the format (remux), for example from MKV to MP4, without re-encoding', Icon: RefreshCw },
-  { text: 'Segments, markers and tags, with import/export of chapters, CSV, EDL and more', Icon: ListOrdered },
-  { text: 'Detect scenes, black frames and silence, and split by them', Icon: ScanSearch },
-  { text: 'Edit metadata and rotation, and create chapters', Icon: SquarePen },
-  { text: "Opens almost any format, even ones your player can't play", Icon: Film },
-  { text: 'Snapshots and frame export, keyboard shortcuts, a CLI and an HTTP API', Icon: Terminal },
+const features: { text: string, icon: IconNode }[] = [
+  { text: 'Cut and trim video and audio losslessly, in seconds', icon: Scissors },
+  { text: 'Merge cut segments, or whole files with identical codecs, losslessly', icon: Combine },
+  { text: 'Add, remove, replace or extract tracks: audio, subtitles and more', icon: Layers },
+  { text: 'Change the format (remux), for example from MKV to MP4, without re-encoding', icon: RefreshCw },
+  { text: 'Segments, markers and tags, with import/export of chapters, CSV, EDL and more', icon: ListOrdered },
+  { text: 'Detect scenes, black frames and silence, and split by them', icon: ScanSearch },
+  { text: 'Edit metadata and rotation, and create chapters', icon: SquarePen },
+  { text: "Opens almost any format, even ones your player can't play", icon: Film },
+  { text: 'Snapshots and frame export, keyboard shortcuts, a CLI and an HTTP API', icon: Terminal },
 ];
+
+// Each line with pathLength 1, so the CSS can draw every line of the icon in the same time (see .feature-icon in home.css).
+// The icons are from lucide (the same icons as lucide-react, as data) for that.
+const drawableIcon = (icon: IconNode): ReactIconNode => icon.map(([tag, attrs], i) => [tag, { ...attrs, pathLength: 1, key: i }]);
 
 // a few common ones, the full list is in docs/features.md
 const usageScenarios = [
@@ -95,12 +101,15 @@ function List({ items }: { items: string[] }) {
 }
 
 // On phones, shows only the first collapsedHeight px of children (a single element), fading out, until the "label" button is
-// clicked. CSS only (a <details> and :has(), see .collapsible in home.css): wider screens and browsers without :has() show everything.
+// clicked (it then says "Show less"). CSS only (a <details> and :has(), see .collapsible in home.css): wider screens and browsers
+// without :has() show everything.
 function Collapsible({ label, collapsedHeight, children }: { label: string, collapsedHeight: number, children: ReactNode }) {
   return (
     <div className="collapsible" style={{ '--collapsed-height': `${collapsedHeight}px` } as CSSProperties}>
       {children}
-      <details className="collapsible-more"><summary className="button">{label}</summary></details>
+      <details className="collapsible-more">
+        <summary className="button"><span className="collapsible-show">{label}</span><span className="collapsible-hide">Show less</span></summary>
+      </details>
     </div>
   );
 }
@@ -211,9 +220,9 @@ export default function Home({ stars }: { stars: number }) {
         <h2 style={{ margin: '20px 0' }}>Features</h2>
 
         <div className="feature-grid">
-          {features.map(({ text, Icon }) => (
+          {features.map(({ text, icon }) => (
             <div key={text} className="feature-card">
-              <span className="feature-icon"><Icon aria-hidden size={24} strokeWidth={1.9} /></span>
+              <span className="feature-icon"><Icon iconNode={drawableIcon(icon)} aria-hidden size={24} strokeWidth={1.9} /></span>
               <div>{text}</div>
             </div>
           ))}

@@ -47,7 +47,7 @@ Lossless cuts can only start at a keyframe, so a cut starts at the keyframe befo
 
 - Combine tracks from multiple files (for example add a music or subtitle track to a video)
 - Remove tracks you don't need
-- Shift a track in time, for example to sync audio from another recording
+- Shift the tracks of an added file in time, for example to sync audio from another recording
 - Extract all tracks from a file into separate files: video, audio, subtitles, attachments and others
 - Keep data tracks, like GoPro telemetry (GPMF)
 - Choose the video and audio tracks for playback, and play several audio tracks at once

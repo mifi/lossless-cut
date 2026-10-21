@@ -18,7 +18,7 @@ If a commit adds a visual or especially interesting feature (one that's easy to 
 
 ## Features list
 
-[`docs/features.md`](docs/features.md) is the full list of features and example use cases (https://losslesscut.app/docs/features). When a commit adds a user-visible feature, or changes or removes one, update it in the same commit, in the matching section. The README (`## Features`) and the homepage (`features` in `website/src/components/Home.tsx`) only show the same 9 highlights: if the new feature is one of the most important for new users, suggest to the user whether it should replace one of them, and keep the two in sync.
+[`docs/features.md`](docs/features.md) is the full list of features and example use cases (https://losslesscut.app/docs/features). When a commit adds a user-visible feature, or changes or removes one, update it in the same commit, in the matching section. The README (`## Features`) and the homepage (`features` in `website/src/components/Home.tsx`) only show the same 9 highlights: if the new feature is one of the most important for new users, suggest to the user whether it should replace one of them, and keep the two in sync. When adding a language to `langNames` (`src/common/i18n.ts`), update the language count in `docs/features.md` and on the homepage.
 
 ## FFmpeg
 
@@ -36,7 +36,7 @@ The stores lag behind GitHub releases, so their "What's new" text must cover eve
 
 ## Feature post
 
-When a visual or especially interesting feature lands in master, suggest a short post about just that feature, on the same channels and with the same rules as the [Release announcement](#release-announcement):
+When a visual or especially interesting feature lands in master, suggest a short post about just that feature. Use the channels, character limits, hashtags and posting steps of the [Release announcement](#release-announcement), but start with the feature instead of a version number, and attach the user's screenshot or clip instead of a release image:
 
 - Ask the user to make a screenshot or a short silent screen recording (about 10 seconds) that shows it.
 - Say that people can try it now in the latest nightly build (https://mifi.no/llc/nightly/), and that it will be in the next release.

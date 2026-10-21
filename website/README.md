@@ -43,5 +43,6 @@ Build settings:
 - Preview command (non-production branches): `npx wrangler preview`
 - Branch control: production branch `master`, with builds for non-production branches enabled
 - Build watch paths: include `website/*`, `docs/*`, `src/common/websiteUrls.ts`, `src/common/links.ts`, `src/renderer/src/icon.svg` and `*.svg` (the store badges in the repo root; `*` also matches subfolders, so this also covers other SVGs, which is harmless), so that app-only changes don't trigger a deploy
+- Variables (build): `GITHUB_TOKEN`, a fine-grained personal access token with read-only access to public repositories, so the homepage's star count (`src/githubStars.ts`) isn't rate limited. Optional: without it, the last known count may be shown
 
 The Worker itself (name, static assets in `dist/`, URL handling) is configured in `wrangler.jsonc`, the Node.js version in `.node-version`, and the Wrangler version used for deploys and previews (4.135.0 or later for previews) by `wrangler` in `package.json`.
