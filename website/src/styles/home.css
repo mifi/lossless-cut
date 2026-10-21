@@ -373,6 +373,13 @@ so the content element keeps its layout. */
   background-color: white;
   color: #444;
 }
+.official-sources {
+  max-width: 560px;
+  margin: 30px 30px 0;
+  text-align: center;
+  font-size: 0.9em;
+  color: #666;
+}
 .download-inner {
   margin: 50px 0;
   display: flex;

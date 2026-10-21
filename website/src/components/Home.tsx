@@ -257,6 +257,10 @@ export default function Home({ stars }: { stars: number }) {
           </p>
 
           <StoreBadges height={50} />
+
+          <p className="official-sources">
+            ⚠️ Beware of unofficial websites and app distributors. The only official sources of LosslessCut are this website, <a href={githubUrl}>GitHub</a> and the app stores above.
+          </p>
         </div>
       </div>
 
@@ -270,10 +274,6 @@ export default function Home({ stars }: { stars: number }) {
         </p>
 
         <a className="more-faq" href="/docs#faq">More FAQ...</a>
-      </div>
-
-      <div style={{ padding: '10px 30px' }}>
-        ⚠️ Beware of unofficial websites and app distributors. The only official sources of LosslessCut are this website, <a target="_blank" rel="noreferrer" href={githubUrl} style={{ color: 'white' }}>GitHub</a> and the app stores above.
       </div>
 
       <div style={{ minHeight: '200px' }}>
