@@ -1148,5 +1148,8 @@
   "Light": "浅色",
   "Theme": "主题",
   "Apple devices (QuickTime, Safari, iOS) require the \"{{tag}}\" codec tag to play HEVC in MP4/MOV.": "Apple 设备 （QuickTime, Safari, iOS）需要 “{{tag}}” 编解码器标签才能以 MP4/MOV 播放 HEVC。",
-  "Track {{trackNumbers}} is HEVC without the \"{{tag}}\" codec tag, so it may not play on Apple devices (QuickTime, Safari, iOS). You can set the tag in the track editor.": "{{trackNumbers}} 号音轨是没有“{{tag}}”编解码器标签的 HEVC，因此它无法在 Apple 设备（QuickTime, Safari, iOS）上播放。你可以在音轨编辑器中设置标签。"
+  "Track {{trackNumbers}} is HEVC without the \"{{tag}}\" codec tag, so it may not play on Apple devices (QuickTime, Safari, iOS). You can set the tag in the track editor.": "{{trackNumbers}} 号音轨是没有“{{tag}}”编解码器标签的 HEVC，因此它无法在 Apple 设备（QuickTime, Safari, iOS）上播放。你可以在音轨编辑器中设置标签。",
+  "Apply to all other tracks of this type": "应用到所有其他同类型轨道",
+  "Codec tag should be 4 characters": "编解码器标签应该是4个字符",
+  "Copy from": "从…复制"
 }
