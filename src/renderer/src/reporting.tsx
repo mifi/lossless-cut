@@ -4,7 +4,7 @@ import { Trans } from 'react-i18next';
 import CopyClipboardButton from './components/CopyClipboardButton';
 import { isStoreBuild, isMasBuild, isWindowsStoreBuild, isExecaError, appVersion, appPath } from './util';
 import getSwal from './swal';
-import { discussionsUrl, githubUrl, publicBugReportUrl, supportEmail } from '../../common/constants';
+import { discordUrl, discussionsUrl, publicBugReportUrl, supportEmail } from '../../common/constants';
 import mainApi from './mainApi';
 
 const remote = window.require('@electron/remote');
@@ -27,7 +27,7 @@ export function openSendReportDialog({ err, message, state }: {
     ) : (
       <Trans>
         <p>
-          If you&apos;re having a problem or question about LosslessCut, please first check the links in the <b>Help</b> menu. If you cannot find any resolution, you may ask a question in <span className="link-button" role="button" onClick={() => mainApi.openExternal(discussionsUrl)}>GitHub discussions</span> or on <span className="link-button" role="button" onClick={() => mainApi.openExternal(githubUrl)}>Discord.</span>
+          If you&apos;re having a problem or question about LosslessCut, please first check the links in the <b>Help</b> menu. If you cannot find any resolution, you may ask a question in <span className="link-button" role="button" onClick={() => mainApi.openExternal(discussionsUrl)}>GitHub discussions</span> or on <span className="link-button" role="button" onClick={() => mainApi.openExternal(discordUrl)}>Discord.</span>
         </p>
         <p>
           If you believe that you found a bug in LosslessCut, you may <span className="link-button" role="button" onClick={() => mainApi.openExternal(publicBugReportUrl)}>report a bug</span>.

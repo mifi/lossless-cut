@@ -49,7 +49,7 @@ If you are trying to cut a FLAC file but your output has the same duration as in
 
 This can happen when trying to merge files that are not compatible. Make sure they have the exact same codec parameters before merging. If you are sure they are the same, you can try to first running each of the files separately through LosslessCut before merging the outputs:
 1. First open each file separately and just export without cutting anything, but before exporting
-  - change the format to `mp4` is [known to fix certain issues like `Non-monotonous DTS in output stream`](https://github.com/mifi/lossless-cut/issues/1713#issuecomment-1726325218)
+  - change the format to `mp4`, which can fix certain issues like `Non-monotonous DTS in output stream`
   - change the format to TS (`mpegts`) is [known to give the files a common timebase](https://github.com/mifi/lossless-cut/issues/455), which sometimes makes it possible to merge them, or fixes incorrect output duration, sped up or slowed down segments.
 3. Then merge the resulting exported files.
 

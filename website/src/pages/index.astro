@@ -1,0 +1,35 @@
+---
+import Home from '../components/Home.tsx';
+import { mastodonUrl } from '../links.ts';
+import structuredData from '../structuredData.ts';
+import '../styles/home.css';
+
+const title = 'LosslessCut – Free Lossless Video Cutter for Mac, Windows & Linux';
+const description = 'LosslessCut - Official downloads - free or paid version. Edit video, audio without quality loss. Cut, trim, merge on macOS, Windows and Linux.';
+---
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>{title}</title>
+  <meta name="description" content={description}>
+  <link rel="canonical" href={new URL('/', Astro.site)}>
+  <link rel="me" href={mastodonUrl}>
+  <meta property="og:site_name" content="LosslessCut">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content={title}>
+  <meta property="og:description" content={description}>
+  <meta property="og:url" content={new URL('/', Astro.site)}>
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:image" content={new URL('/og-image.jpg', Astro.site)}>
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />
+</head>
+<body>
+  <Home />
+</body>
+</html>

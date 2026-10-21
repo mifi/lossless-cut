@@ -141,7 +141,6 @@
   },
   "dependencies": {
     "@electron/remote": "^2.1.3",
-    "@octokit/core": "7.0.6",
     "cue-parser": "^0.3.0",
     "electron-devtools-installer": "^4.0.0",
     "electron-store": "5.1.1",

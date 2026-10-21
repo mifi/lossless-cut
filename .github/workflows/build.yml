@@ -121,6 +121,15 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.github_token }}
 
+      # The app and website link to it as https://losslesscut.app/go/licenses (see src/common/websiteUrls.ts)
+      - name: (Linux) Upload licenses.txt to the release
+        if: runner.os == 'Linux' && env.is_tag == 'true'
+        run: |
+          yarn generate-licenses
+          gh release upload "$GITHUB_REF_NAME" licenses.txt --clobber
+        env:
+          GH_TOKEN: ${{ secrets.github_token }}
+
       - name: Build for Windows x64
         if: runner.os == 'Windows' && runner.arch == 'X64'
         run: yarn electron-builder --publish onTag --win --x64

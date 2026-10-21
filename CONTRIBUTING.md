@@ -285,13 +285,9 @@ Find the [latest PR](https://github.com/mifi/lossless-cut/pulls) from Weblate an
 
 **Warning:** Do not squash and merge (see [here why](docs/translation.md#weblate))!
 
-### Regenerate licenses file
+### Licenses file
 
-```bash
-yarn generate-licenses
-#cp licenses.txt losslesscut.mifi.no/public/
-```
-Then deploy.
+`licenses.txt` (the licenses of the app's dependencies, linked from the app's Help menu) is generated and uploaded to each GitHub release by the release build (`.github/workflows/build.yml`). To look at it locally: `yarn generate-licenses`.
 
 ### Dependabot
 
