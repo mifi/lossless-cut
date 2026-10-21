@@ -1,6 +1,6 @@
 // Feature demo scenarios for script/featureMedia.ts. Each one drives the app through the HTTP API (see docs/api.md):
 // `action` runs a keyboard action by name, `shot` saves a screenshot and `wait` pauses so the video shows each step.
-// Keep each scenario short (10-30 s of video) and about one feature from docs/features.md.
+// Keep each scenario short (10-30 s of video) and about one feature.
 import type { Scenario } from './types.ts';
 
 const scenarios: Record<string, Scenario> = {

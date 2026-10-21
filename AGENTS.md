@@ -23,3 +23,16 @@ Only the bundled FFmpeg version (`script/downloadFfmpeg.ts`) is supported. Don't
 When helping with a release, follow [RELEASING.md](./RELEASING.md), including the sections written for agents (store release notes, release announcement).
 
 Never submit to a store, publish a release or post an announcement without the user's approval of the exact text first.
+
+## Feature media
+
+`script/featureMedia.ts` records screenshots and a short video of a feature demo, for social media posts and the website. Each demo is a scenario in `script/featureMedia/scenarios.ts` that drives the app through the HTTP API. It runs on Linux under Xvfb (e.g. in a cloud session):
+
+```bash
+yarn build && yarn download-ffmpeg-linux-x64
+xvfb-run -a -s "-screen 0 1280x800x24" node script/featureMedia.ts cut-segments
+```
+
+The clips come from `dist/feature-media-clips`, or are downloaded from `FEATURE_MEDIA_CLIPS_URL`. The results go to `dist/feature-media`. Look at the screenshots to check that the demo did what it should. Never commit clips or results.
+
+When a user-visible feature lands on master, suggest adding a scenario for it and recording it.

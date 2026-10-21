@@ -1,4 +1,4 @@
-// Records screenshots and a video of a feature demo (see script/featureMedia/scenarios.ts and RELEASING.md "Feature media").
+// Records screenshots and a video of a feature demo (see script/featureMedia/scenarios.ts and AGENTS.md "Feature media").
 // Linux only (captures the X display), e.g. in a cloud session. Run `yarn build` and `yarn download-ffmpeg-linux-x64` first, then:
 // xvfb-run -a -s "-screen 0 1280x800x24" node script/featureMedia.ts <scenario> [--clips dir]
 import assert from 'node:assert';
