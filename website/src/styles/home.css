@@ -25,13 +25,19 @@ body {
   box-sizing: border-box;
 }
 
-.top-nav {
+.hero {
   align-self: stretch;
+  background-size: cover;
+  background-position: center;
+  padding: 0 30px 70px;
+  box-sizing: border-box;
+}
+.top-nav {
   display: flex;
   justify-content: flex-end;
   flex-wrap: wrap;
   gap: 4px 24px;
-  padding: 16px 30px;
+  padding: 16px 0;
 }
 .top-nav a {
   color: white;
@@ -41,31 +47,90 @@ body {
 .top-nav a:hover {
   text-decoration: underline;
 }
-
-.hero {
-  max-width: 100%;
-  margin-top: 20px;
-  margin-bottom: 40px;
-  text-align: center;
-  padding: 0 30px;
-  box-sizing: border-box;
-}
-.hero h1 {
-  margin-bottom: 10px;
-  /* smaller on narrow phones, so it fits */
-  font-size: min(60px, 14vw);
-  font-weight: 200;
-}
-.tagline {
-  font-size: 18px;
-  font-weight: 300;
-}
-.hero-buttons {
-  margin-top: 30px;
+.hero-content {
+  max-width: 1200px;
+  margin: 30px auto 0;
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: center;
+  gap: 50px;
+}
+.hero-text {
+  flex: 1 1 400px;
+  max-width: 520px;
+}
+.hero h1 {
+  margin: 0 0 10px;
+  /* smaller on narrow phones, so it fits */
+  font-size: min(64px, 14vw);
+  font-weight: 200;
+  line-height: 1.1;
+}
+.tagline {
+  font-size: 22px;
+  font-weight: 300;
+}
+.hero-subtitle {
+  margin-top: 14px;
+  font-size: 17px;
+  font-weight: 300;
+  line-height: 1.5;
+  opacity: 0.8;
+}
+.hero-buttons {
+  margin: 30px 0 18px;
+  display: flex;
+  flex-wrap: wrap;
   gap: 12px;
+}
+.hero .store-badges {
+  justify-content: flex-start;
+}
+.proof {
+  list-style: none;
+  margin: 22px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.85);
+}
+.proof li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.proof a {
+  color: inherit;
+}
+.proof svg {
+  flex-shrink: 0;
+  color: #33deef;
+}
+.proof svg.star {
+  color: #f5c518;
+  fill: #f5c518;
+}
+.hero-author {
+  margin-top: 14px;
+  font-size: 14px;
+  opacity: 0.6;
+}
+.hero-author a {
+  color: inherit;
+}
+.hero-media {
+  flex: 1 1 500px;
+  max-width: 640px;
+}
+.hero-media img, .hero-media video {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: rgba(0, 0, 0, 0.45) 0 20px 50px, rgba(51, 222, 239, 0.15) 0 0 0 1px;
 }
 .button {
   display: inline-block;
@@ -94,18 +159,40 @@ body {
 }
 
 .quotes {
-  font-weight: 600;
-  width: 800px;
-  box-sizing: border-box;
-  padding: 40px 30px;
+  width: 1100px;
   max-width: 100%;
+  box-sizing: border-box;
+  padding: 70px 30px;
 }
 .quotes h2 {
-  padding-bottom: 20px;
-  padding-top: 20px;
-  padding-left: 35px;
+  padding-bottom: 30px;
+  text-align: center;
   color: #33deef;
   font-weight: 200;
+}
+.quote-grid {
+  columns: 3 280px;
+  column-gap: 20px;
+}
+.quote-card {
+  break-inside: avoid;
+  margin: 0 0 20px;
+  padding: 22px 24px 22px 56px;
+  position: relative;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  line-height: 1.5;
+}
+.quote-card::before {
+  content: '\201C';
+  position: absolute;
+  left: 16px;
+  top: 6px;
+  font-size: 56px;
+  line-height: 1;
+  font-family: Georgia, serif;
+  color: #33deef;
 }
 
 .white-section {
@@ -131,6 +218,27 @@ body {
 .list {
   width: 650px;
   max-width: 100%;
+}
+.feature-grid {
+  width: 1000px;
+  max-width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 16px;
+  margin-bottom: 40px;
+}
+.feature-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  border-radius: 10px;
+  background-color: #f4f8f8;
+  border: 1px solid #e2ecec;
+  line-height: 1.45;
+}
+.feature-icon {
+  color: #1d8a96;
 }
 
 .download {
@@ -172,24 +280,6 @@ body {
 }
 .image-subtitle {
   background-color: rgba(0, 0, 0, 0.4); margin: 30px 20px; border-radius: 7px; padding: 6px 10px; font-weight: 600; text-align: center;
-}
-
-.quote {
-  margin-left: 40px;
-  padding: 15px 0;
-}
-.quote::before {
-  content: '"';
-  font-size: 70px;
-  font-weight: 200;
-  vertical-align: middle;
-  margin-right: 20px;
-  margin-left: -45px;
-  color: #33deef;
-  display: inline-block;
-  height: 10px;
-  line-height: 25px;
-  font-family: cursive;
 }
 
 .key-point {

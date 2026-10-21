@@ -1,5 +1,7 @@
 // The homepage content. Rendered to static HTML at build time (no client-side JavaScript).
 import type { ReactNode } from 'react';
+import type { LucideIcon } from 'lucide-react';
+import { AudioWaveform, Camera, Clock, CodeXml, Combine, Layers, ListOrdered, Monitor, PackageOpen, RefreshCw, RotateCw, Save, Scissors, Star, Tag, Terminal, ZoomIn } from 'lucide-react';
 
 import macAppStoreBadge from '../../../mac-app-store-badge.svg?url';
 import msStoreBadge from '../../../ms-store-badge.svg?url';
@@ -15,6 +17,11 @@ import tracksScreenshot from '../assets/home/tracks-screenshot.jpg?url';
 import { authorUrl, donateUrl, githubUrl, socialLinks, storeUrls, supportEmail } from '../links.ts';
 import socialIconPaths from './socialIcons.ts';
 
+// An optional short, silent screen recording for the hero (src/assets/home/demo.mp4 and/or demo.webm), shown instead of the screenshot
+const demoClips = import.meta.glob<string>('../assets/home/demo.{webm,mp4}', { eager: true, query: '?url', import: 'default' });
+const demoSources = Object.entries(demoClips).toSorted(([a], [b]) => (a.endsWith('.webm') ? -1 : 1) - (b.endsWith('.webm') ? -1 : 1))
+  .map(([path, url]) => ({ url, type: path.endsWith('.webm') ? 'video/webm' : 'video/mp4' }));
+
 const quotes = [
   'I\'ve been looking a long time for a program like LosslessCut',
   'You just saved my butt and kept me from missing a pretty important deadline over a stupid mistake. THANK YOU.',
@@ -26,21 +33,21 @@ const quotes = [
   'In Chinese, the word "Lossless" (pronounced like "Lao-Si-Le-Si") sounds incredibly similar to the luxury car brand "Rolls-Royce" ("Lao-Si-Lai-Si"). I think this is a beautiful coincidence because this software truly is the Rolls-Royce of the video-cutting world — smooth, premium, pure, and absolutely perfect.',
 ];
 
-const features = [
-  'Losslessly trim or cut out parts of video/audio',
-  'Lossless merge/concatenation of arbitrary files (identical codec parameters)',
-  'Lossless stream editing: Combine arbitrary tracks from multiple files',
-  'Losslessly extract all tracks from a file',
-  'Remux into any compatible output format',
-  'Take full-resolution snapshots from videos in JPEG/PNG format',
-  'Apply a per-file timecode offset in the preview',
-  'Change rotation/orientation metadata in videos',
-  'Powerful timeline with zoom and frame/keyframe jumping',
-  'Auto-saves per project cut segments to file',
-  'View ffmpeg last command log so you can modify and re-run modify recent commands on the command line',
-  'Give labels to cut segments',
-  'Segment panel showing segments with details, export/import cut segments as CSV',
-  'Video thumbnails and audio waveform',
+const features: { text: string, Icon: LucideIcon }[] = [
+  { text: 'Losslessly trim or cut out parts of video/audio', Icon: Scissors },
+  { text: 'Lossless merge/concatenation of arbitrary files (identical codec parameters)', Icon: Combine },
+  { text: 'Lossless stream editing: Combine arbitrary tracks from multiple files', Icon: Layers },
+  { text: 'Losslessly extract all tracks from a file', Icon: PackageOpen },
+  { text: 'Remux into any compatible output format', Icon: RefreshCw },
+  { text: 'Take full-resolution snapshots from videos in JPEG/PNG format', Icon: Camera },
+  { text: 'Apply a per-file timecode offset in the preview', Icon: Clock },
+  { text: 'Change rotation/orientation metadata in videos', Icon: RotateCw },
+  { text: 'Powerful timeline with zoom and frame/keyframe jumping', Icon: ZoomIn },
+  { text: 'Auto-saves per project cut segments to file', Icon: Save },
+  { text: 'View ffmpeg last command log so you can modify and re-run modify recent commands on the command line', Icon: Terminal },
+  { text: 'Give labels to cut segments', Icon: Tag },
+  { text: 'Segment panel showing segments with details, export/import cut segments as CSV', Icon: ListOrdered },
+  { text: 'Video thumbnails and audio waveform', Icon: AudioWaveform },
 ];
 
 const usageScenarios = [
@@ -100,37 +107,64 @@ function FooterLink({ href, children }: { href: string, children: ReactNode }) {
   return <><a className="footer-link" href={href}>{children}</a>{' '}</>;
 }
 
-export default function Home() {
+function StoreBadges({ height }: { height: number }) {
+  return (
+    <div className="store-badges">
+      {storeBadges.map(({ href, image, alt, rounded }) => (
+        <a key={href} className="app-store" style={{ borderRadius: rounded ? `${Math.round(height * 0.26)}px` : undefined }} href={href}><img src={image} alt={alt} height={height} /></a>
+      ))}
+    </div>
+  );
+}
+
+const formatStars = (stars: number) => (stars >= 1000 ? `${Math.floor(stars / 1000)}k+` : String(stars));
+
+// stars: the GitHub star count, fetched at build time by index.astro (undefined if that failed)
+export default function Home({ stars }: { stars?: number | undefined }) {
   return (
     <div className="page">
-      <nav className="top-nav">
-        <a href="/docs">Docs</a>
-        <a href={githubUrl}>GitHub</a>
-      </nav>
+      <header className="hero" style={{ backgroundImage: `linear-gradient(160deg, rgba(11, 52, 56, 0.93), rgba(40, 40, 40, 0.96) 65%), url(${background1})` }}>
+        <nav className="top-nav">
+          <a href="/docs">Docs</a>
+          <a href={githubUrl}>GitHub</a>
+        </nav>
 
-      <div className="hero">
-        <h1>LosslessCut</h1>
-        <div className="tagline">The Swiss Army Knife of Lossless Video/Audio Editing</div>
-        <div className="tagline" style={{ opacity: '0.7', marginTop: '.5em' }}>Official app by <a href={authorUrl} style={{ color: 'inherit' }}>Mikael Finstad</a></div>
-        <div className="hero-buttons">
-          <a className="button" href="#download">Download</a>
-          <a className="button secondary" href="/docs">Documentation</a>
+        <div className="hero-content">
+          <div className="hero-text">
+            <h1>LosslessCut</h1>
+            <div className="tagline">The Swiss Army Knife of Lossless Video/Audio Editing</div>
+            <div className="hero-subtitle">Shave gigabytes off video and audio files in seconds without loss of quality</div>
+            <div className="hero-buttons">
+              <a className="button" href="#download">Download</a>
+              <a className="button secondary" href="/docs">Documentation</a>
+            </div>
+            <StoreBadges height={40} />
+            <ul className="proof">
+              {stars != null && <li><Star aria-hidden size={16} className="star" /> {formatStars(stars)} stars on <a href={githubUrl}>GitHub</a></li>}
+              <li><CodeXml aria-hidden size={16} /> Free and open source</li>
+              <li><Monitor aria-hidden size={16} /> Windows, macOS, Linux</li>
+            </ul>
+            <div className="hero-author">Official app by <a href={authorUrl}>Mikael Finstad</a></div>
+          </div>
+
+          <div className="hero-media">
+            {demoSources.length > 0 ? (
+              <video autoPlay muted loop playsInline poster={mainScreenshot} aria-label="LosslessCut cutting a video">
+                {demoSources.map(({ url, type }) => <source key={url} src={url} type={type} />)}
+              </video>
+            ) : (
+              <img src={mainScreenshot} alt="LosslessCut main window" />
+            )}
+          </div>
         </div>
-      </div>
+      </header>
 
-      <ScreenshotSection
-        background={background1}
-        screenshot={mainScreenshot}
-        alt="Main screenshot"
-        width={600}
-        borderRadius={9}
-        subtitle="Shave gigabytes off video and audio files in seconds without loss of quality"
-      />
-
-      <div className="quotes">
+      <section className="quotes">
         <h2>Thousands of happy users</h2>
-        {quotes.map((quote) => <div key={quote} className="quote">{quote}</div>)}
-      </div>
+        <div className="quote-grid">
+          {quotes.map((quote) => <blockquote key={quote} className="quote-card">{quote}</blockquote>)}
+        </div>
+      </section>
 
       <WhiteSection>
         <div className="comparison" style={{ maxWidth: '700px' }}>
@@ -168,8 +202,13 @@ export default function Home() {
       <WhiteSection>
         <h2 style={{ margin: '20px 0' }}>Features</h2>
 
-        <div className="list">
-          <List items={features} />
+        <div className="feature-grid">
+          {features.map(({ text, Icon }) => (
+            <div key={text} className="feature-card">
+              <Icon aria-hidden size={28} strokeWidth={1.75} className="feature-icon" />
+              <div>{text}</div>
+            </div>
+          ))}
         </div>
 
         <h2 style={{ margin: '20px 0' }}>Other usage scenarios</h2>
@@ -198,11 +237,7 @@ export default function Home() {
             If LosslessCut brings you value, please consider supporting my continued work by purchasing it from your favorite store, or <a href={donateUrl}>support me by donating.</a>
           </p>
 
-          <div className="store-badges">
-            {storeBadges.map(({ href, image, alt, rounded }) => (
-              <a key={href} className="app-store" style={{ borderRadius: rounded ? '13px' : undefined }} href={href}><img src={image} alt={alt} height="50" /></a>
-            ))}
-          </div>
+          <StoreBadges height={50} />
         </div>
       </div>
 

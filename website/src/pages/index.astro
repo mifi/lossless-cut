@@ -4,6 +4,20 @@ import { mastodonUrl } from '../links.ts';
 import structuredData from '../structuredData.ts';
 import '../styles/home.css';
 
+// The GitHub star count for the homepage, at build time. Optional: the build doesn't fail if GitHub doesn't answer.
+async function getGithubStars() {
+  try {
+    const response = await fetch('https://api.github.com/repos/mifi/lossless-cut', { headers: { accept: 'application/vnd.github+json' }, signal: AbortSignal.timeout(10_000) });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const { stargazers_count: stars } = await response.json();
+    return typeof stars === 'number' ? stars : undefined;
+  } catch (err) {
+    console.warn('Could not get the GitHub star count:', err instanceof Error ? err.message : err);
+    return undefined;
+  }
+}
+const stars = await getGithubStars();
+
 const title = 'LosslessCut – Free Lossless Video Cutter for Mac, Windows & Linux';
 const description = 'LosslessCut - Official downloads - free or paid version. Edit video, audio without quality loss. Cut, trim, merge on macOS, Windows and Linux.';
 ---
@@ -30,6 +44,6 @@ const description = 'LosslessCut - Official downloads - free or paid version. Ed
   <script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />
 </head>
 <body>
-  <Home />
+  <Home stars={stars} />
 </body>
 </html>

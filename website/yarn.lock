@@ -3457,6 +3457,7 @@ __metadata:
     "@types/react": "npm:^19.3.0"
     "@types/react-dom": "npm:^19.3.0"
     astro: "npm:^7.4.0"
+    lucide-react: "npm:^1.59.0"
     mdast-util-from-markdown: "npm:^2.1.0"
     mdast-util-to-string: "npm:^4.0.0"
     react: "npm:^19.3.1"
@@ -3472,6 +3473,19 @@ __metadata:
   version: 11.5.3
   resolution: "lru-cache@npm:11.5.3"
   checksum: 10/824394f43827de37e961e9e344d4f0d2afb0347106ddafae620d0035c36337bc64e64cddbc17f6c630a73c9db34cf3f81211e3d43699a32e9f3641f391415b82
+  languageName: node
+  linkType: hard
+
+"lucide-react@npm:^1.59.0":
+  version: 1.59.0
+  resolution: "lucide-react@npm:1.59.0"
+  peerDependencies:
+    "@types/react": "*"
+    react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 10/12aa2440f23a94a6bcbff1ce37e8a771d567cdd9fa79b9c0de2d6f3867c647b2827d2b9361a3bd0e9a4847151a553f461a59c0eb0f2441b745a2820ad8ab0309
   languageName: node
   linkType: hard
 
