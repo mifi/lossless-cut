@@ -188,6 +188,49 @@ const scenarios: Record<string, Scenario> = {
       await shot('inverted');
     },
   },
+  'merge-cuts': {
+    description: 'Cut out three parts and merge them into one file',
+    clips: ['DJI_0759.MP4'],
+    config: { autoMerge: true },
+    async run({ open, action, shot, wait }) {
+      await open('DJI_0759.MP4');
+      await wait(2000);
+      for (const [start, end] of [['00:00:02', '00:00:05'], ['00:00:10', '00:00:13'], ['00:00:18', '00:00:22']]) {
+        await action('goToTimecodeDirect', { time: start });
+        await action('setCutStart');
+        await action('goToTimecodeDirect', { time: end });
+        await action('setCutEnd');
+        await wait(1000);
+      }
+      await shot('segments');
+      // Shows the export confirmation (with "Merge cuts"), then exports
+      await action('export');
+      await wait(2500);
+      await shot('export');
+      await action('export');
+      await wait(4000);
+      await shot('exported');
+    },
+  },
+  'fixed-duration-segments': {
+    description: 'Split a video into 5 second parts, e.g. for stories',
+    clips: ['DJI_0759.MP4'],
+    async run({ open, action, key, type, shot, wait }) {
+      await open('DJI_0759.MP4');
+      await wait(2000);
+      // Opens a dialog asking for the duration
+      const creating = action('createFixedDurationSegments');
+      await wait(1500);
+      await key('ctrl+a');
+      await type('00:00:05');
+      await wait(800);
+      await shot('dialog');
+      await key('Return');
+      await creating;
+      await wait(2000);
+      await shot('segments');
+    },
+  },
 };
 
 export default scenarios;

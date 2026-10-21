@@ -18,5 +18,7 @@ export interface Scenario {
   description: string,
   /** File names of the clips it needs, from the clips folder or downloaded */
   clips: string[],
+  /** Settings to start with (see src/main/configStore.ts), e.g. to show an export mode */
+  config?: Record<string, unknown>,
   run: (ctx: ScenarioContext) => Promise<void>,
 }

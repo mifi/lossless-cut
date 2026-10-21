@@ -44,7 +44,7 @@ for (const clip of scenario.clips) {
 // A fresh config, so the demo doesn't depend on (or change) your own settings, doesn't hand over to your running LosslessCut, and saves no project file next to the clip (it would be loaded next time)
 const configDir = await mkdtemp(join(tmpdir(), 'losslesscut-feature-media-'));
 // Exports go to the temp dir too
-await writeFile(join(configDir, 'config.json'), JSON.stringify({ windowBounds: { x: 0, y: 0, width, height }, allowMultipleInstances: true, autoSaveProjectFile: false, enableCustomOutDir: true, recentCustomOutDirs: [configDir] }));
+await writeFile(join(configDir, 'config.json'), JSON.stringify({ windowBounds: { x: 0, y: 0, width, height }, allowMultipleInstances: true, autoSaveProjectFile: false, enableCustomOutDir: true, recentCustomOutDirs: [configDir], ...scenario.config }));
 
 // The app's log, including the renderer's console. Failed actions don't fail the HTTP request, so check the screenshots and this log
 const appLog = join(outDir, `${scenarioName}-app.log`);
