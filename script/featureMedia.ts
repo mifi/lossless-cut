@@ -27,12 +27,11 @@ const outDir = 'dist/feature-media';
 await mkdir(outDir, { recursive: true });
 await mkdir(clips, { recursive: true });
 
-// Get the clips, from the folder or else from FEATURE_MEDIA_CLIPS_URL
-const clipsUrl = process.env['FEATURE_MEDIA_CLIPS_URL'];
+// Get the clips, from the folder or else download them
+const clipsUrl = process.env['FEATURE_MEDIA_CLIPS_URL'] ?? 'https://static.mifi.no/losslesscut';
 for (const clip of scenario.clips) {
   const path = join(clips, clip);
   if (!await access(path).then(() => true, () => false)) {
-    assert(clipsUrl != null, `${path} is missing. Put it there, or set FEATURE_MEDIA_CLIPS_URL to download it`);
     console.log('Downloading', clip);
     const response = await fetch(`${clipsUrl}/${clip}`);
     assert(response.ok && response.body != null, `Failed to download ${clip}: ${response.status}`);
@@ -44,7 +43,8 @@ for (const clip of scenario.clips) {
 
 // A fresh config, so the demo doesn't depend on (or change) your own settings, doesn't hand over to your running LosslessCut, and saves no project file next to the clip (it would be loaded next time)
 const configDir = await mkdtemp(join(tmpdir(), 'losslesscut-feature-media-'));
-await writeFile(join(configDir, 'config.json'), JSON.stringify({ windowBounds: { x: 0, y: 0, width, height }, allowMultipleInstances: true, autoSaveProjectFile: false }));
+// Exports go to the temp dir too
+await writeFile(join(configDir, 'config.json'), JSON.stringify({ windowBounds: { x: 0, y: 0, width, height }, allowMultipleInstances: true, autoSaveProjectFile: false, enableCustomOutDir: true, recentCustomOutDirs: [configDir] }));
 
 // The app's log, including the renderer's console. Failed actions don't fail the HTTP request, so check the screenshots and this log
 const appLog = join(outDir, `${scenarioName}-app.log`);
@@ -79,7 +79,7 @@ try {
 
   try {
     await scenario.run({
-      open: async (clip) => post('action/openFiles', [resolve(clips, clip)]),
+      open: async (...names) => post('action/openFiles', names.map((name) => resolve(clips, name))),
       action: async (name, args) => {
         console.log('Action', name, args ?? '');
         await post(`action/${name}`, args);

@@ -1,6 +1,6 @@
 export interface ScenarioContext {
-  /** Opens a clip from the clips folder */
-  open: (clip: string) => Promise<void>,
+  /** Opens clips from the clips folder (several go to the batch list) */
+  open: (...clips: string[]) => Promise<void>,
   /** Runs a keyboard action (see the Keyboard & mouse shortcuts dialog for names), optionally with arguments */
   action: (name: string, args?: unknown) => Promise<void>,
   /** Saves a screenshot as <scenario>-<name>.png */
@@ -10,7 +10,7 @@ export interface ScenarioContext {
 
 export interface Scenario {
   description: string,
-  /** File names of the clips it needs, from the clips folder or downloaded from FEATURE_MEDIA_CLIPS_URL */
+  /** File names of the clips it needs, from the clips folder or downloaded */
   clips: string[],
   run: (ctx: ScenarioContext) => Promise<void>,
 }
