@@ -265,6 +265,18 @@ body {
 .app-store {
   overflow: hidden;
 }
+/* rounding cuts off the corners of the badge's own border, so draw it again on the rounded shape, like Apple's badge has */
+.app-store.rounded {
+  position: relative;
+}
+.app-store.rounded::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid #a6a6a6;
+  border-radius: inherit;
+  pointer-events: none;
+}
 .app-store img {
   display: block;
 }

@@ -111,7 +111,8 @@ function StoreBadges({ height }: { height: number }) {
   return (
     <div className="store-badges">
       {storeBadges.map(({ href, image, alt, rounded }) => (
-        <a key={href} className="app-store" style={{ borderRadius: rounded ? `${Math.round(height * 0.26)}px` : undefined }} href={href}><img src={image} alt={alt} height={height} /></a>
+        // the Microsoft and Snap badges are square images, rounded here like Apple's (whose corners are about 24% of its height)
+        <a key={href} className={rounded ? 'app-store rounded' : 'app-store'} style={{ borderRadius: rounded ? `${Math.round(height * 0.24)}px` : undefined }} href={href}><img src={image} alt={alt} height={height} /></a>
       ))}
     </div>
   );
