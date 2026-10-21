@@ -30,9 +30,10 @@ Never submit to a store, publish a release or post an announcement without the u
 
 ```bash
 yarn build && yarn download-ffmpeg-linux-x64
+# If missing: apt-get install xvfb xdotool
 xvfb-run -a -s "-screen 0 1280x800x24" node script/featureMedia.ts cut-segments
 ```
 
-The clips come from `dist/feature-media-clips`, or are downloaded from https://static.mifi.no/losslesscut (or `FEATURE_MEDIA_CLIPS_URL`; behind a proxy, e.g. in a cloud session, set `NODE_USE_ENV_PROXY=1`). Scenarios can use only the clips there; ask the user to upload new ones. The results go to `dist/feature-media`. Failed actions don't fail the script, so look at the screenshots (and `<scenario>-app.log`) to check that the demo did what it should. Never commit clips or results.
+The clips come from `dist/feature-media-clips`, or are downloaded from https://static.mifi.no/losslesscut (or `FEATURE_MEDIA_CLIPS_URL`; behind a proxy, e.g. in a cloud session, set `NODE_USE_ENV_PROXY=1`). Scenarios can use only the clips there; ask the user to upload new ones. `tears-of-steel.mkv` is a 45 s excerpt (00:20–01:05) of [Tears of Steel](https://mango.blender.org/) with its stereo and 5.1 mixes and 6 subtitle tracks. It's CC BY 3.0, so posts that show it must credit "Tears of Steel (CC) Blender Foundation | mango.blender.org". The results go to `dist/feature-media`. Failed actions don't fail the script, so look at the screenshots (and `<scenario>-app.log`) to check that the demo did what it should. Never commit clips or results.
 
 When a user-visible feature lands on master, suggest adding a scenario for it and recording it.

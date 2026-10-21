@@ -84,6 +84,9 @@ try {
         console.log('Action', name, args ?? '');
         await post(`action/${name}`, args);
       },
+      key: async (keys) => {
+        await execa('xdotool', ['key', keys]);
+      },
       shot: async (name) => {
         await execa(ffmpeg, ['-v', 'error', '-y', ...grab, '-frames:v', '1', join(outDir, `${scenarioName}-${name}.png`)]);
       },

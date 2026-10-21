@@ -63,6 +63,80 @@ const scenarios: Record<string, Scenario> = {
       await shot('merge');
     },
   },
+  tracks: {
+    description: 'Show the tracks of a file with several audio and subtitle tracks',
+    clips: ['tears-of-steel.mkv'],
+    async run({ open, action, shot, wait }) {
+      await open('tears-of-steel.mkv');
+      await wait(3000);
+      await action('toggleStreamsSelector');
+      await wait(3000);
+      await shot('tracks');
+    },
+  },
+  'detect-scene-changes': {
+    description: 'Create segments from the scene changes',
+    clips: ['tears-of-steel.mkv'],
+    async run({ open, action, key, shot, wait }) {
+      await open('tears-of-steel.mkv');
+      await wait(3000);
+      // Opens a parameters dialog, confirm it with the defaults
+      const detecting = action('detectSceneChanges');
+      await wait(2000);
+      await shot('parameters');
+      await key('Return');
+      await detecting;
+      await wait(5000);
+      await shot('segments');
+    },
+  },
+  waveform: {
+    description: 'Show the audio waveform while playing',
+    clips: ['tears-of-steel.mkv'],
+    async run({ open, action, shot, wait }) {
+      await open('tears-of-steel.mkv');
+      await wait(3000);
+      await action('toggleWaveformMode');
+      await action('goToTimecodeDirect', { time: '00:00:03' });
+      await action('play');
+      await wait(8000);
+      await action('pause');
+      await shot('waveform');
+    },
+  },
+  rotate: {
+    description: 'Rotate a video losslessly',
+    clips: ['DJI_0740.MP4'],
+    async run({ open, action, shot, wait }) {
+      await open('DJI_0740.MP4');
+      await wait(2000);
+      await shot('original');
+      // The first press sets 0° (to override the file's rotation), the next one 90°
+      await action('increaseRotation');
+      await action('increaseRotation');
+      await wait(5000);
+      await shot('rotated');
+    },
+  },
+  'invert-segments': {
+    description: 'Mark the parts to remove, then invert to keep the rest',
+    clips: ['DJI_0759.MP4'],
+    async run({ open, action, shot, wait }) {
+      await open('DJI_0759.MP4');
+      await wait(2000);
+      for (const [start, end] of [['00:00:05', '00:00:09'], ['00:00:16', '00:00:19']]) {
+        await action('goToTimecodeDirect', { time: start });
+        await action('setCutStart');
+        await action('goToTimecodeDirect', { time: end });
+        await action('setCutEnd');
+        await wait(1000);
+      }
+      await shot('marked');
+      await action('invertAllSegments');
+      await wait(2000);
+      await shot('inverted');
+    },
+  },
 };
 
 export default scenarios;

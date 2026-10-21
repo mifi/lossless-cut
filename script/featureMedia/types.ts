@@ -3,6 +3,8 @@ export interface ScenarioContext {
   open: (...clips: string[]) => Promise<void>,
   /** Runs a keyboard action (see the Keyboard & mouse shortcuts dialog for names), optionally with arguments */
   action: (name: string, args?: unknown) => Promise<void>,
+  /** Presses keys with xdotool, e.g. 'Return' to confirm a dialog that an action opened (start the action without awaiting it) */
+  key: (keys: string) => Promise<void>,
   /** Saves a screenshot as <scenario>-<name>.png */
   shot: (name: string) => Promise<void>,
   wait: (ms: number) => Promise<void>,
