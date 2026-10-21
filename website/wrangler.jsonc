@@ -1,0 +1,13 @@
+// Cloudflare Workers config: serve the built site (dist/, see astro.config.ts) as static assets.
+{
+  "name": "losslesscut-app",
+  "compatibility_date": "2026-08-03",
+  "assets": {
+    "directory": "./dist",
+    // /docs/cli is served from docs/cli/index.html, and /docs/cli/ redirects to it
+    "html_handling": "drop-trailing-slash",
+    "not_found_handling": "404-page"
+  },
+  // enables previews for branches and pull requests (`wrangler preview`); the settings above apply to them too
+  "previews": {}
+}

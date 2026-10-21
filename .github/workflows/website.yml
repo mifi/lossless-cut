@@ -1,0 +1,37 @@
+name: Website
+
+on:
+  push:
+    branches: [master]
+    paths: ['website/**', 'docs/**', 'src/common/websiteUrls.ts', 'src/common/links.ts', 'src/renderer/src/icon.svg', '*.svg', '.github/workflows/website.yml']
+  pull_request:
+    paths: ['website/**', 'docs/**', 'src/common/websiteUrls.ts', 'src/common/links.ts', 'src/renderer/src/icon.svg', '*.svg', '.github/workflows/website.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    defaults:
+      run:
+        working-directory: website
+
+    steps:
+      - uses: actions/checkout@v6
+
+      # todo remove once fixed https://github.com/actions/setup-node/issues/531
+      - run: corepack enable
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: website/.node-version
+          cache: 'yarn'
+          cache-dependency-path: website/yarn.lock
+
+      - run: yarn install --immutable
+      - run: yarn check
+      # also fails on links in the docs that point to a missing page or heading
+      - run: yarn build
