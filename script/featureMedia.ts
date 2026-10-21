@@ -1,6 +1,6 @@
 // Records screenshots and a video of a feature demo (see script/featureMedia/scenarios.ts and AGENTS.md "Feature media").
 // Linux only (captures the X display), e.g. in a cloud session. Run `yarn build` and `yarn download-ffmpeg-linux-x64` first, then:
-// xvfb-run -a -s "-screen 0 1280x800x24" node script/featureMedia.ts <scenario> [--clips dir]
+// xvfb-run -a -s "-screen 0 1024x640x24" node script/featureMedia.ts <scenario> [--clips dir]
 import assert from 'node:assert';
 import { createWriteStream } from 'node:fs';
 import { access, mkdir, mkdtemp, rename, rm, writeFile } from 'node:fs/promises';
@@ -19,9 +19,12 @@ assert(scenario != null, `Usage: node script/featureMedia.ts <scenario> [--clips
 const display = process.env['DISPLAY'];
 assert(process.platform === 'linux' && display != null, 'Run under Xvfb on Linux, see the top of this file');
 
-const width = 1280;
-const height = 800;
+const width = 1024;
+const height = 640;
 const port = 8099;
+// Scenarios click at fixed positions, so the screen must be the size of the window
+const { stdout: screenSize } = await execa('xdotool', ['getdisplaygeometry']);
+assert(screenSize === `${width} ${height}`, `The screen is ${screenSize}, run Xvfb with -screen 0 ${width}x${height}x24`);
 const ffmpeg = 'ffmpeg/linux-x64/lib/ffmpeg';
 const outDir = 'dist/feature-media';
 await mkdir(outDir, { recursive: true });

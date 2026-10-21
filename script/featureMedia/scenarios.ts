@@ -1,6 +1,6 @@
 // Feature demo scenarios for script/featureMedia.ts. Each one drives the app through the HTTP API (see docs/api.md):
 // `action` runs a keyboard action by name, `shot` saves a screenshot and `wait` pauses so the video shows each step.
-// `click`, `key` and `type` are for what actions can't do (dialogs, the tracks panel). Click positions are for the 1280×800 window: find them in a screenshot.
+// `click`, `key` and `type` are for what actions can't do (dialogs, the tracks panel). Click positions are for the 1024×640 window: find them in a screenshot.
 // Keep each scenario short (10-30 s of video) and about one feature.
 import type { Scenario } from './types.ts';
 
@@ -79,8 +79,8 @@ const scenarios: Record<string, Scenario> = {
       await wait(2000);
       await shot('tracks');
       // The Keep buttons of the 5.1 track and the last 4 subtitles
-      for (const y of [391, 469, 495, 521, 547]) {
-        await click(110, y);
+      for (const y of [325, 417, 443, 469, 495]) {
+        await click(97, y);
         await wait(600);
       }
       await wait(1000);
@@ -105,13 +105,13 @@ const scenarios: Record<string, Scenario> = {
       await action('toggleStreamsSelector');
       await wait(1500);
       // The menu button of track 2, then "Edit track metadata"
-      await click(1167, 365);
+      await click(909, 300);
       await wait(1000);
-      await click(1162, 441);
+      await click(905, 376);
       await wait(1500);
       await shot('dialog');
       // Edit the title
-      await click(871, 338);
+      await click(743, 258);
       await wait(800);
       await key('ctrl+a');
       await type('English stereo mix');
@@ -119,10 +119,10 @@ const scenarios: Record<string, Scenario> = {
       await key('Return');
       await wait(1000);
       // Delete the ENCODER tag
-      await click(919, 376);
+      await click(791, 296);
       await wait(1500);
       await shot('edited');
-      await click(889, 627);
+      await click(761, 547);
       await wait(1500);
       await shot('tracks');
     },

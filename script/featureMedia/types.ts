@@ -9,7 +9,7 @@ export interface ScenarioContext {
   key: (keys: string) => Promise<void>,
   /** Types text with xdotool */
   type: (text: string) => Promise<void>,
-  /** Clicks at a position in the 1280×800 window (find it in a screenshot) */
+  /** Clicks at a position in the 1024×640 window (find it in a screenshot) */
   click: (x: number, y: number) => Promise<void>,
   /** Saves a screenshot as <scenario>-<name>.png */
   shot: (name: string) => Promise<void>,
