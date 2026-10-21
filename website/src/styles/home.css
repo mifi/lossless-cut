@@ -237,17 +237,48 @@ body {
   opacity: 0.8;
 }
 .feature-card {
+  --accent: #1d8a96;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   padding: 20px;
-  border-radius: 10px;
-  background-color: #f4f8f8;
-  border: 1px solid #e2ecec;
+  border-radius: 12px;
+  background-color: #f7f9f9;
+  border: 1px solid #e4ebeb;
   line-height: 1.45;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
+.feature-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent) 35%, #e4ebeb);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .feature-card {
+    transition: none;
+  }
+  .feature-card:hover {
+    transform: none;
+  }
+}
+/* a colour per card, by position, so the list in Home.tsx stays plain */
+.feature-card:nth-child(9n + 2) { --accent: #2f6fdc; }
+.feature-card:nth-child(9n + 3) { --accent: #7c4dcc; }
+.feature-card:nth-child(9n + 4) { --accent: #d06b12; }
+.feature-card:nth-child(9n + 5) { --accent: #c2417a; }
+.feature-card:nth-child(9n + 6) { --accent: #2e9550; }
+.feature-card:nth-child(9n + 7) { --accent: #0d86a8; }
+.feature-card:nth-child(9n + 8) { --accent: #c9473b; }
+.feature-card:nth-child(9n + 9) { --accent: #4a5bd1; }
 .feature-icon {
-  color: #1d8a96;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
+  color: var(--accent);
+  background-color: color-mix(in srgb, var(--accent) 13%, white);
 }
 /* phones: the icon next to the text, so the 9 cards take less space */
 @media (max-width: 700px) {
@@ -259,9 +290,6 @@ body {
     align-items: center;
     gap: 14px;
     padding: 14px 16px;
-  }
-  .feature-icon {
-    flex-shrink: 0;
   }
 }
 /* <Collapsible> in Home.tsx: on phones, the first --collapsed-height of its content element, fading out, until the <details> is

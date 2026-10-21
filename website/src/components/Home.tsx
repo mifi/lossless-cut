@@ -211,7 +211,7 @@ export default function Home({ stars }: { stars: number }) {
         <div className="feature-grid">
           {features.map(({ text, Icon }) => (
             <div key={text} className="feature-card">
-              <Icon aria-hidden size={28} strokeWidth={1.75} className="feature-icon" />
+              <span className="feature-icon"><Icon aria-hidden size={24} strokeWidth={1.9} /></span>
               <div>{text}</div>
             </div>
           ))}
