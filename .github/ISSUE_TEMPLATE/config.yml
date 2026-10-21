@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
+  - name: 📖 Documentation and troubleshooting
+    url: https://losslesscut.app/docs/troubleshooting
+    about: Known issues and solutions to common problems.
   - name: ❓ Discussions and questions
     url: https://github.com/mifi/lossless-cut/discussions
     about: Please ask and answer questions here.
