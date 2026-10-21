@@ -87,6 +87,12 @@ try {
       key: async (keys) => {
         await execa('xdotool', ['key', keys]);
       },
+      type: async (text) => {
+        await execa('xdotool', ['type', '--delay', '80', text]);
+      },
+      click: async (x, y) => {
+        await execa('xdotool', ['mousemove', String(x), String(y), 'click', '1']);
+      },
       shot: async (name) => {
         await execa(ffmpeg, ['-v', 'error', '-y', ...grab, '-frames:v', '1', join(outDir, `${scenarioName}-${name}.png`)]);
       },

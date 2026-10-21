@@ -5,6 +5,10 @@ export interface ScenarioContext {
   action: (name: string, args?: unknown) => Promise<void>,
   /** Presses keys with xdotool, e.g. 'Return' to confirm a dialog that an action opened (start the action without awaiting it) */
   key: (keys: string) => Promise<void>,
+  /** Types text with xdotool */
+  type: (text: string) => Promise<void>,
+  /** Clicks at a position in the 1280×800 window (find it in a screenshot) */
+  click: (x: number, y: number) => Promise<void>,
   /** Saves a screenshot as <scenario>-<name>.png */
   shot: (name: string) => Promise<void>,
   wait: (ms: number) => Promise<void>,

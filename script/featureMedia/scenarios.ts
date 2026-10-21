@@ -1,5 +1,6 @@
 // Feature demo scenarios for script/featureMedia.ts. Each one drives the app through the HTTP API (see docs/api.md):
 // `action` runs a keyboard action by name, `shot` saves a screenshot and `wait` pauses so the video shows each step.
+// `click`, `key` and `type` are for what actions can't do (dialogs, the tracks panel). Click positions are for the 1280×800 window: find them in a screenshot.
 // Keep each scenario short (10-30 s of video) and about one feature.
 import type { Scenario } from './types.ts';
 
@@ -64,13 +65,59 @@ const scenarios: Record<string, Scenario> = {
     },
   },
   tracks: {
-    description: 'Show the tracks of a file with several audio and subtitle tracks',
+    description: 'Choose which tracks to keep, then export',
     clips: ['tears-of-steel.mkv'],
-    async run({ open, action, shot, wait }) {
+    async run({ open, action, click, shot, wait }) {
       await open('tears-of-steel.mkv');
       await wait(3000);
       await action('toggleStreamsSelector');
+      await wait(2000);
+      await shot('tracks');
+      // The Keep buttons of the 5.1 track and the last 4 subtitles
+      for (const y of [391, 469, 495, 521, 547]) {
+        await click(110, y);
+        await wait(600);
+      }
+      await wait(1000);
+      await shot('selected');
+      await action('toggleStreamsSelector');
+      await wait(1000);
+      // Shows the export confirmation, then exports
+      await action('export');
+      await wait(2000);
+      await action('export');
       await wait(3000);
+      await shot('exported');
+    },
+  },
+  'track-metadata': {
+    description: 'Edit the metadata of a track',
+    clips: ['tears-of-steel.mkv'],
+    async run({ open, action, click, key, type, shot, wait }) {
+      await open('tears-of-steel.mkv');
+      await wait(3000);
+      await action('toggleStreamsSelector');
+      await wait(1500);
+      // The menu button of track 2, then "Edit track metadata"
+      await click(1167, 365);
+      await wait(1000);
+      await click(1162, 441);
+      await wait(1500);
+      await shot('dialog');
+      // Edit the title
+      await click(871, 338);
+      await wait(800);
+      await key('ctrl+a');
+      await type('English stereo mix');
+      await wait(500);
+      await key('Return');
+      await wait(1000);
+      // Delete the ENCODER tag
+      await click(919, 376);
+      await wait(1500);
+      await shot('edited');
+      await click(889, 627);
+      await wait(1500);
       await shot('tracks');
     },
   },
@@ -96,12 +143,16 @@ const scenarios: Record<string, Scenario> = {
     async run({ open, action, shot, wait }) {
       await open('tears-of-steel.mkv');
       await wait(3000);
+      // First the waveform above the timeline, then the full-screen waveform
       await action('toggleWaveformMode');
       await action('goToTimecodeDirect', { time: '00:00:03' });
       await action('play');
-      await wait(8000);
-      await action('pause');
+      await wait(5000);
       await shot('waveform');
+      await action('toggleWaveformMode');
+      await wait(6000);
+      await action('pause');
+      await shot('full-waveform');
     },
   },
   rotate: {
