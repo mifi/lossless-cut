@@ -70,6 +70,7 @@ body {
 .tagline {
   font-size: 22px;
   font-weight: 300;
+  text-wrap: balance;
 }
 .hero-subtitle {
   margin-top: 14px;
@@ -185,7 +186,8 @@ body {
   line-height: 1.5;
 }
 .quote-card::before {
-  content: '\201C';
+  /* decorative, not read out by screen readers */
+  content: '\201C' / '';
   position: absolute;
   left: 16px;
   top: 6px;
@@ -258,10 +260,10 @@ body {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  gap: 6px 4px;
 }
 .app-store {
   overflow: hidden;
-  margin: 0 2px;
 }
 .app-store img {
   display: block;

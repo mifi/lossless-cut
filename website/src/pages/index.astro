@@ -1,21 +1,10 @@
 ---
 import Home from '../components/Home.tsx';
+import getGithubStars from '../githubStars.ts';
 import { mastodonUrl } from '../links.ts';
 import structuredData from '../structuredData.ts';
 import '../styles/home.css';
 
-// The GitHub star count for the homepage, at build time. Optional: the build doesn't fail if GitHub doesn't answer.
-async function getGithubStars() {
-  try {
-    const response = await fetch('https://api.github.com/repos/mifi/lossless-cut', { headers: { accept: 'application/vnd.github+json' }, signal: AbortSignal.timeout(10_000) });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const { stargazers_count: stars } = await response.json();
-    return typeof stars === 'number' ? stars : undefined;
-  } catch (err) {
-    console.warn('Could not get the GitHub star count:', err instanceof Error ? err.message : err);
-    return undefined;
-  }
-}
 const stars = await getGithubStars();
 
 const title = 'LosslessCut – Free Lossless Video Cutter for Mac, Windows & Linux';

@@ -35,3 +35,6 @@ jobs:
       - run: yarn check
       # also fails on links in the docs that point to a missing page or heading
       - run: yarn build
+        env:
+          # for the homepage's GitHub star count (website/src/githubStars.ts), so it isn't rate limited
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

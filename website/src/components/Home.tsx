@@ -44,7 +44,7 @@ const features: { text: string, Icon: LucideIcon }[] = [
   { text: 'Change rotation/orientation metadata in videos', Icon: RotateCw },
   { text: 'Powerful timeline with zoom and frame/keyframe jumping', Icon: ZoomIn },
   { text: 'Auto-saves per project cut segments to file', Icon: Save },
-  { text: 'View ffmpeg last command log so you can modify and re-run modify recent commands on the command line', Icon: Terminal },
+  { text: 'View ffmpeg last command log so you can modify and re-run recent commands on the command line', Icon: Terminal },
   { text: 'Give labels to cut segments', Icon: Tag },
   { text: 'Segment panel showing segments with details, export/import cut segments as CSV', Icon: ListOrdered },
   { text: 'Video thumbnails and audio waveform', Icon: AudioWaveform },
@@ -92,7 +92,7 @@ function ScreenshotSection({ background, screenshot, alt, width, borderRadius, s
 }
 
 function WhiteSection({ children }: { children: ReactNode }) {
-  return <div className="white-section">{children}</div>;
+  return <section className="white-section">{children}</section>;
 }
 
 function List({ items }: { items: string[] }) {
@@ -119,8 +119,8 @@ function StoreBadges({ height }: { height: number }) {
 
 const formatStars = (stars: number) => (stars >= 1000 ? `${Math.floor(stars / 1000)}k+` : String(stars));
 
-// stars: the GitHub star count, fetched at build time by index.astro (undefined if that failed)
-export default function Home({ stars }: { stars?: number | undefined }) {
+// stars: the GitHub star count, fetched at build time by index.astro (see githubStars.ts)
+export default function Home({ stars }: { stars: number }) {
   return (
     <div className="page">
       <header className="hero" style={{ backgroundImage: `linear-gradient(160deg, rgba(11, 52, 56, 0.93), rgba(40, 40, 40, 0.96) 65%), url(${background1})` }}>
@@ -140,7 +140,7 @@ export default function Home({ stars }: { stars?: number | undefined }) {
             </div>
             <StoreBadges height={40} />
             <ul className="proof">
-              {stars != null && <li><Star aria-hidden size={16} className="star" /> {formatStars(stars)} stars on <a href={githubUrl}>GitHub</a></li>}
+              <li><Star aria-hidden size={16} className="star" /> {formatStars(stars)} stars on <a href={githubUrl}>GitHub</a></li>
               <li><CodeXml aria-hidden size={16} /> Free and open source</li>
               <li><Monitor aria-hidden size={16} /> Windows, macOS, Linux</li>
             </ul>
@@ -149,11 +149,12 @@ export default function Home({ stars }: { stars?: number | undefined }) {
 
           <div className="hero-media">
             {demoSources.length > 0 ? (
-              <video autoPlay muted loop playsInline poster={mainScreenshot} aria-label="LosslessCut cutting a video">
+              // controls: a looping video must be pausable (WCAG 2.2.2), and the page has no JavaScript for a custom button
+              <video autoPlay muted loop playsInline controls width={1000} height={624} poster={mainScreenshot} aria-label="LosslessCut cutting a video">
                 {demoSources.map(({ url, type }) => <source key={url} src={url} type={type} />)}
               </video>
             ) : (
-              <img src={mainScreenshot} alt="LosslessCut main window" />
+              <img src={mainScreenshot} alt="LosslessCut main window" width={1000} height={624} fetchPriority="high" />
             )}
           </div>
         </div>
