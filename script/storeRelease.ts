@@ -19,6 +19,8 @@ import { execa } from 'execa';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
+import { appLinkTargets, websiteUrl } from '../src/common/websiteUrls.ts';
+
 
 const masAppId = '1505323402';
 const msStoreAppId = '9P30LSR4705L';
@@ -26,6 +28,9 @@ const githubRepo = 'mifi/lossless-cut';
 const msStoreArchs = ['x64', 'arm64'];
 // Same steps as Apple's 7-day phased release
 const msStoreRolloutSteps = [1, 2, 5, 10, 20, 50, 100];
+// Mac App Store only: the Microsoft Store's privacy policy URL can only be changed in Partner Center (Properties), its API ignores it.
+// The page itself rather than its /go/ link, for the reviewers.
+const privacyPolicyUrl = `${websiteUrl}${appLinkTargets['privacy-policy']}`;
 
 const args = yargs(hideBin(process.argv))
   .command('mas <version>', 'Mac App Store')
@@ -112,6 +117,27 @@ async function findMasBuild(version: string) {
   return builds?.[0];
 }
 
+// The privacy policy URL is in the app info (per app, not per version), which can only be changed while a version is being prepared
+async function masPrivacyPolicy() {
+  const appInfos = (await asc<AscResource[]>('GET', `/v1/apps/${masAppId}/appInfos`))!;
+  const editable = appInfos.find((i) => ['PREPARE_FOR_SUBMISSION', 'READY_FOR_REVIEW', 'DEVELOPER_REJECTED', 'REJECTED'].includes(String(i.attributes['state'])));
+  if (!editable) {
+    log(`No editable app info (states: ${appInfos.map((i) => i.attributes['state']).join(', ')}), so the privacy policy URL can't be checked`);
+    return;
+  }
+  const localizations = (await asc<AscResource[]>('GET', `/v1/appInfos/${editable.id}/appInfoLocalizations`))!;
+  for (const localization of localizations) {
+    const { locale, privacyPolicyUrl: current } = localization.attributes;
+    if (current === privacyPolicyUrl) {
+      log(`${locale} privacy policy URL is already up to date`);
+    } else {
+      plan(`set the ${locale} privacy policy URL to ${privacyPolicyUrl} (currently: ${JSON.stringify(current ?? null)})`);
+      // eslint-disable-next-line no-await-in-loop
+      if (write) await asc('PATCH', `/v1/appInfoLocalizations/${localization.id}`, { type: 'appInfoLocalizations', id: localization.id, attributes: { privacyPolicyUrl } });
+    }
+  }
+}
+
 async function mas(version: string) {
   const notes = await readNotes(version, 4000);
 
@@ -163,7 +189,7 @@ async function mas(version: string) {
   } else {
     plan(`create App Store version ${versionString}: manual release, build ${version}`);
     if (!write) {
-      plan('set en-US What\'s New, enable 7-day phased release, submit for review');
+      plan(`set en-US What's New, set the privacy policy URL to ${privacyPolicyUrl} if needed, enable 7-day phased release, submit for review`);
       return;
     }
     const created = await asc('POST', '/v1/appStoreVersions', {
@@ -185,6 +211,8 @@ async function mas(version: string) {
     plan(`set en-US What's New (currently: ${JSON.stringify(enUs.attributes['whatsNew'] ?? null).slice(0, 100)}…)`);
     if (write) await asc('PATCH', `/v1/appStoreVersionLocalizations/${enUs.id}`, { type: 'appStoreVersionLocalizations', id: enUs.id, attributes: { whatsNew: notes } });
   }
+
+  await masPrivacyPolicy();
 
   const phasedRelease = await asc('GET', `/v1/appStoreVersions/${versionId}/appStoreVersionPhasedRelease`);
   if (phasedRelease) {
