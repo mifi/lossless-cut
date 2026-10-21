@@ -291,7 +291,7 @@ go into extra columns to the side, which Safari didn't lay out again when opened
   color: var(--accent);
   background-color: color-mix(in srgb, var(--accent) 13%, white);
 }
-/* The icon draws itself: on hover (desktop), and on touch screens once, when the card reaches the middle of the screen (.draw,
+/* The icon draws itself: on hover (desktop), and on touch screens when the card reaches the middle of the screen or is tapped (.draw,
 set by the script in index.astro, which first sets .draw-on-scroll to hide the icons until then). Every line of the icon has pathLength 1 (Home.tsx), so a dash of 1 (with a gap of 2,
 so that no dot of the next dash shows) draws each line from start to end in the same time. */
 @keyframes feature-icon-draw {

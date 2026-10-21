@@ -36,19 +36,26 @@ const description = 'LosslessCut - Official downloads - free or paid version. Ed
   <Home stars={stars} />
   <!-- is:inline: plain JS, not compiled by Vite, which would look for a tsconfig and find the app's (see tsconfig.json) -->
   <script is:inline>
-    // On touch screens, draw each feature card's icon once when the card reaches the middle of the screen (.draw in home.css).
-    // (Scroll-driven CSS animations can't do this yet in all browsers, e.g. on iOS.) With a mouse, the icons draw on hover instead.
+    // On touch screens, draw each feature card's icon when the card reaches the middle of the screen (.draw in home.css), again
+    // after it has left the screen, and when it's tapped. (Scroll-driven CSS animations can't do this yet in all browsers, e.g.
+    // on iOS.) With a mouse, the icons draw on hover instead.
     if (matchMedia('(hover: none) and (prefers-reduced-motion: no-preference)').matches && 'IntersectionObserver' in window) {
-      const observer = new IntersectionObserver((entries) => {
-        for (const { target, isIntersecting } of entries) {
-          if (isIntersecting) {
-            target.classList.add('draw');
-            observer.unobserve(target);
-          }
-        }
+      const inMiddle = new IntersectionObserver((entries) => {
+        for (const { target, isIntersecting } of entries) if (isIntersecting) target.classList.add('draw');
       }, { rootMargin: '-35% 0px -35% 0px' }); // the middle 30% of the screen
+      const onScreen = new IntersectionObserver((entries) => {
+        for (const { target, isIntersecting } of entries) if (!isIntersecting) target.classList.remove('draw');
+      });
       document.querySelector('.feature-grid')?.classList.add('draw-on-scroll');
-      document.querySelectorAll('.feature-card').forEach((card) => observer.observe(card));
+      document.querySelectorAll('.feature-card').forEach((card) => {
+        inMiddle.observe(card);
+        onScreen.observe(card);
+        card.addEventListener('click', () => {
+          card.classList.remove('draw');
+          card.getBoundingClientRect(); // so that the animation starts over
+          card.classList.add('draw');
+        });
+      });
     }
   </script>
 </body>
