@@ -242,6 +242,40 @@ body {
 .feature-icon {
   color: #1d8a96;
 }
+.feature-collapse {
+  width: 1000px;
+  max-width: 100%;
+  margin-bottom: 40px;
+}
+.feature-collapse .feature-grid {
+  margin-bottom: 0;
+}
+.feature-more {
+  display: none;
+}
+/* Phones: show the first few features, fading out, until "Show all features" opens the <details>.
+Only where :has() works, so other browsers show all features. */
+@supports selector(:has(*)) {
+  @media (max-width: 700px) {
+    .feature-collapse:not(:has(.feature-more[open])) .feature-grid {
+      max-height: 460px;
+      overflow: hidden;
+      mask-image: linear-gradient(to bottom, black 55%, transparent);
+    }
+    .feature-more:not([open]) {
+      display: flex;
+      justify-content: center;
+      margin-top: 8px;
+    }
+    .feature-more summary {
+      list-style: none;
+      cursor: pointer;
+    }
+    .feature-more summary::-webkit-details-marker {
+      display: none;
+    }
+  }
+}
 
 .download {
   padding: 30px 20px;

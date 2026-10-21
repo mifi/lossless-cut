@@ -204,13 +204,17 @@ export default function Home({ stars }: { stars: number }) {
       <WhiteSection>
         <h2 style={{ margin: '20px 0' }}>Features</h2>
 
-        <div className="feature-grid">
-          {features.map(({ text, Icon }) => (
-            <div key={text} className="feature-card">
-              <Icon aria-hidden size={28} strokeWidth={1.75} className="feature-icon" />
-              <div>{text}</div>
-            </div>
-          ))}
+        {/* on phones, collapsed until "Show all features" is clicked (CSS only, see home.css) */}
+        <div className="feature-collapse">
+          <div className="feature-grid">
+            {features.map(({ text, Icon }) => (
+              <div key={text} className="feature-card">
+                <Icon aria-hidden size={28} strokeWidth={1.75} className="feature-icon" />
+                <div>{text}</div>
+              </div>
+            ))}
+          </div>
+          <details className="feature-more"><summary className="button">Show all features</summary></details>
         </div>
 
         <h2 style={{ margin: '20px 0' }}>Other usage scenarios</h2>
