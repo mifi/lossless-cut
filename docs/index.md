@@ -20,6 +20,20 @@ Please read the documentation before creating an issue. Thank you 🙏
   - **A** LosslessCut version in the App Stores is often a few versions behind the latest GitHub version, because I want to be sure that the new versions work perfectly before releasing in the App Stores. The GitHub version will contain new, untested features and may contain some bugs (even in existing functionality). I consider the newest GitHub versions to be a public "beta" test. Then, once I'm sure that the new version works well, I will release it in the App Stores as well to give a frictionless as possible experience for customers. They have exactly the same in-app features, except for a few platform limitations: Apple doesn't allow opening VOB files with App Store apps. Apple App Store apps run in a sandbox, and therefore need to prompt for output directory before allowing writing files.
 - **Q**: What are all these `.llc` files that get created?
   - **A***: Their purpose is to save your segments so that when you exit/re-open LosslessCut you can continue where you left off. You can turn them off in app settings. See also [#2115](https://github.com/mifi/lossless-cut/issues/2115).
+- **Q:** Why does my export (or *Merge cuts*) start a few seconds before my cut point?
+  - **A:** Because lossless cuts start from the keyframe before the cut point. See [Export starts a few seconds before my cut point](troubleshooting.md#export-starts-a-few-seconds-before-my-cut-point).
+- **Q:** File not supported, black preview or playback stutters?
+  - **A:** See [Preview / playback problems](troubleshooting.md#preview--playback-problems). The preview does not affect the exported file.
+- **Q:** Why does my merged file only play the first part, or have later parts with only audio or corrupt video?
+  - **A:** The files must have identical codec parameters. See [Merge / concat results in corrupt or broken parts](troubleshooting.md#merge--concat-results-in-corrupt-or-broken-parts).
+- **Q:** How can I export all segments with the same label into their own file, or quickly select many segments?
+  - **A:** See [Export segments with the same label into their own file](recipes.md#export-segments-with-the-same-label-into-their-own-file).
+- **Q:** How do I change the default 10 second length of new segments?
+  - **A:** The 10 second default end is only used in simple mode and cannot be changed. Instead, click "advanced view" (baby icon, bottom left). New segments are then created as [markers](#markers) (without an end). Or move the playhead and press <kbd>I</kbd> / <kbd>O</kbd> to set the current segment's start / end there.
+- **Q:** Why doesn't `--keyboard-action createNumSegments` (or another action that opens a dialog) work from a script?
+  - **A:** Actions that open a dialog cannot be scripted. See [Actions that open a dialog cannot be scripted](cli.md#actions-that-open-a-dialog-cannot-be-scripted).
+- **Q:** Where are settings and keyboard shortcuts stored, and how do I copy them to another computer?
+  - **A:** See [Copy settings and keyboard shortcuts to another computer](installation.md#copy-settings-and-keyboard-shortcuts-to-another-computer).
 - **Q**: Can I download LosslessCut from other websites or package managers?
   - **A**: Only the [official sources specified here](../README.md#download) are maintained by me. Downloading LosslessCut from other sources such as other websites or package managers like WinGet or Homebrew entirely at your own risk, because those are not being maintained or vetted by me.
 
@@ -44,7 +58,7 @@ Please read the documentation before creating an issue. Thank you 🙏
 - **Q:** Can LosslessCut remember more choices, selections, settings?
   - **A:** Maybe, see [#371](https://github.com/mifi/lossless-cut/issues/371).
 - **Q:** Does LosslessCut allow me to cut/merge multiple files in the same timeline?
-  - **A:** No, and I'm not sure if this will ever be implemented. Editing multiple files will have to be done in multiple steps. See [#976](https://github.com/mifi/lossless-cut/issues/976).
+  - **A:** No, and I'm not sure if this will ever be implemented. Editing multiple files will have to be done in multiple steps, see the recipe [Cut multiple files and merge them all](recipes.md#cut-multiple-files-and-merge-them-all). See also [#976](https://github.com/mifi/lossless-cut/issues/976).
 
 See also [📝 Recipe cookbook](recipes.md).
 
@@ -62,7 +76,7 @@ If you have a problem with the app or with a file, please see the [🤔 Troubles
 - <kbd>BACKSPACE</kbd> to remove cutpoint/segment.
 - If you create segments without an end time, it is a [marker](#markers) instead of a segment.
   - Note that when exporting, all segments you create will be **preserved** and exported as new files. You can change this behavior with the **Yin Yang** symbol ☯️, in which case the behaviour is inverted and LosslessCut will instead **skip** all selected segments and export the parts **between** segments as files.
-  - Also note that start times will not be accurate, see [Known issues](troubleshooting.md).
+  - Also note that start times will not be accurate, see [Export starts a few seconds before my cut point](troubleshooting.md#export-starts-a-few-seconds-before-my-cut-point).
 - *(optional)* <kbd>+</kbd> to add another segment at the current cursor time. Then select the segment end time with <kbd>O</kbd>.
 - *(optional)* If you want to merge all the selected segments into one file after cutting, change the `Export mode` from `Separate files` to `Merge cuts`.
 - *(optional)* If you want to export to a certain output folder, press the `Working dir unset` button (defaults to same folder as source file).
