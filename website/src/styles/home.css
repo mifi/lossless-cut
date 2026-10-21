@@ -137,14 +137,15 @@ body {
   display: inline-block;
   padding: 10px 24px;
   border-radius: 6px;
-  border: 1px solid #1d8a96;
-  background-color: #1d8a96;
+  /* dark enough for white text (4.97:1) */
+  border: 1px solid #1a7b86;
+  background-color: #1a7b86;
   color: white;
   text-decoration: none;
   font-weight: 500;
 }
 .button:hover {
-  background-color: #1a7b86;
+  background-color: #166b75;
 }
 .button.secondary {
   background-color: transparent;
