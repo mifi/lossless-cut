@@ -280,6 +280,45 @@ body {
   color: var(--accent);
   background-color: color-mix(in srgb, var(--accent) 13%, white);
 }
+/* The icon draws itself: on hover (desktop), and on phones when the card scrolls into view (where scroll-driven animations
+work; elsewhere the icons are just shown). Lucide icons are strokes, shorter than 100 units, so a 100-long dash hides/shows a
+whole line. */
+.feature-icon svg * {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 0;
+}
+@keyframes feature-icon-draw {
+  from { stroke-dashoffset: 100; }
+  to { stroke-dashoffset: 0; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .feature-icon {
+    transition: transform 0.2s ease;
+  }
+  @media (hover: hover) {
+    .feature-card:hover .feature-icon {
+      transform: scale(1.08);
+    }
+    .feature-card:hover .feature-icon svg * {
+      animation: feature-icon-draw 0.9s ease-out;
+    }
+  }
+  @media (hover: none) {
+    @supports (animation-timeline: view()) {
+      .feature-card {
+        view-timeline: --feature-card block;
+      }
+      /* separate properties: the minifier would otherwise merge animation-timeline into the animation shorthand, which browsers reject */
+      .feature-icon svg * {
+        animation-name: feature-icon-draw;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: --feature-card;
+        animation-range: entry 30% cover 45%;
+      }
+    }
+  }
+}
 /* phones: the icon next to the text, so the 9 cards take less space */
 @media (max-width: 700px) {
   .feature-grid {
