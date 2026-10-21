@@ -164,7 +164,7 @@ export default function Home({ stars }: { stars: number }) {
 
           <div className="hero-media">
             {demoSources.length > 0 ? (
-              // controls: a looping video must be pausable (WCAG 2.2.2), and the page has no JavaScript for a custom button
+              // controls: a looping video must be pausable (WCAG 2.2.2), and there's no script for a custom button
               <video autoPlay muted loop playsInline controls width={1000} height={624} poster={mainScreenshot} aria-label="LosslessCut cutting a video">
                 {demoSources.map(({ url, type }) => <source key={url} src={url} type={type} />)}
               </video>

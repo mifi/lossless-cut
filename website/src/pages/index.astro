@@ -37,15 +37,31 @@ const description = 'LosslessCut - Official downloads - free or paid version. Ed
   <!-- is:inline: plain JS, not compiled by Vite, which would look for a tsconfig and find the app's (see tsconfig.json) -->
   <script is:inline>
     // On touch screens, draw each feature card's icon when the card reaches the middle of the screen (.draw in home.css), again
-    // after it has left the screen, and when it's tapped. (Scroll-driven CSS animations can't do this yet in all browsers, e.g.
-    // on iOS.) With a mouse, the icons draw on hover instead.
+    // after it has left the screen, and when it's tapped. Cards that are on screen when scrolling stops without having passed the
+    // middle (after a jump to a link, or a fast scroll) are drawn then. (Scroll-driven CSS animations can't do this yet in all
+    // browsers, e.g. on iOS.) With a mouse, the icons draw on hover instead.
     if (matchMedia('(hover: none) and (prefers-reduced-motion: no-preference)').matches && 'IntersectionObserver' in window) {
       const inMiddle = new IntersectionObserver((entries) => {
         for (const { target, isIntersecting } of entries) if (isIntersecting) target.classList.add('draw');
       }, { rootMargin: '-35% 0px -35% 0px' }); // the middle 30% of the screen
+      const visibleCards = new Set();
       const onScreen = new IntersectionObserver((entries) => {
-        for (const { target, isIntersecting } of entries) if (!isIntersecting) target.classList.remove('draw');
+        for (const { target, isIntersecting } of entries) {
+          if (isIntersecting) {
+            visibleCards.add(target);
+          } else {
+            visibleCards.delete(target);
+            target.classList.remove('draw');
+          }
+        }
       });
+      let scrollStopTimer;
+      const drawVisibleWhenScrollStops = () => {
+        clearTimeout(scrollStopTimer);
+        scrollStopTimer = setTimeout(() => visibleCards.forEach((card) => card.classList.add('draw')), 300);
+      };
+      addEventListener('scroll', drawVisibleWhenScrollStops, { passive: true });
+      drawVisibleWhenScrollStops();
       document.querySelector('.feature-grid')?.classList.add('draw-on-scroll');
       document.querySelectorAll('.feature-card').forEach((card) => {
         inMiddle.observe(card);
