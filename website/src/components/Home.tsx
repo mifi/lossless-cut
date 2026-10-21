@@ -193,7 +193,7 @@ export default function Home({ stars }: { stars: number }) {
             Any operation in a <b className="key-point">normal video editor</b><br />
             requires you to <b className="key-point">re-encode</b> the whole file<br />
             which can <b className="key-point">take hours</b> and you will<br />
-            gradually <b className="key-point">lose quality</b> every time a file is processed.<br />
+            gradually <a href="https://en.wikipedia.org/wiki/Generation_loss"><b className="key-point">lose quality</b></a> every time a file is processed.<br />
           </p>
         </div>
 
