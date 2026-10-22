@@ -141,7 +141,17 @@ body {
 .demo-video-credit a {
   color: inherit;
 }
+.tracks-video {
+  width: 800px;
+  max-width: 100%;
+}
+.tracks-video .demo-video-credit {
+  color: white;
+  opacity: 0.8;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
 .framed-video {
+  position: relative;
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -183,6 +193,21 @@ body {
   color: inherit;
   cursor: pointer;
 }
+/* in the bottom right corner: the top right of a panel has its close button */
+.no-title-bar .framed-video-pause {
+  bottom: 10px;
+  right: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  z-index: 1;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background-color: rgba(0, 0, 0, 0.55);
+  color: white;
+}
+.no-title-bar .framed-video-pause:hover {
+  background-color: rgba(0, 0, 0, 0.75);
+}
 .framed-video-pause:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
@@ -193,7 +218,7 @@ body {
   display: block;
   width: 100%;
   height: auto;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: var(--aspect-ratio);
 }
 .framed-video-poster {
   display: none;
@@ -225,12 +250,6 @@ body {
 }
 .button.secondary:hover {
   background-color: rgba(255, 255, 255, 0.1);
-}
-
-.screenshot {
-  max-width: 100%;
-  overflow: hidden;
-  box-shadow: rgba(0, 0, 0, 0.3) 0 0 10px 10px;
 }
 
 .quotes {

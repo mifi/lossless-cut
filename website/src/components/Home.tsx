@@ -13,7 +13,7 @@ import snapStoreBadge from '../../../snap-store-black.svg?url';
 import logo from '../../../src/renderer/src/icon.svg?url';
 
 import type { Video } from '../images.ts';
-import { background1, background2, generationLossOriginal, generationLossReencoded, heroVideo, sceneChangesVideo, tracksScreenshot } from '../images.ts';
+import { background1, background2, generationLossOriginal, generationLossReencoded, heroVideo, sceneChangesVideo, tracksVideo } from '../images.ts';
 import type { Release } from '../latestRelease.ts';
 import { authorUrl, donateUrl, githubUrl, socialLinks, storeUrls, supportEmail } from '../links.ts';
 import socialIconPaths from './socialIcons.ts';
@@ -86,13 +86,11 @@ const footerLinks = [
   { label: 'More apps by mifi ❤️', href: authorUrl },
 ];
 
-// A screenshot over a full-width background image.
-function ScreenshotSection({ background, screenshot, alt, width, borderRadius, subtitle }: { background: string, screenshot: { src: string, srcSet: string }, alt: string, width: number, borderRadius: number, subtitle: string }) {
+// A video (or screenshot) over a full-width background image.
+function MediaSection({ background, subtitle, children }: { background: string, subtitle: string, children: ReactNode }) {
   return (
     <div className="background" style={{ backgroundImage: `url(${background})` }}>
-      <div className="padded">
-        <img loading="lazy" src={screenshot.src} srcSet={screenshot.srcSet} alt={alt} className="screenshot" style={{ width, borderRadius }} />
-      </div>
+      <div className="padded">{children}</div>
       <div className="image-subtitle">{subtitle}</div>
     </div>
   );
@@ -124,28 +122,33 @@ function Collapsible({ label, collapsedHeight, children }: { label: string, coll
   );
 }
 
-// A silent, looping screen recording (see images.ts) in a plain window frame, not macOS-like, since the app also runs on Windows
-// and Linux. The script in index.astro shows its pause button (a looping video must be pausable, WCAG 2.2.2), and plays it
-// while it's on screen. With prefers-reduced-motion, only its poster is shown (home.css).
-function FramedVideo({ video, label, posterAlt, priority }: { video: Video, label: string, posterAlt: string, priority?: boolean }) {
+// A silent, looping screen recording (see images.ts) in a plain window frame (not macOS-like, since the app also runs on Windows
+// and Linux), or without the title bar for a crop of a panel. The script in index.astro shows its pause button (a looping video
+// must be pausable, WCAG 2.2.2), and plays it while it's on screen. With prefers-reduced-motion, only its poster is shown (home.css).
+function FramedVideo({ video, label, posterAlt, priority, titleBar = true }: { video: Video, label: string, posterAlt: string, priority?: boolean, titleBar?: boolean }) {
+  const pauseButton = (
+    <button type="button" className="framed-video-pause" aria-label="Pause the video" hidden>
+      <Pause className="pause" aria-hidden size={14} />
+      <Play className="play" aria-hidden size={14} />
+    </button>
+  );
   return (
-    <div className="framed-video">
-      <div className="framed-video-title">
-        <span className="framed-video-dots" aria-hidden="true"><i /><i /><i /></span>
-        LosslessCut
-        <button type="button" className="framed-video-pause" aria-label="Pause the video" hidden>
-          <Pause className="pause" aria-hidden size={14} />
-          <Play className="play" aria-hidden size={14} />
-        </button>
-      </div>
+    <div className={titleBar ? 'framed-video' : 'framed-video no-title-bar'} style={{ '--aspect-ratio': `${video.width} / ${video.height}` } as CSSProperties}>
+      {titleBar ? (
+        <div className="framed-video-title">
+          <span className="framed-video-dots" aria-hidden="true"><i /><i /><i /></span>
+          LosslessCut
+          {pauseButton}
+        </div>
+      ) : pauseButton}
       {/* priority (the hero): starts playing right away, otherwise only when scrolled to */}
-      <video poster={video.poster} autoPlay={priority} muted loop playsInline preload={priority ? 'metadata' : 'none'} width={1024} height={640} aria-label={label}>
+      <video poster={video.poster} autoPlay={priority} muted loop playsInline preload={priority ? 'metadata' : 'none'} width={video.width} height={video.height} aria-label={label}>
         {/* with reduced motion, neither matches, so nothing is downloaded. Browsers that ignore media (before Chrome/Firefox
         120) take the first one, and the script removes them with reduced motion */}
         <source src={video.src} type="video/mp4" media="(min-width: 701px) and (prefers-reduced-motion: no-preference)" />
         <source src={video.smallSrc} type="video/mp4" media="(prefers-reduced-motion: no-preference)" />
       </video>
-      <img className="framed-video-poster" src={video.poster} alt={posterAlt} width={1024} height={640} fetchPriority={priority ? 'high' : undefined} loading={priority ? undefined : 'lazy'} />
+      <img className="framed-video-poster" src={video.poster} alt={posterAlt} width={video.width} height={video.height} fetchPriority={priority ? 'high' : undefined} loading={priority ? undefined : 'lazy'} />
     </div>
   );
 }
@@ -236,15 +239,14 @@ export default function Home({ stars, release }: { stars: number, release: Relea
         </div>
       </WhiteSection>
 
-      <ScreenshotSection
-        background={background2}
-        screenshot={tracksScreenshot}
-        alt="Screenshot showing the tracks screen"
-        width={400}
-        borderRadius={5}
-        subtitle="Built in track info and selection"
-      />
-
+      <MediaSection background={background2} subtitle="Built in track info and selection">
+        <div className="tracks-video">
+          <FramedVideo video={tracksVideo} titleBar={false} label="LosslessCut's Tracks panel, switching off tracks one by one" posterAlt="LosslessCut's Tracks panel: choose which video, audio and subtitle tracks to keep when exporting" />
+          <p className="demo-video-credit">
+            Tears of Steel (CC) Blender Foundation | <a href="https://mango.blender.org/">mango.blender.org</a>
+          </p>
+        </div>
+      </MediaSection>
       <WhiteSection>
         <h2 style={{ margin: '20px 0' }}>Features</h2>
 

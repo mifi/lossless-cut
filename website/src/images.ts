@@ -7,7 +7,6 @@ const withSrcSet = (path: string) => ({
   srcSet: `${baseUrl}/dist/${path}.jpg 1x, ${baseUrl}/dist/${path}-2000.jpg 2x`,
 });
 
-export const tracksScreenshot = withSrcSet('losslesscut/screenshots/tracks');
 
 export const generationLossOriginal = withSrcSet('losslesscut/website/generation-loss-original');
 export const generationLossReencoded = withSrcSet('losslesscut/website/generation-loss-reencoded');
@@ -15,14 +14,16 @@ export const generationLossReencoded = withSrcSet('losslesscut/website/generatio
 export const background1 = `${baseUrl}/dist/losslesscut/website/background-1000.jpg`;
 export const background2 = `${baseUrl}/dist/losslesscut/website/background2-1000.jpg`;
 
-// Screen recordings (script/featureMedia.ts): 1024×640, silent, a smaller one for phones, and a still of the first frame
-export interface Video { src: string, smallSrc: string, poster: string }
+// Screen recordings (script/featureMedia.ts): silent, a smaller one for phones, and a still of the first frame
+export interface Video { src: string, smallSrc: string, poster: string, width: number, height: number }
 
 // About 13 s
 export const heroVideo: Video = {
   src: `${baseUrl}/dist/losslesscut/feature-media/hero-2026-10-22-1000.mp4`,
   smallSrc: `${baseUrl}/dist/losslesscut/feature-media/hero-2026-10-22.mp4`,
   poster: `${baseUrl}/dist/losslesscut/feature-media/hero-2026-10-22-poster-1000.jpg`,
+  width: 1024,
+  height: 640,
 };
 
 // About 10 s: creating segments from the scene changes of a Tears of Steel excerpt (CC BY: the homepage credits it)
@@ -30,6 +31,18 @@ export const sceneChangesVideo: Video = {
   src: `${baseUrl}/dist/losslesscut/feature-media/detect-scene-changes-2026-10-22-1000.mp4`,
   smallSrc: `${baseUrl}/dist/losslesscut/feature-media/detect-scene-changes-2026-10-22.mp4`,
   poster: `${baseUrl}/dist/losslesscut/feature-media/detect-scene-changes-2026-10-22-poster-1000.jpg`,
+  width: 1024,
+  height: 640,
+};
+
+// About 7 s: switching off tracks one by one, in a crop of the Tracks panel, with a Tears of Steel excerpt (CC BY: the homepage
+// credits it). The small one is 1330×750
+export const tracksVideo: Video = {
+  src: `${baseUrl}/dist/losslesscut/feature-media/tracks-panel-2026-10-22-2000.mp4`,
+  smallSrc: `${baseUrl}/dist/losslesscut/feature-media/tracks-panel-2026-10-22-1000.mp4`,
+  poster: `${baseUrl}/dist/losslesscut/feature-media/tracks-panel-2026-10-22-poster-1000.jpg`,
+  width: 1834,
+  height: 1034,
 };
 
 // Social preview image (1200x630)
