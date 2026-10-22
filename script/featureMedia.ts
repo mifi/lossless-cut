@@ -99,7 +99,7 @@ if (!await exists(background)) {
 await (await openHtmlScenes({ width: 100, height: 100 })).close();
 
 // Get the clips, from the folder or else make them from their sources (see clips.ts) or download them
-const clipsUrl = process.env['FEATURE_MEDIA_CLIPS_URL'] ?? 'https://static.mifi.no/losslesscut';
+const clipsUrl = process.env['FEATURE_MEDIA_CLIPS_URL'] ?? 'https://static.mifi.no/src/losslesscut/demo-sources';
 for (const clip of scenario.clips) {
   const path = join(clips, clip);
   if (!await exists(path)) {
