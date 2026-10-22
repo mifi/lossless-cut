@@ -1,8 +1,7 @@
 import type { CSSProperties, MouseEventHandler } from 'react';
 import { forwardRef } from 'react';
-import { FiScissors } from 'react-icons/fi';
-import { FaFileExport } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
+import { LuFileOutput, LuScissors } from 'react-icons/lu';
 
 import useUserSettings from '../hooks/useUserSettings';
 import type { SegmentToExport } from '../types';
@@ -23,7 +22,7 @@ const ExportButton = forwardRef<HTMLButtonElement, Props>(({
   onClick,
   style,
 }, ref) => {
-  const CutIcon = areWeCutting ? FiScissors : FaFileExport;
+  const CutIcon = areWeCutting ? LuScissors : LuFileOutput;
 
   const { t } = useTranslation();
 

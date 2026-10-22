@@ -1,7 +1,7 @@
 import type { ChangeEventHandler } from 'react';
 import { memo, useState, useCallback, useRef, useEffect } from 'react';
-import { FaVolumeMute, FaVolumeUp } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
+import { LuVolume2, LuVolumeX } from 'react-icons/lu';
 
 import useActionTitle from '../hooks/useActionTitle';
 
@@ -36,7 +36,7 @@ function VolumeControl({ playbackVolume, setPlaybackVolume, onToggleMutedClick }
     }
   }, [onToggleMutedClick, volumeControlVisible]);
 
-  const VolumeIcon = playbackVolume === 0 ? FaVolumeMute : FaVolumeUp;
+  const VolumeIcon = playbackVolume === 0 ? LuVolumeX : LuVolume2;
 
   return (
     <>

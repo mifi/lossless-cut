@@ -1,7 +1,7 @@
 import type { CSSProperties, MouseEventHandler } from 'react';
 import { memo, useRef, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FaFile, FaTimes } from 'react-icons/fa';
+import { LuFile, LuX } from 'react-icons/lu';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
@@ -81,13 +81,13 @@ function BatchFile({ path, index, isOpen, isSelected, name, onSelect, onDelete, 
       title={path}
       onClick={handleClick}
     >
-      <FaFile style={{ color: isSelected ? primaryTextColor : undefined, flexShrink: 0, fontSize: '1em', marginRight: '.1em' }} />
+      <LuFile style={{ color: isSelected ? primaryTextColor : undefined, flexShrink: 0, fontSize: '1em', marginRight: '.1em' }} />
       <div style={{ flexShrink: 0, marginRight: '.1em' }}>{index + 1}.</div>
       <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', direction: 'rtl' }}>
         <span style={{ direction: 'ltr', unicodeBidi: 'isolate', display: 'inline-block' }}>{name}</span>
       </div>
       <div style={{ flexGrow: 1 }} />
-      {onDelete && <FaTimes style={{ color: dangerColor, fontSize: '.9em', marginRight: '-.3em', flexShrink: 0, cursor: 'pointer', padding: '.3em' }} role="button" onClick={handleDeleteClick} />}
+      {onDelete && <LuX style={{ color: dangerColor, fontSize: '.9em', marginRight: '-.3em', flexShrink: 0, cursor: 'pointer', padding: '.3em' }} role="button" onClick={handleDeleteClick} />}
     </div>
   );
 }

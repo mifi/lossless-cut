@@ -1,7 +1,7 @@
 import type { ChangeEventHandler, ChangeEvent } from 'react';
 import { memo, useState, useCallback, useRef, useEffect } from 'react';
-import { MdSubtitles } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
+import { LuCaptions } from 'react-icons/lu';
 import { motion } from 'motion/react';
 
 import Select from './Select';
@@ -125,7 +125,7 @@ function PlaybackStreamSelector({
         </motion.div>
       )}
 
-      <MdSubtitles
+      <LuCaptions
         size={17}
         role="button"
         style={{ margin: '0 .45em', color: '#fff', opacity: 0.85, cursor: 'pointer' }}

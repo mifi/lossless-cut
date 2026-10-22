@@ -2,8 +2,7 @@ import type { CSSProperties } from 'react';
 import { Fragment, memo, useState } from 'react';
 import type { MotionStyle } from 'motion/react';
 import { motion } from 'motion/react';
-import { FaMouse } from 'react-icons/fa';
-import { LuArrowLeftToLine, LuArrowRightToLine, LuFilm } from 'react-icons/lu';
+import { LuArrowLeftToLine, LuArrowRightToLine, LuFilm, LuMouse } from 'react-icons/lu';
 import { useTranslation, Trans } from 'react-i18next';
 
 import SimpleModeButton from './components/SimpleModeButton';
@@ -85,7 +84,7 @@ function NoFileLoaded({ mifiLink, onClick, darkMode, keyBindingByAction }: {
       </div>
 
       <div style={{ ...hintStyle, marginTop: '1em' }}>
-        <Trans><CutpointIcon side="start" /> <CutpointIcon side="end" />, <Keys keys={keyBindingByAction['setCutStart']?.keys} /> <Keys keys={keyBindingByAction['setCutEnd']?.keys} /> or <span><kbd style={{ marginRight: '.1em' }}>{getModifier(segmentMouseModifierKey)}</kbd></span>+<FaMouse style={{ marginRight: '.1em', verticalAlign: 'middle' }} /> to set cutpoints</Trans>
+        <Trans><CutpointIcon side="start" /> <CutpointIcon side="end" />, <Keys keys={keyBindingByAction['setCutStart']?.keys} /> <Keys keys={keyBindingByAction['setCutEnd']?.keys} /> or <span><kbd style={{ marginRight: '.1em' }}>{getModifier(segmentMouseModifierKey)}</kbd></span>+<LuMouse style={{ marginRight: '.1em', verticalAlign: 'middle' }} /> to set cutpoints</Trans>
       </div>
 
       <div style={hintStyle} role="button" onClick={(e) => e.stopPropagation()}>

@@ -1,9 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { memo, useCallback, useEffect, useRef } from 'react';
-import { IoIosSettings } from 'react-icons/io';
-import { FaFilter, FaList, FaLock, FaMoon, FaSun, FaUnlock } from 'react-icons/fa';
-import { FiScissors } from 'react-icons/fi';
 import { useTranslation } from 'react-i18next';
+import { LuFilter, LuListVideo, LuLock, LuLockOpen, LuMoon, LuScissors, LuSettings, LuSun } from 'react-icons/lu';
 import Button from './components/Button';
 
 import ExportModeButton from './components/ExportModeButton';
@@ -69,14 +67,14 @@ function TopMenu({
   const actionTitle = useActionTitle();
   const workingDirButtonRef = useRef<HTMLButtonElement>(null);
 
-  const DarkMode = darkMode ? FaSun : FaMoon;
+  const DarkMode = darkMode ? LuSun : LuMoon;
 
   const onOutFormatLockedClick = useCallback(() => setOutFormatLocked((v) => (v ? undefined : fileFormat)), [fileFormat, setOutFormatLocked]);
 
   const showClearWorkingDirButton = !!customOutDir;
 
   function renderFormatLock() {
-    const Icon = outFormatLocked ? FaLock : FaUnlock;
+    const Icon = outFormatLocked ? LuLock : LuLockOpen;
     return (
       <Button>
         <Icon onClick={onOutFormatLockedClick} title={t('Lock/unlock output format')} style={{ fontSize: '.8em', color: outFormatLocked ? primaryTextColor : undefined }} />
@@ -108,7 +106,7 @@ function TopMenu({
       {customTitleBar && <AppMenuButton />}
 
       <div className={styles['brand']}>
-        <div className={styles['logo']}><FiScissors /></div>
+        <div className={styles['logo']}><LuScissors /></div>
         <div style={{ minWidth: 0 }}>
           <div className={styles['fileName']} title={filePath}>{filePath ? basename(filePath) : 'LosslessCut'}</div>
           {fileInfo && <div className={styles['fileInfo']}>{fileInfo}</div>}
@@ -124,7 +122,7 @@ function TopMenu({
       {filePath && (
         <>
           <Button onClick={withBlur(() => setStreamsSelectorShown(true))}>
-            <FaList style={{ fontSize: '.8em' }} />
+            <LuListVideo style={{ fontSize: '.8em' }} />
             {t('Tracks')} ({numStreamsToCopy}/{numStreamsTotal})
           </Button>
 
@@ -133,14 +131,14 @@ function TopMenu({
               onClick={withBlur(() => applyEnabledStreamsFilter())}
               title={actionTitle(t('Toggle tracks using current filter'), 'toggleStripCurrentFilter')}
             >
-              <FaFilter style={{ fontSize: '.8em' }} />
+              <LuFilter style={{ fontSize: '.8em' }} />
             </Button>
           )}
 
           <Button
             onClick={changeEnabledStreamsFilter}
           >
-            {enabledStreamsFilter == null && <FaFilter style={{ fontSize: '.8em' }} />}
+            {enabledStreamsFilter == null && <LuFilter style={{ fontSize: '.8em' }} />}
             {t('Filter tracks')}
           </Button>
         </>
@@ -171,7 +169,7 @@ function TopMenu({
       )}
 
       <Button onClick={toggleSettings} title={actionTitle(t('Settings'), 'toggleSettings')}>
-        <IoIosSettings style={{ fontSize: '1.1em' }} />
+        <LuSettings style={{ fontSize: '1.1em' }} />
       </Button>
 
       {filePath && (

@@ -2,8 +2,7 @@ import type { CSSProperties, ClipboardEvent, Dispatch, FormEvent, KeyboardEvent,
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { FaExclamationTriangle } from 'react-icons/fa';
-import { LuArrowLeftToLine, LuArrowRightToLine, LuAudioWaveform, LuCamera, LuChevronFirst, LuChevronLast, LuChevronLeft, LuChevronRight, LuDiamond, LuGauge, LuImages, LuKeyRound, LuPause, LuPlay, LuRotateCcw, LuSkipBack, LuSkipForward, LuTrash2, LuZoomIn } from 'react-icons/lu';
+import { LuArrowLeftToLine, LuArrowRightToLine, LuAudioWaveform, LuCamera, LuChevronFirst, LuChevronLast, LuChevronLeft, LuChevronRight, LuDiamond, LuGauge, LuImages, LuKeyRound, LuPause, LuPlay, LuRotateCcw, LuSkipBack, LuSkipForward, LuTrash2, LuTriangleAlert, LuZoomIn } from 'react-icons/lu';
 // import useTraceUpdate from 'use-trace-update';
 import invariant from 'tiny-invariant';
 
@@ -551,7 +550,7 @@ function BottomBar({
             </button>
           )}
 
-          {!exportConfirmEnabled && (<FaExclamationTriangle style={{ color: dangerColor, margin: '0 .3em' }} title={t('Export options screen is disabled, and you will not see any important notices or warnings.')} />)}
+          {!exportConfirmEnabled && (<LuTriangleAlert style={{ color: dangerColor, margin: '0 .3em' }} title={t('Export options screen is disabled, and you will not see any important notices or warnings.')} />)}
           {(!simpleMode || !exportConfirmEnabled) && <ToggleExportConfirm size={19} style={{ margin: '0 .3em' }} />}
 
           <SimpleModeButton style={{ margin: '0 .3em' }} />

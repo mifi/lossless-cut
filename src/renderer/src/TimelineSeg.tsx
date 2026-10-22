@@ -1,7 +1,7 @@
 import { memo, useCallback, useMemo } from 'react';
+import { LuSave, LuTrash2 } from 'react-icons/lu';
 import type { MotionStyle } from 'motion/react';
 import { motion, AnimatePresence } from 'motion/react';
-import { FaSave, FaTrashAlt } from 'react-icons/fa';
 import type { ColorInstance } from 'color';
 
 import useUserSettings from './hooks/useUserSettings';
@@ -181,7 +181,7 @@ function Segment({
             exit={{ scale: 0 }}
             style={{ flexShrink: 1 }}
           >
-            <FaTrashAlt style={{ display: 'block', width: '100%', minWidth: '.4em', color: 'currentColor', marginRight: '.1em' }} />
+            <LuTrash2 style={{ display: 'block', width: '100%', minWidth: '.4em', color: 'currentColor', marginRight: '.1em' }} />
           </motion.div>
         )}
         {!invertCutSegments && !seg.name && (
@@ -191,7 +191,7 @@ function Segment({
             exit={{ scale: 0 }}
             style={{ flexShrink: 1 }}
           >
-            <FaSave style={{ display: 'block', width: '100%', minWidth: '.4em', color: 'currentColor', marginRight: '.1em' }} />
+            <LuSave style={{ display: 'block', width: '100%', minWidth: '.4em', color: 'currentColor', marginRight: '.1em' }} />
           </motion.div>
         )}
       </AnimatePresence>

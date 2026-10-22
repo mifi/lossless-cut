@@ -1,14 +1,12 @@
 import type { CSSProperties, ReactEventHandler, FocusEventHandler, DragEventHandler } from 'react';
 import { memo, useEffect, useState, useCallback, useRef, useMemo } from 'react';
-import { FaRegTimesCircle } from 'react-icons/fa';
-import { MdRotate90DegreesCcw } from 'react-icons/md';
 import { AnimatePresence, MotionConfig } from 'motion/react';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
+import { LuCircleX, LuPanelRight, LuRotateCcw } from 'react-icons/lu';
 import { produce } from 'immer';
 import screenfull from 'screenfull';
 import type { IpcRendererEvent } from 'electron';
-import { IoMdMenu } from 'react-icons/io';
 import fromPairs from 'lodash/fromPairs';
 import sum from 'lodash/sum';
 import invariant from 'tiny-invariant';
@@ -2626,7 +2624,7 @@ function App() {
                       <div style={{ position: 'absolute', top: 0, right: 0, left: 0, marginTop: '1em', marginLeft: '1em', color: 'var(--gray-12)', opacity: 0.7, display: 'flex', alignItems: 'center', pointerEvents: 'none' }}>
                         {isRotationSet ? (
                           <>
-                            <MdRotate90DegreesCcw size={26} style={{ marginRight: 5 }} />
+                            <LuRotateCcw size={26} style={{ marginRight: 5 }} />
                             {t('Rotation preview')}
                           </>
                         ) : (
@@ -2637,7 +2635,7 @@ function App() {
 
                         <div style={{ cursor: 'pointer', pointerEvents: 'initial', color: 'var(--gray-12)', opacity: 0.7, padding: '.2em', marginLeft: '.5em' }} role="button" onClick={() => incrementMediaSourceQuality()} title={t('Select playback quality')}>{mediaSourceQualities[mediaSourceQuality]}</div>
 
-                        {!compatPlayerRequired && <FaRegTimesCircle role="button" style={{ cursor: 'pointer', pointerEvents: 'initial', verticalAlign: 'middle', padding: '.2em' }} onClick={handleHideCompatPlayerClick} />}
+                        {!compatPlayerRequired && <LuCircleX role="button" style={{ cursor: 'pointer', pointerEvents: 'initial', verticalAlign: 'middle', padding: '.2em' }} onClick={handleHideCompatPlayerClick} />}
                       </div>
                     )}
 
@@ -2650,7 +2648,7 @@ function App() {
                         )}
 
                         {!showRightBar && (
-                          <IoMdMenu
+                          <LuPanelRight
                             title={t('Show sidebar')}
                             size={18}
                             role="button"

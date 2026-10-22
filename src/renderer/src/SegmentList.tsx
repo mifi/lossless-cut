@@ -1,7 +1,7 @@
 import type { SetStateAction, Dispatch, MouseEventHandler, CSSProperties } from 'react';
 import { memo, useMemo, useRef, useCallback, useState, useEffect } from 'react';
-import { FaYinYang, FaSave } from 'react-icons/fa';
-import { LuArrowDown01, LuCircle, LuCircleCheck, LuListChecks, LuMinus, LuPlus, LuSquareSplitHorizontal, LuTag, LuX } from 'react-icons/lu';
+import { FaYinYang } from 'react-icons/fa';
+import { LuArrowDown01, LuCircle, LuCircleCheck, LuListChecks, LuMinus, LuPlus, LuSave, LuSquareSplitHorizontal, LuTag, LuX } from 'react-icons/lu';
 import { motion } from 'motion/react';
 import { useTranslation, Trans } from 'react-i18next';
 import type { DragEndEvent, DragStartEvent, UniqueIdentifier } from '@dnd-kit/core';
@@ -159,7 +159,7 @@ const Segment = memo(({
 
   function renderNumber() {
     if (invertCutSegments || !('segColorIndex' in seg)) {
-      return <FaSave style={{ color: saveColor, marginRight: '.2em', verticalAlign: 'middle' }} size={14} />;
+      return <LuSave style={{ color: saveColor, marginRight: '.2em', verticalAlign: 'middle' }} size={14} />;
     }
 
     return (
@@ -628,7 +628,7 @@ function SegmentList({
 
             <Dialog.ButtonRow>
               <DialogButton onClick={onSegmentTagsConfirm} disabled={editingTag != null} primary>
-                <FaSave style={{ verticalAlign: 'baseline', fontSize: '.8em', marginRight: '.3em' }} />
+                <LuSave style={{ verticalAlign: 'baseline', fontSize: '.8em', marginRight: '.3em' }} />
                 {t('Save')}
               </DialogButton>
             </Dialog.ButtonRow>
