@@ -130,7 +130,7 @@ export default function Home() {
       <WhiteSection>
         <div className="comparison" style={{ maxWidth: '700px' }}>
           <h2 style={{ margin: '20px 0' }}>Traditional video editors</h2>
-          <img loading="lazy" src={generationLossReencoded} alt="Generational compression artifacts from re-encoding" className="comparison-image" />
+          <img loading="lazy" src={generationLossReencoded.src} srcSet={generationLossReencoded.srcSet} alt="Generational compression artifacts from re-encoding" className="comparison-image" />
 
           <p>
             Any operation in a <b className="key-point">normal video editor</b><br />
@@ -142,7 +142,7 @@ export default function Home() {
 
         <div className="comparison" style={{ maxWidth: '800px' }}>
           <h2 style={{ marginTop: '40px', marginBottom: '20px' }}><a style={{ color: 'inherit', textDecoration: 'none' }} href="/">LosslessCut<span style={{ opacity: '0.6' }}>.app</span></a></h2>
-          <img loading="lazy" alt="The original, without generational compression artifacts" src={generationLossOriginal} className="comparison-image" />
+          <img loading="lazy" alt="The original, without generational compression artifacts" src={generationLossOriginal.src} srcSet={generationLossOriginal.srcSet} className="comparison-image" />
           <p>
             LosslessCut will do the same <b className="key-point">in seconds</b> without losing quality
           </p>
