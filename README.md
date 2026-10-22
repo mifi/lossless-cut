@@ -64,7 +64,7 @@ If you prefer to download the executables manually, this will of course always b
 - [More releases](https://github.com/mifi/lossless-cut/releases) - Note that APPX (Windows) and PKG (macOS) do **not** work
 - [Latest nightly builds 🧪](https://mifi.no/llc/nightly/)
 
-Note that the above are the [only official downloads](https://losslesscut.app/docs#faq). There are also unofficial releases like [Flathub](https://flathub.org/apps/details/no.mifi.losslesscut) (not maintained by me). Difference between App Stores and GitHub download? [Please see FAQ](https://losslesscut.app/docs#faq).
+Note that the above are the [only official downloads](https://losslesscut.app/docs/faq#can-i-download-losslesscut-from-other-websites-or-package-managers). There are also unofficial releases like [Flathub](https://flathub.org/apps/details/no.mifi.losslesscut) (not maintained by me). Difference between App Stores and GitHub download? [Please see FAQ](https://losslesscut.app/docs/faq#is-losslesscut-free-whats-the-difference-between-the-app-store-and-github-versions).
 
 [![](./donate.svg)](https://mifi.no/thanks)
 
@@ -79,7 +79,9 @@ LosslessCut uses the Chromium browser's HTML5 video player, and not all formats/
 ## Documentation
 
 - Official website: [LosslessCut.app](https://losslesscut.app)
-- **[Getting started, FAQ and usage documentation](https://losslesscut.app/docs)**
+- **[Getting started](https://losslesscut.app/docs/getting-started)**
+- [FAQ](https://losslesscut.app/docs/faq)
+- [Usage documentation](https://losslesscut.app/docs)
 - [Troubleshooting and known issues and limitations](https://losslesscut.app/docs/troubleshooting)
 - [Contributing](CONTRIBUTING.md)
 

@@ -1,6 +1,7 @@
 // The homepage content. Rendered to static HTML at build time (no client-side JavaScript, except a small script in index.astro for
 // the hero video's pause button and the feature icon animation).
 import type { CSSProperties, ReactNode } from 'react';
+import { Fragment } from 'react';
 import type { IconNode } from 'lucide';
 import { Combine, Film, Layers, ListOrdered, RefreshCw, ScanSearch, Scissors, SquarePen, Terminal } from 'lucide';
 import type { IconNode as ReactIconNode } from 'lucide-react';
@@ -13,6 +14,7 @@ import logo from '../../../src/renderer/src/icon.svg?url';
 
 import type { Video } from '../images.ts';
 import { background1, background2, generationLossOriginal, generationLossReencoded, heroVideo, sceneChangesVideo, tracksScreenshot } from '../images.ts';
+import type { Release } from '../latestRelease.ts';
 import { authorUrl, donateUrl, githubUrl, socialLinks, storeUrls, supportEmail } from '../links.ts';
 import socialIconPaths from './socialIcons.ts';
 
@@ -51,6 +53,22 @@ const usageScenarios = [
   'Add music to a video, or replace its audio track',
   'Join clips from the same camera or phone into one file',
   'Cut a file by its MP4/MKV chapters',
+];
+
+// A few from docs/faq.md, shortened
+const faqs: { question: string, answer: ReactNode }[] = [
+  {
+    question: 'Why is it not free on the App Stores but free on GitHub?',
+    answer: 'I initially only released LosslessCut as a direct download from GitHub, as an unsigned/untrusted exe/binary file download. People were complaining that it\'s hard to download/install the unsigned exe file, as they need to go through these dialogs saying that this file is a threat to your computer, and anti-virus complaining about executables downloaded from the internet. Some wanted a way to automatically update the app when new versions are out. This can both be achieved by downloading through the MS and Apple App Store. Microsoft charges money for signing binaries and a yearly fee for publishing to the Microsoft Store. Therefore I decided I can sell it in the MS Store for those who want to support my continued work and want to have the benefits it gives, while at the same time providing more experimental unsigned downloads as usual. Of course anyone is also free to build LosslessCut from source code.',
+  },
+  {
+    question: 'Is LosslessCut safe?',
+    answer: <>Yes, if you get it from this website, GitHub or the app stores. It&apos;s open source, and it has no ads or tracking (see the <a href="/privacy-policy">privacy policy</a>). The app store versions are also reviewed by Apple and Microsoft.</>,
+  },
+  {
+    question: 'Which operating systems does it run on?',
+    answer: <>Windows 10 and 11, macOS 12 or newer, and Linux (x64 and arm64). See <a href="/docs/requirements">supported OS versions</a>.</>,
+  },
 ];
 
 const storeBadges = [
@@ -150,7 +168,7 @@ function StoreBadges({ height }: { height: number }) {
 const formatStars = (stars: number) => (stars >= 1000 ? `${Math.floor(stars / 1000)}k+` : String(stars));
 
 // stars: the GitHub star count, fetched at build time by index.astro (see githubStars.ts)
-export default function Home({ stars }: { stars: number }) {
+export default function Home({ stars, release }: { stars: number, release: Release | undefined }) {
   return (
     <div className="page">
       <header className="hero" style={{ backgroundImage: `linear-gradient(160deg, rgba(11, 52, 56, 0.93), rgba(40, 40, 40, 0.96) 65%), url(${background1})` }}>
@@ -271,6 +289,12 @@ export default function Home({ stars }: { stars: number }) {
 
           <StoreBadges height={50} />
 
+          <ul className="download-facts">
+            {release && <li>Latest version {release.version} ({release.date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })})</li>}
+            <li><a href="/docs/requirements">Windows 10 and 11, macOS 12 or newer, Linux</a></li>
+            <li><a href="/docs/faq#is-losslesscut-safe">Is it safe?</a></li>
+          </ul>
+
           <p className="official-sources">
             ⚠️ Beware of unofficial websites and app distributors. The only official sources of LosslessCut are this website, <a href={githubUrl}>GitHub</a> and the app stores above.
           </p>
@@ -279,14 +303,14 @@ export default function Home({ stars }: { stars: number }) {
 
       <div className="faq">
         <h2>FAQ</h2>
-        <p style={{ marginBottom: '0' }}>
-          Why is it not free on the App Stores but free on GitHub?
-        </p>
-        <p className="faq-answer">
-          I initially only released LosslessCut as a direct download from GitHub, as an unsigned/untrusted exe/binary file download. People were complaining that it&apos;s hard to download/install the unsigned exe file, as they need to go through these dialogs saying that this file is a threat to your computer, and anti-virus complaining about executables downloaded from the internet. Some wanted a way to automatically update the app when new versions are out. This can both be achieved by downloading through the MS and Apple App Store. Microsoft charges money for signing binaries and a yearly fee for publishing to the Microsoft Store. Therefore I decided I can sell it in the MS Store for those who want to support my continued work and want to have the benefits it gives, while at the same time providing more experimental unsigned downloads as usual. Of course anyone is also free to build LosslessCut from source code.
-        </p>
+        {faqs.map(({ question, answer }) => (
+          <Fragment key={question}>
+            <p className="faq-question">{question}</p>
+            <p className="faq-answer">{answer}</p>
+          </Fragment>
+        ))}
 
-        <a className="more-faq" href="/docs#faq">More FAQ...</a>
+        <a className="more-faq" href="/docs/faq">More FAQ...</a>
       </div>
 
       <div style={{ minHeight: '200px' }}>

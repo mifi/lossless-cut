@@ -1,8 +1,9 @@
 // schema.org data for the homepage (https://schema.org/SoftwareApplication).
 import { ogImage } from './images.ts';
+import type { Release } from './latestRelease.ts';
 import { authorUrl, githubUrl, socialLinks, storeUrls } from './links.ts';
 
-export default {
+export default (release: Release | undefined) => ({
   '@context': 'https://schema.org',
   '@graph': [
     {
@@ -18,6 +19,9 @@ export default {
       applicationCategory: 'MultimediaApplication',
       operatingSystem: 'Windows, macOS, Linux',
       image: ogImage,
+      ...(release && { softwareVersion: release.version }),
+      // free from GitHub
+      offers: { '@type': 'Offer', price: 0, priceCurrency: 'USD' },
       license: 'https://www.gnu.org/licenses/old-licenses/gpl-2.0.html',
       author: {
         '@type': 'Person',
@@ -31,4 +35,4 @@ export default {
       ],
     },
   ],
-};
+});
