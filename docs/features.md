@@ -16,6 +16,7 @@ Here's everything it can do, and what people use it for. Which functions are ava
 - Play or loop the current segment, or all selected segments in order
 - [Smart cut](https://github.com/mifi/lossless-cut/issues/126) (experimental), to allow cutting between keyframes. It doesn't work for all files.
 - Choose between keyframe cut and normal cut, and fine-tune other export options
+- Optional **Full re-encode (H.264/AAC MP4)** in Export options for frame-accurate cuts without keyframe restrictions. Re-encodes each complete segment using CRF 18, the fast preset, and AAC 192 kbit/s; slower, with some quality loss. Remembers the selection, sets MP4 automatically, and bypasses Smart cut. Includes selected video and audio tracks from the main file at normal output speed.
 - Extremely fast removal of all non-keyframes, "Decimate video" (for example for a timelapse)
 - Speed up or slow down a video or audio file ([by changing the FPS](https://github.com/mifi/lossless-cut/issues/1712)). Do this as a separate step, not while cutting.
 - Lossless crop and aspect ratio change of H.264/H.265 video (not all players respect it)

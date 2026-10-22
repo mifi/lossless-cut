@@ -167,7 +167,7 @@ function App() {
   const [cacheBuster, setCacheBuster] = useState(0);
   const [currentFileExportCount, setCurrentFileExportCount] = useState(0);
 
-  const { fileFormat, setFileFormat, detectedFileFormat, setDetectedFileFormat, isCustomFormatSelected } = useFileFormatState();
+  const { fileFormat: selectedFileFormat, setFileFormat, detectedFileFormat, setDetectedFileFormat, isCustomFormatSelected: isCustomLosslessFormatSelected } = useFileFormatState();
 
   // State per application launch
   const [ffmpegInfo, setFfmpegInfo] = useState<Awaited<ReturnType<typeof runStartupCheck>>>();
@@ -193,8 +193,13 @@ function App() {
   const [selectedBatchFiles, setSelectedBatchFiles] = useState<string[]>([]);
 
   const allUserSettings = useUserSettingsRoot();
-  const { captureFormat, keyframeCut, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, avoidNegativeTs, autoMerge, timecodeFormat, invertCutSegments, autoExportExtraStreams, askBeforeClose, enableImportChapters, enableAskForFileOpenAction, playbackVolume, autoSaveProjectFile, wheelSensitivity, waveformHeight, invertTimelineScroll, language, ffmpegExperimental, hideNotifications, hideOsNotifications, autoLoadTimecode, autoDeleteMergedSegments, exportConfirmEnabled, segmentsToChapters, simpleMode, cutFileTemplate, cutMergedFileTemplate, mergedFileTemplate, keyboardSeekAccFactor, keyboardNormalSeekSpeed, keyboardSeekSpeed2, keyboardSeekSpeed3, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, outFormatLocked, safeOutputFileName, enableAutoHtml5ify, segmentsToChaptersOnly, keyBindings, enableSmartCut, customFfPath, storeProjectInWorkingDir, enableOverwriteOutput, mouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, captureFrameMethod, captureFrameQuality, captureFrameFileNameFormat, enableNativeHevc, cleanupChoices, preferStrongColors, outputFileNameMinZeroPadding, cutFromAdjustmentFrames, cutToAdjustmentFrames, waveformMode: waveformModePreference, thumbnailsEnabled, keyframesEnabled, reducedMotion, ffmpegHwaccel, videoFit } = allUserSettings.settings;
+  const { captureFormat, keyframeCut, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, avoidNegativeTs, autoMerge, timecodeFormat, invertCutSegments, autoExportExtraStreams, askBeforeClose, enableImportChapters, enableAskForFileOpenAction, playbackVolume, autoSaveProjectFile, wheelSensitivity, waveformHeight, invertTimelineScroll, language, ffmpegExperimental, hideNotifications, hideOsNotifications, autoLoadTimecode, autoDeleteMergedSegments, exportConfirmEnabled, segmentsToChapters, simpleMode, cutFileTemplate, cutMergedFileTemplate, mergedFileTemplate, keyboardSeekAccFactor, keyboardNormalSeekSpeed, keyboardSeekSpeed2, keyboardSeekSpeed3, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, outFormatLocked, safeOutputFileName, enableAutoHtml5ify, segmentsToChaptersOnly, keyBindings, enableSmartCut, fullEncode, customFfPath, storeProjectInWorkingDir, enableOverwriteOutput, mouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, captureFrameMethod, captureFrameQuality, captureFrameFileNameFormat, enableNativeHevc, cleanupChoices, preferStrongColors, outputFileNameMinZeroPadding, cutFromAdjustmentFrames, cutToAdjustmentFrames, waveformMode: waveformModePreference, thumbnailsEnabled, keyframesEnabled, reducedMotion, ffmpegHwaccel, videoFit } = allUserSettings.settings;
   const { setCaptureFormat, setCustomOutDir, setKeyframeCut, setPlaybackVolume, setExportConfirmEnabled, setSimpleMode, setOutFormatLocked, setSafeOutputFileName, setKeyBindings, resetKeyBindings, setStoreProjectInWorkingDir, setCleanupChoices, darkMode, toggleDarkMode, setWaveformMode, setThumbnailsEnabled, setKeyframesEnabled, prefersReducedMotion, customOutDir } = allUserSettings;
+
+  // Full encoding always produces MP4; keep the lossless container choice so
+  // switching back restores it, including for files opened while this is enabled.
+  const fileFormat = fullEncode ? 'mp4' : selectedFileFormat;
+  const isCustomFormatSelected = fullEncode || isCustomLosslessFormatSelected;
 
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(!simpleMode);
 
@@ -593,12 +598,12 @@ function App() {
   const shouldShowWaveform = calcShouldShowWaveform(zoomedDuration) || overviewWaveform != null;
 
   const areWeCutting = useMemo(() => segmentsToExport.some(({ start, end }) => isCuttingStart(start) || isCuttingEnd(end, fileDuration)), [fileDuration, segmentsToExport]);
-  const needSmartCut = areWeCutting && enableSmartCut;
-  const isEncoding = needSmartCut || lossyMode != null;
+  const needSmartCut = areWeCutting && enableSmartCut && !fullEncode;
+  const isEncoding = fullEncode || needSmartCut || lossyMode != null;
 
   const {
     concatFiles, html5ifyDummy, cutMultiple, concatCutSegments, html5ify, fixInvalidDuration, decimate, extractStreams, tryDeleteFiles,
-  } = useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, isEncoding, lossyMode, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, cutToAdjustmentFrames, appendLastCommandsLog, encCustomBitrate: encBitrate, appendFfmpegCommandLog, ffmpegHwaccel });
+  } = useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, isEncoding, fullEncode, lossyMode, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, cutToAdjustmentFrames, appendLastCommandsLog, encCustomBitrate: encBitrate, appendFfmpegCommandLog, ffmpegHwaccel });
 
   const { previewFilePath, setPreviewFilePath, usingDummyVideo, setUsingDummyVideo, userHtml5ifyCurrentFile, convertFormatBatch, html5ifyAndLoadWithPreferences } = useHtml5ify({
     filePath, hasVideo, hasAudio, workingRef, setWorking, ensureWritableOutDir, customOutDir, batchFiles, enableAutoHtml5ify, setProgress, html5ify, html5ifyDummy, withErrorHandling, showGenericDialog,
@@ -1202,7 +1207,7 @@ function App() {
         }
       }
 
-      if (areWeCutting) notices.add(i18n.t('Cutpoints may be inaccurate.'));
+      if (areWeCutting && !fullEncode) notices.add(i18n.t('Cutpoints may be inaccurate.'));
 
       if (simpleMode && !prefersReducedMotion) shootConfetti({ ticks: 50 });
 
@@ -1261,7 +1266,7 @@ function App() {
       setWorking(undefined);
       setProgress(undefined);
     }
-  }, [filePath, numStreamsToCopy, haveInvalidSegs, workingRef, setWorking, segmentsToChaptersOnly, cutFileTemplateOrDefault, generateCutFileNames, cutMultiple, outputDir, customOutDir, fileFormat, fileDuration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, segmentsToExport, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, avoidNegativeTs, paramsByFile, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormat, mainStreams, exportExtraStreams, areWeCutting, simpleMode, prefersReducedMotion, cleanupChoices, hideAllNotifications, segmentsOrInverse.selected, t, cutMergedFileTemplateOrDefault, segmentsToChapters, invertCutSegments, generateCutMergedFileNames, concatCutSegments, autoDeleteMergedSegments, tryDeleteFiles, nonCopiedExtraStreams, extractStreams, askForCleanupChoices, cleanupFiles, showOsNotification, openCutFinishedDialog, handleExportFailed]);
+  }, [fullEncode, filePath, numStreamsToCopy, haveInvalidSegs, workingRef, setWorking, segmentsToChaptersOnly, cutFileTemplateOrDefault, generateCutFileNames, cutMultiple, outputDir, customOutDir, fileFormat, fileDuration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, segmentsToExport, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, avoidNegativeTs, paramsByFile, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormat, mainStreams, exportExtraStreams, areWeCutting, simpleMode, prefersReducedMotion, cleanupChoices, hideAllNotifications, segmentsOrInverse.selected, t, cutMergedFileTemplateOrDefault, segmentsToChapters, invertCutSegments, generateCutMergedFileNames, concatCutSegments, autoDeleteMergedSegments, tryDeleteFiles, nonCopiedExtraStreams, extractStreams, askForCleanupChoices, cleanupFiles, showOsNotification, openCutFinishedDialog, handleExportFailed]);
 
   const onExportPress = useCallback(async () => {
     if (!filePath) return;
@@ -2481,8 +2486,8 @@ function App() {
   }, []);
 
   const renderOutFmt = useCallback((style: CSSProperties) => (
-    <OutputFormatSelect style={style} detectedFileFormat={detectedFileFormat} fileFormat={fileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
-  ), [detectedFileFormat, fileFormat, onOutputFormatUserChange]);
+    fullEncode ? <span style={style}>MP4 (H.264/AAC)</span> : <OutputFormatSelect style={style} detectedFileFormat={detectedFileFormat} fileFormat={fileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
+  ), [detectedFileFormat, fileFormat, fullEncode, onOutputFormatUserChange]);
 
   const onTunerRequested = useCallback((type: TunerType) => {
     setSettingsVisible(false);
@@ -2861,7 +2866,7 @@ function App() {
                   </Dialog.Portal>
                 </Dialog.Root>
 
-                <ConcatDialog isShown={batchFiles.length > 0 && concatDialogOpen} onHide={() => setConcatDialogOpen(false)} paths={batchFilePaths} mergedFileTemplate={mergedFileTemplateOrDefault} generateMergedFileNames={generateMergedFileNames} onConcat={userConcatFiles} setAlwaysConcatMultipleFiles={setAlwaysConcatMultipleFiles} alwaysConcatMultipleFiles={alwaysConcatMultipleFiles} fileFormat={fileFormat} setFileFormat={setFileFormat} detectedFileFormat={detectedFileFormat} setDetectedFileFormat={setDetectedFileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
+                <ConcatDialog isShown={batchFiles.length > 0 && concatDialogOpen} onHide={() => setConcatDialogOpen(false)} paths={batchFilePaths} mergedFileTemplate={mergedFileTemplateOrDefault} generateMergedFileNames={generateMergedFileNames} onConcat={userConcatFiles} setAlwaysConcatMultipleFiles={setAlwaysConcatMultipleFiles} alwaysConcatMultipleFiles={alwaysConcatMultipleFiles} fileFormat={selectedFileFormat} setFileFormat={setFileFormat} detectedFileFormat={detectedFileFormat} setDetectedFileFormat={setDetectedFileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
 
                 <KeyboardShortcuts isShown={keyboardShortcutsVisible} onHide={() => setKeyboardShortcutsVisible(false)} keyBindings={keyBindings} setKeyBindings={setKeyBindings} currentCutSeg={currentCutSeg} resetKeyBindings={resetKeyBindings} getKeyboardAction={getKeyboardAction} />
 
