@@ -10,7 +10,7 @@ See the [❓ FAQ](faq.md), for example [is LosslessCut free?](faq.md#is-lossless
 
 If you have a problem with the app or with a file, please see the [🤔 Troubleshooting, known issues and limitations](troubleshooting.md).
 
-## Usage
+## Usage: Typical workflow
 
 New to LosslessCut? See [🚀 Getting started](getting-started.md) for a typical workflow.
 

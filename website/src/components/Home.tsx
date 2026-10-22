@@ -55,6 +55,9 @@ const usageScenarios = [
   'Cut a file by its MP4/MKV chapters',
 ];
 
+// as in docs/requirements.md
+const supportedOs = 'Windows 10 and 11, macOS 12 or newer, Linux';
+
 // A few from docs/faq.md, shortened
 const faqs: { question: string, answer: ReactNode }[] = [
   {
@@ -63,11 +66,11 @@ const faqs: { question: string, answer: ReactNode }[] = [
   },
   {
     question: 'Is LosslessCut safe?',
-    answer: <>Yes, if you get it from this website, GitHub or the app stores. It&apos;s open source, and it has no ads or tracking (see the <a href="/privacy-policy">privacy policy</a>). The app store versions are also reviewed by Apple and Microsoft.</>,
+    answer: <>Yes, if you get it from this website, GitHub or the app stores. It&apos;s open source, and it has no ads or tracking (see the <a href="/privacy-policy">privacy policy</a>).</>,
   },
   {
     question: 'Which operating systems does it run on?',
-    answer: <>Windows 10 and 11, macOS 12 or newer, and Linux (x64 and arm64). See <a href="/docs/requirements">supported OS versions</a>.</>,
+    answer: <>{supportedOs}. See <a href="/docs/requirements">supported OS versions</a>.</>,
   },
 ];
 
@@ -293,7 +296,7 @@ export default function Home({ stars, release }: { stars: number, release: Relea
 
           <ul className="download-facts">
             {release && <li>Latest version {release.version} ({release.date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })})</li>}
-            <li><a href="/docs/requirements">Windows 10 and 11, macOS 12 or newer, Linux</a></li>
+            <li><a href="/docs/requirements">{supportedOs}</a></li>
             <li><a href="/docs/faq#is-losslesscut-safe">Is it safe?</a></li>
           </ul>
 

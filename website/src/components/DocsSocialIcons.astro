@@ -18,6 +18,12 @@ import Default from '@astrojs/starlight/components/SocialIcons.astro';
     text-decoration: none;
     white-space: nowrap;
   }
+  /* the header is too narrow for it there: it would push the theme picker off the screen (below 50rem it's in the menu) */
+  @media (min-width: 50rem) and (max-width: 56rem) {
+    .docs-download {
+      display: none;
+    }
+  }
   .docs-download:hover {
     background-color: #166b75;
     color: white;

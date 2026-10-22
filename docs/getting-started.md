@@ -2,7 +2,7 @@
 
 ## Download and install
 
-Get LosslessCut from the [Mac App Store, Microsoft Store or Snap Store](https://losslesscut.app/#download), which install and update it automatically, or download it from [GitHub](../README.md#download). The GitHub version has no installer: see [Installation and files](installation.md). LosslessCut runs on Windows 10 and 11, macOS 12 or newer and Linux, see [Supported OS versions](requirements.md).
+Get LosslessCut from the [Mac App Store, Microsoft Store or Snap Store](https://losslesscut.app/#download), which install and update it automatically, or download it from [GitHub](../README.md#download). The GitHub version has no installer: see [Installation and files](installation.md). It runs on Windows, macOS and Linux, see [Supported OS versions](requirements.md).
 
 ## Your first cut
 

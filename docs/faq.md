@@ -6,13 +6,13 @@ Frequently asked questions. See also [🤔 Troubleshooting](troubleshooting.md) 
 
 ### Is LosslessCut free? What's the difference between the app store and GitHub versions?
 
-LosslessCut is free and open source, and you can download it for free from [GitHub](https://github.com/mifi/lossless-cut/releases). The versions in the Mac App Store and Microsoft Store cost a little, which supports my work on LosslessCut. They're signed, so you don't get warnings when installing them, and they update automatically.
+LosslessCut is free and open source, and you can download it for free from [GitHub](https://github.com/mifi/lossless-cut/releases). The versions in the Mac App Store and Microsoft Store cost a little, which supports my work on LosslessCut. They update automatically, and on Windows they're signed, so you don't get warnings when installing them.
 
-The app store versions are often a few versions behind the latest GitHub version, because I want to be sure that a new version works well before releasing it there. Consider the newest GitHub versions a public "beta". The app store and GitHub versions have the same features, except for a few platform limitations: Apple doesn't allow app store apps to open VOB files, and Mac App Store apps run in a sandbox, so they need to ask for an output folder before they can write files.
+The app store versions are often a few versions behind the latest GitHub version, because I want to be sure that a new version works well before releasing it there. The GitHub versions contain new, untested features and may contain some bugs (even in existing functionality): I consider the newest GitHub versions to be a public "beta". The app store and GitHub versions have the same features, except for a few platform limitations: Apple doesn't allow app store apps to open VOB files, and Mac App Store apps run in a sandbox, so they need to ask for an output folder before they can write files.
 
 ### Is LosslessCut safe?
 
-Yes, if you get it from an [official source](#can-i-download-losslesscut-from-other-websites-or-package-managers). LosslessCut is open source, so anyone can read its code, and the GitHub releases are built from that code by GitHub Actions. The app store versions are also reviewed by Apple and Microsoft. The Windows version on GitHub isn't code signed, so Windows and antivirus software may warn about it. LosslessCut has no ads or tracking, see the [privacy policy](https://losslesscut.app/privacy-policy).
+Yes, if you get it from an [official source](#can-i-download-losslesscut-from-other-websites-or-package-managers). LosslessCut is open source, so anyone can read its code, and the GitHub releases are built from that code by GitHub Actions. The Windows version on GitHub isn't code signed, so Windows and antivirus software may warn about it. LosslessCut has no ads or tracking, see the [privacy policy](https://losslesscut.app/privacy-policy).
 
 ### Can I download LosslessCut from other websites or package managers?
 
@@ -20,7 +20,7 @@ Only the [official sources](../README.md#download) (losslesscut.app, GitHub and 
 
 ### Which operating systems does it run on?
 
-Windows 10 and 11, macOS 12 or newer, and Linux (x64 and arm64). See [Supported OS versions](requirements.md).
+Windows, macOS and Linux. See [Supported OS versions](requirements.md) for which versions.
 
 ### How do I update LosslessCut?
 
@@ -28,7 +28,7 @@ The app store versions update automatically. The GitHub version checks for new v
 
 ### How does LosslessCut compare to other video editors?
 
-LosslessCut only does what it can without re-encoding, which makes it very fast and keeps the original quality. Video editors like DaVinci Resolve, Premiere or Shotcut, and converters like HandBrake, re-encode the video, which is slow and loses some quality each time, but they can do much more, like effects, transitions or making the file smaller. See [Commonly requested features](#commonly-requested-features) and the [primer on codecs and formats](index.md#primer-videoaudio-codecs-vs-formats).
+LosslessCut is built around cutting without re-encoding, which makes it very fast and keeps the original quality. Video editors like DaVinci Resolve, Premiere or Shotcut, and converters like HandBrake, re-encode the video, which is slow and loses some quality each time, but they can do much more, like effects, transitions or making the file smaller. See [Commonly requested features](#commonly-requested-features) and the [primer on codecs and formats](index.md#primer-videoaudio-codecs-vs-formats).
 
 ### Is LosslessCut a portable app? Where are settings and temporary files stored?
 

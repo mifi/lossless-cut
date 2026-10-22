@@ -562,6 +562,9 @@ h2 {
   margin-bottom: 0;
   max-width: 800px;
 }
+.faq-answer a {
+  color: inherit;
+}
 .faq-answer {
   max-width: 800px;
   font-size: 85%;

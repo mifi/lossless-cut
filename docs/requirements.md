@@ -1,5 +1,7 @@
 # Supported OS versions
 
+The current version runs on Windows 10 and 11 (x64), macOS 12 or newer (Intel and Apple Silicon), and Linux (x64, arm64, and armv7l without FFmpeg).
+
 LosslessCut is based on Electron which routinely drops support for old OS versions, and therefore LosslessCut will also do so. [More info](https://github.com/mifi/lossless-cut/discussions/1476#discussioncomment-5012521). Note that older versions of LosslessCut still work on older operating systems.
 
 - v3.66 [dropped support](https://www.electronjs.org/blog/electron-38-0#removed-macos-11-support) for MacOS 11.

@@ -17,7 +17,8 @@ export const docsDir = path.join(repoDir, 'docs');
 
 // Meta descriptions for pages whose first paragraph doesn't describe the page well.
 const descriptionOverrides: Record<string, string> = {
-  'index.md': 'How to use LosslessCut: FAQ, typical workflow, segments, markers, tracks and importing/exporting projects in the lossless video and audio cutter.',
+  'index.md': 'How LosslessCut works: codecs and formats, segments, markers, tracks and importing/exporting projects in the lossless video and audio cutter.',
+  'faq.md': 'Answers to common questions about LosslessCut: free vs app store versions, safety, supported operating systems, updating, and features it doesn\'t have.',
 };
 
 /** Site URL of a doc, by its path relative to docs/: `cli.md` -> `/docs/cli`, `index.md` -> `/docs` */
