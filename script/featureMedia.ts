@@ -91,6 +91,8 @@ try {
 
   // Lossless while recording, re-encoded below
   const recorder = execa(ffmpeg, ['-v', 'error', ...grab, '-c:v', 'libx264', '-preset', 'ultrafast', '-qp', '0', rawVideo], { reject: false, stderr: 'inherit' });
+  const recordingStarted = performance.now();
+  let videoStart = 0;
   await timers.setTimeout(500);
 
   const action = async (name: string, args?: unknown) => {
@@ -129,6 +131,9 @@ try {
         await execa(ffmpeg, ['-v', 'error', '-y', ...grab, '-frames:v', '1', join(outDir, `${scenarioName}-${name}.png`)]);
       },
       wait: async (ms) => timers.setTimeout(ms),
+      startVideo: () => {
+        videoStart = (performance.now() - recordingStarted) / 1000;
+      },
     });
   } finally {
     // ffmpeg finishes the file and exits (with code 255) on SIGINT
@@ -136,9 +141,9 @@ try {
   }
   const { exitCode } = await recorder;
   assert(exitCode === 0 || exitCode === 255, `Recording failed with exit code ${exitCode}`);
-  // Small file for posting: x264 at a quality that keeps UI text sharp, and the index at the start for streaming
+  // A high quality master (web versions are made from it elsewhere), with the index at the start for streaming
   const videoPath = join(outDir, `${scenarioName}.mp4`);
-  await execa(ffmpeg, ['-v', 'error', '-y', '-i', rawVideo, '-c:v', 'libx264', '-preset', 'slow', '-crf', '24', '-tune', 'animation', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', videoPath]);
+  await execa(ffmpeg, ['-v', 'error', '-y', '-ss', String(videoStart), '-i', rawVideo, '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-tune', 'animation', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', videoPath]);
   console.log('Wrote', videoPath, 'and screenshots in', outDir);
 } finally {
   app.kill();

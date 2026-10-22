@@ -5,6 +5,35 @@
 import type { Scenario } from './types.ts';
 
 const scenarios: Record<string, Scenario> = {
+  // For the website's homepage: a short silent loop of the core idea. Keep it quick, and don't use clips that need a credit
+  hero: {
+    description: 'Keep the good parts and get a new file in seconds',
+    clips: ['DJI_0759.MP4'],
+    config: { autoMerge: true, exportConfirmEnabled: false },
+    async run({ open, action, actionWithDialog, shot, wait, startVideo }) {
+      await open('DJI_0759.MP4');
+      // Wait until the thumbnails are loaded, so the loop starts on the opened file
+      await wait(4000);
+      startVideo();
+      await shot('opened');
+      await wait(1500);
+      for (const [start, end, label] of [['00:00:02', '00:00:05', 'Sea'], ['00:00:10', '00:00:13', 'Cliffs'], ['00:00:18', '00:00:22', 'Sunset']] as const) {
+        await action('goToTimecodeDirect', { time: start });
+        await action('setCutStart');
+        await wait(400);
+        await action('goToTimecodeDirect', { time: end });
+        await action('setCutEnd');
+        // Give the app time to update the segment, or the label would be set on the old one
+        await wait(300);
+        await actionWithDialog('labelCurrentSegment', label);
+        await wait(600);
+      }
+      await shot('segments');
+      await action('export');
+      await wait(2500);
+      await shot('exported');
+    },
+  },
   'cut-segments': {
     description: 'Mark and label two segments to keep, play them and export',
     clips: ['DJI_0759.MP4'],

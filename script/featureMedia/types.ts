@@ -14,6 +14,8 @@ export interface ScenarioContext {
   /** Saves a screenshot as <scenario>-<name>.png */
   shot: (name: string) => Promise<void>,
   wait: (ms: number) => Promise<void>,
+  /** Starts the video here instead of at the beginning, e.g. after opening the file */
+  startVideo: () => void,
 }
 
 export interface Scenario {
