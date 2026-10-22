@@ -4,12 +4,13 @@
 // Keep each scenario short (10-30 s of video) and about one feature.
 import type { Scenario } from './types.ts';
 
-// Play the clip, mark three parts as it plays and merge them into one file, without the export confirmation
+// Play the clip, mark three parts as it plays and merge them into one file, quickly past the export confirmation
+// (turning it off would show a warning icon and an extra line in the success dialog)
 function heroScenario(clip: string, marks: [start: number, end: number][]): Scenario {
   return {
     description: 'Keep the good parts and get a new file in seconds',
     clips: [clip],
-    config: { autoMerge: true, exportConfirmEnabled: false },
+    config: { autoMerge: true },
     async run({ open, action, key, shot, wait, startVideo }) {
       await open(clip);
       // Wait until the thumbnails are loaded, so the video starts on the opened file
@@ -30,6 +31,8 @@ function heroScenario(clip: string, marks: [start: number, end: number][]): Scen
       await action('pause');
       await wait(800);
       await shot('segments');
+      await action('export');
+      await wait(300);
       await action('export');
       await wait(1500);
       // Close the success dialog and end on the timeline with the parts, like the start but with segments
@@ -201,7 +204,8 @@ const scenarios: Record<string, Scenario> = {
       caption('Find the scene changes automatically');
       // Confirm the parameters dialog with the defaults
       await actionWithDialog('detectSceneChanges');
-      await wait(2000);
+      // The action returns before the detection is done
+      await wait(3500);
       caption('Every scene becomes a segment');
       await wait(3000);
       await shot('segments');
