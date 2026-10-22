@@ -4,20 +4,20 @@
 // Keep each scenario short (10-30 s of video) and about one feature.
 import type { Scenario } from './types.ts';
 
-const scenarios: Record<string, Scenario> = {
-  // For the website's homepage: a short silent loop of the core idea. Keep it quick, and don't use clips that need a credit
-  hero: {
+// Mark and label three parts and merge them into one file, without the export confirmation
+function heroScenario(clip: string, parts: [start: string, end: string, label: string][]): Scenario {
+  return {
     description: 'Keep the good parts and get a new file in seconds',
-    clips: ['DJI_0759.MP4'],
+    clips: [clip],
     config: { autoMerge: true, exportConfirmEnabled: false },
     async run({ open, action, actionWithDialog, shot, wait, startVideo }) {
-      await open('DJI_0759.MP4');
+      await open(clip);
       // Wait until the thumbnails are loaded, so the loop starts on the opened file
       await wait(4000);
       startVideo();
       await shot('opened');
       await wait(1500);
-      for (const [start, end, label] of [['00:00:02', '00:00:05', 'Sea'], ['00:00:10', '00:00:13', 'Cliffs'], ['00:00:18', '00:00:22', 'Sunset']] as const) {
+      for (const [start, end, label] of parts) {
         await action('goToTimecodeDirect', { time: start });
         await action('setCutStart');
         await wait(400);
@@ -33,7 +33,13 @@ const scenarios: Record<string, Scenario> = {
       await wait(2500);
       await shot('exported');
     },
-  },
+  };
+}
+
+const scenarios: Record<string, Scenario> = {
+  // For the website's homepage: a short silent loop of the core idea. Keep it quick, and don't use clips that need a credit
+  hero: heroScenario('DJI_0740.MP4', [['00:00:01', '00:00:04', 'Lighthouse'], ['00:00:06', '00:00:09', 'Cliffs'], ['00:00:11', '00:00:14', 'Ocean']]),
+  'hero-beach': heroScenario('DJI_0121.MOV', [['00:00:00.5', '00:00:02.5', 'Waves'], ['00:00:03.5', '00:00:05.5', 'Beach'], ['00:00:06.5', '00:00:08.5', 'Lagoon']]),
   'cut-segments': {
     description: 'Mark and label two segments to keep, play them and export',
     clips: ['DJI_0759.MP4'],

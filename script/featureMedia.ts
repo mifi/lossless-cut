@@ -65,7 +65,7 @@ await writeFile(join(configDir, 'config.json'), JSON.stringify({ windowBounds: {
 // The app's log, including the renderer's console. Failed actions don't fail the HTTP request, so check the screenshots and this log
 const appLog = join(outDir, `${scenarioName}-app.log`);
 // The app path must come first: the app skips the first two arguments when run as `electron <app>` (process.defaultApp)
-const app = execa('node_modules/electron/dist/electron', ['.', '--no-sandbox', '--config-dir', configDir, '--disable-networking', '--http-api', String(port)], { reject: false, env: { ELECTRON_ENABLE_LOGGING: '1' }, stdout: { file: appLog }, stderr: { file: appLog } });
+const app = execa('node_modules/electron/dist/electron', ['.', '--no-sandbox', '--config-dir', configDir, '--disable-networking', '--http-api', String(port)], { reject: false, env: { ELECTRON_ENABLE_LOGGING: '1', GTK_THEME: 'Adwaita:dark' }, stdout: { file: appLog }, stderr: { file: appLog } });
 
 async function post(path: string, body?: unknown) {
   const response = await fetch(`http://127.0.0.1:${port}/api/${path}`, {
