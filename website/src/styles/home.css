@@ -126,14 +126,28 @@ body {
   flex: 1 1 500px;
   max-width: 640px;
 }
-/* the hero video (Home.tsx) in a plain window frame, not macOS-like, since the app also runs on Windows and Linux */
-.hero-video {
+/* <FramedVideo> in Home.tsx */
+.demo-video {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 110px 30px 80px;
+}
+.demo-video-credit {
+  margin: 8px 0 0;
+  text-align: center;
+  font-size: 0.75em;
+  opacity: 0.6;
+}
+.demo-video-credit a {
+  color: inherit;
+}
+.framed-video {
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
 }
-.hero-video-title {
+.framed-video-title {
   position: relative;
   height: 28px;
   display: flex;
@@ -143,19 +157,19 @@ body {
   color: rgba(255, 255, 255, 0.7);
   font: 13px system-ui, sans-serif;
 }
-.hero-video-dots {
+.framed-video-dots {
   position: absolute;
   left: 12px;
   display: flex;
   gap: 6px;
 }
-.hero-video-dots i {
+.framed-video-dots i {
   width: 10px;
   height: 10px;
   border-radius: 50%;
   background-color: rgba(255, 255, 255, 0.25);
 }
-.hero-video-pause {
+.framed-video-pause {
   position: absolute;
   right: 6px;
   display: grid;
@@ -169,26 +183,26 @@ body {
   color: inherit;
   cursor: pointer;
 }
-.hero-video-pause:hover {
+.framed-video-pause:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
-.hero-video-pause[hidden], .hero-video-pause:not(.paused) .play, .hero-video-pause.paused .pause {
+.framed-video-pause[hidden], .framed-video-pause:not(.paused) .play, .framed-video-pause.paused .pause {
   display: none;
 }
-.hero-video video, .hero-video-poster {
+.framed-video video, .framed-video-poster {
   display: block;
   width: 100%;
   height: auto;
   aspect-ratio: 16 / 10;
 }
-.hero-video-poster {
+.framed-video-poster {
   display: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  .hero-video video, .hero-video-pause {
+  .framed-video video, .framed-video-pause {
     display: none;
   }
-  .hero-video-poster {
+  .framed-video-poster {
     display: block;
   }
 }

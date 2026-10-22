@@ -11,7 +11,8 @@ import msStoreBadge from '../../../ms-store-badge.svg?url';
 import snapStoreBadge from '../../../snap-store-black.svg?url';
 import logo from '../../../src/renderer/src/icon.svg?url';
 
-import { background1, background2, generationLossOriginal, generationLossReencoded, heroVideo, tracksScreenshot } from '../images.ts';
+import type { Video } from '../images.ts';
+import { background1, background2, generationLossOriginal, generationLossReencoded, heroVideo, sceneChangesVideo, tracksScreenshot } from '../images.ts';
 import { authorUrl, donateUrl, githubUrl, socialLinks, storeUrls, supportEmail } from '../links.ts';
 import socialIconPaths from './socialIcons.ts';
 
@@ -105,6 +106,32 @@ function Collapsible({ label, collapsedHeight, children }: { label: string, coll
   );
 }
 
+// A silent, looping screen recording (see images.ts) in a plain window frame, not macOS-like, since the app also runs on Windows
+// and Linux. The script in index.astro shows its pause button (a looping video must be pausable, WCAG 2.2.2), and plays it
+// while it's on screen. With prefers-reduced-motion, only its poster is shown (home.css).
+function FramedVideo({ video, label, posterAlt, priority }: { video: Video, label: string, posterAlt: string, priority?: boolean }) {
+  return (
+    <div className="framed-video">
+      <div className="framed-video-title">
+        <span className="framed-video-dots" aria-hidden="true"><i /><i /><i /></span>
+        LosslessCut
+        <button type="button" className="framed-video-pause" aria-label="Pause the video" hidden>
+          <Pause className="pause" aria-hidden size={14} />
+          <Play className="play" aria-hidden size={14} />
+        </button>
+      </div>
+      {/* priority (the hero): starts playing right away, otherwise only when scrolled to */}
+      <video poster={video.poster} autoPlay={priority} muted loop playsInline preload={priority ? 'metadata' : 'none'} width={1024} height={640} aria-label={label}>
+        {/* with reduced motion, neither matches, so nothing is downloaded. Browsers that ignore media (before Chrome/Firefox
+        120) take the first one, and the script removes them with reduced motion */}
+        <source src={video.src} type="video/mp4" media="(min-width: 701px) and (prefers-reduced-motion: no-preference)" />
+        <source src={video.smallSrc} type="video/mp4" media="(prefers-reduced-motion: no-preference)" />
+      </video>
+      <img className="framed-video-poster" src={video.poster} alt={posterAlt} width={1024} height={640} {...(priority ? { fetchPriority: 'high' } : { loading: 'lazy' })} />
+    </div>
+  );
+}
+
 function FooterLink({ href, children }: { href: string, children: ReactNode }) {
   return <><a className="footer-link" href={href}>{children}</a>{' '}</>;
 }
@@ -153,25 +180,7 @@ export default function Home({ stars }: { stars: number }) {
           </div>
 
           <div className="hero-media">
-            <div className="hero-video">
-              <div className="hero-video-title">
-                <span className="hero-video-dots" aria-hidden="true"><i /><i /><i /></span>
-                LosslessCut
-                {/* a looping video must be pausable (WCAG 2.2.2). Shown by the script in index.astro */}
-                <button type="button" className="hero-video-pause" aria-label="Pause the video" hidden>
-                  <Pause className="pause" aria-hidden size={14} />
-                  <Play className="play" aria-hidden size={14} />
-                </button>
-              </div>
-              {/* with prefers-reduced-motion, the poster is shown instead (home.css), and the script stops the video */}
-              <video poster={heroVideo.poster} autoPlay muted loop playsInline preload="metadata" width={1024} height={640} aria-label="LosslessCut cutting a video into three segments">
-                {/* with reduced motion, neither matches, so nothing is downloaded. Browsers that ignore media (before Chrome/Firefox
-                120) take the first one, and the script removes them with reduced motion */}
-                <source src={heroVideo.src} type="video/mp4" media="(min-width: 701px) and (prefers-reduced-motion: no-preference)" />
-                <source src={heroVideo.smallSrc} type="video/mp4" media="(prefers-reduced-motion: no-preference)" />
-              </video>
-              <img className="hero-video-poster" src={heroVideo.poster} alt="LosslessCut with a video opened" width={1024} height={640} fetchPriority="high" />
-            </div>
+            <FramedVideo video={heroVideo} label="LosslessCut cutting a video into three segments" posterAlt="LosslessCut with a video opened" priority />
           </div>
         </div>
       </header>
@@ -243,11 +252,16 @@ export default function Home({ stars }: { stars: number }) {
         <a className="button" href="/docs/features">See all features and use cases</a>
       </WhiteSection>
 
-      <div className="padded" style={{ padding: '110px 30px 80px 30px' }}>
-        <iframe style={{ width: '480px', height: '450px', maxWidth: '100%', border: '0' }} src="https://www.youtube-nocookie.com/embed/GPHMN9Vp4CQ?disablekb=1&amp;playsinline=1&amp;rel=0&amp;playlist=GPHMN9Vp4CQ&amp;loop=1&amp;version=3" allowFullScreen title="LosslessCut demo video" />
+      {sceneChangesVideo != null && (
+        <div className="padded demo-video">
+          <FramedVideo video={sceneChangesVideo} label="LosslessCut detecting the scene changes of a movie and creating a segment for each scene" posterAlt="A movie opened in LosslessCut" />
+          <p className="demo-video-credit">
+            Tears of Steel (CC) Blender Foundation | <a href="https://mango.blender.org/">mango.blender.org</a>
+          </p>
 
-        <h2 style={{ textAlign: 'center', marginTop: '40px', fontWeight: '200' }}>Lightning Fast! It&apos;s like Magic</h2>
-      </div>
+          <h2 style={{ textAlign: 'center', marginTop: '40px', fontWeight: '200' }}>Lightning Fast! It&apos;s like Magic</h2>
+        </div>
+      )}
 
       <div id="download" className="download">
         <div className="download-inner">

@@ -37,33 +37,43 @@ const description = 'LosslessCut - Official downloads - free or paid version. Ed
   <Home stars={stars} />
   <!-- is:inline: plain JS, not compiled by Vite, which would look for a tsconfig and find the app's (see tsconfig.json) -->
   <script is:inline>
-    // The hero video's pause button (Home.tsx), and with prefers-reduced-motion, no video at all (only its poster, see home.css)
-    {
-      const heroVideo = document.querySelector('.hero-video video');
-      if (heroVideo) {
-        if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
-          // and don't download it (in browsers that ignore the sources' media, see Home.tsx)
-          heroVideo.removeAttribute('autoplay');
-          heroVideo.pause();
-          heroVideo.preload = 'none';
-          heroVideo.querySelectorAll('source').forEach((source) => source.remove());
-          heroVideo.load();
-        } else {
-          const pauseButton = document.querySelector('.hero-video-pause');
-          pauseButton.hidden = false;
-          pauseButton.addEventListener('click', () => (heroVideo.paused ? heroVideo.play().catch(() => {}) : heroVideo.pause()));
-          const update = () => {
-            pauseButton.classList.toggle('paused', heroVideo.paused);
-            pauseButton.setAttribute('aria-label', heroVideo.paused ? 'Play the video' : 'Pause the video');
-          };
-          heroVideo.addEventListener('play', update);
-          heroVideo.addEventListener('pause', update);
-          update(); // e.g. if the browser didn't autoplay it
-          // no button for a video that can't play
-          heroVideo.querySelector('source:last-of-type')?.addEventListener('error', () => { pauseButton.hidden = true; });
-        }
+    // The framed videos (<FramedVideo> in Home.tsx): their pause buttons, playing them only while they're on screen (the hero
+    // also autoplays), and with prefers-reduced-motion, no video at all (only its poster, see home.css)
+    document.querySelectorAll('.framed-video').forEach((frame) => {
+      const video = frame.querySelector('video');
+      const pauseButton = frame.querySelector('.framed-video-pause');
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        // and don't download it (in browsers that ignore the sources' media, see Home.tsx)
+        video.removeAttribute('autoplay');
+        video.pause();
+        video.preload = 'none';
+        video.querySelectorAll('source').forEach((source) => source.remove());
+        video.load();
+        return;
       }
-    }
+      let pausedByUser = false;
+      pauseButton.hidden = false;
+      pauseButton.addEventListener('click', () => {
+        pausedByUser = !video.paused;
+        if (video.paused) video.play().catch(() => {});
+        else video.pause();
+      });
+      const update = () => {
+        pauseButton.classList.toggle('paused', video.paused);
+        pauseButton.setAttribute('aria-label', video.paused ? 'Play the video' : 'Pause the video');
+      };
+      video.addEventListener('play', update);
+      video.addEventListener('pause', update);
+      update(); // e.g. if the browser didn't autoplay it
+      // no button for a video that can't play
+      video.querySelector('source:last-of-type')?.addEventListener('error', () => { pauseButton.hidden = true; });
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver(([{ isIntersecting }]) => {
+          if (!isIntersecting) video.pause();
+          else if (!pausedByUser) video.play().catch(() => {});
+        }).observe(video);
+      }
+    });
 
     // On touch screens, draw each feature card's icon when the card reaches the middle of the screen (.draw in home.css), again
     // after it has left the screen, and when it's tapped. Cards that are on screen when scrolling stops without having passed the

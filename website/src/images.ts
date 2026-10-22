@@ -15,12 +15,18 @@ export const generationLossReencoded = withSrcSet('losslesscut/website/generatio
 export const background1 = `${baseUrl}/dist/losslesscut/website/background-1000.jpg`;
 export const background2 = `${baseUrl}/dist/losslesscut/website/background2-1000.jpg`;
 
-// The hero video (a silent 1024×640 loop, about 13 s), a smaller one for phones, and a still of its first frame
-export const heroVideo = {
+// Screen recordings (script/featureMedia.ts): 1024×640, silent, a smaller one for phones, and a still of the first frame
+export interface Video { src: string, smallSrc: string, poster: string }
+
+// About 13 s
+export const heroVideo: Video = {
   src: `${baseUrl}/dist/losslesscut/feature-media/hero-2026-10-22-1000.mp4`,
   smallSrc: `${baseUrl}/dist/losslesscut/feature-media/hero-2026-10-22.mp4`,
   poster: `${baseUrl}/dist/losslesscut/feature-media/hero-2026-10-22-poster-1000.jpg`,
 };
+
+// Creating segments from the scene changes of a Tears of Steel excerpt (CC BY: the homepage credits it). Not uploaded yet
+export const sceneChangesVideo = undefined as Video | undefined;
 
 // Social preview image (1200x630)
 export const ogImage = `${baseUrl}/dist/losslesscut/og-image-1000.jpg`;
