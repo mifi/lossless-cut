@@ -387,5 +387,11 @@
   "Are you sure?": "Er du sikker?",
   "Please open at least 2 files to merge, then try again": "Åpne minst to filer å flette og prøv igjen",
   "Start over": "Start om igjen",
-  "Sort items": "Sorter elementer"
+  "Sort items": "Sorter elementer",
+  "Batch export options": "Alternativer for satsvis eksport",
+  "Export all files in batch": "Eksporter alle filene i satsen",
+  "Batch export mode": "Modus for satsvis eksport",
+  "Batch export finished": "Satsvis eksport fullført",
+  "Exporting batch item {{current}} of {{total}}": "Eksporterer fil {{current}} av {{total}}",
+  "Reset all to defaults": "Tilbakestill alt til standard"
 }

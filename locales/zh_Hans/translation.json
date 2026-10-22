@@ -1143,5 +1143,11 @@
   "Value must be shorter than total duration ({{totalDuration}})": "数值必须小于总时长（{{totalDuration}}）",
   "Width": "宽度",
   "You are in simple mode, meaning some functionality has been simplified or hidden.": "你现在处于简单模式，这意味着有些功能被简化或隐藏了。",
-  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "你已经配置了自定义的 FFmpeg 目录。你可以在设置中更改或重置它。"
+  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "你已经配置了自定义的 FFmpeg 目录。你可以在设置中更改或重置它。",
+  "Batch export options": "批量导出选项",
+  "Export all files in batch": "导出批处理中的所有文件",
+  "Batch export mode": "批量导出模式",
+  "Batch export finished": "批量导出完成",
+  "Exporting batch item {{current}} of {{total}}": "正在导出批处理项 {{current}}/{{total}}",
+  "Reset all to defaults": "全部重置为默认值"
 }

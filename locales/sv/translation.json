@@ -198,5 +198,11 @@
   "Merge!": "Slå samman!",
   "Select a different output <1>Format</1> (<3>matroska</3> and <5>mp4</5> support most codecs)": "Välj ett annat <1>utdataformat</1> (<3>matroska</3> och <5>mp4</5> stöder de flesta kodekar)",
   "Try one of the following before exporting again:": "Prova något av följande innan du exporterar igen:",
-  "Disable unnecessary <1>Tracks</1>": "Inaktivera onödiga <1>spår</1>"
+  "Disable unnecessary <1>Tracks</1>": "Inaktivera onödiga <1>spår</1>",
+  "Batch export options": "Alternativ för batchexport",
+  "Export all files in batch": "Exportera alla filer i batchen",
+  "Batch export mode": "Läge för batchexport",
+  "Batch export finished": "Batchexport klar",
+  "Exporting batch item {{current}} of {{total}}": "Exporterar batchobjekt {{current}} av {{total}}",
+  "Reset all to defaults": "Återställ allt till standard"
 }

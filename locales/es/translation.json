@@ -909,5 +909,11 @@
   "Fell back to default output file name": "Se ha vuelto al nombre de archivo de salida predeterminado",
   "\"{{property}}\" must be a number": "\"{{property}}\" debe ser un número",
   "\"{{property}}\" must be a string": "\"{{property}}\" debe ser una cadena",
-  "\"{{property}}\" must be an object of strings": "\"{{property}}\" debe ser un objeto de cadenas"
+  "\"{{property}}\" must be an object of strings": "\"{{property}}\" debe ser un objeto de cadenas",
+  "Batch export options": "Opciones de exportación por lotes",
+  "Export all files in batch": "Exportar todos los archivos del lote",
+  "Batch export mode": "Modo de exportación por lotes",
+  "Batch export finished": "Exportación por lotes finalizada",
+  "Exporting batch item {{current}} of {{total}}": "Exportando elemento {{current}} de {{total}} del lote",
+  "Reset all to defaults": "Restablecer todo a los valores predeterminados"
 }

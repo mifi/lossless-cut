@@ -957,5 +957,11 @@
   "Video tracks": "Відеодоріжки",
   "What's new in LosslessCut?": "Що нового в LosslessCut?",
   "Width": "Ширина",
-  "Yes": "Так"
+  "Yes": "Так",
+  "Batch export options": "Налаштування пакетного експорту",
+  "Export all files in batch": "Експортувати всі файли пакета",
+  "Batch export mode": "Режим пакетного експорту",
+  "Batch export finished": "Пакетний експорт завершено",
+  "Exporting batch item {{current}} of {{total}}": "Експорт файлу {{current}} з {{total}}",
+  "Reset all to defaults": "Скинути все до типових"
 }

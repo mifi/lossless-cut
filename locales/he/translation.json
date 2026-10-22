@@ -906,5 +906,11 @@
   "Zoom in more to view waveform": "התקרב יותר כדי לראות גל צורה",
   "Zoom in timeline": "התקרב בציר הזמן",
   "Zoom in/out timeline": "התקרב/הרחק בציר הזמן",
-  "Zoom out timeline": "הרחק בציר הזמן"
+  "Zoom out timeline": "הרחק בציר הזמן",
+  "Batch export options": "אפשרויות ייצוא מרובה",
+  "Export all files in batch": "ייצא את כל הקבצים ברשימה",
+  "Batch export mode": "מצב ייצוא מרובה",
+  "Batch export finished": "הייצוא המרובה הסתיים",
+  "Exporting batch item {{current}} of {{total}}": "מייצא קובץ {{current}} מתוך {{total}}",
+  "Reset all to defaults": "אפס הכול לברירת המחדל"
 }

@@ -895,5 +895,11 @@
   "Output video frame rate (frames per second)": "Laju frame video output (frame per detik)",
   "Parameter": "Parameter",
   "Please send us an email where you describe what you were doing.": "Silakan kirimkan kami email yang menjelaskan apa yang anda lakukan.",
-  "Right": "Kanan"
+  "Right": "Kanan",
+  "Batch export options": "Opsi ekspor batch",
+  "Export all files in batch": "Ekspor semua file dalam batch",
+  "Batch export mode": "Mode ekspor batch",
+  "Batch export finished": "Ekspor batch selesai",
+  "Exporting batch item {{current}} of {{total}}": "Mengekspor item batch {{current}} dari {{total}}",
+  "Reset all to defaults": "Atur ulang semua ke bawaan"
 }

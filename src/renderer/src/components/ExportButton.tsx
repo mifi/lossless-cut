@@ -15,6 +15,7 @@ interface Props {
   areWeCutting: boolean,
   onClick: MouseEventHandler<HTMLButtonElement>,
   style?: CSSProperties,
+  className?: string | undefined,
 }
 
 // eslint-disable-next-line react/display-name
@@ -23,6 +24,7 @@ const ExportButton = forwardRef<HTMLButtonElement, Props>(({
   areWeCutting,
   onClick,
   style,
+  className,
 }, ref) => {
   const CutIcon = areWeCutting ? FiScissors : FaFileExport;
 
@@ -43,7 +45,7 @@ const ExportButton = forwardRef<HTMLButtonElement, Props>(({
     <button
       ref={ref}
       type="button"
-      className={[...(simpleMode ? ['export-animation'] : []), styles['exportButton']].join(' ')}
+      className={[...(simpleMode ? ['export-animation'] : []), styles['exportButton'], className].filter(Boolean).join(' ')}
       style={{ backgroundColor: primaryColor, ...style }}
       onClick={onClick}
       title={title}

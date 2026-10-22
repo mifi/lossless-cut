@@ -46,6 +46,10 @@ export type WaveformMode = z.infer<typeof waveformModeSchema>;
 
 export const enableImportChaptersSchema = z.enum(['always', 'never', 'ask']);
 export type EnableImportChapters = z.infer<typeof enableImportChaptersSchema>;
+
+export const batchExportModeSchema = z.enum(['merge', 'merge+separate', 'separate']);
+export type BatchExportMode = z.infer<typeof batchExportModeSchema>;
+
 export const configSchema = z.object({
   version: z.number(),
   lastAppVersion: z.string(),
@@ -56,6 +60,7 @@ export const configSchema = z.object({
   autoMerge: z.boolean(),
   autoDeleteMergedSegments: z.boolean(),
   segmentsToChaptersOnly: z.boolean(),
+  batchExportMode: batchExportModeSchema,
   enableSmartCut: z.boolean(),
   timecodeFormat: timecodeFormatSchema,
   invertCutSegments: z.boolean(),

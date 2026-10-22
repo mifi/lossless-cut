@@ -1122,5 +1122,11 @@
   "Extract segment frames as image files": "Extrahovat snímky segmentu jako obrazové soubory",
   "You are in simple mode, meaning some functionality has been simplified or hidden.": "Jste v jednoduchém režimu, což znamená, že některé funkce byly zjednodušeny nebo skryty.",
   "Source code": "Zdrojový kód",
-  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "Nastavili jste vlastní adresář FFmpeg. Můžete jej změnit nebo resetovat v Nastavení."
+  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "Nastavili jste vlastní adresář FFmpeg. Můžete jej změnit nebo resetovat v Nastavení.",
+  "Batch export options": "Možnosti dávkového exportu",
+  "Export all files in batch": "Exportovat všechny soubory dávky",
+  "Batch export mode": "Režim dávkového exportu",
+  "Batch export finished": "Dávkový export dokončen",
+  "Exporting batch item {{current}} of {{total}}": "Exportování položky dávky {{current}} z {{total}}",
+  "Reset all to defaults": "Obnovit vše na výchozí"
 }

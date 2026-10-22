@@ -1097,5 +1097,11 @@
   "Shift start by": "시작 지점 이동",
   "Expected": "예상",
   "Shift segments": "세그먼트 이동",
-  "Extract segment frames as image files": "세그먼트 프레임을 이미지 파일로 추출"
+  "Extract segment frames as image files": "세그먼트 프레임을 이미지 파일로 추출",
+  "Batch export options": "일괄 내보내기 옵션",
+  "Export all files in batch": "일괄 처리 목록의 모든 파일 내보내기",
+  "Batch export mode": "일괄 내보내기 방식",
+  "Batch export finished": "일괄 내보내기 마침",
+  "Exporting batch item {{current}} of {{total}}": "일괄 처리 항목 {{current}}/{{total}} 내보내는 중",
+  "Reset all to defaults": "모두 기본값으로 재설정"
 }

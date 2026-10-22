@@ -1100,5 +1100,11 @@
   "What's new in LosslessCut?": "LosslessCut の新機能は?",
   "Width": "幅",
   "You are in simple mode, meaning some functionality has been simplified or hidden.": "簡易モードのため、一部の機能が簡略化または非表示になっています。",
-  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "カスタムの FFmpeg フォルダを設定済みです。設定画面で変更またはリセットできます。"
+  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "カスタムの FFmpeg フォルダを設定済みです。設定画面で変更またはリセットできます。",
+  "Batch export options": "一括出力オプション",
+  "Export all files in batch": "一覧のすべてのファイルを出力",
+  "Batch export mode": "一括出力方法",
+  "Batch export finished": "一括出力完了",
+  "Exporting batch item {{current}} of {{total}}": "一括出力中 {{current}} / {{total}}",
+  "Reset all to defaults": "すべて初期設定に戻す"
 }

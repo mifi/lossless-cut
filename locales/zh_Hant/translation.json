@@ -1015,5 +1015,11 @@
   "Tracks with at least 720p video": "有至少 720p 視訊的軌道",
   "Tracks with H264 codec": "採用 H264 編碼的音軌",
   "Video tracks": "影像軌道",
-  "What's new in LosslessCut?": "LosslessCut 有什麼新功能 ？"
+  "What's new in LosslessCut?": "LosslessCut 有什麼新功能 ？",
+  "Batch export options": "批次匯出選項",
+  "Export all files in batch": "匯出批次中的所有檔案",
+  "Batch export mode": "批次匯出模式",
+  "Batch export finished": "批次匯出完成",
+  "Exporting batch item {{current}} of {{total}}": "正在匯出批次項目 {{current}}/{{total}}",
+  "Reset all to defaults": "全部重設為預設值"
 }

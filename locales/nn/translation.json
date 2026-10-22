@@ -375,5 +375,11 @@
   "Shortest": "Stuttaste",
   "Show waveform": "Vis bylgjeform",
   "Shuffle segments order": "Bland bitrekkjefylgda",
-  "Unprocessable streams were exported as separate files.": "Uhandsamlege straumar vert utført som eigne filer."
+  "Unprocessable streams were exported as separate files.": "Uhandsamlege straumar vert utført som eigne filer.",
+  "Batch export options": "Val for satsvis utføring",
+  "Export all files in batch": "Før ut alle filene i satsen",
+  "Batch export mode": "Modus for satsvis utføring",
+  "Batch export finished": "Satsvis utføring fullført",
+  "Exporting batch item {{current}} of {{total}}": "Fører ut fil {{current}} av {{total}}",
+  "Reset all to defaults": "Still attende alt til standard"
 }

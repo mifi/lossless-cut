@@ -1089,5 +1089,11 @@
   "Extract segment frames as image files": "Parça karelerini resim dosyaları olarak çıkart",
   "You are in simple mode, meaning some functionality has been simplified or hidden.": "Basit moddasınız; bu, bazı işlevlerin basitleştirildiği veya gizlendiği anlamına gelir.",
   "Source code": "Kaynak kodu",
-  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "Özel bir FFmpeg dizini yapılandırdınız. Bunu Ayarlar bölümünden değiştirebilir veya sıfırlayabilirsiniz."
+  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "Özel bir FFmpeg dizini yapılandırdınız. Bunu Ayarlar bölümünden değiştirebilir veya sıfırlayabilirsiniz.",
+  "Batch export options": "Toplu dışa aktarma seçenekleri",
+  "Export all files in batch": "Listedeki tüm dosyaları dışa aktar",
+  "Batch export mode": "Toplu dışa aktarma modu",
+  "Batch export finished": "Toplu dışa aktarma tamamlandı",
+  "Exporting batch item {{current}} of {{total}}": "Toplu öğe dışa aktarılıyor: {{current}} / {{total}}",
+  "Reset all to defaults": "Tümünü varsayılana sıfırla"
 }

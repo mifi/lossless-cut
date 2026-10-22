@@ -7,6 +7,7 @@ import invariant from 'tiny-invariant';
 import Row from './AnimatedTr';
 import CaptureFormatButton from './CaptureFormatButton';
 import AutoExportToggler from './AutoExportToggler';
+import BatchExportModeSelect from './BatchExportModeSelect';
 import Switch from './Switch';
 import useUserSettings from '../hooks/useUserSettings';
 import { askForFfPath } from '../dialogs';
@@ -307,6 +308,13 @@ function Settings({
           <KeyCell>{t('Cleanup files after export?')}</KeyCell>
           <td>
             <Button onClick={askForCleanupChoices}><FaBroom style={{ verticalAlign: 'middle', marginRight: '.3em' }} />{t('Change preferences')}</Button>
+          </td>
+        </Row>
+
+        <Row>
+          <KeyCell>{t('Batch export mode')}</KeyCell>
+          <td>
+            <BatchExportModeSelect style={{ padding: '.5em 1.9em .5em .9em', maxWidth: '15em' }} />
           </td>
         </Row>
 

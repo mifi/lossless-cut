@@ -592,5 +592,11 @@
   "<0></0> to show advanced view": "<0></0> näyttää lisänäkymän",
   "<0></0> to show simple view": "<0></0> näyttää yksinkertaisen näkymän",
   "{{durationMsFormatted}} ms, {{frameCount}} frames": "{{durationMsFormatted}} ms, {{frameCount}} kuvaruutua",
-  "Abort": "Keskeytä"
+  "Abort": "Keskeytä",
+  "Batch export options": "Nippuviennin asetukset",
+  "Export all files in batch": "Vie kaikki nipun tiedostot",
+  "Batch export mode": "Nippuviennin tila",
+  "Batch export finished": "Nippuvienti valmis",
+  "Exporting batch item {{current}} of {{total}}": "Viedään nipun tiedostoa {{current}}/{{total}}",
+  "Reset all to defaults": "Palauta kaikki oletuksiin"
 }

@@ -4,7 +4,7 @@ import { motion } from 'motion/react';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
 import { IoIosCamera, IoMdKey, IoMdSpeedometer } from 'react-icons/io';
-import { FaYinYang, FaTrashAlt, FaStepBackward, FaStepForward, FaCaretLeft, FaCaretRight, FaPause, FaPlay, FaImages, FaKey, FaExclamationTriangle } from 'react-icons/fa';
+import { FaYinYang, FaTrashAlt, FaStepBackward, FaStepForward, FaCaretLeft, FaCaretRight, FaCaretDown, FaPause, FaPlay, FaImages, FaKey, FaExclamationTriangle } from 'react-icons/fa';
 import { GiSoundWaves } from 'react-icons/gi';
 // import useTraceUpdate from 'use-trace-update';
 import invariant from 'tiny-invariant';
@@ -13,6 +13,7 @@ import { primaryTextColor, primaryColor, darkModeTransition, dangerColor } from 
 import SegmentCutpointButton from './components/SegmentCutpointButton';
 import SetCutpointButton from './components/SetCutpointButton';
 import ExportButton from './components/ExportButton';
+import * as DropdownMenu from './components/DropdownMenu';
 import ToggleExportConfirm from './components/ToggleExportConfirm';
 import CaptureFormatButton from './components/CaptureFormatButton';
 import Select from './components/Select';
@@ -22,6 +23,7 @@ import { withBlur, mirrorTransform } from './util';
 import getSwal, { errorToast } from './swal';
 import { UserFacingError } from '../errors';
 import { getSegColor as getSegColorRaw } from './util/colors';
+import styles from './BottomBar.module.css';
 import { useSegColors } from './contexts';
 import { isExactTimecodeMatch } from './util/duration';
 import useUserSettings from './hooks/useUserSettings';
@@ -283,6 +285,7 @@ function BottomBar({
   zoom, setZoom, timelineToggleComfortZoom,
   isRotationSet, rotation, areWeCutting, increaseRotation, cleanupFilesDialog,
   captureSnapshot, onExportPress, segmentsToExport, hasVideo,
+  onExportAllPress, canExportAll,
   seekAbs, currentSegIndexSafe, cutSegments, currentCutSeg, setCutStart, setCutEnd,
   setCurrentSegIndex,
   jumpTimelineStart, jumpTimelineEnd, jumpCutEnd, jumpCutStart, startTimeOffset, setCutTime,
@@ -304,6 +307,8 @@ function BottomBar({
   cleanupFilesDialog: () => void,
   captureSnapshot: () => void,
   onExportPress: () => void,
+  onExportAllPress: () => void,
+  canExportAll: boolean,
   segmentsToExport: SegmentToExport[],
   hasVideo: boolean,
   seekAbs: (a: number) => void,
@@ -348,7 +353,6 @@ function BottomBar({
 }) {
   const { t } = useTranslation();
   const { getSegColor } = useSegColors();
-
   const isZoomed = zoom > 1;
 
   const playStyle = useMemo<CSSProperties>(() => ({
@@ -657,7 +661,28 @@ function BottomBar({
         {(!simpleMode || !exportConfirmEnabled) && <ToggleExportConfirm style={{ marginLeft: exportConfirmEnabled ? '.4em' : undefined }} />}
 
         {isFileOpened && (
-          <ExportButton segmentsToExport={segmentsToExport} areWeCutting={areWeCutting} onClick={withBlur(onExportPress)} />
+          <div className={styles['splitExportButton']}>
+            <ExportButton
+              segmentsToExport={segmentsToExport}
+              areWeCutting={areWeCutting}
+              onClick={withBlur(onExportPress)}
+              className={canExportAll ? styles['splitExportMain'] : undefined}
+            />
+            {canExportAll && (
+              <DropdownMenu.Root>
+                <DropdownMenu.Trigger asChild>
+                  <button type="button" className={styles['splitExportToggle']} style={{ backgroundColor: primaryColor }} title={t('Batch export options')} aria-label={t('Batch export options')}>
+                    <FaCaretDown />
+                  </button>
+                </DropdownMenu.Trigger>
+                <DropdownMenu.Portal>
+                  <DropdownMenu.Content side="top" align="end" sideOffset={5}>
+                    <DropdownMenu.Item onSelect={onExportAllPress}>{t('Export all files in batch')}</DropdownMenu.Item>
+                  </DropdownMenu.Content>
+                </DropdownMenu.Portal>
+              </DropdownMenu.Root>
+            )}
+          </div>
         )}
       </div>
     </>

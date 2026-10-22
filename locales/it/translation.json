@@ -1080,5 +1080,11 @@
   "Extract segment frames as image files": "Estrai fotogrammi segmenti come file immagine",
   "You are in simple mode, meaning some functionality has been simplified or hidden.": "Sei in modalità semplice, il che significa che alcune funzionalità sono state semplificate o nascoste.",
   "Source code": "Codice sorgente",
-  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "Hai configurato una cartella FFmpeg personalizzata. Puoi modificarla o reimpostarla nelle Impostazioni."
+  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "Hai configurato una cartella FFmpeg personalizzata. Puoi modificarla o reimpostarla nelle Impostazioni.",
+  "Batch export options": "Opzioni esportazione batch",
+  "Export all files in batch": "Esporta tutti i file del batch",
+  "Batch export mode": "Modalità esportazione batch",
+  "Batch export finished": "Esportazione batch completata",
+  "Exporting batch item {{current}} of {{total}}": "Esportazione elemento batch {{current}} di {{total}}",
+  "Reset all to defaults": "Ripristina tutto ai valori predefiniti"
 }

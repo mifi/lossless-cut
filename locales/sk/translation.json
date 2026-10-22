@@ -969,5 +969,11 @@
   "Width": "Šírka",
   "You are in simple mode, meaning some functionality has been simplified or hidden.": "Nachádzate sa v jednoduchom režime, čo znamená, že niektoré funkcie boli zjednodušené alebo skryté.",
   "Source code": "Zdrojový kód",
-  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "Nastavili ste vlastný adresár pre FFmpeg. V nastaveniach ho môžete zmeniť alebo obnoviť."
+  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "Nastavili ste vlastný adresár pre FFmpeg. V nastaveniach ho môžete zmeniť alebo obnoviť.",
+  "Batch export options": "Možnosti hromadného exportu",
+  "Export all files in batch": "Exportovať všetky hromadné súbory",
+  "Batch export mode": "Režim hromadného exportu",
+  "Batch export finished": "Hromadný export dokončený",
+  "Exporting batch item {{current}} of {{total}}": "Exportovanie položky {{current}} z {{total}}",
+  "Reset all to defaults": "Obnoviť všetko na predvolené"
 }

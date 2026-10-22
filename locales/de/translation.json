@@ -1118,5 +1118,11 @@
   "Extract segment frames as image files": "Segmentframes als Bilddateien extrahieren",
   "You are in simple mode, meaning some functionality has been simplified or hidden.": "Sie befinden sich im einfachen Modus, was bedeutet, dass einige Funktionen vereinfacht oder ausgeblendet wurden.",
   "Source code": "Quellcode",
-  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "Sie haben ein benutzerdefiniertes FFmpeg-Verzeichnis konfiguriert. Sie können es in den Einstellungen ändern oder zurücksetzen."
+  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "Sie haben ein benutzerdefiniertes FFmpeg-Verzeichnis konfiguriert. Sie können es in den Einstellungen ändern oder zurücksetzen.",
+  "Batch export options": "Optionen für Stapelexport",
+  "Export all files in batch": "Alle Dateien im Stapel exportieren",
+  "Batch export mode": "Stapelexportmodus",
+  "Batch export finished": "Stapelexport abgeschlossen",
+  "Exporting batch item {{current}} of {{total}}": "Exportiere Stapeldatei {{current}} von {{total}}",
+  "Reset all to defaults": "Alle auf Standard zurücksetzen"
 }

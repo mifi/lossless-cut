@@ -1074,5 +1074,11 @@
   "Extract segment frames as image files": "Extrair quadros de segmentos como arquivos de imagem",
   "You are in simple mode, meaning some functionality has been simplified or hidden.": "Você está no modo simples, o que significa que algumas funcionalidades foram simplificadas ou ocultadas.",
   "Source code": "Código fonte",
-  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "You have configured a custom FFmpeg directory.\\ You may change or reset it in Settings."
+  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "You have configured a custom FFmpeg directory.\\ You may change or reset it in Settings.",
+  "Batch export options": "Opções de exportação em lote",
+  "Export all files in batch": "Exportar todos os arquivos do lote",
+  "Batch export mode": "Modo de exportação em lote",
+  "Batch export finished": "Exportação em lote concluída",
+  "Exporting batch item {{current}} of {{total}}": "Exportando item {{current}} de {{total}} do lote",
+  "Reset all to defaults": "Redefinir tudo para o padrão"
 }

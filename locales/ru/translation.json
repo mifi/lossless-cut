@@ -1112,5 +1112,11 @@
   "Extract segment frames as image files": "Извлечь сегменты кадров в виде файлов изображений",
   "You are in simple mode, meaning some functionality has been simplified or hidden.": "Вы находитесь в упрощённом режиме. Некоторые функции упрощены или скрыты.",
   "Source code": "Исходный код",
-  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "Вы указали пользовательскую папку FFmpeg. Её можно изменить или сбросить его в настройках."
+  "You have configured a custom FFmpeg directory. You may change or reset it in Settings.": "Вы указали пользовательскую папку FFmpeg. Её можно изменить или сбросить его в настройках.",
+  "Batch export options": "Настройки пакетного экспорта",
+  "Export all files in batch": "Экспортировать все файлы пакета",
+  "Batch export mode": "Режим пакетного экспорта",
+  "Batch export finished": "Пакетный экспорт завершён",
+  "Exporting batch item {{current}} of {{total}}": "Экспорт файла {{current}} из {{total}}",
+  "Reset all to defaults": "Сбросить всё по умолчанию"
 }

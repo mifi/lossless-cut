@@ -6,6 +6,7 @@ import { useTranslation, Trans } from 'react-i18next';
 import { IoIosHelpCircle, IoIosSettings } from 'react-icons/io';
 import type { SweetAlertIcon } from 'sweetalert2';
 
+import BatchExportModeSelect from './BatchExportModeSelect';
 import ExportButton from './ExportButton';
 import ExportModeButton from './ExportModeButton';
 import FileNameTemplateEditor from './FileNameTemplateEditor';
@@ -142,6 +143,7 @@ function ExportConfirm({
   lossyMode,
   neighbouringKeyFrames,
   findNearestKeyFrameTime,
+  batchExportRequested,
 } : {
   areWeCutting: boolean,
   segmentsToExport: SegmentToExport[],
@@ -172,10 +174,16 @@ function ExportConfirm({
   lossyMode: LossyMode | undefined,
   neighbouringKeyFrames: Frame[],
   findNearestKeyFrameTime: FindNearestKeyframeTime,
+  batchExportRequested: boolean,
 }) {
   const { t } = useTranslation();
 
-  const { keyframeCut, toggleKeyframeCut, preserveMovData, setPreserveMovData, preserveMetadata, setPreserveMetadata, preserveChapters, setPreserveChapters, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode, enableOverwriteOutput, setEnableOverwriteOutput, ffmpegExperimental, setFfmpegExperimental, cutFromAdjustmentFrames, setCutFromAdjustmentFrames, cutToAdjustmentFrames, setCutToAdjustmentFrames, setCutFileTemplate, setCutMergedFileTemplate, simpleMode, keyframesEnabled } = useUserSettings();
+  const { keyframeCut, toggleKeyframeCut, preserveMovData, setPreserveMovData, preserveMetadata, setPreserveMetadata, preserveChapters, setPreserveChapters, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode, enableOverwriteOutput, setEnableOverwriteOutput, ffmpegExperimental, setFfmpegExperimental, cutFromAdjustmentFrames, setCutFromAdjustmentFrames, cutToAdjustmentFrames, setCutToAdjustmentFrames, setCutFileTemplate, setCutMergedFileTemplate, simpleMode, keyframesEnabled, batchExportMode } = useUserSettings();
+
+  // Batch export uses its own export mode setting
+  const batchExportModeOverride = batchExportRequested ? batchExportMode : undefined;
+  const exportMode = batchExportModeOverride ?? effectiveExportMode;
+  const exportAutoDeleteMergedSegments = batchExportModeOverride != null ? batchExportModeOverride === 'merge' : autoDeleteMergedSegments;
 
   const [showAdvanced, setShowAdvanced] = useState(!simpleMode);
 
@@ -204,7 +212,7 @@ function ExportConfirm({
 
   const notices = useMemo(() => {
     const specific: Record<'exportMode' | 'problematicStreams' | 'movFastStart' | 'preserveMovData' | 'smartCut' | 'cutMode' | 'avoidNegativeTs' | 'overwriteOutput', Notice | undefined> = {
-      exportMode: effectiveExportMode === 'segments_to_chapters' ? { text: i18n.t('Segments to chapters mode is active, this means that the file will not be cut. Instead chapters will be created from the segments.') } : undefined,
+      exportMode: exportMode === 'segments_to_chapters' ? { text: i18n.t('Segments to chapters mode is active, this means that the file will not be cut. Instead chapters will be created from the segments.') } : undefined,
       problematicStreams: areWeCuttingProblematicStreams ? { warning: true, text: <Trans>Warning: Cutting thumbnail tracks is known to cause problems. Consider disabling track {{ trackNumber: mainCopiedThumbnailStreams[0] ? mainCopiedThumbnailStreams[0].index + 1 : 0 }}.</Trans> } : undefined,
       movFastStart: isMov && isIpod && !movFastStart ? { warning: true, text: t('For the ipod format, it is recommended to activate this option') } : undefined,
       preserveMovData: isMov && isIpod && preserveMovData ? { warning: true, text: t('For the ipod format, it is recommended to deactivate this option') } : undefined,
@@ -231,7 +239,7 @@ function ExportConfirm({
       generic.push({ text: t('You are in simple mode, meaning some functionality has been simplified or hidden.') });
     }
 
-    if ((effectiveExportMode === 'separate' || effectiveExportMode === 'merge' || effectiveExportMode === 'merge+separate') && !areWeCutting) {
+    if ((exportMode === 'separate' || exportMode === 'merge' || exportMode === 'merge+separate') && !areWeCutting) {
       generic.push({ text: t('Exporting whole file without cutting, because there are no segments to export.') });
     }
 
@@ -257,14 +265,14 @@ function ExportConfirm({
       specific,
       totalNum: generic.filter((n) => n.warning).length + Object.values(specific).filter((n) => n != null && n.warning).length,
     };
-  }, [effectiveExportMode, areWeCuttingProblematicStreams, mainCopiedThumbnailStreams, isMov, isIpod, movFastStart, t, preserveMovData, areWeCutting, needSmartCut, isEncoding, keyframeCut, enableOverwriteOutput, simpleMode, willMerge, avoidNegativeTs, outFormat, outputPlaybackRate, keyframesEnabled, haveSegmentWithProblematicKeyframe, hvc1NeededStreams]);
+  }, [exportMode, areWeCuttingProblematicStreams, mainCopiedThumbnailStreams, isMov, isIpod, movFastStart, t, preserveMovData, areWeCutting, needSmartCut, isEncoding, keyframeCut, enableOverwriteOutput, simpleMode, willMerge, avoidNegativeTs, outFormat, outputPlaybackRate, keyframesEnabled, haveSegmentWithProblematicKeyframe, hvc1NeededStreams]);
 
   const exportModeDescription = useMemo(() => ({
     segments_to_chapters: t('Don\'t cut the file, but instead export an unmodified original which has chapters generated from segments'),
     merge: t('Auto merge segments to one file after export'),
     'merge+separate': t('Auto merge segments into one file after export, but keep exported per-segment files too'),
     separate: t('Export each segment to a separate file'),
-  })[effectiveExportMode], [effectiveExportMode, t]);
+  })[exportMode], [exportMode, t]);
 
   const showHelpText = useCallback(({ icon = 'info', timer = 10000, text }: { icon?: SweetAlertIcon, timer?: number, text: string }) => getSwal().toast.fire({ icon, timer, text }), []);
 
@@ -340,7 +348,7 @@ function ExportConfirm({
     showHelpText({ text: t('Enable experimental ffmpeg features flag?') });
   }, [showHelpText, t]);
 
-  const canEditSegTemplate = !willMerge || !autoDeleteMergedSegments;
+  const canEditSegTemplate = !willMerge || !exportAutoDeleteMergedSegments;
 
   const handleEncBitrateToggle = useCallback((checked: boolean) => {
     setEncBitrate(() => (checked ? undefined : 10000));
@@ -375,6 +383,16 @@ function ExportConfirm({
     >
       <table className={styles['options']}>
         <tbody>
+          {batchExportRequested && (
+            <tr>
+              <td>{t('Batch export mode')}</td>
+              <td>
+                <BatchExportModeSelect style={{ height: '1.8em' }} />
+              </td>
+              <td />
+            </tr>
+          )}
+
           {notices.generic.map((notice) => renderGenericNotice(notice))}
 
           {segmentsOrInverse.selected.length !== segmentsOrInverse.all.length && (
@@ -386,18 +404,20 @@ function ExportConfirm({
             </tr>
           )}
 
-          <tr>
-            <td>
-              {segmentsOrInverse.selected.length > 1 ? t('Export mode for {{segments}} segments', { segments: segmentsOrInverse.selected.length }) : t('Export mode')}
-              {renderNotice(notices.specific['exportMode'])}
-            </td>
-            <td>
-              <ExportModeButton selectedSegments={segmentsOrInverse.selected} style={{ height: '1.8em' }} />
-            </td>
-            <td>
-              {renderNoticeIcon(notices.specific['exportMode'], rightIconStyle) ?? <HelpIcon onClick={onExportModeHelpPress} />}
-            </td>
-          </tr>
+          {!batchExportRequested && (
+            <tr>
+              <td>
+                {segmentsOrInverse.selected.length > 1 ? t('Export mode for {{segments}} segments', { segments: segmentsOrInverse.selected.length }) : t('Export mode')}
+                {renderNotice(notices.specific['exportMode'])}
+              </td>
+              <td>
+                <ExportModeButton selectedSegments={segmentsOrInverse.selected} style={{ height: '1.8em' }} />
+              </td>
+              <td>
+                {renderNoticeIcon(notices.specific['exportMode'], rightIconStyle) ?? <HelpIcon onClick={onExportModeHelpPress} />}
+              </td>
+            </tr>
+          )}
 
           <tr>
             <td>

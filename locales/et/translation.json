@@ -107,5 +107,14 @@
   "Exit": "Välju",
   "Auto save project file?": "Automaatselt salvesta projekti fail?",
   "Permanently delete": "Kustuta ära igaveseks",
-  "Check to hide notifications": "Vali, et peita teavitused"
+  "Check to hide notifications": "Vali, et peita teavitused",
+  "Batch export options": "Pakkekspordi valikud",
+  "Export all files in batch": "Ekspordi kõik paketi failid",
+  "Batch export mode": "Pakkekspordi režiim",
+  "Batch export finished": "Pakkeksport lõpetatud",
+  "Exporting batch item {{current}} of {{total}}": "Eksporditakse paketi faili {{current}} / {{total}}",
+  "Reset all to defaults": "Lähtesta kõik vaikeväärtustele",
+  "Merge cuts": "Ühenda lõigud",
+  "Merge & Separate": "Ühenda ja eralda",
+  "Separate files": "Eraldi failid"
 }

@@ -149,6 +149,8 @@ export default function useUserSettingsRoot() {
   useEffect(() => safeSetConfig({ enableAutoHtml5ify }), [enableAutoHtml5ify]);
   const [segmentsToChaptersOnly, setSegmentsToChaptersOnly] = useState(safeGetConfigInitial('segmentsToChaptersOnly'));
   useEffect(() => safeSetConfig({ segmentsToChaptersOnly }), [segmentsToChaptersOnly]);
+  const [batchExportMode, setBatchExportMode] = useState(safeGetConfigInitial('batchExportMode'));
+  useEffect(() => safeSetConfig({ batchExportMode }), [batchExportMode]);
   const [keyBindings, setKeyBindings] = useState(safeGetConfigInitial('keyBindings'));
   useEffect(() => safeSetConfig({ keyBindings }), [keyBindings]);
   const [enableSmartCut, setEnableSmartCut] = useState(safeGetConfigInitial('enableSmartCut'));
@@ -302,6 +304,7 @@ export default function useUserSettingsRoot() {
     safeOutputFileName,
     enableAutoHtml5ify,
     segmentsToChaptersOnly,
+    batchExportMode,
     keyBindings,
     enableSmartCut,
     customFfPath,
@@ -384,6 +387,7 @@ export default function useUserSettingsRoot() {
     setSafeOutputFileName,
     setEnableAutoHtml5ify,
     setSegmentsToChaptersOnly,
+    setBatchExportMode,
     setKeyBindings,
     resetKeyBindings,
     setEnableSmartCut,

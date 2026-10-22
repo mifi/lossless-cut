@@ -850,5 +850,11 @@
   "\"{{property}}\" must be an object of strings": "\"{{property}}\" phải là một đối tượng của chuỗi",
   "{{appStoreType}} edition, based on GitHub v{{appVersion}}": "Phiên bản {{appStoreType}}, dựa trên GitHub v{{appVersion}}",
   "{{durationMsFormatted}} ms": "{{durationMsFormatted}} ms",
-  "{{frameCount}} frames": "{{frameCount}} frames"
+  "{{frameCount}} frames": "{{frameCount}} frames",
+  "Batch export options": "Tùy chọn xuất hàng loạt",
+  "Export all files in batch": "Xuất tất cả tệp trong danh sách",
+  "Batch export mode": "Chế độ xuất hàng loạt",
+  "Batch export finished": "Đã xuất hàng loạt xong",
+  "Exporting batch item {{current}} of {{total}}": "Đang xuất mục {{current}} / {{total}}",
+  "Reset all to defaults": "Đặt lại tất cả về mặc định"
 }

@@ -971,5 +971,11 @@
   "What's new in LosslessCut?": "Co nowego w LosslessCut?",
   "Yes": "Tak",
   "{{durationMsFormatted}} ms": "{{durationMsFormatted}} ms",
-  "{{frameCount}} frames": "{{frameCount}} klatek"
+  "{{frameCount}} frames": "{{frameCount}} klatek",
+  "Batch export options": "Opcje eksportu wsadowego",
+  "Export all files in batch": "Eksportuj wszystkie pliki wsadowe",
+  "Batch export mode": "Tryb eksportu wsadowego",
+  "Batch export finished": "Eksport wsadowy zakończony",
+  "Exporting batch item {{current}} of {{total}}": "Eksportowanie pliku wsadowego {{current}} z {{total}}",
+  "Reset all to defaults": "Przywróć wszystko do domyślnych"
 }

@@ -2,5 +2,14 @@
   "\"{{property}}\" must be a number": "\"{{property}}\" devas esti nombro",
   "\"{{property}}\" must be a string": "\"{{property}}\" devas esti signoĉeno",
   "\"{{property}}\" must be an object of strings": "\"{{property}}\" devas esti objekto de ĉenoj",
-  "\"ffmpeg\" experimental flag": "Eksperimenta flago de \"ffmpeg\""
+  "\"ffmpeg\" experimental flag": "Eksperimenta flago de \"ffmpeg\"",
+  "Batch export options": "Opcioj de amasa eksporto",
+  "Export all files in batch": "Eksporti ĉiujn dosierojn de la aro",
+  "Batch export mode": "Reĝimo de amasa eksporto",
+  "Batch export finished": "Amasa eksporto finiĝis",
+  "Exporting batch item {{current}} of {{total}}": "Eksportado de ero {{current}} el {{total}}",
+  "Reset all to defaults": "Restarigi ĉion al defaŭltoj",
+  "Merge cuts": "Kunfandi tranĉaĵojn",
+  "Merge & Separate": "Kunfandi kaj apartigi",
+  "Separate files": "Apartaj dosieroj"
 }

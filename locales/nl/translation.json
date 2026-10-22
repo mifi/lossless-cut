@@ -664,5 +664,11 @@
   "Change FPS": "FPS aanpassen",
   "Close current file": "Huidig bestand sluiten",
   "Common video/audio formats:": "Veelgebruikte video-/audioformaten:",
-  "Duplicate current segment": "Huidig segment dupliceren"
+  "Duplicate current segment": "Huidig segment dupliceren",
+  "Batch export options": "Opties voor batch-export",
+  "Export all files in batch": "Alle bestanden in batch exporteren",
+  "Batch export mode": "Modus voor batch-export",
+  "Batch export finished": "Batch-export voltooid",
+  "Exporting batch item {{current}} of {{total}}": "Batch-item {{current}} van {{total}} exporteren",
+  "Reset all to defaults": "Alles herstellen naar standaard"
 }
