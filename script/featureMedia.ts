@@ -4,6 +4,7 @@
 import assert from 'node:assert';
 import { createWriteStream } from 'node:fs';
 import { access, mkdir, mkdtemp, rename, rm, writeFile } from 'node:fs/promises';
+import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { Readable } from 'node:stream';
@@ -26,9 +27,15 @@ assert(process.platform === 'linux' && display != null, 'Run under Xvfb on Linux
 const width = 1024;
 const height = 640;
 const scale = Number(scaleArg);
+assert(Number.isInteger(scale) && scale > 0, `--scale must be a whole number, got ${scaleArg}`);
 const screenWidth = width * scale;
 const screenHeight = height * scale;
 const port = 8099;
+// Another app on the port (e.g. your own LosslessCut with the HTTP API on) would get the actions instead
+await new Promise<void>((resolvePromise, reject) => {
+  const server = createServer().once('error', () => reject(new Error(`Port ${port} is in use, close what's using it (e.g. LosslessCut with the HTTP API on)`)));
+  server.listen(port, '127.0.0.1', () => server.close(() => resolvePromise()));
+});
 // Scenarios click at fixed positions, so the screen must be the size of the window
 const { stdout: screenSize } = await execa('xdotool', ['getdisplaygeometry']);
 assert(screenSize === `${screenWidth} ${screenHeight}`, `The screen is ${screenSize}, run Xvfb with -screen 0 ${screenWidth}x${screenHeight}x24`);
@@ -38,16 +45,23 @@ const outDir = 'dist/feature-media';
 await mkdir(outDir, { recursive: true });
 await mkdir(clips, { recursive: true });
 
-// Downloads to a temp file first, so an interrupted download isn't used next time
-async function download(url: string, path: string) {
-  const response = await fetch(url);
-  assert(response.ok && response.body != null, `Failed to download ${url}: ${response.status}`);
-  await pipeline(Readable.fromWeb(response.body), createWriteStream(`${path}.part`));
+const exists = async (path: string) => access(path).then(() => true, () => false);
+
+// Writes to a temp file first, so an interrupted download isn't used next time
+async function writeVia(path: string, write: (partPath: string) => Promise<unknown>) {
+  await write(`${path}.part`);
   await rename(`${path}.part`, path);
 }
 
-// ffmpeg only uses the lowercase variable
+async function download(url: string, path: string) {
+  const response = await fetch(url);
+  assert(response.ok && response.body != null, `Failed to download ${url}: ${response.status}`);
+  await writeVia(path, async (partPath) => pipeline(Readable.fromWeb(response.body!), createWriteStream(partPath)));
+}
+
+// ffmpeg only uses the lowercase variable. It also doesn't time out on a slow connection through a proxy, like fetch does
 const httpProxy = process.env['http_proxy'] ?? process.env['HTTPS_PROXY'];
+const ffmpegDownload = async (args: string[], path: string) => writeVia(path, async (partPath) => execa(ffmpeg, ['-v', 'error', '-y', ...args, partPath], { ...(httpProxy != null && { env: { http_proxy: httpProxy } }) }));
 
 // The music for the social media versions: a track from music.ts, an audio file, or none
 const musicTrack = musicTracks[musicArg];
@@ -56,25 +70,22 @@ if (musicTrack != null) {
   const musicDir = 'dist/feature-media-music';
   await mkdir(musicDir, { recursive: true });
   music = join(musicDir, `${musicArg}.mp3`);
-  if (!await access(music).then(() => true, () => false)) {
+  if (!await exists(music)) {
     console.log('Downloading music', musicArg);
-    // With ffmpeg, which (unlike fetch) doesn't time out on a slow connection through a proxy
-    await execa(ffmpeg, ['-v', 'error', '-y', '-i', musicTrack.url, '-c', 'copy', '-f', 'mp3', `${music}.part`], { ...(httpProxy != null && { env: { http_proxy: httpProxy } }) });
-    await rename(`${music}.part`, music);
+    await ffmpegDownload(['-i', musicTrack.url, '-c', 'copy', '-f', 'mp3'], music);
   }
 }
+assert(music == null || await exists(music), `--music must be one of ${Object.keys(musicTracks).join(', ')}, an audio file or none, got ${musicArg}`);
 
 // Get the clips, from the folder or else make them from their sources (see clips.ts) or download them
 const clipsUrl = process.env['FEATURE_MEDIA_CLIPS_URL'] ?? 'https://static.mifi.no/losslesscut';
 for (const clip of scenario.clips) {
   const path = join(clips, clip);
-  if (!await access(path).then(() => true, () => false)) {
+  if (!await exists(path)) {
     const sourceArgs = clipSources[clip];
     if (sourceArgs != null) {
       console.log('Making', clip, 'from its sources');
-      // Via a temp file, so an interrupted run isn't used next time
-      await execa(ffmpeg, ['-v', 'error', '-y', ...sourceArgs, `${path}.part`], { ...(httpProxy != null && { env: { http_proxy: httpProxy } }) });
-      await rename(`${path}.part`, path);
+      await ffmpegDownload(sourceArgs, path);
     } else {
       console.log('Downloading', clip);
       await download(`${clipsUrl}/${clip}`, path);
@@ -99,8 +110,8 @@ async function post(path: string, body?: unknown) {
   const response = await fetch(`http://127.0.0.1:${port}/api/${path}`, {
     method: 'POST',
     ...(body !== undefined && { headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }),
-    // Most actions wait until they're done, but don't hang forever on one that opens a dialog
-    signal: AbortSignal.timeout(10_000),
+    // Actions wait until they're done (e.g. a scene detection), but don't hang forever on one that opens a dialog
+    signal: AbortSignal.timeout(60_000),
   });
   assert(response.ok, `${path} failed: ${response.status} ${await response.text()}`);
 }
@@ -126,9 +137,14 @@ try {
   const zoomEvents: { time: number, rect: Rect | undefined }[] = [];
   await timers.setTimeout(500);
 
-  const action = async (name: string, args?: unknown) => {
+  // Not async, so the caught promise itself is returned (an async function would wrap it in a new, uncaught one)
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  const action = (name: string, args?: unknown) => {
     console.log('Action', name, args ?? '');
-    await post(`action/${name}`, args);
+    const done = post(`action/${name}`, args);
+    // Scenarios may await it later (e.g. after closing the dialog it opens), so a failure meanwhile mustn't be an unhandled rejection, which would skip the cleanup
+    done.catch(() => undefined);
+    return done;
   };
   const key = async (keys: string) => {
     await execa('xdotool', ['key', keys]);
@@ -179,15 +195,18 @@ try {
   }
   const { exitCode } = await recorder;
   assert(exitCode === 0 || exitCode === 255, `Recording failed with exit code ${exitCode}`);
+  // Not needed for the encoding below
+  app.kill();
   // A high quality master (web versions are made from it elsewhere), with the index at the start for streaming
   const videoPath = join(outDir, `${scenarioName}.mp4`);
-  await execa(ffmpeg, ['-v', 'error', '-y', '-ss', String(videoStart), '-i', rawVideo, '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-tune', 'animation', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', videoPath]);
+  await execa(ffmpeg, ['-v', 'error', '-y', '-ss', String(videoStart), '-i', rawVideo, '-vf', 'fps=30', '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-tune', 'animation', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', videoPath]);
 
   // The social media versions start just before the first caption (after the intro card, the opening of the file isn't needed)
   const socialStart = Math.max(videoStart, (captionEvents[0]?.time ?? 0) - 0.5);
   const { stdout: rawDuration } = await execa(ffprobe, ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', rawVideo]);
   const duration = Number(rawDuration) - socialStart;
-  const captions: Caption[] = captionEvents.flatMap(({ time, text }, i) => (text == null ? [] : [{ text, start: Math.max(0, time - socialStart), end: Math.min((captionEvents[i + 1]?.time ?? Infinity) - socialStart, duration) }]));
+  const captions: Caption[] = captionEvents.flatMap(({ time, text }, i) => (text == null ? [] : [{ text, start: Math.max(0, time - socialStart), end: Math.min((captionEvents[i + 1]?.time ?? Infinity) - socialStart, duration) }]))
+    .filter(({ start, end }) => end > start);
   const zooms: Zoom[] = zoomEvents.map(({ time, rect }) => ({ time: time - socialStart, rect }));
   for (const format of ['landscape', 'vertical'] as const) {
     // eslint-disable-next-line no-await-in-loop

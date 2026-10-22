@@ -76,7 +76,8 @@ function easedExpression(times: number[], values: number[], initial: number): st
 }
 
 // zoompan settings that follow the zooms. The input is scaled up 2x first, which makes slow zooms smoother.
-// zoompan's output timestamps can be off (with the raw recording), which makes xfade buffer frames without end, so they're renumbered
+// zoompan's output timestamps can be off (with the raw recording), which makes xfade buffer frames without end, so they're renumbered.
+// fps first fills in the frames x11grab dropped, or the renumbering would shorten the video
 function zoomFilter(zooms: Zoom[], { windowWidth, windowHeight }: { windowWidth: number, windowHeight: number }, outWidth: number, outHeight: number) {
   const times = zooms.map(({ time }) => time);
   const targets = zooms.map(({ rect }) => {
@@ -88,7 +89,7 @@ function zoomFilter(zooms: Zoom[], { windowWidth, windowHeight }: { windowWidth:
   // The centre, in the 2x input's pixels, kept inside the frame
   const cx = easedExpression(times, targets.map((t) => t.cx * 2), windowWidth);
   const cy = easedExpression(times, targets.map((t) => t.cy * 2), windowHeight);
-  return `scale=${windowWidth * 2}:${windowHeight * 2}:flags=lanczos,zoompan=z='${z}':x='clip(${cx}-iw/zoom/2,0,iw-iw/zoom)':y='clip(${cy}-ih/zoom/2,0,ih-ih/zoom)':d=1:s=${outWidth}x${outHeight}:fps=${fps},setpts=N/${fps}/TB`;
+  return `fps=${fps},scale=${windowWidth * 2}:${windowHeight * 2}:flags=lanczos,zoompan=z='${z}':x='clip(${cx}-iw/zoom/2,0,iw-iw/zoom)':y='clip(${cy}-ih/zoom/2,0,ih-ih/zoom)':d=1:s=${outWidth}x${outHeight}:fps=${fps},setpts=N/${fps}/TB`;
 }
 
 export async function renderSocialVideo({ ffmpeg, rawVideo, videoStart, duration, captions, zooms, description, music, windowWidth, windowHeight, format, tmpDir, outPath }: {

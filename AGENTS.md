@@ -30,7 +30,7 @@ Never submit to a store, publish a release or post an announcement without the u
 
 ```bash
 yarn build && yarn download-ffmpeg-linux-x64
-# If missing: apt-get install xvfb xdotool
+# If missing: apt-get install xvfb xdotool fonts-inter
 xvfb-run -a -s "-screen 0 1024x640x24" node script/featureMedia.ts cut-segments
 ```
 
