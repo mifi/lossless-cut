@@ -5,13 +5,8 @@ import macAppStoreBadge from '../../../mac-app-store-badge.svg?url';
 import msStoreBadge from '../../../ms-store-badge.svg?url';
 import snapStoreBadge from '../../../snap-store-black.svg?url';
 import logo from '../../../src/renderer/src/icon.svg?url';
-import background1 from '../assets/home/background.jpg?url';
-import background2 from '../assets/home/background2.jpg?url';
-import mainScreenshot from '../assets/home/main-screenshot.jpg?url';
-import original from '../assets/home/original.jpg?url';
-import reencoded from '../assets/home/reencoded.jpg?url';
-import tracksScreenshot from '../assets/home/tracks-screenshot.jpg?url';
 
+import { background1, background2, generationLossOriginal, generationLossReencoded, mainScreenshot, tracksScreenshot } from '../images.ts';
 import { authorUrl, donateUrl, githubUrl, socialLinks, storeUrls, supportEmail } from '../links.ts';
 import socialIconPaths from './socialIcons.ts';
 
@@ -73,11 +68,11 @@ const footerLinks = [
 ];
 
 // A screenshot over a full-width background image.
-function ScreenshotSection({ background, screenshot, alt, width, borderRadius, subtitle }: { background: string, screenshot: string, alt: string, width: number, borderRadius: number, subtitle: string }) {
+function ScreenshotSection({ background, screenshot, alt, width, borderRadius, subtitle }: { background: string, screenshot: { src: string, srcSet: string }, alt: string, width: number, borderRadius: number, subtitle: string }) {
   return (
     <div className="background" style={{ backgroundImage: `url(${background})` }}>
       <div className="padded">
-        <img loading="lazy" src={screenshot} alt={alt} className="screenshot" style={{ width, borderRadius }} />
+        <img loading="lazy" src={screenshot.src} srcSet={screenshot.srcSet} alt={alt} className="screenshot" style={{ width, borderRadius }} />
       </div>
       <div className="image-subtitle">{subtitle}</div>
     </div>
@@ -135,7 +130,7 @@ export default function Home() {
       <WhiteSection>
         <div className="comparison" style={{ maxWidth: '700px' }}>
           <h2 style={{ margin: '20px 0' }}>Traditional video editors</h2>
-          <img loading="lazy" src={reencoded} alt="Generational compression artifacts from re-encoding" className="comparison-image" />
+          <img loading="lazy" src={generationLossReencoded.src} srcSet={generationLossReencoded.srcSet} alt="Generational compression artifacts from re-encoding" className="comparison-image" />
 
           <p>
             Any operation in a <b className="key-point">normal video editor</b><br />
@@ -147,7 +142,7 @@ export default function Home() {
 
         <div className="comparison" style={{ maxWidth: '800px' }}>
           <h2 style={{ marginTop: '40px', marginBottom: '20px' }}><a style={{ color: 'inherit', textDecoration: 'none' }} href="/">LosslessCut<span style={{ opacity: '0.6' }}>.app</span></a></h2>
-          <img loading="lazy" alt="The original, without generational compression artifacts" src={original} className="comparison-image" />
+          <img loading="lazy" alt="The original, without generational compression artifacts" src={generationLossOriginal.src} srcSet={generationLossOriginal.srcSet} className="comparison-image" />
           <p>
             LosslessCut will do the same <b className="key-point">in seconds</b> without losing quality
           </p>
