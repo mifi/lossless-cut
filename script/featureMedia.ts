@@ -14,6 +14,7 @@ import { parseArgs } from 'node:util';
 import { execa } from 'execa';
 import clipSources from './featureMedia/clips.ts';
 import musicTracks, { defaultMusic } from './featureMedia/music.ts';
+import openHtmlScenes from './featureMedia/htmlScenes.ts';
 import scenarios from './featureMedia/scenarios.ts';
 import { renderSocialVideo, type Caption, type Rect, type Zoom } from './featureMedia/socialVideo.ts';
 
@@ -76,6 +77,15 @@ if (musicTrack != null) {
   }
 }
 assert(music == null || await exists(music), `--music must be one of ${Object.keys(musicTracks).join(', ')}, an audio file or none, got ${musicArg}`);
+
+// The desktop's photo in the social media versions (the homepage's)
+const background = 'dist/feature-media-background.jpg';
+if (!await exists(background)) {
+  console.log('Downloading the background');
+  await download('https://static.mifi.no/dist/losslesscut/website/background-2000.jpg', background);
+}
+// The social media versions are drawn with Chromium: check that it starts before recording (see AGENTS.md "Feature media" if not)
+await (await openHtmlScenes({ width: 100, height: 100 })).close();
 
 // Get the clips, from the folder or else make them from their sources (see clips.ts) or download them
 const clipsUrl = process.env['FEATURE_MEDIA_CLIPS_URL'] ?? 'https://static.mifi.no/losslesscut';
@@ -201,7 +211,7 @@ try {
   const videoPath = join(outDir, `${scenarioName}.mp4`);
   await execa(ffmpeg, ['-v', 'error', '-y', '-ss', String(videoStart), '-i', rawVideo, '-vf', 'fps=30', '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-tune', 'animation', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', videoPath]);
 
-  // The social media versions start just before the first caption (after the intro card, the opening of the file isn't needed)
+  // The social media versions start just before the first caption (after the intro, the opening of the file isn't needed)
   const socialStart = Math.max(videoStart, (captionEvents[0]?.time ?? 0) - 0.5);
   const { stdout: rawDuration } = await execa(ffprobe, ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', rawVideo]);
   const duration = Number(rawDuration) - socialStart;
@@ -210,7 +220,7 @@ try {
   const zooms: Zoom[] = zoomEvents.map(({ time, rect }) => ({ time: time - socialStart, rect }));
   for (const format of ['landscape', 'vertical'] as const) {
     // eslint-disable-next-line no-await-in-loop
-    await renderSocialVideo({ ffmpeg, rawVideo, videoStart: socialStart, duration, captions, zooms, description: scenario.description, music, windowWidth: width, windowHeight: height, format, tmpDir: configDir, outPath: join(outDir, `${scenarioName}-${format}.mp4`) });
+    await renderSocialVideo({ ffmpeg, rawVideo, videoStart: socialStart, duration, captions, zooms, description: scenario.description, music, background, windowWidth: width, windowHeight: height, format, tmpDir: configDir, outPath: join(outDir, `${scenarioName}-${format}.mp4`) });
   }
   console.log('Wrote', videoPath, 'the social media versions and screenshots in', outDir);
   if (musicTrack != null) console.log('Posts with the social media versions must credit:', musicTrack.credit);

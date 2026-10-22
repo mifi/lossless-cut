@@ -1,0 +1,206 @@
+<!doctype html>
+<!--
+  The designed parts of the social media versions of the feature demos (see socialVideo.ts): the desktop with the app window,
+  the captions, and the intro and outro animations. socialVideo.ts renders it with Chromium, with the settings as JSON in the URL's hash,
+  and ffmpeg puts the (zoomed) recording into the window's opening.
+  To design, open it in a browser: it plays the intro with a placeholder for the recording. Override settings in the hash,
+  e.g. desktop.html#{"scene":"outro"} or #{"scene":"preview","caption":"Hello"} (see `defaults` below).
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<title>Feature media desktop</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; overflow: hidden; background: transparent; }
+  body { font-family: Inter, system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; color: white; -webkit-font-smoothing: antialiased; }
+  #scene { position: absolute; left: 0; top: 0; overflow: hidden; }
+
+  /* The photo, darkened a bit (most at the edges) so the window and the text stand out */
+  #desktop { position: absolute; inset: 0; overflow: hidden; background: #1b2b33; }
+  #desktop .photo { position: absolute; inset: -12px; background-size: cover; background-position: center; filter: blur(2px) saturate(1.05) brightness(0.82); }
+  #desktop::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 45%, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.35) 100%); }
+
+  /* A macOS style window in dark mode. Sizes are in macOS points times --s */
+  #window { position: absolute; transform-origin: 0 0; border-radius: calc(12px * var(--s)); box-shadow: 0 calc(22px * var(--s)) calc(70px * var(--s)) calc(4px * var(--s)) rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 0, 0, 0.5); }
+  #titlebar { position: absolute; left: 0; top: 0; right: 0; border-radius: calc(12px * var(--s)) calc(12px * var(--s)) 0 0; background: linear-gradient(#3b3b3d, #333335); box-shadow: inset 0 1px rgba(255, 255, 255, 0.14); border-bottom: 1px solid #151515; }
+  #titlebar .title { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: calc(13px * var(--s)); font-weight: 600; color: rgba(255, 255, 255, 0.82); letter-spacing: 0.01em; }
+  #titlebar .lights { position: absolute; left: calc(13px * var(--s)); top: 0; bottom: 0; display: flex; align-items: center; gap: calc(8px * var(--s)); }
+  #titlebar .lights span { width: calc(12px * var(--s)); height: calc(12px * var(--s)); border-radius: 50%; box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.25); }
+  #titlebar .lights span:nth-child(1) { background: #ff5f57; }
+  #titlebar .lights span:nth-child(2) { background: #febc2e; }
+  #titlebar .lights span:nth-child(3) { background: #28c840; }
+  /* The recording goes here. In the frame scene it's a hole that ffmpeg fills */
+  #content { position: absolute; left: 0; right: 0; bottom: 0; overflow: hidden; border-radius: 0 0 calc(12px * var(--s)) calc(12px * var(--s)); background: #222 center / cover; }
+  .frame #content { display: none; }
+
+  /* The icon and two lines of text, in the intro and outro */
+  #launcher { position: absolute; isolation: isolate; display: flex; flex-direction: column; align-items: center; text-align: center; }
+  /* A soft shade behind it, so the text is readable on the bright sand */
+  #launcher::before { content: ''; position: absolute; z-index: -1; left: 50%; top: 50%; width: min(90%, calc(var(--icon) * 6)); height: calc(var(--icon) * 2.6); transform: translate(-50%, -38%); background: radial-gradient(closest-side, rgba(0, 0, 0, 0.38), rgba(0, 0, 0, 0)); }
+  #icon { display: block; transform-origin: 50% 100%; filter: drop-shadow(0 calc(var(--icon) * 0.06) calc(var(--icon) * 0.08) rgba(0, 0, 0, 0.45)); }
+  #launcher .title { font-weight: 700; letter-spacing: -0.01em; text-shadow: 0 2px 18px rgba(0, 0, 0, 0.55), 0 1px 3px rgba(0, 0, 0, 0.4); }
+  #launcher .subtitle { font-weight: 500; color: rgba(255, 255, 255, 0.92); text-shadow: 0 2px 14px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.45); }
+
+  #caption { position: absolute; left: 50%; transform: translateX(-50%); width: max-content; text-align: center; font-weight: 700; line-height: 1.25; padding: 0.45em 0.85em; border-radius: 0.55em; background: rgba(17, 17, 19, 0.82); box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.08); }
+
+  /* Only what the scene needs */
+  .frame #launcher, .frame #caption, .preview #launcher, .caption #desktop, .caption #window, .caption #launcher, .intro #caption, .outro #caption { display: none; }
+</style>
+</head>
+<body>
+<div id="scene">
+  <div id="desktop"><div class="photo"></div></div>
+  <div id="launcher"><div id="icon-launch"><img id="icon" alt=""></div><div class="title"></div><div class="subtitle"></div></div>
+  <div id="window">
+    <div id="titlebar"><div class="lights"><span></span><span></span><span></span></div><div class="title">LosslessCut</div></div>
+    <div id="content"></div>
+  </div>
+  <div id="caption"></div>
+</div>
+<script>
+// The settings for designing in a browser. socialVideo.ts passes all of them
+const defaults = {
+  // frame: the desktop and window with a hole for the recording. caption: only the caption. intro, outro: the animations.
+  // preview (only for designing): the desktop, window and caption
+  scene: 'intro',
+  width: 1920,
+  height: 1200,
+  // Where the recording goes (the window's content, below the title bar), and the window's scale from macOS points
+  content: { x: 224, y: 208, w: 1472, h: 920 },
+  titleBarHeight: 40,
+  scale: 1.4375,
+  captionSize: 48,
+  // Between the caption and the top of the window
+  captionGap: 36,
+  caption: 'Choose the ones to keep',
+  title: 'LosslessCut',
+  subtitle: 'Choose which tracks to keep, then export',
+  // The recording's first (intro) or last (outro) frame
+  image: undefined,
+  background: 'https://static.mifi.no/dist/losslesscut/website/background-2000.jpg',
+  icon: '../../src/renderer/src/icon.svg',
+  // Set when rendering: the animations are paused and stepped with scene.seek()
+  render: false,
+};
+const config = { ...defaults, ...(location.hash.length > 1 ? JSON.parse(decodeURIComponent(location.hash.slice(1))) : {}) };
+const { width, height, content, titleBarHeight, scale } = config;
+const $ = (selector) => document.querySelector(selector);
+const setStyle = (element, style) => Object.assign(element.style, style);
+const px = (value) => `${value}px`;
+
+document.body.className = config.scene;
+setStyle($('#scene'), { width: px(width), height: px(height) });
+document.documentElement.style.setProperty('--s', String(scale));
+$('#desktop .photo').style.backgroundImage = `url("${config.background}")`;
+
+// The window, around the content
+const win = { x: content.x, y: content.y - titleBarHeight, w: content.w, h: content.h + titleBarHeight };
+setStyle($('#window'), { left: px(win.x), top: px(win.y), width: px(win.w), height: px(win.h) });
+setStyle($('#titlebar'), { height: px(titleBarHeight) });
+setStyle($('#content'), { top: px(titleBarHeight), backgroundImage: config.image != null ? `url("${config.image}")` : 'linear-gradient(135deg, #2a2d33, #16171a)' });
+
+// The frame scene shows the desktop through the content, minus its rounded bottom corners: ffmpeg puts the recording under it
+if (config.scene === 'frame') {
+  const r = 12 * scale;
+  const { x, y, w, h } = content;
+  $('#scene').style.clipPath = `path(evenodd, "M0 0H${width}V${height}H0Z M${x} ${y}H${x + w}V${y + h - r}A${r} ${r} 0 0 1 ${x + w - r} ${y + h}H${x + r}A${r} ${r} 0 0 1 ${x} ${y + h - r}Z")`;
+}
+
+// The caption goes above the window, growing upwards
+const caption = $('#caption');
+caption.textContent = config.caption ?? '';
+setStyle(caption, { fontSize: px(config.captionSize), bottom: px(height - win.y + config.captionGap), maxWidth: px(width - 120) });
+if (!config.caption) caption.style.display = 'none';
+
+// The icon, at the middle of the window, with the text under it
+const iconSize = Math.round(Math.min(width, height) * 0.16);
+const icon = $('#icon');
+icon.src = config.icon;
+setStyle(icon, { width: px(iconSize), height: px(iconSize) });
+document.documentElement.style.setProperty('--icon', px(iconSize));
+const iconCenter = { x: win.x + win.w / 2, y: win.y + win.h / 2 - iconSize * 0.45 };
+const launcher = $('#launcher');
+setStyle(launcher, { left: px(iconCenter.x - width / 2), width: px(width), top: px(iconCenter.y - iconSize / 2), padding: '0 60px' });
+const [titleText, subtitleText] = [$('#launcher .title'), $('#launcher .subtitle')];
+titleText.textContent = config.title;
+subtitleText.textContent = config.subtitle;
+setStyle(titleText, { fontSize: px(iconSize * 0.3), marginTop: px(iconSize * 0.16) });
+setStyle(subtitleText, { fontSize: px(Math.max(iconSize * 0.16, config.captionSize * 0.75)), marginTop: px(iconSize * 0.05) });
+
+// A spring that overshoots a little (about 4 %) and settles, as a CSS linear() easing. Frequency is per animation duration
+function spring({ damping = 0.72, frequency = 7.9 } = {}) {
+  const decay = damping * frequency;
+  const damped = frequency * Math.sqrt(1 - damping ** 2);
+  const points = Array.from({ length: 61 }, (_, i) => {
+    const t = i / 60;
+    const value = i === 60 ? 1 : 1 - Math.exp(-decay * t) * (Math.cos(damped * t) + (decay / damped) * Math.sin(damped * t));
+    return value.toFixed(4);
+  });
+  return `linear(${points.join(', ')})`;
+}
+
+// The window transform that puts it over the icon, at the icon's width
+const fromIconScale = iconSize / win.w;
+const atIcon = `translate(${iconCenter.x - win.x - (win.w * fromIconScale) / 2}px, ${iconCenter.y - win.y - (win.h * fromIconScale) / 2}px) scale(${fromIconScale})`;
+
+// The animations, with times in seconds. The scene lasts until the last one ends, and its last (intro) or first (outro) frame is the frame scene with the recording in it
+const animate = (selector, keyframes, start, duration, options = {}) => $(selector).animate(keyframes, { delay: start * 1000, duration: duration * 1000, fill: 'both', easing: 'ease-in-out', ...options });
+// Makes the scene last longer
+const hold = (start, duration) => animate('body', [{}, {}], start, duration);
+const scenes = {
+  intro() {
+    // The icon bounces once, like an app being launched in the Dock, while the text is read
+    animate('#icon', [
+      { transform: 'none', easing: 'cubic-bezier(0.2, 0.6, 0.35, 1)' },
+      { transform: `translateY(${-iconSize * 0.42}px)`, offset: 0.45, easing: 'cubic-bezier(0.6, 0, 0.85, 0.4)' },
+      { transform: 'none', offset: 0.82 },
+      { transform: 'scale(1.05, 0.95)', offset: 0.9 },
+      { transform: 'none' },
+    ], 0.55, 0.6, { easing: 'linear' });
+    // Then the window opens out of it
+    const open = 1.45;
+    animate('#launcher .title', [{ opacity: 1 }, { opacity: 0 }], open - 0.1, 0.3);
+    animate('#launcher .subtitle', [{ opacity: 1 }, { opacity: 0 }], open - 0.1, 0.3);
+    animate('#icon-launch', [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'scale(1.6)' }], open, 0.3, { easing: 'ease-in' });
+    animate('#window', [{ transform: atIcon }, { transform: 'none' }], open, 0.75, { easing: spring() });
+    animate('#window', [{ opacity: 0 }, { opacity: 1 }], open, 0.18, { easing: 'linear' });
+    // A short hold on the first frame before the recording starts
+    hold(open + 0.75, 0.15);
+  },
+  outro() {
+    // The window closes into the icon, then the text comes
+    const close = 0.15;
+    animate('#window', [{ transform: 'none' }, { transform: atIcon }], close, 0.5, { easing: 'cubic-bezier(0.55, 0, 0.75, 0.3)' });
+    animate('#window', [{ opacity: 1 }, { opacity: 0 }], close + 0.36, 0.14, { easing: 'linear' });
+    animate('#icon-launch', [{ opacity: 0, transform: 'scale(0.6)' }, { opacity: 1, transform: 'scale(1.06)', offset: 0.6 }, { opacity: 1, transform: 'none' }], close + 0.3, 0.45, { easing: 'ease-out' });
+    animate('#launcher .title', [{ opacity: 0, transform: 'translateY(12px)' }, { opacity: 1, transform: 'none' }], close + 0.75, 0.4, { easing: 'ease-out' });
+    animate('#launcher .subtitle', [{ opacity: 0, transform: 'translateY(12px)' }, { opacity: 1, transform: 'none' }], close + 0.9, 0.4, { easing: 'ease-out' });
+    // Hold, to read it
+    hold(close + 1.3, 1.05);
+  },
+};
+scenes[config.scene]?.();
+
+const animations = document.getAnimations();
+const duration = Math.max(0, ...animations.map((animation) => animation.effect.getComputedTiming().endTime / 1000));
+const images = [icon, ...[config.background, config.image].filter((src) => src != null).map((src) => Object.assign(new Image(), { src }))];
+window.scene = {
+  // Fonts and images loaded
+  ready: Promise.all([document.fonts.ready, ...images.map(async (image) => image.decode().catch(() => undefined))]),
+  duration,
+  // Shows the scene at a time (in seconds), when rendering
+  seek(time) {
+    for (const animation of animations) animation.currentTime = time * 1000;
+  },
+};
+if (config.render) {
+  for (const animation of animations) animation.pause();
+  window.scene.seek(0);
+} else if (duration > 0) {
+  // Designing: play it over and over
+  setInterval(() => animations.forEach((animation) => { animation.currentTime = 0; animation.play(); }), (duration + 1) * 1000);
+}
+</script>
+</body>
+</html>

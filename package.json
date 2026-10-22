@@ -113,6 +113,7 @@
     "nanoid": "^5.1.11",
     "p-map": "^7.0.4",
     "p-retry": "^8.0.0",
+    "playwright": "^1.64.1",
     "pretty-bytes": "^7.1.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
