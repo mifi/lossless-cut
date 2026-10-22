@@ -82,7 +82,7 @@ Lossless cuts can only start at a keyframe, so a cut starts at the keyframe befo
 
 ## Workflow
 
-- Open many files as a batch list, and go through them one at a time (there's no batch export, but see [Batch processing](batch.md))
+- Open many media files or `.llc` projects as a batch list, and go through them one at a time. Each project opens its referenced media and saved segments (there's no batch export, but see [Batch processing](batch.md))
 - Convert a whole batch of files to a supported format
 - Keyboard shortcut workflow, with customizable shortcuts
 - See the FFmpeg commands that were run, so you can change and re-run them on the command line

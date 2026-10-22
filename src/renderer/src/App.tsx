@@ -1586,12 +1586,13 @@ function App() {
 
   const seekAccelerationRef = useRef(1);
 
-  const userOpenSingleFile = useCallback(async ({ path: pathIn, isLlcProject }: { path: string, isLlcProject?: boolean }) => {
+  const userOpenSingleFile = useCallback(async ({ path: pathIn }: { path: string }) => {
     let path = pathIn;
     let projectPath: string | undefined;
 
-    // Open .llc AND media referenced within
-    if (isLlcProject) {
+    // Detect projects here so batch entries and single-file drops use the same
+    // path: open the referenced media and load this project's saved segments.
+    if (path.toLowerCase().endsWith('.llc')) {
       console.log('Loading LLC project', path);
       const project = await loadLlcProject(path);
       const { mediaFileName } = project;
@@ -1925,7 +1926,7 @@ function App() {
         else if (newFilePaths.length === 1) openFileResponse = 'open';
 
         if (openFileResponse === 'open') {
-          await userOpenSingleFile({ path: firstNewFilePath, isLlcProject });
+          await userOpenSingleFile({ path: firstNewFilePath });
           return;
         }
         if (openFileResponse === 'project') {
