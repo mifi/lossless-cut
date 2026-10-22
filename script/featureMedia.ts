@@ -1,6 +1,6 @@
 // Records screenshots and a video of a feature demo (see script/featureMedia/scenarios.ts and AGENTS.md "Feature media").
 // Linux only (captures the X display), e.g. in a cloud session. Run `yarn build` and `yarn download-ffmpeg-linux-x64` first, then:
-// xvfb-run -a -s "-screen 0 1024x640x24" node script/featureMedia.ts <scenario> [--clips dir] [--music audio file] [--scale 2]
+// xvfb-run -a -s "-screen 0 1024x640x24" node script/featureMedia.ts <scenario> [--clips dir] [--music track from music.ts, audio file or none] [--scale 2]
 import assert from 'node:assert';
 import { createWriteStream } from 'node:fs';
 import { access, mkdir, mkdtemp, rename, rm, writeFile } from 'node:fs/promises';
@@ -12,12 +12,13 @@ import timers from 'node:timers/promises';
 import { parseArgs } from 'node:util';
 import { execa } from 'execa';
 import clipSources from './featureMedia/clips.ts';
+import musicTracks, { defaultMusic } from './featureMedia/music.ts';
 import scenarios from './featureMedia/scenarios.ts';
 import { renderSocialVideo, type Caption, type Rect, type Zoom } from './featureMedia/socialVideo.ts';
 
-const { values: { clips = 'dist/feature-media-clips', music, scale: scaleArg = '1' }, positionals: [scenarioName] } = parseArgs({ allowPositionals: true, options: { clips: { type: 'string' }, music: { type: 'string' }, scale: { type: 'string' } } });
+const { values: { clips = 'dist/feature-media-clips', music: musicArg = defaultMusic, scale: scaleArg = '1' }, positionals: [scenarioName] } = parseArgs({ allowPositionals: true, options: { clips: { type: 'string' }, music: { type: 'string' }, scale: { type: 'string' } } });
 const scenario = scenarioName != null ? scenarios[scenarioName] : undefined;
-assert(scenario != null, `Usage: node script/featureMedia.ts <scenario> [--clips dir] [--music audio file] [--scale 2]. Scenarios: ${Object.keys(scenarios).join(', ')}`);
+assert(scenario != null, `Usage: node script/featureMedia.ts <scenario> [--clips dir] [--music track from music.ts, audio file or none] [--scale 2]. Scenarios: ${Object.keys(scenarios).join(', ')}`);
 const display = process.env['DISPLAY'];
 assert(process.platform === 'linux' && display != null, 'Run under Xvfb on Linux, see the top of this file');
 
@@ -37,26 +38,47 @@ const outDir = 'dist/feature-media';
 await mkdir(outDir, { recursive: true });
 await mkdir(clips, { recursive: true });
 
-// Get the clips, from the folder or else make them from their sources (see clips.ts) or download them
-const clipsUrl = process.env['FEATURE_MEDIA_CLIPS_URL'] ?? 'https://static.mifi.no/losslesscut';
+// Downloads to a temp file first, so an interrupted download isn't used next time
+async function download(url: string, path: string) {
+  const response = await fetch(url);
+  assert(response.ok && response.body != null, `Failed to download ${url}: ${response.status}`);
+  await pipeline(Readable.fromWeb(response.body), createWriteStream(`${path}.part`));
+  await rename(`${path}.part`, path);
+}
+
 // ffmpeg only uses the lowercase variable
 const httpProxy = process.env['http_proxy'] ?? process.env['HTTPS_PROXY'];
+
+// The music for the social media versions: a track from music.ts, an audio file, or none
+const musicTrack = musicTracks[musicArg];
+let music: string | undefined = musicArg === 'none' ? undefined : musicArg;
+if (musicTrack != null) {
+  const musicDir = 'dist/feature-media-music';
+  await mkdir(musicDir, { recursive: true });
+  music = join(musicDir, `${musicArg}.mp3`);
+  if (!await access(music).then(() => true, () => false)) {
+    console.log('Downloading music', musicArg);
+    // With ffmpeg, which (unlike fetch) doesn't time out on a slow connection through a proxy
+    await execa(ffmpeg, ['-v', 'error', '-y', '-i', musicTrack.url, '-c', 'copy', '-f', 'mp3', `${music}.part`], { ...(httpProxy != null && { env: { http_proxy: httpProxy } }) });
+    await rename(`${music}.part`, music);
+  }
+}
+
+// Get the clips, from the folder or else make them from their sources (see clips.ts) or download them
+const clipsUrl = process.env['FEATURE_MEDIA_CLIPS_URL'] ?? 'https://static.mifi.no/losslesscut';
 for (const clip of scenario.clips) {
   const path = join(clips, clip);
   if (!await access(path).then(() => true, () => false)) {
-    // Via a temp file, so an interrupted download isn't used next time
-    const partPath = `${path}.part`;
     const sourceArgs = clipSources[clip];
     if (sourceArgs != null) {
       console.log('Making', clip, 'from its sources');
-      await execa(ffmpeg, ['-v', 'error', '-y', ...sourceArgs, partPath], { ...(httpProxy != null && { env: { http_proxy: httpProxy } }) });
+      // Via a temp file, so an interrupted run isn't used next time
+      await execa(ffmpeg, ['-v', 'error', '-y', ...sourceArgs, `${path}.part`], { ...(httpProxy != null && { env: { http_proxy: httpProxy } }) });
+      await rename(`${path}.part`, path);
     } else {
       console.log('Downloading', clip);
-      const response = await fetch(`${clipsUrl}/${clip}`);
-      assert(response.ok && response.body != null, `Failed to download ${clip}: ${response.status}`);
-      await pipeline(Readable.fromWeb(response.body), createWriteStream(partPath));
+      await download(`${clipsUrl}/${clip}`, path);
     }
-    await rename(partPath, path);
   }
 }
 
@@ -172,6 +194,7 @@ try {
     await renderSocialVideo({ ffmpeg, rawVideo, videoStart: socialStart, duration, captions, zooms, description: scenario.description, music, windowWidth: width, windowHeight: height, format, tmpDir: configDir, outPath: join(outDir, `${scenarioName}-${format}.mp4`) });
   }
   console.log('Wrote', videoPath, 'the social media versions and screenshots in', outDir);
+  if (musicTrack != null) console.log('Posts with the social media versions must credit:', musicTrack.credit);
 } finally {
   app.kill();
   await app;
