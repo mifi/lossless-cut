@@ -8,6 +8,15 @@
   box-sizing: border-box;
 }
 
+/* the top bar doubles as the window title bar, so it moves the window */
+.wrapper {
+  -webkit-app-region: drag;
+}
+
+.wrapper button, .wrapper select, .wrapper input, .wrapper a, .wrapper [role="button"], .wrapper [role="radiogroup"] {
+  -webkit-app-region: no-drag;
+}
+
 .wrapper button {
   display: inline-flex;
   align-items: center;

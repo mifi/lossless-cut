@@ -25,6 +25,12 @@ function Keys({ keys }: { keys: string | undefined }) {
   ));
 }
 
+// Mirrors the Start/End buttons in the bottom bar. Must stay a leaf element, so that the translation key doesn't change
+function CutpointIcon({ side }: { side: 'start' | 'end' }) {
+  const Icon = side === 'start' ? LuArrowRightToLine : LuArrowLeftToLine;
+  return <span className="llc-chip" style={{ verticalAlign: 'middle' }}><Icon /></span>;
+}
+
 const dropzoneStyle: MotionStyle = {
   position: 'absolute',
   left: 0,
@@ -79,7 +85,7 @@ function NoFileLoaded({ mifiLink, onClick, darkMode, keyBindingByAction }: {
       </div>
 
       <div style={{ ...hintStyle, marginTop: '1em' }}>
-        <Trans><span className="llc-chip" style={{ verticalAlign: 'middle' }}><LuArrowRightToLine /></span> <span className="llc-chip" style={{ verticalAlign: 'middle' }}><LuArrowLeftToLine /></span>, <Keys keys={keyBindingByAction['setCutStart']?.keys} /> <Keys keys={keyBindingByAction['setCutEnd']?.keys} /> or <span><kbd style={{ marginRight: '.1em' }}>{getModifier(segmentMouseModifierKey)}</kbd></span>+<FaMouse style={{ marginRight: '.1em', verticalAlign: 'middle' }} /> to set cutpoints</Trans>
+        <Trans><CutpointIcon side="start" /> <CutpointIcon side="end" />, <Keys keys={keyBindingByAction['setCutStart']?.keys} /> <Keys keys={keyBindingByAction['setCutEnd']?.keys} /> or <span><kbd style={{ marginRight: '.1em' }}>{getModifier(segmentMouseModifierKey)}</kbd></span>+<FaMouse style={{ marginRight: '.1em', verticalAlign: 'middle' }} /> to set cutpoints</Trans>
       </div>
 
       <div style={hintStyle} role="button" onClick={(e) => e.stopPropagation()}>

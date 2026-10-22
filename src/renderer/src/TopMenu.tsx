@@ -9,6 +9,7 @@ import Button from './components/Button';
 import ExportModeButton from './components/ExportModeButton';
 import ExportButton from './components/ExportButton';
 import KeepRemoveToggle from './components/KeepRemoveToggle';
+import WindowControls, { AppMenuButton, customTitleBar } from './components/WindowControls';
 
 import { withBlur } from './util';
 import { primaryTextColor, darkModeTransition } from './colors';
@@ -104,6 +105,8 @@ function TopMenu({
       className={`no-user-select llc-panel ${styles['wrapper']}`}
       style={{ transition: darkModeTransition }}
     >
+      {customTitleBar && <AppMenuButton />}
+
       <div className={styles['brand']}>
         <div className={styles['logo']}><FiScissors /></div>
         <div style={{ minWidth: 0 }}>
@@ -174,6 +177,8 @@ function TopMenu({
       {filePath && (
         <ExportButton segmentsToExport={segmentsToExport} areWeCutting={areWeCutting} onClick={withBlur(onExportPress)} />
       )}
+
+      {customTitleBar && <WindowControls />}
     </div>
   );
 }

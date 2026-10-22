@@ -3,7 +3,7 @@ process.traceProcessWarnings = true;
 
 /* eslint-disable import/first */
 // eslint-disable-next-line import/no-extraneous-dependencies
-import electron, { BrowserWindow, type BrowserWindowConstructorOptions, nativeTheme, shell, app, ipcMain, Notification, type NotificationConstructorOptions } from 'electron';
+import electron, { BrowserWindow, type BrowserWindowConstructorOptions, nativeTheme, shell, app, ipcMain, Menu, Notification, type NotificationConstructorOptions } from 'electron';
 import i18n from 'i18next';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import debounce from 'lodash/debounce.js';
@@ -41,6 +41,9 @@ import * as ffmpeg from './ffmpeg.js';
 import * as compatPlayer from './compatPlayer.js';
 import { downloadMediaUrl } from './ffmpeg.js';
 import { hasDisabledNetworking, setDisableNetworking } from './networking.js';
+
+// The renderer draws its own title bar with window controls, except on macOS which keeps its native traffic lights
+const customTitleBar = !isMac;
 
 
 electronUnhandled({ showDialog: true, logger: (err) => logger.error('electron-unhandled', err) });
@@ -166,6 +169,7 @@ function createWindow() {
 
   mainWindow = new BrowserWindow({
     ...savedBounds.options,
+    frame: !customTitleBar,
     darkTheme: true,
     webPreferences: {
       contextIsolation: false,
@@ -226,6 +230,10 @@ function createWindow() {
 
   mainWindow.on('maximize', debouncedSaveWindowState);
   mainWindow.on('unmaximize', debouncedSaveWindowState);
+
+  const sendMaximized = () => mainWindow?.webContents.send('windowMaximizedChange', mainWindow.isMaximized());
+  mainWindow.on('maximize', sendMaximized);
+  mainWindow.on('unmaximize', sendMaximized);
   mainWindow.on('resize', debouncedSaveWindowState);
   mainWindow.on('move', debouncedSaveWindowState);
 }
@@ -461,6 +469,20 @@ function quitApp() {
 
 const setProgressBar = (v: number) => mainWindow?.setProgressBar(v);
 
+const minimizeWindow = () => mainWindow?.minimize();
+const toggleMaximizeWindow = () => {
+  if (mainWindow == null) return;
+  if (mainWindow.isMaximized()) mainWindow.unmaximize();
+  else mainWindow.maximize();
+};
+const isWindowMaximized = () => mainWindow?.isMaximized() ?? false;
+const closeWindow = () => mainWindow?.close();
+// With the custom title bar there's no native menu bar, so the renderer shows the app menu as a popup
+const popupAppMenu = (x: number, y: number) => {
+  if (mainWindow == null) return;
+  Menu.getApplicationMenu()?.popup({ window: mainWindow, x: Math.round(x), y: Math.round(y) });
+};
+
 function sendOsNotification(options: NotificationConstructorOptions) {
   if (!Notification.isSupported()) return;
   const notification = new Notification(options);
@@ -477,6 +499,11 @@ const remoteApi = {
   focusWindow,
   quitApp,
   setProgressBar,
+  minimizeWindow,
+  toggleMaximizeWindow,
+  isWindowMaximized,
+  closeWindow,
+  popupAppMenu,
   sendOsNotification,
   writeClipboardText: (text: string) => electron.clipboard.writeText(text),
   readClipboardText: () => electron.clipboard.readText(),
@@ -501,6 +528,7 @@ const remoteApiLegacy = {
   platform,
   arch,
   isDev,
+  customTitleBar,
   lossyMode,
   pathToFileURL,
   hasDisabledNetworking,
