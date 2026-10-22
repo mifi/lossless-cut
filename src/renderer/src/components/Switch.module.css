@@ -12,10 +12,10 @@
   box-shadow: 0 0 0 2px var(--gray-11);
 }
 .SwitchRoot[data-state='checked'] {
-  background-color: var(--cyan-9);
+  background-color: var(--violet-9);
 }
 .SwitchRoot[data-state='checked']:focus {
-  box-shadow: 0 0 0 2px var(--cyan-11);
+  box-shadow: 0 0 0 2px var(--violet-11);
 }
 
 .SwitchThumb {

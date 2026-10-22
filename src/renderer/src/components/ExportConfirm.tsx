@@ -58,7 +58,7 @@ function renderNoticeIcon(notice: { warning?: boolean | undefined } | undefined,
   return notice.warning ? (
     <FaExclamationTriangle style={{ flexShrink: '0', fontSize: '.8em', verticalAlign: 'baseline', color: warningColor, ...style }} />
   ) : (
-    <FaInfoCircle style={{ flexShrink: '0', fontSize: '.8em', verticalAlign: 'baseline', color: 'var(--cyan-10)', ...style }} />
+    <FaInfoCircle style={{ flexShrink: '0', fontSize: '.8em', verticalAlign: 'baseline', color: 'var(--violet-10)', ...style }} />
   );
 }
 

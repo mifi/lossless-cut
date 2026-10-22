@@ -1,11 +1,55 @@
-.wrapper button, .wrapper select {
-  background-color: var(--gray-1);
+.wrapper {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .4em;
+  min-height: 2.9em;
+  padding: .4em .5em .4em .55em;
+  box-sizing: border-box;
 }
 
 .wrapper button {
-  padding: .3em .3em;
+  display: inline-flex;
+  align-items: center;
+  gap: .45em;
+  white-space: nowrap;
 }
 
-.wrapper select {
-  padding: .3em 1.4em .3em .3em;
+.brand {
+  display: flex;
+  align-items: center;
+  gap: .6em;
+  min-width: 0;
+  max-width: 32em;
+}
+
+.logo {
+  flex-shrink: 0;
+  width: 1.75em;
+  height: 1.75em;
+  border-radius: .55em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: .95em;
+  background: conic-gradient(from 200deg, #8b5cf6, #22d3ee, #8b5cf6);
+  box-shadow: 0 2px 10px rgba(139, 92, 246, .35);
+}
+
+.fileName {
+  font-size: .85em;
+  font-weight: 600;
+  color: var(--llc-text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fileInfo {
+  font-size: .7em;
+  color: var(--llc-text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

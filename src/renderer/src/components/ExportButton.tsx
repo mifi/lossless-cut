@@ -4,7 +4,6 @@ import { FiScissors } from 'react-icons/fi';
 import { FaFileExport } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 
-import { primaryColor } from '../colors';
 import useUserSettings from '../hooks/useUserSettings';
 import type { SegmentToExport } from '../types';
 import styles from './ExportButton.module.css';
@@ -44,13 +43,11 @@ const ExportButton = forwardRef<HTMLButtonElement, Props>(({
       ref={ref}
       type="button"
       className={[...(simpleMode ? ['export-animation'] : []), styles['exportButton']].join(' ')}
-      style={{ backgroundColor: primaryColor, ...style }}
+      style={style}
       onClick={onClick}
       title={title}
     >
-      <CutIcon
-        style={{ verticalAlign: 'middle', marginRight: '.2em' }}
-      />
+      <CutIcon style={{ flexShrink: 0 }} />
       {text}
     </button>
   );

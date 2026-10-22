@@ -1,7 +1,7 @@
 $swal2-outline-color: var(--gray-5) !default;
 
 // see colors.ts primaryColor
-$swal2-confirm-button-background-color: var(--cyan-9);
+$swal2-confirm-button-background-color: var(--violet-9);
 
 $myswal-background: var(--gray-1);
 $myswal-foreground: var(--gray-12);
@@ -11,7 +11,8 @@ $swal2-border: .1em solid $swal2-outline-color;
 $swal2-background: $myswal-background;
 $swal2-html-container-color: $myswal-foreground;
 $swal2-title-color: $myswal-foreground;
-$swal2-backdrop: rgba(0, 0, 0, .75);
+$swal2-backdrop: rgba(4, 3, 10, .6);
+$swal2-border-radius: 18px;
 
 // TOAST
 $swal2-toast-background: $myswal-background;
@@ -57,3 +58,29 @@ $swal2-button-focus-box-shadow: 0 0 0 1px $swal2-background, 0 0 0 3px $swal2-ou
 }
 
 @import 'sweetalert2/src/sweetalert2.scss';
+
+// "Soft" theme overrides
+.swal2-popup {
+  border: 1px solid var(--llc-panel-border);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .4);
+  font-family: var(--llc-font-ui);
+}
+
+.swal2-popup.swal2-toast {
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .3);
+}
+
+.swal2-styled {
+  border-radius: var(--llc-radius-pill) !important;
+  padding: .55em 1.4em !important;
+  font-weight: 600 !important;
+}
+
+.swal2-styled.swal2-confirm {
+  background: var(--llc-accent-gradient) !important;
+}
+
+.swal2-input, .swal2-textarea, .swal2-select {
+  border-radius: var(--llc-radius-control) !important;
+}

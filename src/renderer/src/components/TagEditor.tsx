@@ -224,7 +224,7 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
                     </Tooltip>
                   )}
 
-                  <IconButton disabled={editingOther} size="1" variant="ghost" color={editingThis ? 'cyan' : 'gray'} title={t('Edit')} onClick={() => onEditClick(tag)}>{editingThis ? <FaCheck /> : <FaEdit />}</IconButton>
+                  <IconButton disabled={editingOther} size="1" variant="ghost" color={editingThis ? 'violet' : 'gray'} title={t('Edit')} onClick={() => onEditClick(tag)}>{editingThis ? <FaCheck /> : <FaEdit />}</IconButton>
 
                   {editingThis && thisTagNew && (
                     <IconButton size="1" color="red" variant="ghost" title={t('Delete')} onClick={onResetClick}><FaTrash /></IconButton>

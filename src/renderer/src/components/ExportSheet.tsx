@@ -48,14 +48,15 @@ function ExportSheet({
 
       <AnimatePresence>
         {visible && (
-          <div key="0" style={{ position: 'fixed', right: 0, bottom: 0, display: 'flex', alignItems: 'center', margin: 5 }}>
+          <div key="0" style={{ position: 'fixed', right: 0, bottom: 0, display: 'flex', alignItems: 'center', gap: 10, margin: 14 }}>
             {renderBottom != null && (
               <motion.div
                 initial={{ opacity: 0, translateX: 50 }}
                 animate={{ opacity: 1, translateX: 0 }}
                 exit={{ opacity: 0, translateX: 50 }}
                 transition={{ duration: 0.4, ease: ['easeOut'] }}
-                style={{ display: 'flex', alignItems: 'flex-end', background: 'var(--gray-2)', borderRadius: '.5em', padding: '.3em' }}
+                className="llc-panel"
+                style={{ display: 'flex', alignItems: 'flex-end', borderRadius: 'var(--llc-radius-card)', padding: '.4em .6em' }}
               >
                 {renderBottom?.()}
               </motion.div>

@@ -3,22 +3,33 @@
   font: inherit;
   line-height: 1.2;
   font-size: .8em;
-  background-color: var(--gray-3);
-  color: var(--gray-12);
-  border-radius: .3em;
-  padding: 0 1.4em 0 .3em;
-  outline: .05em solid var(--gray-8);
-  border: .05em solid var(--gray-7);
+  background-color: var(--llc-control-bg);
+  color: var(--llc-text-1);
+  border-radius: var(--llc-radius-control);
+  height: 2.1em;
+  padding: 0 1.8em 0 .75em;
+  outline: none;
+  border: 1px solid var(--llc-control-border);
+  cursor: pointer;
+  transition: background-color .15s;
 
   background-image: url("data:image/svg+xml;utf8,<svg fill='rgba(0,0,0,0.6)' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
   background-repeat: no-repeat;
-  background-position-x: 100%;
-  background-position-y: 0;
-  background-size: auto 100%;
+  background-position: right .3em center;
+  background-size: auto 1.3em;
 }
 
 .select:hover {
-  filter: brightness(1.2);
+  background-color: var(--llc-control-bg-hover);
+}
+
+.select:focus-visible {
+  outline: 2px solid var(--llc-accent-border);
+}
+
+.select option {
+  background-color: var(--gray-2);
+  color: var(--gray-12);
 }
 
 :global(.dark-theme) .select {

@@ -10,7 +10,7 @@ import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-ki
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 
 import BatchFile from './BatchFile';
-import { controlsBackground, darkModeTransition, primaryColor } from '../colors';
+import { darkModeTransition, primaryColor } from '../colors';
 import type { BatchFile as BatchFileType } from '../types';
 import useUserSettings from '../hooks/useUserSettings';
 
@@ -81,16 +81,16 @@ function BatchFilesList({ selectedBatchFiles, filePath, width, batchFiles, setBa
 
   return (
     <motion.div
-      className="no-user-select"
-      style={{ width, background: controlsBackground, color: 'var(--gray-12)', borderRight: '1px solid var(--gray-7)', transition: darkModeTransition, display: 'flex', flexDirection: 'column', overflowY: 'hidden', overflowX: 'hidden', resize: 'horizontal' }}
+      className="no-user-select llc-panel"
+      style={{ width, flexShrink: 0, color: 'var(--llc-text-1)', transition: darkModeTransition, display: 'flex', flexDirection: 'column', overflowY: 'hidden', overflowX: 'hidden', resize: 'horizontal' }}
       initial={{ x: -width }}
       animate={{ x: 0 }}
       exit={{ x: -width }}
       transition={springAnimation}
       onDrop={onDrop}
     >
-      <div style={{ paddingBottom: '.5em', paddingTop: 0, paddingLeft: '.5em', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap', gap: '.2em' }}>
-        <div style={{ fontSize: '.8em' }}>{t('Batch file list')}{batchFiles.length > 0 && ` (${batchFiles.length})`}</div>
+      <div style={{ padding: '.6em .6em .5em .9em', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap', gap: '.2em' }}>
+        <div style={{ fontSize: '.85em', fontWeight: 600 }}>{t('Batch file list')}{batchFiles.length > 0 && ` (${batchFiles.length})`}</div>
         <div style={{ flexGrow: 1 }} />
         <FaHatWizard role="button" title={`${t('Convert to supported format')}...`} style={iconStyle} onClick={onBatchConvertToSupportedFormatClick} />
         <SortIcon role="button" title={t('Sort items')} style={iconStyle} onClick={onSortClick} />
@@ -100,7 +100,7 @@ function BatchFilesList({ selectedBatchFiles, filePath, width, batchFiles, setBa
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} onDragStart={handleDragStart} modifiers={[restrictToVerticalAxis]}>
         <SortableContext items={sortableList} strategy={verticalListSortingStrategy}>
-          <div style={{ overflowX: 'hidden', overflowY: 'auto' }}>
+          <div style={{ overflowX: 'hidden', overflowY: 'auto', padding: '0 .5em .5em', display: 'flex', flexDirection: 'column', gap: 2 }}>
             {sortableList.map(({ batchFile: { path, name } }, index) => (
               <BatchFile key={path} index={index} path={path} name={name} isSelected={selectedBatchFiles.includes(path)} isOpen={filePath === path} onSelect={onBatchFileSelect} onDelete={batchListRemoveFile} />
             ))}

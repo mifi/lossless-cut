@@ -96,32 +96,29 @@ function Segment({
   const { name } = seg;
 
   const border = useMemo(() => {
-    const horizontalBorderWidth = '1px';
-    const verticalBorderWidth = '1.5px';
-
     if (isActive) {
-      const horizontalColor = darkMode ? color.desaturate(0.1).lightness(60) : color.desaturate(0.2).lightness(40);
-      const verticalColor = darkMode ? color.desaturate(0.1).lightness(90) : color.desaturate(0.2).lightness(10);
+      const activeColor = darkMode ? 'rgba(255, 255, 255, .9)' : color.darken(0.55).string();
       return {
-        horizontal: `${horizontalBorderWidth} solid ${horizontalColor.string()}`,
-        vertical: `${verticalBorderWidth} solid ${verticalColor.string()}`,
+        horizontal: `2px solid ${activeColor}`,
+        vertical: `2px solid ${activeColor}`,
       };
     }
 
+    const edgeColor = (invertCutSegments || !selected) ? color.alpha(0.35).string() : color.alpha(darkMode ? 0.75 : 0.9).string();
     return {
-      horizontal: `${horizontalBorderWidth} solid transparent`,
-      vertical: `${verticalBorderWidth} solid transparent`,
+      horizontal: `1px solid ${edgeColor}`,
+      vertical: `1px solid ${edgeColor}`,
     };
-  }, [darkMode, isActive, color]);
+  }, [darkMode, isActive, color, invertCutSegments, selected]);
 
   const backgroundColor = useMemo(() => {
-    // we use both transparency and lightness, so that segments can be visible when overlapping
-    if (invertCutSegments || !selected) return darkMode ? color.desaturate(0.3).lightness(30).alpha(0.5).string() : color.desaturate(0.3).lightness(70).alpha(0.5).string();
-    if (isActive) return darkMode ? color.saturate(0.2).lightness(60).alpha(0.7).string() : color.saturate(0.2).lightness(40).alpha(0.8).string();
-    return darkMode ? color.desaturate(0.2).lightness(50).alpha(0.7).string() : color.lightness(35).alpha(0.6).string();
+    // tinted fill with a clear edge, still see-through so that overlapping segments are visible
+    if (invertCutSegments || !selected) return color.desaturate(0.4).alpha(darkMode ? 0.12 : 0.15).string();
+    if (isActive) return color.alpha(darkMode ? 0.55 : 0.6).string();
+    return color.alpha(darkMode ? 0.4 : 0.45).string();
   }, [darkMode, invertCutSegments, isActive, color, selected]);
 
-  const vertBorderRadius = 5;
+  const vertBorderRadius = 8;
 
   const title = useMemo(() => {
     const parts = [
@@ -136,16 +133,17 @@ function Segment({
     const cutSectionWidth = getTimePercent(seg.end - seg.start);
     return {
       position: 'absolute',
-      top: 0,
-      bottom: 0,
+      top: 3,
+      bottom: 3,
       left: getTimePercent(seg.start),
       width: cutSectionWidth,
+      paddingLeft: 4,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
       originX: 0,
       boxSizing: 'border-box',
-      color: 'white',
+      color: darkMode ? 'white' : color.darken(0.7).string(),
       overflow: 'hidden',
 
       borderLeft: border.vertical,
@@ -159,7 +157,7 @@ function Segment({
       borderTop: border.horizontal,
       borderBottom: border.horizontal,
     };
-  }, [getTimePercent, seg.end, seg.start, border]);
+  }, [getTimePercent, seg.end, seg.start, border, darkMode, color]);
 
   return (
     <motion.div
@@ -173,7 +171,7 @@ function Segment({
       onClick={onClick}
       title={title}
     >
-      <div style={{ alignSelf: 'flex-start', flexShrink: 0, fontSize: 10, minWidth: 0, letterSpacing: '-.1em' }}>{segNum + 1}</div>
+      <div style={{ alignSelf: 'flex-start', flexShrink: 0, fontSize: 10, fontWeight: 700, minWidth: 0, marginTop: 1 }}>{segNum + 1}</div>
 
       <AnimatePresence>
         {invertCutSegments && (
@@ -183,7 +181,7 @@ function Segment({
             exit={{ scale: 0 }}
             style={{ flexShrink: 1 }}
           >
-            <FaTrashAlt style={{ display: 'block', width: '100%', minWidth: '.4em', color: 'white', marginRight: '.1em' }} />
+            <FaTrashAlt style={{ display: 'block', width: '100%', minWidth: '.4em', color: 'currentColor', marginRight: '.1em' }} />
           </motion.div>
         )}
         {!invertCutSegments && !seg.name && (
@@ -193,14 +191,14 @@ function Segment({
             exit={{ scale: 0 }}
             style={{ flexShrink: 1 }}
           >
-            <FaSave style={{ display: 'block', width: '100%', minWidth: '.4em', color: 'white', marginRight: '.1em' }} />
+            <FaSave style={{ display: 'block', width: '100%', minWidth: '.4em', color: 'currentColor', marginRight: '.1em' }} />
           </motion.div>
         )}
       </AnimatePresence>
 
       {name && <div style={{ flexBasis: 4, flexShrink: 1 }} />}
 
-      {name && <div style={{ flexShrink: 1, fontSize: 11, minWidth: 0, overflow: 'hidden', whiteSpace: 'nowrap' }}>{name}</div>}
+      {name && <div style={{ flexShrink: 1, fontSize: 11, fontWeight: 600, minWidth: 0, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{name}</div>}
 
       <div style={{ flexGrow: 1 }} />
     </motion.div>

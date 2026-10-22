@@ -1,0 +1,234 @@
+/*
+"Soft" theme: floating translucent panels on a tinted gradient backdrop, one violet accent.
+All redesign colors, radii and shadows live here, so components only reference --llc-* tokens.
+*/
+@import '@radix-ui/colors/mauve.css';
+@import '@radix-ui/colors/mauve-dark.css';
+@import '@radix-ui/colors/violet.css';
+@import '@radix-ui/colors/violet-dark.css';
+
+:root {
+  --llc-font-ui: 'Inter Variable', 'Noto Sans', system-ui, sans-serif;
+  --llc-font-mono: 'JetBrains Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --llc-radius-panel: 16px;
+  --llc-radius-card: 12px;
+  --llc-radius-control: 9px;
+  --llc-radius-pill: 999px;
+
+  --llc-gap: 10px;
+
+  --llc-bg: #f3f2f8;
+  --llc-bg-image:
+    radial-gradient(1100px 520px at 12% -12%, rgba(167, 139, 250, .28) 0, transparent 60%),
+    radial-gradient(900px 520px at 108% 118%, rgba(56, 189, 248, .18) 0, transparent 60%);
+
+  --llc-panel-bg: rgba(255, 255, 255, .72);
+  --llc-panel-border: rgba(30, 20, 60, .08);
+  --llc-panel-shadow: 0 1px 2px rgba(30, 20, 60, .05), 0 8px 24px rgba(30, 20, 60, .06);
+  --llc-panel-blur: blur(18px) saturate(1.2);
+
+  --llc-card-bg: rgba(30, 20, 60, .035);
+  --llc-card-bg-hover: rgba(30, 20, 60, .06);
+
+  --llc-control-bg: rgba(30, 20, 60, .045);
+  --llc-control-bg-hover: rgba(30, 20, 60, .08);
+  --llc-control-border: rgba(30, 20, 60, .1);
+
+  --llc-overlay-bg: rgba(255, 255, 255, .7);
+  --llc-overlay-border: rgba(30, 20, 60, .1);
+
+  --llc-track-bg: rgba(30, 20, 60, .06);
+
+  --llc-text-1: #1c1830;
+  --llc-text-2: #5d5875;
+  --llc-text-3: #8b87a0;
+
+  --llc-accent: #7c3aed;
+  --llc-accent-gradient: linear-gradient(135deg, #8b5cf6, #6366f1);
+  --llc-accent-text: #6d28d9;
+  --llc-accent-soft: rgba(124, 58, 237, .1);
+  --llc-accent-border: rgba(124, 58, 237, .45);
+  --llc-accent-glow: 0 6px 18px rgba(124, 58, 237, .3);
+  --llc-on-accent: #fff;
+
+  --llc-video-bg: #0b0a10;
+
+  --llc-dialog-bg: rgba(255, 255, 255, .92);
+}
+
+.dark-theme {
+  --llc-bg: #0d0c14;
+  --llc-bg-image:
+    radial-gradient(1200px 520px at 12% -12%, rgba(91, 60, 190, .38) 0, transparent 60%),
+    radial-gradient(900px 520px at 108% 118%, rgba(19, 78, 120, .45) 0, transparent 60%);
+
+  --llc-panel-bg: rgba(255, 255, 255, .045);
+  --llc-panel-border: rgba(255, 255, 255, .08);
+  --llc-panel-shadow: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 10px 30px rgba(0, 0, 0, .25);
+
+  --llc-card-bg: rgba(255, 255, 255, .035);
+  --llc-card-bg-hover: rgba(255, 255, 255, .06);
+
+  --llc-control-bg: rgba(255, 255, 255, .06);
+  --llc-control-bg-hover: rgba(255, 255, 255, .1);
+  --llc-control-border: rgba(255, 255, 255, .09);
+
+  --llc-overlay-bg: rgba(14, 12, 24, .6);
+  --llc-overlay-border: rgba(255, 255, 255, .12);
+
+  --llc-track-bg: rgba(0, 0, 0, .3);
+
+  --llc-text-1: #ecebf3;
+  --llc-text-2: #a7a3b9;
+  --llc-text-3: #75718a;
+
+  --llc-accent: #8b5cf6;
+  --llc-accent-text: #c4b5fd;
+  --llc-accent-soft: rgba(139, 92, 246, .16);
+  --llc-accent-border: rgba(139, 92, 246, .55);
+  --llc-accent-glow: 0 6px 20px rgba(139, 92, 246, .42);
+
+  --llc-video-bg: #000;
+
+  --llc-dialog-bg: rgba(24, 21, 36, .9);
+}
+
+/* Use the violet-tinted gray everywhere the app references the gray scale */
+:root, .dark-theme {
+  --gray-1: var(--mauve-1);
+  --gray-2: var(--mauve-2);
+  --gray-3: var(--mauve-3);
+  --gray-4: var(--mauve-4);
+  --gray-5: var(--mauve-5);
+  --gray-6: var(--mauve-6);
+  --gray-7: var(--mauve-7);
+  --gray-8: var(--mauve-8);
+  --gray-9: var(--mauve-9);
+  --gray-10: var(--mauve-10);
+  --gray-11: var(--mauve-11);
+  --gray-12: var(--mauve-12);
+}
+
+/* Building blocks */
+
+.llc-panel {
+  background: var(--llc-panel-bg);
+  border: 1px solid var(--llc-panel-border);
+  border-radius: var(--llc-radius-panel);
+  box-shadow: var(--llc-panel-shadow);
+  backdrop-filter: var(--llc-panel-blur);
+}
+
+.llc-overlay {
+  background: var(--llc-overlay-bg);
+  border: 1px solid var(--llc-overlay-border);
+  backdrop-filter: blur(16px) saturate(1.2);
+}
+
+.llc-mono {
+  font-family: var(--llc-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.llc-icon-button {
+  all: unset;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 2em;
+  height: 2em;
+  padding: 0 .45em;
+  gap: .35em;
+  border-radius: var(--llc-radius-control);
+  color: var(--llc-text-2);
+  cursor: pointer;
+  transition: background-color .15s, color .15s;
+}
+
+.llc-icon-button:hover {
+  background: var(--llc-control-bg-hover);
+  color: var(--llc-text-1);
+}
+
+.llc-icon-button:focus-visible {
+  outline: 2px solid var(--llc-accent-border);
+}
+
+.llc-icon-button[aria-pressed="true"] {
+  color: var(--llc-accent-text);
+}
+
+.llc-icon-button:disabled, .llc-icon-button[aria-disabled="true"] {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+.llc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .4em;
+  height: 2em;
+  padding: 0 .75em;
+  box-sizing: border-box;
+  border-radius: var(--llc-radius-pill);
+  background: var(--llc-control-bg);
+  border: 1px solid var(--llc-control-border);
+  color: var(--llc-text-1);
+  font-size: .8em;
+  white-space: nowrap;
+}
+
+.llc-divider {
+  width: 1px;
+  align-self: stretch;
+  margin: .35em .2em;
+  background: var(--llc-control-border);
+  flex-shrink: 0;
+}
+
+/* Radix Themes sets its own font on .radix-themes, which wraps the whole app */
+.radix-themes {
+  --default-font-family: var(--llc-font-ui);
+  --code-font-family: var(--llc-font-mono);
+}
+
+/* Controls floating on top of the video are always light-on-dark, whatever the theme */
+.llc-video-overlay {
+  background: rgba(14, 12, 24, .6);
+  border: 1px solid rgba(255, 255, 255, .12);
+  backdrop-filter: blur(16px) saturate(1.2);
+  color: #ecebf3;
+}
+
+/* keep the floating dock's z-index from leaking above sheets and dialogs */
+.llc-video-stage {
+  isolation: isolate;
+}
+
+/* slim, rounded scrollbars */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--llc-control-bg-hover);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--llc-control-border);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}

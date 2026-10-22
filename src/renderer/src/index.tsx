@@ -21,6 +21,8 @@ import '@fontsource/open-sans/700.css';
 import '@fontsource/open-sans/700-italic.css';
 import '@fontsource/open-sans/800.css';
 import '@fontsource/open-sans/800-italic.css';
+import '@fontsource-variable/inter';
+import '@fontsource-variable/jetbrains-mono';
 
 import '@radix-ui/themes/styles.css';
 
