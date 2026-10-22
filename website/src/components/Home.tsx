@@ -4,7 +4,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import type { IconNode } from 'lucide';
 import { Combine, Film, Layers, ListOrdered, RefreshCw, ScanSearch, Scissors, SquarePen, Terminal } from 'lucide';
 import type { IconNode as ReactIconNode } from 'lucide-react';
-import { CodeXml, Icon, Languages, Monitor, Star } from 'lucide-react';
+import { CodeXml, Icon, Languages, Monitor, Pause, Play, Star } from 'lucide-react';
 
 import macAppStoreBadge from '../../../mac-app-store-badge.svg?url';
 import msStoreBadge from '../../../ms-store-badge.svg?url';
@@ -20,10 +20,10 @@ import tracksScreenshot from '../assets/home/tracks-screenshot.jpg?url';
 import { authorUrl, donateUrl, githubUrl, socialLinks, storeUrls, supportEmail } from '../links.ts';
 import socialIconPaths from './socialIcons.ts';
 
-// An optional short, silent screen recording for the hero (src/assets/home/demo.mp4 and/or demo.webm), shown instead of the screenshot
-const demoClips = import.meta.glob<string>('../assets/home/demo.{webm,mp4}', { eager: true, query: '?url', import: 'default' });
-const demoSources = Object.entries(demoClips).toSorted(([a], [b]) => (a.endsWith('.webm') ? -1 : 1) - (b.endsWith('.webm') ? -1 : 1))
-  .map(([path, url]) => ({ url, type: path.endsWith('.webm') ? 'video/webm' : 'video/mp4' }));
+// An optional short, silent screen recording for the hero (src/assets/home/hero.mp4, 1024×640, looping), shown in a window
+// frame instead of the screenshot, with a still of its first frame as the poster (src/assets/home/hero-poster.jpg)
+const heroVideo = Object.values(import.meta.glob<string>('../assets/home/hero.mp4', { eager: true, query: '?url', import: 'default' }))[0];
+const heroPoster = Object.values(import.meta.glob<string>('../assets/home/hero-poster.jpg', { eager: true, query: '?url', import: 'default' }))[0] ?? mainScreenshot;
 
 const quotes = [
   'I\'ve been looking a long time for a program like LosslessCut',
@@ -163,11 +163,21 @@ export default function Home({ stars }: { stars: number }) {
           </div>
 
           <div className="hero-media">
-            {demoSources.length > 0 ? (
-              // controls: a looping video must be pausable (WCAG 2.2.2), and there's no script for a custom button
-              <video autoPlay muted loop playsInline controls width={1000} height={624} poster={mainScreenshot} aria-label="LosslessCut cutting a video">
-                {demoSources.map(({ url, type }) => <source key={url} src={url} type={type} />)}
-              </video>
+            {heroVideo != null ? (
+              <div className="hero-video">
+                <div className="hero-video-title">
+                  <span className="hero-video-dots" aria-hidden="true"><i /><i /><i /></span>
+                  LosslessCut
+                  {/* a looping video must be pausable (WCAG 2.2.2). Shown by the script in index.astro */}
+                  <button type="button" className="hero-video-pause" aria-label="Pause the video" hidden>
+                    <Pause className="pause" aria-hidden size={14} />
+                    <Play className="play" aria-hidden size={14} />
+                  </button>
+                </div>
+                {/* with prefers-reduced-motion, the poster is shown instead (home.css), and the script stops the video */}
+                <video src={heroVideo} poster={heroPoster} autoPlay muted loop playsInline preload="metadata" width={1024} height={640} aria-label="LosslessCut cutting a video into segments" />
+                <img className="hero-video-poster" src={heroPoster} alt="LosslessCut with a video cut into segments" width={1024} height={640} />
+              </div>
             ) : (
               <img src={mainScreenshot} alt="LosslessCut main window" width={1000} height={624} fetchPriority="high" />
             )}

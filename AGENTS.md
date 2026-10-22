@@ -36,4 +36,4 @@ When a visual or especially interesting feature lands in master, suggest a short
 
 - Ask the user to make a screenshot or a short silent screen recording (about 10 seconds) that shows it.
 - Say that people can try it now in the latest nightly build (https://mifi.no/llc/nightly/), and that it will be in the next release.
-- Such a clip can also become the homepage's demo (`website/src/assets/home/demo.mp4`, shown in the hero instead of the screenshot).
+- Such a clip can also become the homepage's hero video (`website/src/assets/home/hero.mp4`, 1024×640, with a still of its first frame as `hero-poster.jpg`), shown instead of the screenshot.

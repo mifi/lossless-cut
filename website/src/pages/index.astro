@@ -36,6 +36,27 @@ const description = 'LosslessCut - Official downloads - free or paid version. Ed
   <Home stars={stars} />
   <!-- is:inline: plain JS, not compiled by Vite, which would look for a tsconfig and find the app's (see tsconfig.json) -->
   <script is:inline>
+    // The hero video's pause button (Home.tsx), and with prefers-reduced-motion, no video at all (only its poster, see home.css)
+    {
+      const heroVideo = document.querySelector('.hero-video video');
+      if (heroVideo) {
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          heroVideo.removeAttribute('autoplay');
+          heroVideo.pause();
+        } else {
+          const pauseButton = document.querySelector('.hero-video-pause');
+          pauseButton.hidden = false;
+          pauseButton.addEventListener('click', () => (heroVideo.paused ? heroVideo.play() : heroVideo.pause()));
+          const update = () => {
+            pauseButton.classList.toggle('paused', heroVideo.paused);
+            pauseButton.setAttribute('aria-label', heroVideo.paused ? 'Play the video' : 'Pause the video');
+          };
+          heroVideo.addEventListener('play', update);
+          heroVideo.addEventListener('pause', update);
+        }
+      }
+    }
+
     // On touch screens, draw each feature card's icon when the card reaches the middle of the screen (.draw in home.css), again
     // after it has left the screen, and when it's tapped. Cards that are on screen when scrolling stops without having passed the
     // middle (after a jump to a link, or a fast scroll) are drawn then. (Scroll-driven CSS animations can't do this yet in all

@@ -126,12 +126,78 @@ body {
   flex: 1 1 500px;
   max-width: 640px;
 }
-.hero-media img, .hero-media video {
+.hero-media > img {
   display: block;
   width: 100%;
   height: auto;
   border-radius: 10px;
   box-shadow: rgba(0, 0, 0, 0.45) 0 20px 50px, rgba(51, 222, 239, 0.15) 0 0 0 1px;
+}
+/* the hero video (Home.tsx) in a plain window frame, not macOS-like, since the app also runs on Windows and Linux */
+.hero-video {
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+}
+.hero-video-title {
+  position: relative;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #2b2b2b;
+  color: rgba(255, 255, 255, 0.7);
+  font: 13px system-ui, sans-serif;
+}
+.hero-video-dots {
+  position: absolute;
+  left: 12px;
+  display: flex;
+  gap: 6px;
+}
+.hero-video-dots i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.25);
+}
+.hero-video-pause {
+  position: absolute;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+.hero-video-pause:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+.hero-video-pause[hidden], .hero-video-pause:not(.paused) .play, .hero-video-pause.paused .pause {
+  display: none;
+}
+.hero-video video, .hero-video-poster {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+}
+.hero-video-poster {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-video video, .hero-video-pause {
+    display: none;
+  }
+  .hero-video-poster {
+    display: block;
+  }
 }
 .button {
   display: inline-block;
