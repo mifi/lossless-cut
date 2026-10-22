@@ -11,8 +11,10 @@ const withSrcSet = (path: string) => ({
 export const generationLossOriginal = withSrcSet('losslesscut/website/generation-loss-original');
 export const generationLossReencoded = withSrcSet('losslesscut/website/generation-loss-reencoded');
 
-export const background1 = `${baseUrl}/dist/losslesscut/website/background-1000.jpg`;
-export const background2 = `${baseUrl}/dist/losslesscut/website/background2-1000.jpg`;
+// Drone photos (4:3). The hero's is behind an almost opaque gradient, so the ~1 megapixel version (1154×866, 170 KB) is plenty.
+export const background1 = `${baseUrl}/dist/2018/DJI_0120-edit-1000.jpg`;
+// Fixed, so it covers the whole viewport (e.g. 1920×1440 on a 1920×1080 screen): the largest resized version (1632×1224, 270 KB)
+export const background2 = `${baseUrl}/dist/2018/DJI_0014-edit-2000.jpg`;
 
 // Screen recordings (script/featureMedia.ts): silent, a smaller one for phones, and a still of the first frame
 export interface Video { src: string, smallSrc: string, poster: string, width: number, height: number }
