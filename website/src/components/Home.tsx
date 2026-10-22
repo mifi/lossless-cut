@@ -209,117 +209,119 @@ export default function Home({ stars, release }: { stars: number, release: Relea
         </div>
       </header>
 
-      <section className="quotes">
-        <h2>Thousands of happy users</h2>
-        <Collapsible label="Show all reviews" collapsedHeight={480}>
-          <div className="quote-grid">
-            {quotes.map((quote) => <blockquote key={quote} className="quote-card">{quote}</blockquote>)}
+      <main>
+        <section className="quotes">
+          <h2>Thousands of happy users</h2>
+          <Collapsible label="Show all reviews" collapsedHeight={480}>
+            <div className="quote-grid">
+              {quotes.map((quote) => <blockquote key={quote} className="quote-card">{quote}</blockquote>)}
+            </div>
+          </Collapsible>
+        </section>
+
+        <WhiteSection>
+          <div className="comparison" style={{ maxWidth: '700px' }}>
+            <h2 style={{ margin: '20px 0' }}>Traditional video editors</h2>
+            <img loading="lazy" src={generationLossReencoded.src} srcSet={generationLossReencoded.srcSet} alt="Generational compression artifacts from re-encoding" className="comparison-image" />
+
+            <p>
+              Any operation in a <b className="key-point">normal video editor</b><br />
+              requires you to <b className="key-point">re-encode</b> the whole file<br />
+              which can <b className="key-point">take hours</b> and you will<br />
+              gradually <a href="https://en.wikipedia.org/wiki/Generation_loss"><b className="key-point">lose quality</b></a> every time a file is processed.<br />
+            </p>
           </div>
-        </Collapsible>
-      </section>
 
-      <WhiteSection>
-        <div className="comparison" style={{ maxWidth: '700px' }}>
-          <h2 style={{ margin: '20px 0' }}>Traditional video editors</h2>
-          <img loading="lazy" src={generationLossReencoded.src} srcSet={generationLossReencoded.srcSet} alt="Generational compression artifacts from re-encoding" className="comparison-image" />
+          <div className="comparison" style={{ maxWidth: '800px' }}>
+            <h2 style={{ marginTop: '40px', marginBottom: '20px' }}><a style={{ color: 'inherit', textDecoration: 'none' }} href="/">LosslessCut<span style={{ opacity: '0.6' }}>.app</span></a></h2>
+            <img loading="lazy" alt="The original, without generational compression artifacts" src={generationLossOriginal.src} srcSet={generationLossOriginal.srcSet} className="comparison-image" />
+            <p>
+              LosslessCut will do the same <b className="key-point">in seconds</b> without losing quality
+            </p>
 
-          <p>
-            Any operation in a <b className="key-point">normal video editor</b><br />
-            requires you to <b className="key-point">re-encode</b> the whole file<br />
-            which can <b className="key-point">take hours</b> and you will<br />
-            gradually <a href="https://en.wikipedia.org/wiki/Generation_loss"><b className="key-point">lose quality</b></a> every time a file is processed.<br />
-          </p>
-        </div>
+            <p>LosslessCut simply cuts the data stream and directly copies it over. </p>
+          </div>
+        </WhiteSection>
 
-        <div className="comparison" style={{ maxWidth: '800px' }}>
-          <h2 style={{ marginTop: '40px', marginBottom: '20px' }}><a style={{ color: 'inherit', textDecoration: 'none' }} href="/">LosslessCut<span style={{ opacity: '0.6' }}>.app</span></a></h2>
-          <img loading="lazy" alt="The original, without generational compression artifacts" src={generationLossOriginal.src} srcSet={generationLossOriginal.srcSet} className="comparison-image" />
-          <p>
-            LosslessCut will do the same <b className="key-point">in seconds</b> without losing quality
-          </p>
+        <MediaSection background={background2} subtitle="Built in track info and selection">
+          <div className="tracks-video">
+            <FramedVideo video={tracksVideo} titleBar={false} label="LosslessCut's Tracks panel, switching off tracks one by one" posterAlt="LosslessCut's Tracks panel: choose which video, audio and subtitle tracks to keep when exporting" />
+            <p className="demo-video-credit">
+              Tears of Steel (CC) Blender Foundation | <a href="https://mango.blender.org/">mango.blender.org</a>
+            </p>
+          </div>
+        </MediaSection>
+        <WhiteSection>
+          <h2 style={{ margin: '20px 0' }}>Features</h2>
 
-          <p>LosslessCut simply cuts the data stream and directly copies it over. </p>
-        </div>
-      </WhiteSection>
+          <div className="feature-grid">
+            {features.map(({ text, icon }) => (
+              <div key={text} className="feature-card">
+                <span className="feature-icon"><Icon iconNode={drawableIcon(icon)} aria-hidden size={24} strokeWidth={1.9} /></span>
+                <div>{text}</div>
+              </div>
+            ))}
+          </div>
 
-      <MediaSection background={background2} subtitle="Built in track info and selection">
-        <div className="tracks-video">
-          <FramedVideo video={tracksVideo} titleBar={false} label="LosslessCut's Tracks panel, switching off tracks one by one" posterAlt="LosslessCut's Tracks panel: choose which video, audio and subtitle tracks to keep when exporting" />
+          <h2 style={{ margin: '20px 0' }}>Example use cases</h2>
+
+          <div className="list">
+            <List items={usageScenarios} />
+
+            <p className="note">
+              Which functions are available depends on the file and its format and codecs. Lossless cuts can only start at a keyframe, so a cut starts at the keyframe before your cut point, a fraction of a second up to several seconds earlier depending on the encoding.
+            </p>
+          </div>
+
+          <a className="button" href="/docs/features">See all features and use cases</a>
+        </WhiteSection>
+
+        <div className="padded demo-video">
+          <FramedVideo video={sceneChangesVideo} label="LosslessCut detecting the scene changes of a movie and creating a segment for each scene" posterAlt="A movie in LosslessCut, with a segment for each scene" />
           <p className="demo-video-credit">
             Tears of Steel (CC) Blender Foundation | <a href="https://mango.blender.org/">mango.blender.org</a>
           </p>
-        </div>
-      </MediaSection>
-      <WhiteSection>
-        <h2 style={{ margin: '20px 0' }}>Features</h2>
 
-        <div className="feature-grid">
-          {features.map(({ text, icon }) => (
-            <div key={text} className="feature-card">
-              <span className="feature-icon"><Icon iconNode={drawableIcon(icon)} aria-hidden size={24} strokeWidth={1.9} /></span>
-              <div>{text}</div>
-            </div>
+          <h2 style={{ textAlign: 'center', marginTop: '40px', fontWeight: '200' }}>Lightning Fast! It&apos;s like Magic</h2>
+        </div>
+
+        <div id="download" className="download">
+          <div className="download-inner">
+            <img src={logo} alt="LosslessCut logo" style={{ width: '100px', marginBottom: '10px' }} />
+            <p style={{ textAlign: 'left', margin: '30px 30px' }}>
+              I believe software should be <b>available to everyone</b>, and LosslessCut will <a href={githubUrl}>always be free</a> for anyone to use and look at the code.<br /><br />
+              If LosslessCut brings you value, please consider supporting my continued work by purchasing it from your favorite store, or <a href={donateUrl}>support me by donating.</a>
+            </p>
+
+            <StoreBadges height={50} />
+
+            <ul className="download-facts">
+              {release && <li>Latest version {release.version} ({release.date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })})</li>}
+              <li><a href="/docs/requirements">{supportedOs}</a></li>
+              <li><a href="/docs/faq#is-losslesscut-safe">Is it safe?</a></li>
+            </ul>
+
+            <p className="official-sources">
+              ⚠️ Beware of unofficial websites and app distributors. The only official sources of LosslessCut are this website, <a href={githubUrl}>GitHub</a> and the app stores above.
+            </p>
+          </div>
+        </div>
+
+        <div className="faq">
+          <h2>FAQ</h2>
+          {faqs.map(({ question, answer }) => (
+            <Fragment key={question}>
+              <p className="faq-question">{question}</p>
+              <p className="faq-answer">{answer}</p>
+            </Fragment>
           ))}
+
+          <a className="more-faq" href="/docs/faq">More FAQ...</a>
         </div>
-
-        <h2 style={{ margin: '20px 0' }}>Example use cases</h2>
-
-        <div className="list">
-          <List items={usageScenarios} />
-
-          <p className="note">
-            Which functions are available depends on the file and its format and codecs. Lossless cuts can only start at a keyframe, so a cut starts at the keyframe before your cut point, a fraction of a second up to several seconds earlier depending on the encoding.
-          </p>
-        </div>
-
-        <a className="button" href="/docs/features">See all features and use cases</a>
-      </WhiteSection>
-
-      <div className="padded demo-video">
-        <FramedVideo video={sceneChangesVideo} label="LosslessCut detecting the scene changes of a movie and creating a segment for each scene" posterAlt="A movie in LosslessCut, with a segment for each scene" />
-        <p className="demo-video-credit">
-          Tears of Steel (CC) Blender Foundation | <a href="https://mango.blender.org/">mango.blender.org</a>
-        </p>
-
-        <h2 style={{ textAlign: 'center', marginTop: '40px', fontWeight: '200' }}>Lightning Fast! It&apos;s like Magic</h2>
-      </div>
-
-      <div id="download" className="download">
-        <div className="download-inner">
-          <img src={logo} alt="LosslessCut logo" style={{ width: '100px', marginBottom: '10px' }} />
-          <p style={{ textAlign: 'left', margin: '30px 30px' }}>
-            I believe software should be <b>available to everyone</b>, and LosslessCut will <a href={githubUrl}>always be free</a> for anyone to use and look at the code.<br /><br />
-            If LosslessCut brings you value, please consider supporting my continued work by purchasing it from your favorite store, or <a href={donateUrl}>support me by donating.</a>
-          </p>
-
-          <StoreBadges height={50} />
-
-          <ul className="download-facts">
-            {release && <li>Latest version {release.version} ({release.date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })})</li>}
-            <li><a href="/docs/requirements">{supportedOs}</a></li>
-            <li><a href="/docs/faq#is-losslesscut-safe">Is it safe?</a></li>
-          </ul>
-
-          <p className="official-sources">
-            ⚠️ Beware of unofficial websites and app distributors. The only official sources of LosslessCut are this website, <a href={githubUrl}>GitHub</a> and the app stores above.
-          </p>
-        </div>
-      </div>
-
-      <div className="faq">
-        <h2>FAQ</h2>
-        {faqs.map(({ question, answer }) => (
-          <Fragment key={question}>
-            <p className="faq-question">{question}</p>
-            <p className="faq-answer">{answer}</p>
-          </Fragment>
-        ))}
-
-        <a className="more-faq" href="/docs/faq">More FAQ...</a>
-      </div>
+      </main>
 
       <div style={{ minHeight: '200px' }}>
-        <div className="footer">
+        <footer className="footer">
           <div>
             {footerLinks.map(({ label, href }) => <FooterLink key={label} href={href}>{label}</FooterLink>)}
           </div>
@@ -337,7 +339,7 @@ export default function Home({ stars, release }: { stars: number, release: Relea
           </div>
 
           <div className="footer-secondary" style={{ marginTop: '20px' }}>{new Date().getFullYear()} © Mikael Finstad</div>
-        </div>
+        </footer>
       </div>
     </div>
   );

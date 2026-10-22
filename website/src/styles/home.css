@@ -12,11 +12,15 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-.page {
+.page, .page > main {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+/* lays out its sections like the page does */
+.page > main {
+  align-self: stretch;
 }
 
 .padded {
