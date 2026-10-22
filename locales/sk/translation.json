@@ -992,5 +992,6 @@
   "Suggestions": "Návrhy",
   "This track has been edited": "Táto stopa bola upravená",
   "Track {{trackNumbers}} is HEVC without the \"{{tag}}\" codec tag, so it may not play on Apple devices (QuickTime, Safari, iOS). You can set the tag in the track editor.": "Stopa {{trackNumbers}} je vo formáte HEVC bez „{{tag}}“ kodekovej značky , takže sa nemusí prehrať na zariadeniach Apple (QuickTime, Safari, iOS). Značku môžeš nastaviť v editore stôp.",
-  "Use \"{{tag}}\"": "Použiť \"{{tag}}\""
+  "Use \"{{tag}}\"": "Použiť \"{{tag}}\"",
+  "Video preview scaling": "Zväčšenie náhľadu videa"
 }
