@@ -1,10 +1,10 @@
 <!doctype html>
 <!--
-  The designed parts of the social media versions of the feature demos (see socialVideo.ts): the desktop with the app window,
-  the captions, and the intro and outro animations. socialVideo.ts renders it with Chromium, with the settings as JSON in the URL's hash,
-  and ffmpeg puts the (zoomed) recording into the window's opening.
-  To design, open it in a browser: it plays the intro with a placeholder for the recording. Override settings in the hash,
-  e.g. desktop.html#{"scene":"outro"} or #{"scene":"preview","caption":"Hello"} (see `defaults` below).
+  The social media versions of the feature demos (see socialVideo.ts), as one timeline: the intro (the icon bounces and the window opens
+  out of it), the recording in the window with the captions and zooms, and the outro, on a desktop with a photo. Everything is a function
+  of the time, so socialVideo.ts steps it frame by frame with Chromium and screenshots each frame. The settings are JSON in the URL's hash.
+  To design, open it in a browser: it plays with a placeholder for the recording, and the slider at the bottom scrubs it. Override
+  settings in the hash, e.g. desktop.html#{"footer":"losslesscut.app"} or #{"kenBurns":{"zoom":0}} (see `defaults` below).
 -->
 <html>
 <head>
@@ -12,13 +12,13 @@
 <title>Feature media desktop</title>
 <style>
   * { box-sizing: border-box; }
-  html, body { margin: 0; overflow: hidden; background: transparent; }
+  html, body { margin: 0; overflow: hidden; background: #111; }
   body { font-family: Inter, system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; color: white; -webkit-font-smoothing: antialiased; }
-  #scene { position: absolute; left: 0; top: 0; overflow: hidden; }
+  #scene { position: absolute; left: 0; top: 0; overflow: hidden; transform-origin: 0 0; }
 
   /* The photo, darkened a bit (most at the edges) so the window and the text stand out */
   #desktop { position: absolute; inset: 0; overflow: hidden; background: #1b2b33; }
-  #desktop .photo { position: absolute; inset: -12px; background-size: cover; background-position: center; filter: blur(2px) saturate(1.05) brightness(0.82); }
+  #desktop .photo { position: absolute; left: -12px; top: -12px; }
   #desktop::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 45%, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.35) 100%); }
 
   /* A macOS style window in dark mode. Sizes are in macOS points times --s */
@@ -30,9 +30,10 @@
   #titlebar .lights span:nth-child(1) { background: #ff5f57; }
   #titlebar .lights span:nth-child(2) { background: #febc2e; }
   #titlebar .lights span:nth-child(3) { background: #28c840; }
-  /* The recording goes here. In the frame scene it's a hole that ffmpeg fills */
-  #content { position: absolute; left: 0; right: 0; bottom: 0; overflow: hidden; border-radius: 0 0 calc(12px * var(--s)) calc(12px * var(--s)); background: #222 center / cover; }
-  .frame #content { display: none; }
+  /* The recording, zoomed with a transform. The placeholder (when designing) is a grid, to see the zooms */
+  #content { position: absolute; left: 0; right: 0; bottom: 0; overflow: hidden; border-radius: 0 0 calc(12px * var(--s)) calc(12px * var(--s)); background: #222; }
+  #recording { position: absolute; left: 0; top: 0; display: block; transform-origin: 0 0; }
+  #recording.placeholder { background: linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px) 0 0 / 64px 64px, linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px) 0 0 / 64px 64px, linear-gradient(135deg, #2a2d33, #16171a); }
 
   /* The icon and two lines of text, in the intro and outro */
   #launcher { position: absolute; isolation: isolate; display: flex; flex-direction: column; align-items: center; text-align: center; }
@@ -42,34 +43,33 @@
   #launcher .title { font-weight: 700; letter-spacing: -0.01em; text-shadow: 0 2px 18px rgba(0, 0, 0, 0.55), 0 1px 3px rgba(0, 0, 0, 0.4); }
   #launcher .subtitle { font-weight: 500; color: rgba(255, 255, 255, 0.92); text-shadow: 0 2px 14px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.45); }
 
-  #caption { position: absolute; left: 50%; transform: translateX(-50%); width: max-content; text-align: center; font-weight: 700; line-height: 1.25; padding: 0.45em 0.85em; border-radius: 0.55em; background: rgba(17, 17, 19, 0.82); box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.08); }
+  /* Above the window, growing upwards, and coming in from a bit lower (from the window) */
+  .caption { position: absolute; left: 50%; width: max-content; transform-origin: 50% 100%; text-align: center; font-weight: 700; line-height: 1.25; padding: 0.45em 0.85em; border-radius: 0.55em; background: rgba(17, 17, 19, 0.82); box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.08); }
 
   /* A subtle line under the window: the icon and e.g. the website */
   #footer { position: absolute; left: 0; right: 0; display: flex; justify-content: center; align-items: center; gap: 0.45em; line-height: 1.3; font-weight: 600; letter-spacing: 0.02em; color: rgba(255, 255, 255, 0.78); text-shadow: 0 1px 12px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.5); }
-
-  /* Only what the scene needs */
   #footer img { width: 1.3em; height: 1.3em; filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.5)); }
 
-  .frame #launcher, .frame #caption, .preview #launcher, .caption #desktop, .caption #window, .caption #launcher, .caption #footer, .intro #caption, .outro #caption { display: none; }
+  /* Only when designing: play/pause and a slider for the time */
+  #scrubber { position: fixed; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: 12px; padding: 8px 16px; background: rgba(0, 0, 0, 0.8); font: 13px system-ui, sans-serif; }
+  #scrubber input { flex: 1; }
+  #scrubber output { min-width: 8em; font-variant-numeric: tabular-nums; }
 </style>
 </head>
 <body>
 <div id="scene">
-  <div id="desktop"><div class="photo"></div></div>
+  <div id="desktop"><canvas class="photo"></canvas></div>
   <div id="launcher"><div id="icon-launch"><img id="icon" alt=""></div><div class="title"></div><div class="subtitle"></div></div>
   <div id="window">
+    <div id="content"><img id="recording" alt=""></div>
     <div id="titlebar"><div class="lights"><span></span><span></span><span></span></div><div class="title">LosslessCut</div></div>
-    <div id="content"></div>
   </div>
-  <div id="caption"></div>
+  <div id="captions"></div>
   <div id="footer"><img alt=""><span></span></div>
 </div>
 <script>
 // The settings for designing in a browser. socialVideo.ts passes all of them
 const defaults = {
-  // frame: the desktop and window with a hole for the recording. caption: only the caption. intro, outro: the animations.
-  // preview (only for designing): the desktop, window and caption
-  scene: 'intro',
   width: 1920,
   height: 1200,
   // Where the recording goes (the window's content, below the title bar), and the window's scale from macOS points
@@ -79,50 +79,70 @@ const defaults = {
   captionSize: 48,
   // Between the caption and the top of the window
   captionGap: 36,
-  // Under the window, with the icon, while the recording plays (e.g. 'losslesscut.app'), or none
+  // Under the window, with the icon (e.g. 'losslesscut.app'), or none
   footer: undefined,
   // Between the bottom of the window and the footer
   footerGap: 22,
-  caption: 'Choose the ones to keep',
-  title: 'LosslessCut',
-  subtitle: 'Choose which tracks to keep, then export',
-  // The recording's first (intro) or last (outro) frame
-  image: undefined,
+  // The recording: its size (the app's window), its length in seconds, and where its frames are (the URL up to the number,
+  // for `${frames}00000.jpg` and on), or none for a placeholder
+  recording: { width: 1024, height: 640, duration: 7, fps: 30, frames: undefined },
+  // At times in the recording (in seconds)
+  captions: [{ start: 0.5, end: 3, text: 'See every track in the file' }, { start: 3, end: 7, text: 'Choose the ones to keep' }],
+  // From each time in the recording, zoomed in on a part of it (in the recording's pixels), or back out with no rect
+  zooms: [{ time: 3, rect: { x: 60, y: 230, w: 560, h: 300 } }, { time: 5.5 }],
+  intro: { title: 'LosslessCut', subtitle: 'Choose which tracks to keep, then export' },
+  outro: { title: 'losslesscut.app', subtitle: 'Free and open source · Windows, macOS and Linux' },
+  // A slow zoom into the photo over the whole video (0.08 ends at 108 %, 0 turns it off), and a drift towards a side,
+  // as a share of the room the zoom leaves there (-1 to 1)
+  kenBurns: { zoom: 0.08, driftX: 0.4, driftY: -0.25 },
   // When designing (renders use the photo from backgrounds.ts): a resized version of the beach photo
   background: 'https://static.mifi.no/dist/2018/DJI_0120-edit-2000.jpg',
   icon: '../../src/renderer/src/icon.svg',
-  // Set when rendering: the animations are paused and stepped with scene.seek()
+  // Set when rendering: no slider and no playing, socialVideo.ts calls timeline.seek() for each frame
   render: false,
 };
 const config = { ...defaults, ...(location.hash.length > 1 ? JSON.parse(decodeURIComponent(location.hash.slice(1))) : {}) };
-const { width, height, content, titleBarHeight, scale } = config;
+const { width, height, content, titleBarHeight, scale, recording, kenBurns } = config;
 const $ = (selector) => document.querySelector(selector);
 const setStyle = (element, style) => Object.assign(element.style, style);
 const px = (value) => `${value}px`;
 
-document.body.className = config.scene;
 setStyle($('#scene'), { width: px(width), height: px(height) });
 document.documentElement.style.setProperty('--s', String(scale));
-$('#desktop .photo').style.backgroundImage = `url("${config.background}")`;
+// The photo, covering the scene with a bit to spare for its blur. It's drawn once with its blur and colours, which would be slow to draw for each frame
+const photo = $('#desktop .photo');
+Object.assign(photo, { width: width + 24, height: height + 24 });
+const photoImage = Object.assign(new Image(), { src: config.background });
+async function drawPhoto() {
+  await photoImage.decode();
+  const context = photo.getContext('2d');
+  const cover = Math.max(photo.width / photoImage.naturalWidth, photo.height / photoImage.naturalHeight);
+  const [w, h] = [photoImage.naturalWidth * cover, photoImage.naturalHeight * cover];
+  context.filter = 'blur(2px) saturate(1.05) brightness(0.82)';
+  context.drawImage(photoImage, (photo.width - w) / 2, (photo.height - h) / 2, w, h);
+}
 
 // The window, around the content
 const win = { x: content.x, y: content.y - titleBarHeight, w: content.w, h: content.h + titleBarHeight };
-setStyle($('#window'), { left: px(win.x), top: px(win.y), width: px(win.w), height: px(win.h) });
+const windowElement = $('#window');
+setStyle(windowElement, { left: px(win.x), top: px(win.y), width: px(win.w), height: px(win.h) });
 setStyle($('#titlebar'), { height: px(titleBarHeight) });
-setStyle($('#content'), { top: px(titleBarHeight), backgroundImage: config.image != null ? `url("${config.image}")` : 'linear-gradient(135deg, #2a2d33, #16171a)' });
+setStyle($('#content'), { top: px(titleBarHeight) });
+const recordingElement = $('#recording');
+setStyle(recordingElement, { width: px(content.w), height: px(content.h) });
+if (recording.frames == null) recordingElement.classList.add('placeholder');
 
-// The frame scene shows the desktop through the content, minus its rounded bottom corners: ffmpeg puts the recording under it
-if (config.scene === 'frame') {
-  const r = 12 * scale;
-  const { x, y, w, h } = content;
-  $('#scene').style.clipPath = `path(evenodd, "M0 0H${width}V${height}H0Z M${x} ${y}H${x + w}V${y + h - r}A${r} ${r} 0 0 1 ${x + w - r} ${y + h}H${x + r}A${r} ${r} 0 0 1 ${x} ${y + h - r}Z")`;
-}
-
-// The caption goes above the window, growing upwards
-const caption = $('#caption');
-caption.textContent = config.caption ?? '';
-setStyle(caption, { fontSize: px(config.captionSize), bottom: px(height - win.y + config.captionGap), maxWidth: px(width - 120) });
-if (!config.caption) caption.style.display = 'none';
+// The captions go above the window, growing upwards
+const captions = config.captions.map(({ start, end: recordedEnd, text }) => {
+  // Gone by the outro (the recording's frames can end a bit before the time it was recorded for)
+  const end = Math.min(recordedEnd, recording.duration);
+  const element = document.createElement('div');
+  element.className = 'caption';
+  element.textContent = text;
+  setStyle(element, { fontSize: px(config.captionSize), bottom: px(height - win.y + config.captionGap), maxWidth: px(width - 120) });
+  $('#captions').append(element);
+  return { start, end, element };
+});
 
 // The footer goes under the window
 const footer = $('#footer');
@@ -140,88 +160,219 @@ document.documentElement.style.setProperty('--icon', px(iconSize));
 const iconCenter = { x: win.x + win.w / 2, y: win.y + win.h / 2 - iconSize * 0.45 };
 const launcher = $('#launcher');
 setStyle(launcher, { left: px(iconCenter.x - width / 2), width: px(width), top: px(iconCenter.y - iconSize / 2), padding: '0 60px' });
+const iconLaunch = $('#icon-launch');
 const [titleText, subtitleText] = [$('#launcher .title'), $('#launcher .subtitle')];
-titleText.textContent = config.title;
-subtitleText.textContent = config.subtitle;
 setStyle(titleText, { fontSize: px(iconSize * 0.3), marginTop: px(iconSize * 0.16) });
 setStyle(subtitleText, { fontSize: px(Math.max(iconSize * 0.16, config.captionSize * 0.75)), marginTop: px(iconSize * 0.05) });
 
-// A spring that overshoots a little (about 4 %) and settles, as a CSS linear() easing. Frequency is per animation duration
+// Easings of a progress from 0 to 1, like CSS's
+function cubicBezier(x1, y1, x2, y2) {
+  const at = (a, b, t) => 3 * a * t * (1 - t) ** 2 + 3 * b * t ** 2 * (1 - t) + t ** 3;
+  return (x) => {
+    // The t where the curve is at x (its x only grows with t)
+    let low = 0;
+    let high = 1;
+    for (let i = 0; i < 30; i += 1) {
+      const mid = (low + high) / 2;
+      if (at(x1, x2, mid) < x) low = mid;
+      else high = mid;
+    }
+    return at(y1, y2, (low + high) / 2);
+  };
+}
+const linear = (p) => p;
+const ease = { in: cubicBezier(0.42, 0, 1, 1), out: cubicBezier(0, 0, 0.58, 1), inOut: cubicBezier(0.42, 0, 0.58, 1) };
+const smoothstep = (p) => p * p * (3 - 2 * p);
+// A spring that overshoots a little (about 4 %) and settles. Frequency is per animation duration
 function spring({ damping = 0.72, frequency = 7.9 } = {}) {
   const decay = damping * frequency;
   const damped = frequency * Math.sqrt(1 - damping ** 2);
-  const points = Array.from({ length: 61 }, (_, i) => {
-    const t = i / 60;
-    const value = i === 60 ? 1 : 1 - Math.exp(-decay * t) * (Math.cos(damped * t) + (decay / damped) * Math.sin(damped * t));
-    return value.toFixed(4);
-  });
-  return `linear(${points.join(', ')})`;
+  return (p) => (p >= 1 ? 1 : 1 - Math.exp(-decay * p) * (Math.cos(damped * p) + (decay / damped) * Math.sin(damped * p)));
 }
 
-// The window transform that puts it over the icon, at the icon's width
+// The eased progress (0 to 1) of an animation at a time, in seconds
+const progress = (time, start, duration, easing = ease.inOut) => easing(Math.min(1, Math.max(0, (time - start) / duration)));
+const mix = (from, to, p) => from + (to - from) * p;
+// Keyframes of numbers at offsets from 0 to 1, each with the easing to the next one (like the Web Animations API's)
+function keyframes(p, frames) {
+  const i = Math.max(0, frames.findLastIndex(({ offset }) => offset <= p));
+  const from = frames[i];
+  const to = frames[Math.min(i + 1, frames.length - 1)];
+  if (to === from) return from.values;
+  const local = (from.easing ?? linear)((p - from.offset) / (to.offset - from.offset));
+  return from.values.map((value, j) => mix(value, to.values[j], local));
+}
+
+// The timeline, in seconds: the intro ends on the recording's first frame and the outro starts on its last frame
+const intro = { open: 1.45, duration: 2.4 };
+const outro = { close: 0.15, duration: 2.5 };
+const recordingStart = intro.duration;
+const outroStart = recordingStart + recording.duration;
+const duration = outroStart + outro.duration;
+
+// The window's transform towards the icon: at 1 it's over the icon, at the icon's width
 const fromIconScale = iconSize / win.w;
-const atIcon = `translate(${iconCenter.x - win.x - (win.w * fromIconScale) / 2}px, ${iconCenter.y - win.y - (win.h * fromIconScale) / 2}px) scale(${fromIconScale})`;
+const atIcon = { x: iconCenter.x - win.x - (win.w * fromIconScale) / 2, y: iconCenter.y - win.y - (win.h * fromIconScale) / 2 };
+const towardsIcon = (p) => `translate(${mix(0, atIcon.x, p)}px, ${mix(0, atIcon.y, p)}px) scale(${mix(1, fromIconScale, p)})`;
 
-// The animations, with times in seconds. The scene lasts until the last one ends, and its last (intro) or first (outro) frame is the frame scene with the recording in it
-const animate = (selector, keyframes, start, duration, options = {}) => $(selector).animate(keyframes, { delay: start * 1000, duration: duration * 1000, fill: 'both', easing: 'ease-in-out', ...options });
-// Makes the scene last longer
-const hold = (start, duration) => animate('body', [{}, {}], start, duration);
-const scenes = {
-  intro() {
-    // The icon bounces once, like an app being launched in the Dock, while the text is read
-    animate('#icon', [
-      { transform: 'none', easing: 'cubic-bezier(0.2, 0.6, 0.35, 1)' },
-      { transform: `translateY(${-iconSize * 0.42}px)`, offset: 0.45, easing: 'cubic-bezier(0.6, 0, 0.85, 0.4)' },
-      { transform: 'none', offset: 0.82 },
-      { transform: 'scale(1.05, 0.95)', offset: 0.9 },
-      { transform: 'none' },
-    ], 0.55, 0.6, { easing: 'linear' });
-    // Then the window opens out of it
-    const open = 1.45;
-    animate('#launcher .title', [{ opacity: 1 }, { opacity: 0 }], open - 0.1, 0.3);
-    animate('#launcher .subtitle', [{ opacity: 1 }, { opacity: 0 }], open - 0.1, 0.3);
-    animate('#icon-launch', [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'scale(1.6)' }], open, 0.3, { easing: 'ease-in' });
-    animate('#window', [{ transform: atIcon }, { transform: 'none' }], open, 0.75, { easing: spring() });
-    animate('#window', [{ opacity: 0 }, { opacity: 1 }], open, 0.18, { easing: 'linear' });
-    // The footer comes with the window (it's in the frame scene that follows)
-    animate('#footer', [{ opacity: 0 }, { opacity: 1 }], open + 0.3, 0.45);
-    // A short hold on the first frame before the recording starts
-    hold(open + 0.75, 0.15);
-  },
-  outro() {
-    // The window closes into the icon, then the text comes
-    const close = 0.15;
-    animate('#window', [{ transform: 'none' }, { transform: atIcon }], close, 0.5, { easing: 'cubic-bezier(0.55, 0, 0.75, 0.3)' });
-    animate('#window', [{ opacity: 1 }, { opacity: 0 }], close + 0.36, 0.14, { easing: 'linear' });
-    // The footer goes with the window, before the title (the same text) comes
-    animate('#footer', [{ opacity: 1 }, { opacity: 0 }], close, 0.35);
-    animate('#icon-launch', [{ opacity: 0, transform: 'scale(0.6)' }, { opacity: 1, transform: 'scale(1.06)', offset: 0.6 }, { opacity: 1, transform: 'none' }], close + 0.3, 0.45, { easing: 'ease-out' });
-    animate('#launcher .title', [{ opacity: 0, transform: 'translateY(12px)' }, { opacity: 1, transform: 'none' }], close + 0.75, 0.4, { easing: 'ease-out' });
-    animate('#launcher .subtitle', [{ opacity: 0, transform: 'translateY(12px)' }, { opacity: 1, transform: 'none' }], close + 0.9, 0.4, { easing: 'ease-out' });
-    // Hold, to read it
-    hold(close + 1.3, 1.05);
-  },
-};
-scenes[config.scene]?.();
+// The window, footer and launcher (the icon and its text) at a time of the intro and outro
+function introAt(time) {
+  const { open } = intro;
+  // The icon bounces once, like an app being launched in the Dock, while the text is read
+  const [bounce, squashX, squashY] = keyframes(progress(time, 0.55, 0.6, linear), [
+    { offset: 0, values: [0, 1, 1], easing: cubicBezier(0.2, 0.6, 0.35, 1) },
+    { offset: 0.45, values: [-0.42, 1, 1], easing: cubicBezier(0.6, 0, 0.85, 0.4) },
+    { offset: 0.82, values: [0, 1, 1] },
+    { offset: 0.9, values: [0, 1.05, 0.95] },
+    { offset: 1, values: [0, 1, 1] },
+  ]);
+  // Then the window opens out of it, and the footer comes with it
+  const text = 1 - progress(time, open - 0.1, 0.3);
+  const launch = progress(time, open, 0.3, ease.in);
+  return {
+    window: { transform: towardsIcon(1 - progress(time, open, 0.75, spring())), opacity: progress(time, open, 0.18, linear) },
+    footer: progress(time, open + 0.3, 0.45),
+    icon: `translateY(${bounce * iconSize}px) scale(${squashX}, ${squashY})`,
+    launch: { opacity: 1 - launch, transform: `scale(${mix(1, 1.6, launch)})` },
+    text: config.intro,
+    title: { opacity: text, transform: 'none' },
+    subtitle: { opacity: text, transform: 'none' },
+  };
+}
+function outroAt(time) {
+  const { close } = outro;
+  // The window closes into the icon and the footer goes with it, then the text comes (the footer's is the same), to read
+  const [launchOpacity, launchScale] = keyframes(progress(time, close + 0.3, 0.45, ease.out), [{ offset: 0, values: [0, 0.6] }, { offset: 0.6, values: [1, 1.06] }, { offset: 1, values: [1, 1] }]);
+  const textIn = (start) => {
+    const p = progress(time, start, 0.4, ease.out);
+    return { opacity: p, transform: `translateY(${mix(12, 0, p)}px)` };
+  };
+  return {
+    window: { transform: towardsIcon(progress(time, close, 0.5, cubicBezier(0.55, 0, 0.75, 0.3))), opacity: 1 - progress(time, close + 0.36, 0.14, linear) },
+    footer: 1 - progress(time, close, 0.35),
+    icon: 'none',
+    launch: { opacity: launchOpacity, transform: `scale(${launchScale})` },
+    text: config.outro,
+    title: textIn(close + 0.75),
+    subtitle: textIn(close + 0.9),
+  };
+}
+// While the recording plays
+const playing = { window: { transform: 'none', opacity: 1 }, footer: 1, icon: 'none', launch: { opacity: 0, transform: 'none' }, text: config.intro, title: { opacity: 0, transform: 'none' }, subtitle: { opacity: 0, transform: 'none' } };
 
-const animations = document.getAnimations();
-const duration = Math.max(0, ...animations.map((animation) => animation.effect.getComputedTiming().endTime / 1000));
-const images = [icon, ...[config.background, config.image].filter((src) => src != null).map((src) => Object.assign(new Image(), { src }))];
-window.scene = {
-  // Fonts and images loaded. When rendering, a missing image fails the render (when designing, it's just left out)
-  ready: Promise.all([document.fonts.ready, ...images.map(async (image) => (config.render ? image.decode() : image.decode().catch(() => undefined)))]),
+// The zoom (from 1) and the top left of the part of the recording that's shown, at a time in the recording.
+// Each zoom eases there from the one before, and stays inside the recording
+const zoomDuration = 0.7;
+const maxZoom = 2.5;
+function zoomAt(time) {
+  const { width: w, height: h } = recording;
+  let view = { zoom: 1, x: w / 2, y: h / 2 };
+  for (const { time: start, rect } of config.zooms) {
+    if (time < start) break;
+    const target = rect == null ? { zoom: 1, x: w / 2, y: h / 2 } : { zoom: Math.max(1, Math.min(maxZoom, w / rect.w, h / rect.h)), x: rect.x + rect.w / 2, y: rect.y + rect.h / 2 };
+    const p = progress(time, start, zoomDuration, smoothstep);
+    view = { zoom: mix(view.zoom, target.zoom, p), x: mix(view.x, target.x, p), y: mix(view.y, target.y, p) };
+    if (p < 1) break;
+  }
+  const { zoom, x, y } = view;
+  const clamp = (value, max) => Math.min(max, Math.max(0, value));
+  return { zoom, left: clamp(x - w / zoom / 2, w - w / zoom), top: clamp(y - h / zoom / 2, h - h / zoom) };
+}
+
+// A caption fades in while it comes up a bit and grows to its size, and fades out
+function captionAt(time, { start, end }) {
+  const shown = progress(time, start, 0.3, ease.out);
+  const opacity = Math.min(shown, 1 - progress(time, end - 0.25, 0.25, linear));
+  return { opacity, transform: `translateX(-50%) translateY(${mix(0.25 * config.captionSize, 0, shown)}px) scale(${mix(0.96, 1, shown)})` };
+}
+
+let shownFrame;
+
+// Shows the timeline at a time (in seconds). Resolves when the recording's frame is decoded, so it's in the next screenshot
+async function seek(time) {
+  // The recording stays on its first frame in the intro and on its last in the outro, with the zoom and captions it has there
+  const recordingTime = Math.min(Math.max(time - recordingStart, 0), recording.duration);
+  let scene = playing;
+  if (time < recordingStart) scene = introAt(time);
+  else if (time >= outroStart) scene = outroAt(time - outroStart);
+  setStyle(windowElement, { transform: scene.window.transform, opacity: String(scene.window.opacity) });
+  footer.style.opacity = String(scene.footer);
+  icon.style.transform = scene.icon;
+  setStyle(iconLaunch, { opacity: String(scene.launch.opacity), transform: scene.launch.transform });
+  if (titleText.textContent !== scene.text.title) titleText.textContent = scene.text.title;
+  if (subtitleText.textContent !== scene.text.subtitle) subtitleText.textContent = scene.text.subtitle;
+  setStyle(titleText, { opacity: String(scene.title.opacity), transform: scene.title.transform });
+  setStyle(subtitleText, { opacity: String(scene.subtitle.opacity), transform: scene.subtitle.transform });
+
+  for (const caption of captions) {
+    const { opacity, transform } = captionAt(recordingTime, caption);
+    setStyle(caption.element, { opacity: String(opacity), transform });
+  }
+
+  // The content zooms (the title bar stays)
+  const { zoom, left, top } = zoomAt(recordingTime);
+  recordingElement.style.transform = `translate(${-left * zoom * (content.w / recording.width)}px, ${-top * zoom * (content.h / recording.height)}px) scale(${zoom})`;
+
+  // The photo zooms in slowly over the whole video, and drifts within the room that leaves
+  const room = (kenBurns.zoom * (time / duration)) / 2;
+  photo.style.transform = `translate(${kenBurns.driftX * room * 100}%, ${kenBurns.driftY * room * 100}%) scale(${1 + 2 * room})`;
+
+  if (recording.frames != null) {
+    const frame = Math.min(Math.round(recordingTime * recording.fps), Math.round(recording.duration * recording.fps) - 1);
+    if (frame !== shownFrame) {
+      shownFrame = frame;
+      recordingElement.src = `${recording.frames}${String(frame).padStart(5, '0')}.jpg`;
+      await recordingElement.decode();
+    }
+  }
+}
+
+globalThis.timeline = {
+  // Fonts and images loaded, and the start shown. When rendering, a missing image fails the render (when designing, it's just left out)
+  ready: Promise.all([document.fonts.ready, icon.decode(), drawPhoto()].map(async (loaded) => (config.render ? loaded : loaded.catch(() => undefined)))).then(async () => seek(0)),
   duration,
-  // Shows the scene at a time (in seconds), when rendering
-  seek(time) {
-    for (const animation of animations) animation.currentTime = time * 1000;
-  },
+  seek,
 };
-if (config.render) {
-  for (const animation of animations) animation.pause();
-  window.scene.seek(0);
-} else if (duration > 0) {
-  // Designing: play it over and over
-  setInterval(() => animations.forEach((animation) => { animation.currentTime = 0; animation.play(); }), (duration + 1) * 1000);
+
+// Designing: play it over and over, or scrub it with the slider. The scene is scaled down to fit in the browser
+if (!config.render) {
+  const bar = document.createElement('div');
+  bar.id = 'scrubber';
+  bar.innerHTML = '<button type="button">Pause</button><input type="range" min="0" step="0.001"><output></output>';
+  document.body.append(bar);
+  const [button, slider, output] = bar.children;
+  slider.max = String(duration);
+  const fit = () => { $('#scene').style.transform = `scale(${Math.min(1, innerWidth / width, (innerHeight - bar.offsetHeight) / height)})`; };
+  fit();
+  addEventListener('resize', fit);
+  let isPlaying = true;
+  let time = 0;
+  let last = performance.now();
+  const show = () => {
+    seek(time);
+    slider.value = String(time);
+    output.value = `${time.toFixed(2)} / ${duration.toFixed(2)} s`;
+  };
+  const setPlaying = (value) => {
+    isPlaying = value;
+    button.textContent = isPlaying ? 'Pause' : 'Play';
+  };
+  button.addEventListener('click', () => setPlaying(!isPlaying));
+  slider.addEventListener('input', () => {
+    setPlaying(false);
+    time = Number(slider.value);
+    show();
+  });
+  const tick = (now) => {
+    if (isPlaying) {
+      // With a second's pause at the end
+      time = (time + (now - last) / 1000) % (duration + 1);
+      show();
+    }
+    last = now;
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
 }
 </script>
 </body>

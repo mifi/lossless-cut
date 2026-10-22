@@ -16,7 +16,7 @@ import sharp from 'sharp';
 import backgrounds, { defaultBackground } from './featureMedia/backgrounds.ts';
 import clipSources from './featureMedia/clips.ts';
 import musicTracks, { defaultMusic } from './featureMedia/music.ts';
-import openHtmlScenes from './featureMedia/htmlScenes.ts';
+import { checkChromium } from './featureMedia/htmlScenes.ts';
 import scenarios from './featureMedia/scenarios.ts';
 import { renderSocialVideo, type Caption, type Rect, type Zoom } from './featureMedia/socialVideo.ts';
 
@@ -102,7 +102,7 @@ if (!await exists(background)) {
   }
 }
 // The social media versions are drawn with Chromium: check that it starts before recording (see AGENTS.md "Feature media" if not)
-await (await openHtmlScenes({ width: 100, height: 100 })).close();
+await checkChromium();
 
 // Get the clips, from the folder or else make them from their sources (see clips.ts) or download them
 const clipsUrl = process.env['FEATURE_MEDIA_CLIPS_URL'] ?? 'https://static.mifi.no/src/losslesscut/demo-sources';
@@ -235,10 +235,8 @@ try {
   const captions: Caption[] = captionEvents.flatMap(({ time, text }, i) => (text == null ? [] : [{ text, start: Math.max(0, time - socialStart), end: Math.min((captionEvents[i + 1]?.time ?? Infinity) - socialStart, duration) }]))
     .filter(({ start, end }) => end > start);
   const zooms: Zoom[] = zoomEvents.map(({ time, rect }) => ({ time: time - socialStart, rect }));
-  for (const format of ['landscape', 'vertical'] as const) {
-    // eslint-disable-next-line no-await-in-loop
-    await renderSocialVideo({ ffmpeg, rawVideo, videoStart: socialStart, duration, captions, zooms, description: scenario.description, music, background, windowWidth: width, windowHeight: height, format, tmpDir: configDir, outPath: join(outDir, `${scenarioName}-${format}.mp4`) });
-  }
+  // Both at once, which is faster (each mostly waits for its Chromium)
+  await Promise.all((['landscape', 'vertical'] as const).map(async (format) => renderSocialVideo({ ffmpeg, rawVideo, videoStart: socialStart, duration, captions, zooms, description: scenario.description, music, background, windowWidth: width, windowHeight: height, format, tmpDir: configDir, outPath: join(outDir, `${scenarioName}-${format}.mp4`) })));
   console.log('Wrote', videoPath, 'the social media versions and screenshots in', outDir);
   if (musicTrack != null) console.log('Posts with the social media versions must credit:', musicTrack.credit);
 } finally {

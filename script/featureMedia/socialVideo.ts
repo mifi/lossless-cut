@@ -1,19 +1,19 @@
 // Makes the social media versions of a feature demo from its raw recording: the app in a window on a desktop, with captions,
 // zooms (as set by the scenario), an intro and outro animation and optional music, in landscape (16:10) and vertical (9:16, for Reels, TikTok and Shorts).
-// The designed parts are HTML (desktop.html, rendered with Chromium) and ffmpeg puts the zoomed recording into the window.
-import { mkdir } from 'node:fs/promises';
+// The whole video is an HTML timeline (desktop.html) that Chromium renders frame by frame, with the recording's frames (decoded by ffmpeg) in the window,
+// and ffmpeg encodes the frames with the music.
+import { once } from 'node:events';
+import { mkdir, readdir, rm } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { execa } from 'execa';
-import openHtmlScenes from './htmlScenes.ts';
+import openTimeline from './htmlScenes.ts';
 
 export interface Rect { x: number, y: number, w: number, h: number }
 export interface Caption { start: number, end: number, text: string }
 export interface Zoom { time: number, rect: Rect | undefined }
 
 const fps = 30;
-const zoomDuration = 0.7;
-const maxZoom = 2.5;
 const iconPath = 'src/renderer/src/icon.svg';
 
 // The window's place on the desktop: its left and top (of the title bar) and width. The recording fills its content, below the title bar.
@@ -26,7 +26,7 @@ const formats = {
 } as const;
 export type Format = keyof typeof formats;
 
-// Where the recording goes, the same numbers for the HTML and ffmpeg
+// Where the window and the recording go, for the HTML
 function getLayout(format: Format, windowWidth: number, windowHeight: number) {
   const { width, height, window, captionSize, captionGap, footer } = formats[format];
   // From macOS points (the app's window is windowWidth points wide)
@@ -34,36 +34,6 @@ function getLayout(format: Format, windowWidth: number, windowHeight: number) {
   const titleBarHeight = Math.round(28 * scale);
   const content = { x: window.x, y: window.y + titleBarHeight, w: window.width, h: Math.round(windowHeight * scale) };
   return { width, height, scale, titleBarHeight, content, captionSize, captionGap, footer };
-}
-
-// An ffmpeg expression for a value that eases from one setting to the next at each time
-function easedExpression(times: number[], values: number[], initial: number): string {
-  const build = (i: number, previous: number): string => {
-    if (i === times.length) return String(previous);
-    const start = times[i]!;
-    const value = values[i]!;
-    const progress = `clip((it-${start})/${zoomDuration},0,1)`;
-    const eased = `${previous}+(${value - previous})*${progress}*${progress}*(3-2*${progress})`;
-    return `if(lt(it,${start}),${previous},if(lt(it,${start + zoomDuration}),${eased},${build(i + 1, value)}))`;
-  };
-  return build(0, initial);
-}
-
-// zoompan settings that follow the zooms. The input is scaled up 2x first, which makes slow zooms smoother.
-// zoompan's output timestamps can be off (with the raw recording), so they're renumbered, for the overlays and concat after it.
-// fps first fills in the frames x11grab dropped, or the renumbering would shorten the video
-function zoomFilter(zooms: Zoom[], { windowWidth, windowHeight }: { windowWidth: number, windowHeight: number }, outWidth: number, outHeight: number) {
-  const times = zooms.map(({ time }) => time);
-  const targets = zooms.map(({ rect }) => {
-    if (rect == null) return { z: 1, cx: windowWidth / 2, cy: windowHeight / 2 };
-    const z = Math.max(1, Math.min(maxZoom, windowWidth / rect.w, windowHeight / rect.h));
-    return { z, cx: rect.x + rect.w / 2, cy: rect.y + rect.h / 2 };
-  });
-  const z = easedExpression(times, targets.map((t) => t.z), 1);
-  // The centre, in the 2x input's pixels, kept inside the frame
-  const cx = easedExpression(times, targets.map((t) => t.cx * 2), windowWidth);
-  const cy = easedExpression(times, targets.map((t) => t.cy * 2), windowHeight);
-  return `fps=${fps},scale=${windowWidth * 2}:${windowHeight * 2}:flags=lanczos,zoompan=z='${z}':x='clip(${cx}-iw/zoom/2,0,iw-iw/zoom)':y='clip(${cy}-ih/zoom/2,0,ih-ih/zoom)':d=1:s=${outWidth}x${outHeight}:fps=${fps},setpts=N/${fps}/TB`;
 }
 
 export async function renderSocialVideo({ ffmpeg, rawVideo, videoStart, duration, captions, zooms, description, music, background, windowWidth, windowHeight, format, tmpDir, outPath }: {
@@ -86,76 +56,52 @@ export async function renderSocialVideo({ ffmpeg, rawVideo, videoStart, duration
   outPath: string,
 }) {
   const layout = getLayout(format, windowWidth, windowHeight);
-  const { width, height, content } = layout;
-  const dir = join(tmpDir, format);
-  const file = (name: string) => join(dir, name);
+  const { width, height } = layout;
+  const framesDir = join(tmpDir, `${format}-frames`);
   const fileUrl = (path: string) => pathToFileURL(resolve(path)).href;
-  await mkdir(dir, { recursive: true });
+  await rm(framesDir, { recursive: true, force: true });
+  await mkdir(framesDir, { recursive: true });
 
-  // The zoomed recording, at the size of the window's content. Lossless, it's encoded again below
-  const mainFrames = Math.round(duration * fps);
-  const mainPath = file('main.mkv');
-  await execa(ffmpeg, ['-v', 'error', '-y', '-ss', String(videoStart), '-t', String(duration), '-i', rawVideo, '-vf', zoomFilter(zooms, { windowWidth, windowHeight }, content.w, content.h), '-frames:v', String(mainFrames), '-c:v', 'libx264', '-preset', 'ultrafast', '-qp', '0', mainPath]);
-  // Its first and last frames, for the window in the intro and outro
-  await execa(ffmpeg, ['-v', 'error', '-y', '-i', mainPath, '-frames:v', '1', file('first.png')]);
-  await execa(ffmpeg, ['-v', 'error', '-y', '-sseof', '-1', '-i', mainPath, '-update', '1', file('last.png')]);
+  // The recording's frames, for the page to show. fps fills in the frames x11grab dropped. Scaled up 2x, so they stay sharp when zoomed in
+  // (Chromium scales images up less sharply). JPEG decodes faster than PNG, and at this quality (with all the colour) it's about as sharp
+  await execa(ffmpeg, ['-v', 'error', '-y', '-ss', String(videoStart), '-t', String(duration), '-i', rawVideo, '-vf', `fps=${fps},scale=iw*2:ih*2:flags=lanczos`, '-frames:v', String(Math.round(duration * fps)), '-pix_fmt', 'yuvj444p', '-q:v', '1', '-start_number', '0', join(framesDir, '%05d.jpg')]);
+  const recordingFrames = (await readdir(framesDir)).filter((name) => name.endsWith('.jpg')).length;
 
-  // The desktop with the window (with a hole where the recording goes), the captions and the intro and outro
-  const scenes = await openHtmlScenes({ width, height });
-  const sceneConfig = { ...layout, background: fileUrl(background), icon: fileUrl(iconPath) };
-  let introFrames: number;
-  let outroFrames: number;
+  const timeline = await openTimeline({
+    width,
+    height,
+    fps,
+    config: {
+      ...layout,
+      recording: { width: windowWidth, height: windowHeight, duration: recordingFrames / fps, fps, frames: `${fileUrl(framesDir)}/` },
+      captions,
+      zooms,
+      intro: { title: 'LosslessCut', subtitle: description },
+      outro: { title: 'losslesscut.app', subtitle: 'Free and open source · Windows, macOS and Linux' },
+      background: fileUrl(background),
+      icon: fileUrl(iconPath),
+    },
+  });
   try {
-    await scenes.still({ ...sceneConfig, scene: 'frame' }, file('frame.png'));
-    for (const [i, { text }] of captions.entries()) {
-      // eslint-disable-next-line no-await-in-loop
-      await scenes.still({ ...sceneConfig, scene: 'caption', caption: text }, file(`caption-${i}.png`));
+    const total = timeline.frames / fps;
+    const musicInput = music != null ? ['-stream_loop', '-1', '-i', music] : [];
+    const audio = music != null ? ['-map', '1:a', '-af', `atrim=0:${total},afade=in:d=0.5,afade=out:st=${total - 1.5}:d=1.5,loudnorm=I=-14:TP=-1.5:LRA=11`, '-c:a', 'aac', '-b:a', '192k', '-ar', '48000'] : [];
+    // The page's screenshots, piped in
+    const encoder = execa(ffmpeg, ['-v', 'error', '-y', '-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'mjpeg', '-i', '-', ...musicInput, '-map', '0:v', ...audio, '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p', '-r', String(fps), '-t', String(total), '-movflags', '+faststart', outPath], { stdin: 'pipe', stderr: 'inherit' });
+    const { stdin } = encoder;
+    try {
+      await timeline.render(async (frame) => {
+        if (!stdin.write(frame)) await once(stdin, 'drain');
+      });
+      stdin.end();
+    } catch (err) {
+      // e.g. ffmpeg failed (it has printed why)
+      encoder.kill();
+      await encoder.catch(() => undefined);
+      throw err;
     }
-    introFrames = await scenes.animation({ ...sceneConfig, scene: 'intro', title: 'LosslessCut', subtitle: description, image: fileUrl(file('first.png')) }, file('intro'), fps);
-    outroFrames = await scenes.animation({ ...sceneConfig, scene: 'outro', title: 'losslesscut.app', subtitle: 'Free and open source · Windows, macOS and Linux', image: fileUrl(file('last.png')) }, file('outro'), fps);
+    await encoder;
   } finally {
-    await scenes.close();
+    await timeline.close();
   }
-
-  const mainDuration = mainFrames / fps;
-  const inputs = [
-    '-i', mainPath,
-    '-loop', '1', '-framerate', String(fps), '-t', String(mainDuration), '-i', file('frame.png'),
-    '-framerate', String(fps), '-i', join(dir, 'intro', '%04d.png'),
-    '-framerate', String(fps), '-i', join(dir, 'outro', '%04d.png'),
-  ];
-  const normalize = `fps=${fps},format=yuv420p,setsar=1,settb=AVTB`;
-  // The recording under the window frame, which rounds its bottom corners
-  const filters = [`[0:v]pad=${width}:${height}:${content.x}:${content.y}[padded]`, '[padded][1:v]overlay=0:0[v0]'];
-
-  let last = 'v0';
-  for (const [i, { start, end }] of captions.entries()) {
-    const length = end - start;
-    const input = 4 + i;
-    inputs.push('-loop', '1', '-framerate', String(fps), '-t', String(length), '-i', file(`caption-${i}.png`));
-    filters.push(
-      `[${input}:v]format=rgba,fade=in:st=0:d=0.25:alpha=1,fade=out:st=${Math.max(0, length - 0.25)}:d=0.25:alpha=1,setpts=PTS+${start}/TB[c${i}]`,
-      `[${last}][c${i}]overlay=0:0:eof_action=pass[v${i + 1}]`,
-    );
-    last = `v${i + 1}`;
-  }
-
-  // The intro ends and the outro starts on the same frame as the recording, so they're joined without a transition
-  const total = (introFrames + mainFrames + outroFrames) / fps;
-  filters.push(
-    `[${last}]${normalize}[main]`,
-    `[2:v]${normalize}[intro]`,
-    `[3:v]${normalize}[outro]`,
-    '[intro][main][outro]concat=n=3:v=1:a=0[out]',
-  );
-
-  const audio: string[] = [];
-  if (music != null) {
-    const musicInput = inputs.filter((arg) => arg === '-i').length;
-    inputs.push('-stream_loop', '-1', '-i', music);
-    filters.push(`[${musicInput}:a]atrim=0:${total},afade=in:d=0.5,afade=out:st=${total - 1.5}:d=1.5,loudnorm=I=-14:TP=-1.5:LRA=11[aout]`);
-    audio.push('-map', '[aout]', '-c:a', 'aac', '-b:a', '192k', '-ar', '48000');
-  }
-
-  await execa(ffmpeg, ['-v', 'error', '-y', ...inputs, '-filter_complex', filters.join(';'), '-map', '[out]', ...audio, '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p', '-r', String(fps), '-t', String(total), '-movflags', '+faststart', outPath]);
 }
