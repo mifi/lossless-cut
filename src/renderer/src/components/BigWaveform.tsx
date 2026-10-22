@@ -1,6 +1,6 @@
 import type { CSSProperties, MouseEventHandler, WheelEventHandler } from 'react';
+import { LuCircleAlert } from 'react-icons/lu';
 import { memo, useEffect, useState, useCallback, useRef, useMemo } from 'react';
-import { FaExclamationCircle } from 'react-icons/fa';
 
 import { ffmpegExtractWindow } from '../util/constants';
 import type { WaveformSlice } from '../types';
@@ -122,7 +122,7 @@ function BigWaveform({ waveforms, relevantTime, playing, fileDurationNonZero, zo
               draggable={false}
               style={{ ...style, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
-              {waveform.failed ? <FaExclamationCircle color="var(--red-11)" /> : <Spinner />}
+              {waveform.failed ? <LuCircleAlert color="var(--red-11)" /> : <Spinner />}
             </div>
           );
         }

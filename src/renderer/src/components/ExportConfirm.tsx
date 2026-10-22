@@ -1,9 +1,8 @@
 import type { CSSProperties, Dispatch, ReactNode, SetStateAction } from 'react';
 import { memo, useCallback, useMemo, useState } from 'react';
-import { FaExclamationTriangle, FaInfoCircle, FaRegCheckCircle } from 'react-icons/fa';
 import i18n from 'i18next';
 import { useTranslation, Trans } from 'react-i18next';
-import { IoIosHelpCircle, IoIosSettings } from 'react-icons/io';
+import { LuCircleCheck, LuCircleHelp, LuInfo, LuSettings, LuTriangleAlert } from 'react-icons/lu';
 import type { SweetAlertIcon } from 'sweetalert2';
 
 import ExportButton from './ExportButton';
@@ -41,7 +40,7 @@ const adjustCutFromValues = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const adjustCutToValues = [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 const HelpIcon = ({ onClick, style }: { onClick: () => void, style?: CSSProperties }) => (
-  <IoIosHelpCircle role="button" onClick={withBlur(onClick)} style={{ cursor: 'pointer', color: primaryTextColor, verticalAlign: 'middle', fontSize: '1.5em', ...style }} />
+  <LuCircleHelp role="button" onClick={withBlur(onClick)} style={{ cursor: 'pointer', color: primaryTextColor, verticalAlign: 'middle', fontSize: '1.5em', ...style }} />
 );
 
 function ShiftTimes({ values, num, setNum }: { values: number[], num: number, setNum: (n: number) => void }) {
@@ -56,9 +55,9 @@ function ShiftTimes({ values, num, setNum }: { values: number[], num: number, se
 function renderNoticeIcon(notice: { warning?: boolean | undefined } | undefined, style?: CSSProperties) {
   if (!notice) return undefined;
   return notice.warning ? (
-    <FaExclamationTriangle style={{ flexShrink: '0', fontSize: '.8em', verticalAlign: 'baseline', color: warningColor, ...style }} />
+    <LuTriangleAlert style={{ flexShrink: '0', fontSize: '.8em', verticalAlign: 'baseline', color: warningColor, ...style }} />
   ) : (
-    <FaInfoCircle style={{ flexShrink: '0', fontSize: '.8em', verticalAlign: 'baseline', color: 'var(--violet-10)', ...style }} />
+    <LuInfo style={{ flexShrink: '0', fontSize: '.8em', verticalAlign: 'baseline', color: 'var(--violet-10)', ...style }} />
   );
 }
 
@@ -104,7 +103,7 @@ function renderGenericNotice(notice: GenericNotice) {
         <Notice notice={notice} />
       </td>
       <td>
-        {url != null && <IoIosHelpCircle style={{ cursor: 'pointer', fontSize: '1.5em', flexShrink: 0, color: primaryTextColor }} title={i18n.t('Learn more')} role="button" tabIndex={0} onClick={() => mainApi.openExternal(url)} />}
+        {url != null && <LuCircleHelp style={{ cursor: 'pointer', fontSize: '1.5em', flexShrink: 0, color: primaryTextColor }} title={i18n.t('Learn more')} role="button" tabIndex={0} onClick={() => mainApi.openExternal(url)} />}
       </td>
     </tr>
   );
@@ -380,7 +379,7 @@ function ExportConfirm({
           {segmentsOrInverse.selected.length !== segmentsOrInverse.all.length && (
             <tr>
               <td colSpan={2}>
-                <FaRegCheckCircle size={12} style={{ marginRight: 3 }} />{t('{{selectedSegments}} of {{nonFilteredSegments}} segments selected', { selectedSegments: segmentsOrInverse.selected.length, nonFilteredSegments: segmentsOrInverse.all.length })}
+                <LuCircleCheck size={12} style={{ marginRight: 3 }} />{t('{{selectedSegments}} of {{nonFilteredSegments}} segments selected', { selectedSegments: segmentsOrInverse.selected.length, nonFilteredSegments: segmentsOrInverse.all.length })}
               </td>
               <td />
             </tr>
@@ -710,7 +709,7 @@ function ExportConfirm({
                   {t('More settings')}
                 </td>
                 <td>
-                  <IoIosSettings size={24} role="button" onClick={toggleSettings} style={{ marginLeft: 5 }} />
+                  <LuSettings size={24} role="button" onClick={toggleSettings} style={{ marginLeft: 5 }} />
                 </td>
                 <td />
               </AnimatedTr>

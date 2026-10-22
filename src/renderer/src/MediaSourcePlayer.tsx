@@ -1,8 +1,8 @@
 import type { CSSProperties, RefObject, ReactEventHandler, FocusEventHandler } from 'react';
+import { LuVideo } from 'react-icons/lu';
 import { useEffect, useRef, useState, useCallback, useMemo, memo } from 'react';
 import invariant from 'tiny-invariant';
 import debounce from 'lodash/debounce.js';
-import { FaVideo } from 'react-icons/fa';
 
 import isDev from './isDev';
 import type { ChromiumHTMLVideoElement } from './types';
@@ -418,7 +418,7 @@ function MediaSourcePlayer({ rotate, filePath, videoStream, audioStreams, master
 
       {loading && (
         <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <FaVideo className="loading-animation" style={{ padding: '1em', background: 'rgba(0,0,0,0.2)', borderRadius: '50%' }} />
+          <LuVideo className="loading-animation" style={{ padding: '1em', background: 'rgba(0,0,0,0.2)', borderRadius: '50%' }} />
         </div>
       )}
     </div>

@@ -58,7 +58,8 @@ All redesign colors, radii and shadows live here, so components only reference -
   --llc-popover-bg: rgba(255, 255, 255, .97);
 }
 
-.dark-theme {
+/* .radix-themes.dark: Radix Themes portals (menus, tooltips) render outside #app-root but carry this class */
+.dark-theme, .radix-themes.dark {
   --llc-bg: #0d0c14;
   --llc-bg-image:
     radial-gradient(1200px 520px at 12% -12%, rgba(91, 60, 190, .38) 0, transparent 60%),
@@ -191,10 +192,15 @@ All redesign colors, radii and shadows live here, so components only reference -
   flex-shrink: 0;
 }
 
-/* Radix Themes sets its own font on .radix-themes, which wraps the whole app */
+/* Radix Themes components (used in some dialogs): our font, surfaces and menus */
 .radix-themes {
   --default-font-family: var(--llc-font-ui);
   --code-font-family: var(--llc-font-mono);
+  --color-panel-solid: var(--llc-popover-bg);
+  --color-panel-translucent: var(--llc-popover-bg);
+  --color-surface: var(--llc-control-bg);
+  --cursor-button: pointer;
+  --cursor-menu-item: pointer;
 }
 
 /* Controls floating on top of the video are always light-on-dark, whatever the theme */

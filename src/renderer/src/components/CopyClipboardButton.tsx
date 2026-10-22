@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react';
 import { memo, useCallback } from 'react';
-import { FaClipboard } from 'react-icons/fa';
 import type { MotionStyle } from 'motion/react';
 import { motion, useAnimation } from 'motion/react';
 import { useTranslation } from 'react-i18next';
+import { LuClipboard } from 'react-icons/lu';
 import mainApi from '../mainApi';
 
 function CopyClipboardButton({ text, style, children }: {
@@ -25,7 +25,7 @@ function CopyClipboardButton({ text, style, children }: {
 
   return (
     <motion.span animate={animation} style={{ display: 'inline-block', cursor: 'pointer', ...style }}>
-      {children != null ? children({ onClick }) : <FaClipboard title={t('Copy to clipboard')} onClick={onClick} />}
+      {children != null ? children({ onClick }) : <LuClipboard title={t('Copy to clipboard')} onClick={onClick} />}
     </motion.span>
   );
 }

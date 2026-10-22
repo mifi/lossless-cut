@@ -1,8 +1,8 @@
 import type { FormEventHandler, MouseEventHandler, ReactNode } from 'react';
 import React, { useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { LuCircleCheck, LuInfo } from 'react-icons/lu';
 import invariant from 'tiny-invariant';
-import { FaCheckCircle, FaInfoCircle } from 'react-icons/fa';
 import { TextField } from '@radix-ui/themes';
 
 import * as Dialog from './Dialog';
@@ -187,9 +187,9 @@ export function useDialog() {
       width: '60em',
       children: (
         <UnorderedList>
-          <ListItem icon={<FaCheckCircle />} iconColor={hasWarnings ? warningColor : saveColor} style={{ fontWeight: 'bold' }}>{hasWarnings ? t('Export finished with warning(s)', { count: warnings.length }) : t('Export is done!')}</ListItem>
+          <ListItem icon={<LuCircleCheck />} iconColor={hasWarnings ? warningColor : saveColor} style={{ fontWeight: 'bold' }}>{hasWarnings ? t('Export finished with warning(s)', { count: warnings.length }) : t('Export is done!')}</ListItem>
           <Warnings warnings={warnings} />
-          <ListItem icon={<FaInfoCircle />}>{t('Please test the output file in your desired player/editor before you delete the source file.')}</ListItem>
+          <ListItem icon={<LuInfo />}>{t('Please test the output file in your desired player/editor before you delete the source file.')}</ListItem>
           <OutputIncorrectSeeHelpMenu />
           <Notices notices={notices} />
         </UnorderedList>
@@ -205,9 +205,9 @@ export function useDialog() {
       width: '60em',
       children: (
         <UnorderedList>
-          <ListItem icon={<FaCheckCircle />} iconColor={hasWarnings ? 'warning' : 'success'} style={{ fontWeight: 'bold' }}>{hasWarnings ? t('Files merged with warning(s)', { count: warnings.length }) : t('Files merged!')}</ListItem>
+          <ListItem icon={<LuCircleCheck />} iconColor={hasWarnings ? 'warning' : 'success'} style={{ fontWeight: 'bold' }}>{hasWarnings ? t('Files merged with warning(s)', { count: warnings.length }) : t('Files merged!')}</ListItem>
           <Warnings warnings={warnings} />
-          <ListItem icon={<FaInfoCircle />}>{t('Please test the output files in your desired player/editor before you delete the source files.')}</ListItem>
+          <ListItem icon={<LuInfo />}>{t('Please test the output files in your desired player/editor before you delete the source files.')}</ListItem>
           <OutputIncorrectSeeHelpMenu />
           <Notices notices={notices} />
         </UnorderedList>

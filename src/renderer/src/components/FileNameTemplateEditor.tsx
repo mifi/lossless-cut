@@ -2,9 +2,8 @@ import type { ChangeEventHandler } from 'react';
 import { memo, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useDebounce, useDebouncedCallback } from 'use-debounce';
 import { useTranslation } from 'react-i18next';
-import { IoIosHelpCircle } from 'react-icons/io';
+import { LuChevronUp, LuCircleHelp, LuEye, LuFile, LuPencil, LuTriangleAlert, LuUndo2 } from 'react-icons/lu';
 import { motion, AnimatePresence } from 'motion/react';
-import { FaCaretUp, FaEdit, FaExclamationTriangle, FaEye, FaFile, FaUndo } from 'react-icons/fa';
 
 import HighlightedText from './HighlightedText';
 import type { GenerateOutFileNames, GeneratedOutFileNames } from '../util/outputNameTemplate';
@@ -193,15 +192,15 @@ function FileNameTemplateEditor(opts: {
         {generated != null && (
           <div style={{ marginBottom: '.3em' }}>
             <HighlightedText title={open ? t('Close') : t('Edit')} role="button" onClick={handleSampleClick} style={{ wordBreak: 'break-word', cursor: 'pointer' }}>
-              {generated.problems.error != null && <FaExclamationTriangle style={{ color: dangerColor, marginRight: '.2em', verticalAlign: 'middle' }} />}
+              {generated.problems.error != null && <LuTriangleAlert style={{ color: dangerColor, marginRight: '.2em', verticalAlign: 'middle' }} />}
               {generated.originalFileNames != null && formatCurrentSegFileOrFirst(generated.fileNames)}
               <span style={generated.originalFileNames != null ? { textDecoration: 'line-through', marginLeft: '.3em', color: dangerColor } : undefined}>
                 {formatCurrentSegFileOrFirst(generated.originalFileNames ?? generated.fileNames)}
               </span>
               {open ? (
-                <FaCaretUp style={{ fontSize: '.9em', marginLeft: '.4em', verticalAlign: 'middle' }} />
+                <LuChevronUp style={{ fontSize: '.9em', marginLeft: '.4em', verticalAlign: 'middle' }} />
               ) : (
-                <FaEdit style={{ fontSize: '.9em', marginLeft: '.4em', verticalAlign: 'middle' }} />
+                <LuPencil style={{ fontSize: '.9em', marginLeft: '.4em', verticalAlign: 'middle' }} />
               )}
             </HighlightedText>
           </div>
@@ -226,7 +225,7 @@ function FileNameTemplateEditor(opts: {
                 {generated != null && generated.fileNames.length > 1 && (
                   <Dialog.Root>
                     <Dialog.Trigger asChild>
-                      <Button style={{ marginLeft: '.3em', padding: '.3em' }} title={t('Preview')}><FaEye /></Button>
+                      <Button style={{ marginLeft: '.3em', padding: '.3em' }} title={t('Preview')}><LuEye /></Button>
                     </Dialog.Trigger>
 
                     <Dialog.Portal>
@@ -235,7 +234,7 @@ function FileNameTemplateEditor(opts: {
                         <Dialog.Title>{t('Resulting segment file names', { count: generated.fileNames.length })}</Dialog.Title>
 
                         <div style={{ overflowY: 'auto', maxHeight: 400 }}>
-                          {generated.fileNames.map((f) => <div key={f} style={{ marginBottom: '.5em' }}><FaFile style={{ verticalAlign: 'middle', marginRight: '.5em' }} />{f}</div>)}
+                          {generated.fileNames.map((f) => <div key={f} style={{ marginBottom: '.5em' }}><LuFile style={{ verticalAlign: 'middle', marginRight: '.5em' }} />{f}</div>)}
                         </div>
 
                         <Dialog.CloseButton />
@@ -245,14 +244,14 @@ function FileNameTemplateEditor(opts: {
                 )}
 
                 {!isSimpleMergeFilesMode && (
-                  <Button onClick={reset} style={{ marginLeft: '.3em', padding: '.3em' }}><FaUndo style={{ fontSize: '.8em', color: dangerColor, marginRight: '.5em' }} />{t('Reset')}</Button>
+                  <Button onClick={reset} style={{ marginLeft: '.3em', padding: '.3em' }}><LuUndo2 style={{ fontSize: '.8em', color: dangerColor, marginRight: '.5em' }} />{t('Reset')}</Button>
                 )}
               </div>
 
               <div style={{ fontSize: '.9em', color: 'var(--gray-11)', display: 'flex', gap: '.3em', flexWrap: 'wrap', alignItems: 'center', marginBottom: '.7em' }}>
                 {`${t('Variables')}:`}
 
-                <IoIosHelpCircle fontSize="1.3em" color="var(--gray-12)" role="button" cursor="pointer" onClick={() => mainApi.openExternal(exportedFileNameTemplateHelpUrl)} />
+                <LuCircleHelp fontSize="1.3em" color="var(--gray-12)" role="button" cursor="pointer" onClick={() => mainApi.openExternal(exportedFileNameTemplateHelpUrl)} />
                 {availableVariables.map((variable) => (
                   <span key={variable} role="button" style={{ cursor: 'copy', marginRight: '.2em', textDecoration: 'underline', textDecorationStyle: 'dashed', fontSize: '.9em' }} onClick={() => onVariableClick(variable)}>{variable}</span>
                 ))}
@@ -272,7 +271,7 @@ function FileNameTemplateEditor(opts: {
                   <Switch checked={safeOutputFileName} onCheckedChange={toggleSafeOutputFileName} style={{ verticalAlign: 'middle', marginRight: '.5em' }} />
                   <span>{t('Sanitize file names')}</span>
 
-                  {!safeOutputFileName && <FaExclamationTriangle color={warningColor} style={{ marginLeft: '.5em', verticalAlign: 'middle' }} />}
+                  {!safeOutputFileName && <LuTriangleAlert color={warningColor} style={{ marginLeft: '.5em', verticalAlign: 'middle' }} />}
                 </div>
               )}
             </motion.div>
@@ -281,14 +280,14 @@ function FileNameTemplateEditor(opts: {
 
         {generated?.problems.error != null ? (
           <div style={{ marginBottom: '1em' }}>
-            <FaExclamationTriangle color={dangerColor} style={{ verticalAlign: 'middle', marginRight: '.3em' }} />{generated.problems.error}
+            <LuTriangleAlert color={dangerColor} style={{ verticalAlign: 'middle', marginRight: '.3em' }} />{generated.problems.error}
           </div>
         ) : (
           generated != null && (
             <>
               {generated.problems.sameAsInputFileNameWarning && (
                 <div style={{ marginBottom: '1em' }}>
-                  <FaExclamationTriangle style={{ verticalAlign: 'middle', marginRight: '.3em' }} color={warningColor} />
+                  <LuTriangleAlert style={{ verticalAlign: 'middle', marginRight: '.3em' }} color={warningColor} />
                   {t('Output file name is the same as the source file name. This increases the risk of accidentally overwriting or deleting source files!')}
                 </div>
               )}
@@ -296,7 +295,7 @@ function FileNameTemplateEditor(opts: {
               {/* In simple mode for merge-files, we auto generate file name, so there might be no ${EXT} variable */}
               {!isSimpleMergeFilesMode && isMissingExtension && (
                 <div style={{ marginBottom: '1em' }}>
-                  <FaExclamationTriangle style={{ verticalAlign: 'middle', marginRight: '.3em' }} color={warningColor} />
+                  <LuTriangleAlert style={{ verticalAlign: 'middle', marginRight: '.3em' }} color={warningColor} />
                   {t('The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.', { ext: extVariableFormatted })}
                 </div>
               )}
