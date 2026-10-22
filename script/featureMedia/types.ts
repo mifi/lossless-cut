@@ -30,5 +30,7 @@ export interface Scenario {
   clips: string[],
   /** Settings to start with (see src/main/configStore.ts), e.g. to show an export mode */
   config?: Record<string, unknown>,
+  /** The desktop's photo in the social media versions: a name from backgrounds.ts. --background overrides it, and the default is the beach */
+  background?: string,
   run: (ctx: ScenarioContext) => Promise<void>,
 }

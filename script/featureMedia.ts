@@ -1,6 +1,6 @@
 // Records screenshots and a video of a feature demo (see script/featureMedia/scenarios.ts and AGENTS.md "Feature media").
 // Linux only (captures the X display), e.g. in a cloud session. Run `yarn build` and `yarn download-ffmpeg-linux-x64` first, then:
-// xvfb-run -a -s "-screen 0 1024x640x24" node script/featureMedia.ts <scenario> [--clips dir] [--music track from music.ts, audio file or none] [--scale 2]
+// xvfb-run -a -s "-screen 0 1024x640x24" node script/featureMedia.ts <scenario> [--clips dir] [--music track from music.ts, audio file or none] [--background photo from backgrounds.ts] [--scale 2]
 import assert from 'node:assert';
 import { createWriteStream } from 'node:fs';
 import { access, mkdir, mkdtemp, rename, rm, writeFile } from 'node:fs/promises';
@@ -12,15 +12,17 @@ import { pipeline } from 'node:stream/promises';
 import timers from 'node:timers/promises';
 import { parseArgs } from 'node:util';
 import { execa } from 'execa';
+import sharp from 'sharp';
+import backgrounds, { defaultBackground } from './featureMedia/backgrounds.ts';
 import clipSources from './featureMedia/clips.ts';
 import musicTracks, { defaultMusic } from './featureMedia/music.ts';
 import openHtmlScenes from './featureMedia/htmlScenes.ts';
 import scenarios from './featureMedia/scenarios.ts';
 import { renderSocialVideo, type Caption, type Rect, type Zoom } from './featureMedia/socialVideo.ts';
 
-const { values: { clips = 'dist/feature-media-clips', music: musicArg = defaultMusic, scale: scaleArg = '1' }, positionals: [scenarioName] } = parseArgs({ allowPositionals: true, options: { clips: { type: 'string' }, music: { type: 'string' }, scale: { type: 'string' } } });
+const { values: { clips = 'dist/feature-media-clips', music: musicArg = defaultMusic, background: backgroundArg, scale: scaleArg = '1' }, positionals: [scenarioName] } = parseArgs({ allowPositionals: true, options: { clips: { type: 'string' }, music: { type: 'string' }, background: { type: 'string' }, scale: { type: 'string' } } });
 const scenario = scenarioName != null ? scenarios[scenarioName] : undefined;
-assert(scenario != null, `Usage: node script/featureMedia.ts <scenario> [--clips dir] [--music track from music.ts, audio file or none] [--scale 2]. Scenarios: ${Object.keys(scenarios).join(', ')}`);
+assert(scenario != null, `Usage: node script/featureMedia.ts <scenario> [--clips dir] [--music track from music.ts, audio file or none] [--background photo from backgrounds.ts] [--scale 2]. Scenarios: ${Object.keys(scenarios).join(', ')}`);
 const display = process.env['DISPLAY'];
 assert(process.platform === 'linux' && display != null, 'Run under Xvfb on Linux, see the top of this file');
 
@@ -78,13 +80,20 @@ if (musicTrack != null) {
 }
 assert(music == null || await exists(music), `--music must be one of ${Object.keys(musicTracks).join(', ')}, an audio file or none, got ${musicArg}`);
 
-// The desktop's photo in the social media versions (the homepage hero's drone photo), in its largest resized version (1632×1224).
-// Named after the photo, so a different one is downloaded instead of reusing an old download
-const backgroundUrl = 'https://static.mifi.no/dist/2018/DJI_0120-edit-2000.jpg';
-const background = `dist/feature-media-background-${basename(backgroundUrl)}`;
+// The desktop's photo in the social media versions: the original from backgrounds.ts, downscaled once to what covers both formats
+// (2560×1920 for a 4:3 photo: the vertical one is 1920 high), which Chromium draws faster. sharp leaves out the photo's metadata (e.g. GPS location)
+const backgroundName = backgroundArg ?? scenario.background ?? defaultBackground;
+const backgroundUrl = backgrounds[backgroundName];
+assert(backgroundUrl != null, `--background (or the scenario's background) must be one of ${Object.keys(backgrounds).join(', ')}, got ${backgroundName}`);
+const backgroundsDir = 'dist/feature-media-backgrounds';
+await mkdir(backgroundsDir, { recursive: true });
+const background = join(backgroundsDir, `${backgroundName}.jpg`);
 if (!await exists(background)) {
-  console.log('Downloading the background');
-  await download(backgroundUrl, background);
+  console.log('Downloading the background', backgroundName);
+  const original = join(backgroundsDir, `original-${basename(backgroundUrl)}`);
+  await download(backgroundUrl, original);
+  await writeVia(background, async (partPath) => sharp(original).rotate().resize(2560, 1920, { fit: 'outside', withoutEnlargement: true }).jpeg({ quality: 90, mozjpeg: true }).toFile(partPath));
+  await rm(original);
 }
 // The social media versions are drawn with Chromium: check that it starts before recording (see AGENTS.md "Feature media" if not)
 await (await openHtmlScenes({ width: 100, height: 100 })).close();
