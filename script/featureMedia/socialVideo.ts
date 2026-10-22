@@ -18,10 +18,11 @@ const iconPath = 'src/renderer/src/icon.svg';
 
 // The window's place on the desktop: its left and top (of the title bar) and width. The recording fills its content, below the title bar.
 // The captions go on the desktop above the window. In vertical, the window (658 px high) is a bit below the middle, so with a caption above it
-// they're about centred, and footer (if any) is a subtle line under it, all above the bottom quarter that Reels, TikTok and Shorts cover with their buttons and text
+// they're about centred, and the footer (if any) is a subtle line with the icon close under it. Everything ends above the bottom quarter
+// (y 1440) that Reels, TikTok and Shorts cover with their buttons and text: the footer at about y 1370–1414
 const formats = {
   landscape: { width: 1920, height: 1200, window: { x: 224, y: 168, width: 1472 }, captionSize: 48, captionGap: 36, footer: undefined },
-  vertical: { width: 1080, height: 1920, window: { x: 36, y: 720, width: 1008 }, captionSize: 52, captionGap: 60, footer: 'losslesscut.app' },
+  vertical: { width: 1080, height: 1920, window: { x: 36, y: 690, width: 1008 }, captionSize: 52, captionGap: 60, footer: 'losslesscut.app' },
 } as const;
 export type Format = keyof typeof formats;
 
@@ -49,7 +50,7 @@ function easedExpression(times: number[], values: number[], initial: number): st
 }
 
 // zoompan settings that follow the zooms. The input is scaled up 2x first, which makes slow zooms smoother.
-// zoompan's output timestamps can be off (with the raw recording), which makes xfade buffer frames without end, so they're renumbered.
+// zoompan's output timestamps can be off (with the raw recording), so they're renumbered, for the overlays and concat after it.
 // fps first fills in the frames x11grab dropped, or the renumbering would shorten the video
 function zoomFilter(zooms: Zoom[], { windowWidth, windowHeight }: { windowWidth: number, windowHeight: number }, outWidth: number, outHeight: number) {
   const times = zooms.map(({ time }) => time);

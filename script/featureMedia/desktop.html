@@ -44,10 +44,12 @@
 
   #caption { position: absolute; left: 50%; transform: translateX(-50%); width: max-content; text-align: center; font-weight: 700; line-height: 1.25; padding: 0.45em 0.85em; border-radius: 0.55em; background: rgba(17, 17, 19, 0.82); box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.08); }
 
-  /* A subtle line under the window, e.g. the website */
-  #footer { position: absolute; left: 0; right: 0; text-align: center; font-weight: 600; letter-spacing: 0.02em; color: rgba(255, 255, 255, 0.78); text-shadow: 0 1px 12px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.5); }
+  /* A subtle line under the window: the icon and e.g. the website */
+  #footer { position: absolute; left: 0; right: 0; display: flex; justify-content: center; align-items: center; gap: 0.45em; line-height: 1.3; font-weight: 600; letter-spacing: 0.02em; color: rgba(255, 255, 255, 0.78); text-shadow: 0 1px 12px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.5); }
 
   /* Only what the scene needs */
+  #footer img { width: 1.3em; height: 1.3em; filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.5)); }
+
   .frame #launcher, .frame #caption, .preview #launcher, .caption #desktop, .caption #window, .caption #launcher, .caption #footer, .intro #caption, .outro #caption { display: none; }
 </style>
 </head>
@@ -60,7 +62,7 @@
     <div id="content"></div>
   </div>
   <div id="caption"></div>
-  <div id="footer"></div>
+  <div id="footer"><img alt=""><span></span></div>
 </div>
 <script>
 // The settings for designing in a browser. socialVideo.ts passes all of them
@@ -77,8 +79,10 @@ const defaults = {
   captionSize: 48,
   // Between the caption and the top of the window
   captionGap: 36,
-  // Under the window, while the recording plays (e.g. 'losslesscut.app'), or none
+  // Under the window, with the icon, while the recording plays (e.g. 'losslesscut.app'), or none
   footer: undefined,
+  // Between the bottom of the window and the footer
+  footerGap: 22,
   caption: 'Choose the ones to keep',
   title: 'LosslessCut',
   subtitle: 'Choose which tracks to keep, then export',
@@ -120,10 +124,11 @@ caption.textContent = config.caption ?? '';
 setStyle(caption, { fontSize: px(config.captionSize), bottom: px(height - win.y + config.captionGap), maxWidth: px(width - 120) });
 if (!config.caption) caption.style.display = 'none';
 
-// The footer goes under the window, as far below it as the caption is above it
+// The footer goes under the window
 const footer = $('#footer');
-footer.textContent = config.footer ?? '';
-setStyle(footer, { fontSize: px(Math.round(config.captionSize * 0.65)), top: px(win.y + win.h + config.captionGap) });
+footer.querySelector('span').textContent = config.footer ?? '';
+footer.querySelector('img').src = config.icon;
+setStyle(footer, { fontSize: px(Math.round(config.captionSize * 0.65)), top: px(win.y + win.h + config.footerGap) });
 if (!config.footer) footer.style.display = 'none';
 
 // The icon, at the middle of the window, with the text under it
@@ -203,8 +208,8 @@ const animations = document.getAnimations();
 const duration = Math.max(0, ...animations.map((animation) => animation.effect.getComputedTiming().endTime / 1000));
 const images = [icon, ...[config.background, config.image].filter((src) => src != null).map((src) => Object.assign(new Image(), { src }))];
 window.scene = {
-  // Fonts and images loaded
-  ready: Promise.all([document.fonts.ready, ...images.map(async (image) => image.decode().catch(() => undefined))]),
+  // Fonts and images loaded. When rendering, a missing image fails the render (when designing, it's just left out)
+  ready: Promise.all([document.fonts.ready, ...images.map(async (image) => (config.render ? image.decode() : image.decode().catch(() => undefined)))]),
   duration,
   // Shows the scene at a time (in seconds), when rendering
   seek(time) {

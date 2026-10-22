@@ -3,7 +3,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { chromium } from 'playwright';
+import { chromium, type CDPSession, type Page } from 'playwright';
 
 const htmlUrl = pathToFileURL(resolve('script/featureMedia/desktop.html')).href;
 
@@ -15,9 +15,16 @@ export default async function openHtmlScenes({ width, height }: { width: number,
   const executablePath = process.env['FEATURE_MEDIA_CHROMIUM'];
   // The same colours on every computer
   const browser = await chromium.launch({ ...(executablePath != null && { executablePath }), args: ['--force-color-profile=srgb'] });
-  const page = await browser.newPage({ viewport: { width, height } });
-  // For the animations' frames: Playwright's screenshots compress the PNGs more, which takes a lot longer
-  const cdp = await page.context().newCDPSession(page);
+  let page: Page;
+  let cdp: CDPSession;
+  try {
+    page = await browser.newPage({ viewport: { width, height } });
+    // For the animations' frames: Playwright's screenshots compress the PNGs more, which takes a lot longer
+    cdp = await page.context().newCDPSession(page);
+  } catch (err) {
+    await browser.close();
+    throw err;
+  }
 
   let loads = 0;
   async function load(config: Record<string, unknown>) {

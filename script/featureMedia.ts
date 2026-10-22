@@ -6,7 +6,7 @@ import { createWriteStream } from 'node:fs';
 import { access, mkdir, mkdtemp, rename, rm, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
-import { basename, join, resolve } from 'node:path';
+import { basename, extname, join, resolve } from 'node:path';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import timers from 'node:timers/promises';
@@ -87,13 +87,19 @@ const backgroundUrl = backgrounds[backgroundName];
 assert(backgroundUrl != null, `--background (or the scenario's background) must be one of ${Object.keys(backgrounds).join(', ')}, got ${backgroundName}`);
 const backgroundsDir = 'dist/feature-media-backgrounds';
 await mkdir(backgroundsDir, { recursive: true });
-const background = join(backgroundsDir, `${backgroundName}.jpg`);
+// Named after the file and the size, so a changed photo in backgrounds.ts is downloaded again
+const background = join(backgroundsDir, `${basename(backgroundUrl, extname(backgroundUrl))}-2560x1920.jpg`);
 if (!await exists(background)) {
   console.log('Downloading the background', backgroundName);
-  const original = join(backgroundsDir, `original-${basename(backgroundUrl)}`);
-  await download(backgroundUrl, original);
-  await writeVia(background, async (partPath) => sharp(original).rotate().resize(2560, 1920, { fit: 'outside', withoutEnlargement: true }).jpeg({ quality: 90, mozjpeg: true }).toFile(partPath));
-  await rm(original);
+  // The original (which has the metadata) only in a temporary folder, removed even if resizing fails
+  const originalDir = await mkdtemp(join(tmpdir(), 'feature-media-background-'));
+  try {
+    const original = join(originalDir, basename(backgroundUrl));
+    await download(backgroundUrl, original);
+    await writeVia(background, async (partPath) => sharp(original).rotate().resize(2560, 1920, { fit: 'outside', withoutEnlargement: true }).jpeg({ quality: 90, mozjpeg: true }).toFile(partPath));
+  } finally {
+    await rm(originalDir, { recursive: true, force: true });
+  }
 }
 // The social media versions are drawn with Chromium: check that it starts before recording (see AGENTS.md "Feature media" if not)
 await (await openHtmlScenes({ width: 100, height: 100 })).close();
