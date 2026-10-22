@@ -1,4 +1,5 @@
 // schema.org data for the homepage (https://schema.org/SoftwareApplication).
+import { ogImage } from './images.ts';
 import { authorUrl, githubUrl, socialLinks, storeUrls } from './links.ts';
 
 export default {
@@ -16,7 +17,7 @@ export default {
       description: 'The Swiss Army Knife of lossless video/audio editing. Cut, trim, merge and remux video and audio files without re-encoding.',
       applicationCategory: 'MultimediaApplication',
       operatingSystem: 'Windows, macOS, Linux',
-      image: 'https://losslesscut.app/og-image.jpg',
+      image: ogImage,
       license: 'https://www.gnu.org/licenses/old-licenses/gpl-2.0.html',
       author: {
         '@type': 'Person',

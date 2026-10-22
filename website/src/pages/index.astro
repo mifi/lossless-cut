@@ -1,6 +1,7 @@
 ---
 import Home from '../components/Home.tsx';
 import getGithubStars from '../githubStars.ts';
+import { ogImage } from '../images.ts';
 import { mastodonUrl } from '../links.ts';
 import structuredData from '../structuredData.ts';
 import '../styles/home.css';
@@ -27,7 +28,7 @@ const description = 'LosslessCut - Official downloads - free or paid version. Ed
   <meta property="og:description" content={description}>
   <meta property="og:url" content={new URL('/', Astro.site)}>
   <meta name="twitter:card" content="summary_large_image">
-  <meta property="og:image" content={new URL('/og-image.jpg', Astro.site)}>
+  <meta property="og:image" content={ogImage}>
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />
@@ -46,13 +47,14 @@ const description = 'LosslessCut - Official downloads - free or paid version. Ed
         } else {
           const pauseButton = document.querySelector('.hero-video-pause');
           pauseButton.hidden = false;
-          pauseButton.addEventListener('click', () => (heroVideo.paused ? heroVideo.play() : heroVideo.pause()));
+          pauseButton.addEventListener('click', () => (heroVideo.paused ? heroVideo.play().catch(() => {}) : heroVideo.pause()));
           const update = () => {
             pauseButton.classList.toggle('paused', heroVideo.paused);
             pauseButton.setAttribute('aria-label', heroVideo.paused ? 'Play the video' : 'Pause the video');
           };
           heroVideo.addEventListener('play', update);
           heroVideo.addEventListener('pause', update);
+          update(); // e.g. if the browser didn't autoplay it
         }
       }
     }
