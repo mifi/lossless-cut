@@ -517,7 +517,7 @@ function BottomBar({
                 <span className={styles['small']}>{Math.floor(zoom)}x</span>
               </button>
 
-              <Select style={{ width: '5.5em' }} value={zoomOptions.includes(zoom) ? zoom.toString() : ''} title={t('Zoom')} onChange={withBlur((e) => setZoom(() => parseInt(e.target.value, 10)))}>
+              <Select value={zoomOptions.includes(zoom) ? zoom.toString() : ''} title={t('Zoom')} onChange={withBlur((e) => setZoom(() => parseInt(e.target.value, 10)))}>
                 <option key="" value="" disabled>{t('Zoom')}</option>
                 {zoomOptions.map((val) => (
                   <option key={val} value={String(val)}>{t('Zoom')} {val}x</option>

@@ -55,6 +55,7 @@ All redesign colors, radii and shadows live here, so components only reference -
   --llc-video-bg: #0b0a10;
 
   --llc-dialog-bg: rgba(255, 255, 255, .92);
+  --llc-popover-bg: rgba(255, 255, 255, .97);
 }
 
 .dark-theme {
@@ -92,6 +93,7 @@ All redesign colors, radii and shadows live here, so components only reference -
   --llc-video-bg: #000;
 
   --llc-dialog-bg: rgba(24, 21, 36, .9);
+  --llc-popover-bg: rgba(28, 25, 40, .97);
 }
 
 /* Use the violet-tinted gray everywhere the app references the gray scale */
