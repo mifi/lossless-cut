@@ -1,3 +1,5 @@
+import type { Rect } from './socialVideo.ts';
+
 export interface ScenarioContext {
   /** Opens clips from the clips folder (several go to the batch list) */
   open: (...clips: string[]) => Promise<void>,
@@ -16,6 +18,10 @@ export interface ScenarioContext {
   wait: (ms: number) => Promise<void>,
   /** Starts the video here instead of at the beginning, e.g. after opening the file */
   startVideo: () => void,
+  /** Shows a caption in the social media versions from now until the next one (or none with no text) */
+  caption: (text?: string) => void,
+  /** Zooms the social media versions in on a part of the window (as for click), or back out with no rect */
+  zoom: (rect?: Rect) => void,
 }
 
 export interface Scenario {

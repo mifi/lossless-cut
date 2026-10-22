@@ -1,6 +1,6 @@
 // Records screenshots and a video of a feature demo (see script/featureMedia/scenarios.ts and AGENTS.md "Feature media").
 // Linux only (captures the X display), e.g. in a cloud session. Run `yarn build` and `yarn download-ffmpeg-linux-x64` first, then:
-// xvfb-run -a -s "-screen 0 1024x640x24" node script/featureMedia.ts <scenario> [--clips dir]
+// xvfb-run -a -s "-screen 0 1024x640x24" node script/featureMedia.ts <scenario> [--clips dir] [--music audio file]
 import assert from 'node:assert';
 import { createWriteStream } from 'node:fs';
 import { access, mkdir, mkdtemp, rename, rm, writeFile } from 'node:fs/promises';
@@ -13,10 +13,11 @@ import { parseArgs } from 'node:util';
 import { execa } from 'execa';
 import clipSources from './featureMedia/clips.ts';
 import scenarios from './featureMedia/scenarios.ts';
+import { renderSocialVideo, type Caption, type Rect, type Zoom } from './featureMedia/socialVideo.ts';
 
-const { values: { clips = 'dist/feature-media-clips' }, positionals: [scenarioName] } = parseArgs({ allowPositionals: true, options: { clips: { type: 'string' } } });
+const { values: { clips = 'dist/feature-media-clips', music }, positionals: [scenarioName] } = parseArgs({ allowPositionals: true, options: { clips: { type: 'string' }, music: { type: 'string' } } });
 const scenario = scenarioName != null ? scenarios[scenarioName] : undefined;
-assert(scenario != null, `Usage: node script/featureMedia.ts <scenario> [--clips dir]. Scenarios: ${Object.keys(scenarios).join(', ')}`);
+assert(scenario != null, `Usage: node script/featureMedia.ts <scenario> [--clips dir] [--music audio file]. Scenarios: ${Object.keys(scenarios).join(', ')}`);
 const display = process.env['DISPLAY'];
 assert(process.platform === 'linux' && display != null, 'Run under Xvfb on Linux, see the top of this file');
 
@@ -27,6 +28,7 @@ const port = 8099;
 const { stdout: screenSize } = await execa('xdotool', ['getdisplaygeometry']);
 assert(screenSize === `${width} ${height}`, `The screen is ${screenSize}, run Xvfb with -screen 0 ${width}x${height}x24`);
 const ffmpeg = 'ffmpeg/linux-x64/lib/ffmpeg';
+const ffprobe = 'ffmpeg/linux-x64/lib/ffprobe';
 const outDir = 'dist/feature-media';
 await mkdir(outDir, { recursive: true });
 await mkdir(clips, { recursive: true });
@@ -92,7 +94,10 @@ try {
   // Lossless while recording, re-encoded below
   const recorder = execa(ffmpeg, ['-v', 'error', ...grab, '-c:v', 'libx264', '-preset', 'ultrafast', '-qp', '0', rawVideo], { reject: false, stderr: 'inherit' });
   const recordingStarted = performance.now();
+  const now = () => (performance.now() - recordingStarted) / 1000;
   let videoStart = 0;
+  const captionEvents: { time: number, text: string | undefined }[] = [];
+  const zoomEvents: { time: number, rect: Rect | undefined }[] = [];
   await timers.setTimeout(500);
 
   const action = async (name: string, args?: unknown) => {
@@ -132,7 +137,13 @@ try {
       },
       wait: async (ms) => timers.setTimeout(ms),
       startVideo: () => {
-        videoStart = (performance.now() - recordingStarted) / 1000;
+        videoStart = now();
+      },
+      caption: (text) => {
+        captionEvents.push({ time: now(), text });
+      },
+      zoom: (rect) => {
+        zoomEvents.push({ time: now(), rect });
       },
     });
   } finally {
@@ -144,7 +155,18 @@ try {
   // A high quality master (web versions are made from it elsewhere), with the index at the start for streaming
   const videoPath = join(outDir, `${scenarioName}.mp4`);
   await execa(ffmpeg, ['-v', 'error', '-y', '-ss', String(videoStart), '-i', rawVideo, '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-tune', 'animation', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', videoPath]);
-  console.log('Wrote', videoPath, 'and screenshots in', outDir);
+
+  // The social media versions start just before the first caption (after the intro card, the opening of the file isn't needed)
+  const socialStart = Math.max(videoStart, (captionEvents[0]?.time ?? 0) - 0.5);
+  const { stdout: rawDuration } = await execa(ffprobe, ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', rawVideo]);
+  const duration = Number(rawDuration) - socialStart;
+  const captions: Caption[] = captionEvents.flatMap(({ time, text }, i) => (text == null ? [] : [{ text, start: Math.max(0, time - socialStart), end: Math.min((captionEvents[i + 1]?.time ?? Infinity) - socialStart, duration) }]));
+  const zooms: Zoom[] = zoomEvents.map(({ time, rect }) => ({ time: time - socialStart, rect }));
+  for (const format of ['landscape', 'vertical'] as const) {
+    // eslint-disable-next-line no-await-in-loop
+    await renderSocialVideo({ ffmpeg, rawVideo, videoStart: socialStart, duration, captions, zooms, description: scenario.description, music, windowWidth: width, windowHeight: height, format, tmpDir: configDir, outPath: join(outDir, `${scenarioName}-${format}.mp4`) });
+  }
+  console.log('Wrote', videoPath, 'the social media versions and screenshots in', outDir);
 } finally {
   app.kill();
   await app;
