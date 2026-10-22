@@ -1,5 +1,5 @@
-// The homepage content. Rendered to static HTML at build time (no client-side JavaScript, except a small script for the feature icon
-// animation in index.astro).
+// The homepage content. Rendered to static HTML at build time (no client-side JavaScript, except a small script in index.astro for
+// the hero video's pause button and the feature icon animation).
 import type { CSSProperties, ReactNode } from 'react';
 import type { IconNode } from 'lucide';
 import { Combine, Film, Layers, ListOrdered, RefreshCw, ScanSearch, Scissors, SquarePen, Terminal } from 'lucide';
@@ -165,8 +165,10 @@ export default function Home({ stars }: { stars: number }) {
               </div>
               {/* with prefers-reduced-motion, the poster is shown instead (home.css), and the script stops the video */}
               <video poster={heroVideo.poster} autoPlay muted loop playsInline preload="metadata" width={1024} height={640} aria-label="LosslessCut cutting a video into three segments">
-                <source src={heroVideo.smallSrc} type="video/mp4" media="(max-width: 700px)" />
-                <source src={heroVideo.src} type="video/mp4" />
+                {/* with reduced motion, neither matches, so nothing is downloaded. Browsers that ignore media (before Chrome/Firefox
+                120) take the first one, and the script removes them with reduced motion */}
+                <source src={heroVideo.src} type="video/mp4" media="(min-width: 701px) and (prefers-reduced-motion: no-preference)" />
+                <source src={heroVideo.smallSrc} type="video/mp4" media="(prefers-reduced-motion: no-preference)" />
               </video>
               <img className="hero-video-poster" src={heroVideo.poster} alt="LosslessCut with a video opened" width={1024} height={640} fetchPriority="high" />
             </div>
