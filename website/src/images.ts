@@ -25,8 +25,12 @@ export const heroVideo: Video = {
   poster: `${baseUrl}/dist/losslesscut/feature-media/hero-2026-10-22-poster-1000.jpg`,
 };
 
-// Creating segments from the scene changes of a Tears of Steel excerpt (CC BY: the homepage credits it). Not uploaded yet
-export const sceneChangesVideo = undefined as Video | undefined;
+// About 10 s: creating segments from the scene changes of a Tears of Steel excerpt (CC BY: the homepage credits it)
+export const sceneChangesVideo: Video = {
+  src: `${baseUrl}/dist/losslesscut/feature-media/detect-scene-changes-2026-10-22-1000.mp4`,
+  smallSrc: `${baseUrl}/dist/losslesscut/feature-media/detect-scene-changes-2026-10-22.mp4`,
+  poster: `${baseUrl}/dist/losslesscut/feature-media/detect-scene-changes-2026-10-22-poster-1000.jpg`,
+};
 
 // Social preview image (1200x630)
 export const ogImage = `${baseUrl}/dist/losslesscut/og-image-1000.jpg`;

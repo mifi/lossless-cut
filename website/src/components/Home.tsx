@@ -127,7 +127,7 @@ function FramedVideo({ video, label, posterAlt, priority }: { video: Video, labe
         <source src={video.src} type="video/mp4" media="(min-width: 701px) and (prefers-reduced-motion: no-preference)" />
         <source src={video.smallSrc} type="video/mp4" media="(prefers-reduced-motion: no-preference)" />
       </video>
-      <img className="framed-video-poster" src={video.poster} alt={posterAlt} width={1024} height={640} {...(priority ? { fetchPriority: 'high' } : { loading: 'lazy' })} />
+      <img className="framed-video-poster" src={video.poster} alt={posterAlt} width={1024} height={640} fetchPriority={priority ? 'high' : undefined} loading={priority ? undefined : 'lazy'} />
     </div>
   );
 }
@@ -252,16 +252,14 @@ export default function Home({ stars }: { stars: number }) {
         <a className="button" href="/docs/features">See all features and use cases</a>
       </WhiteSection>
 
-      {sceneChangesVideo != null && (
-        <div className="padded demo-video">
-          <FramedVideo video={sceneChangesVideo} label="LosslessCut detecting the scene changes of a movie and creating a segment for each scene" posterAlt="A movie opened in LosslessCut" />
-          <p className="demo-video-credit">
-            Tears of Steel (CC) Blender Foundation | <a href="https://mango.blender.org/">mango.blender.org</a>
-          </p>
+      <div className="padded demo-video">
+        <FramedVideo video={sceneChangesVideo} label="LosslessCut detecting the scene changes of a movie and creating a segment for each scene" posterAlt="A movie in LosslessCut, with a segment for each scene" />
+        <p className="demo-video-credit">
+          Tears of Steel (CC) Blender Foundation | <a href="https://mango.blender.org/">mango.blender.org</a>
+        </p>
 
-          <h2 style={{ textAlign: 'center', marginTop: '40px', fontWeight: '200' }}>Lightning Fast! It&apos;s like Magic</h2>
-        </div>
-      )}
+        <h2 style={{ textAlign: 'center', marginTop: '40px', fontWeight: '200' }}>Lightning Fast! It&apos;s like Magic</h2>
+      </div>
 
       <div id="download" className="download">
         <div className="download-inner">
