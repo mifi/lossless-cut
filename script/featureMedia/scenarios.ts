@@ -4,33 +4,37 @@
 // Keep each scenario short (10-30 s of video) and about one feature.
 import type { Scenario } from './types.ts';
 
-// Mark and label three parts and merge them into one file, without the export confirmation
-function heroScenario(clip: string, parts: [start: string, end: string, label: string][]): Scenario {
+// Play the clip, mark three parts as it plays and merge them into one file, without the export confirmation
+function heroScenario(clip: string, marks: [start: number, end: number][]): Scenario {
   return {
     description: 'Keep the good parts and get a new file in seconds',
     clips: [clip],
     config: { autoMerge: true, exportConfirmEnabled: false },
-    async run({ open, action, actionWithDialog, shot, wait, startVideo }) {
+    async run({ open, action, key, shot, wait, startVideo }) {
       await open(clip);
-      // Wait until the thumbnails are loaded, so the loop starts on the opened file
+      // Wait until the thumbnails are loaded, so the video starts on the opened file
       await wait(4000);
       startVideo();
       await shot('opened');
-      await wait(1500);
-      for (const [start, end, label] of parts) {
-        await action('goToTimecodeDirect', { time: start });
+      await wait(500);
+      await action('play');
+      // Mark at the playhead (seconds since play started)
+      let elapsed = 0;
+      for (const [start, end] of marks) {
+        await wait((start - elapsed) * 1000);
         await action('setCutStart');
-        await wait(400);
-        await action('goToTimecodeDirect', { time: end });
+        await wait((end - start) * 1000);
         await action('setCutEnd');
-        // Give the app time to update the segment, or the label would be set on the old one
-        await wait(300);
-        await actionWithDialog('labelCurrentSegment', label);
-        await wait(600);
+        elapsed = end;
       }
+      await action('pause');
+      await wait(800);
       await shot('segments');
       await action('export');
-      await wait(2500);
+      await wait(1500);
+      // Close the success dialog and end on the timeline with the parts, like the start but with segments
+      await key('Escape');
+      await wait(1500);
       await shot('exported');
     },
   };
@@ -38,8 +42,7 @@ function heroScenario(clip: string, parts: [start: string, end: string, label: s
 
 const scenarios: Record<string, Scenario> = {
   // For the website's homepage: a short silent loop of the core idea. Keep it quick, and don't use clips that need a credit
-  hero: heroScenario('DJI_0740.MP4', [['00:00:01', '00:00:04', 'Lighthouse'], ['00:00:06', '00:00:09', 'Cliffs'], ['00:00:11', '00:00:14', 'Ocean']]),
-  'hero-beach': heroScenario('DJI_0121.MOV', [['00:00:00.5', '00:00:02.5', 'Waves'], ['00:00:03.5', '00:00:05.5', 'Beach'], ['00:00:06.5', '00:00:08.5', 'Lagoon']]),
+  hero: heroScenario('DJI_0121.MOV', [[1, 2.5], [3.5, 5], [6, 7.5]]),
   'cut-segments': {
     description: 'Mark and label two segments to keep, play them and export',
     clips: ['DJI_0759.MP4'],
