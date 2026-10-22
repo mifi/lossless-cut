@@ -18,7 +18,8 @@ function heroScenario(clip: string, marks: [start: number, end: number][]): Scen
       startVideo();
       await shot('opened');
       await wait(500);
-      await action('play');
+      // Play and pause with the keyboard shortcut (Space), which the social media versions show
+      await action('togglePlayResetSpeed');
       // Mark at the playhead (seconds since play started)
       let elapsed = 0;
       for (const [start, end] of marks) {
@@ -28,7 +29,7 @@ function heroScenario(clip: string, marks: [start: number, end: number][]): Scen
         await action('setCutEnd');
         elapsed = end;
       }
-      await action('pause');
+      await action('togglePlayResetSpeed');
       await wait(800);
       await shot('segments');
       await action('export');

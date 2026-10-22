@@ -32,5 +32,7 @@ export interface Scenario {
   config?: Record<string, unknown>,
   /** The desktop's photo in the social media versions: a name from backgrounds.ts. --background overrides it, and the default is the beach */
   background?: string,
+  /** false to not show the keys of the actions' keyboard shortcuts in the social media versions */
+  showKeys?: boolean,
   run: (ctx: ScenarioContext) => Promise<void>,
 }

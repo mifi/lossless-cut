@@ -50,6 +50,14 @@
   #footer { position: absolute; left: 0; right: 0; display: flex; justify-content: center; align-items: center; gap: 0.45em; line-height: 1.3; font-weight: 600; letter-spacing: 0.02em; color: rgba(255, 255, 255, 0.78); text-shadow: 0 1px 12px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.5); }
   #footer img { width: 1.3em; height: 1.3em; filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.5)); }
 
+  /* The keys of an action's keyboard shortcut, as light keycaps. --p is how far they're pressed down (0 to 1) */
+  .keys { position: absolute; display: flex; gap: 0.3em; transform-origin: 50% 100%; font-weight: 600; --p: 0; }
+  .key { min-width: 1.85em; height: 1.85em; padding: 0 0.5em; display: flex; align-items: center; justify-content: center; border-radius: 0.28em; color: #2a2a2e; background: linear-gradient(#ffffff, #e6e6ea); transform: translateY(calc(0.12em * var(--p))); box-shadow: 0 calc(0.16em * (1 - 0.75 * var(--p))) 0 #a4a4ae, 0 calc(0.2em + 0.12em * (1 - var(--p))) calc(0.6em * (1 - 0.4 * var(--p))) rgba(0, 0, 0, 0.45), inset 0 -1px rgba(0, 0, 0, 0.06); }
+
+  /* How long an export took, under the window */
+  .exported { position: absolute; left: 50%; display: flex; align-items: center; gap: 0.45em; white-space: nowrap; font-weight: 600; line-height: 1.3; padding: 0.35em 0.9em 0.35em 0.5em; border-radius: 1em; background: rgba(17, 17, 19, 0.85); box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.08); }
+  .exported svg { width: 1.25em; height: 1.25em; }
+
   /* Only when designing: play/pause and a slider for the time */
   #scrubber { position: fixed; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: 12px; padding: 8px 16px; background: rgba(0, 0, 0, 0.8); font: 13px system-ui, sans-serif; }
   #scrubber input { flex: 1; }
@@ -66,6 +74,7 @@
   </div>
   <div id="captions"></div>
   <div id="footer"><img alt=""><span></span></div>
+  <div id="badges"></div>
 </div>
 <script>
 // The settings for designing in a browser. socialVideo.ts passes all of them
@@ -90,6 +99,12 @@ const defaults = {
   captions: [{ start: 0.5, end: 3, text: 'See every track in the file' }, { start: 3, end: 7, text: 'Choose the ones to keep' }],
   // From each time in the recording, zoomed in on a part of it (in the recording's pixels), or back out with no rect
   zooms: [{ time: 3, rect: { x: 60, y: 230, w: 560, h: 300 } }, { time: 5.5 }],
+  // When the scenario ran an action with a keyboard shortcut, and its keys (see shortcuts.ts). They're shown on the desktop beside
+  // the window (on its right, at the bottom) or above it (and its captions)
+  keys: [{ time: 1, keys: ['I'] }, { time: 2.2, keys: ['O'] }, { time: 3.4, keys: ['⌘', 'E'] }, { time: 3.7, keys: ['⌘', 'E'] }],
+  keysPlace: 'beside',
+  // When an export finished, and how long it took (in seconds)
+  exports: [{ time: 4.4, duration: 0.4 }],
   intro: { title: 'LosslessCut', subtitle: 'Choose which tracks to keep, then export' },
   outro: { title: 'losslesscut.app', subtitle: 'Free and open source · Windows, macOS and Linux' },
   // A slow zoom into the photo over the whole video (0.08 ends at 108 %, 0 turns it off), and a drift towards a side,
@@ -150,6 +165,59 @@ footer.querySelector('span').textContent = config.footer ?? '';
 footer.querySelector('img').src = config.icon;
 setStyle(footer, { fontSize: px(Math.round(config.captionSize * 0.65)), top: px(win.y + win.h + config.footerGap) });
 if (!config.footer) footer.style.display = 'none';
+
+// The keys: one after the other in the same place. Presses of the same keys soon after each other press them again
+const keyHold = 1.1;
+const keyGroups = [];
+for (const { time, keys } of config.keys) {
+  const last = keyGroups.at(-1);
+  if (last != null && last.keys.join() === keys.join() && time - last.presses.at(-1) < keyHold) last.presses.push(time);
+  else keyGroups.push({ keys, presses: [time] });
+}
+const keyFontSize = Math.round(config.captionSize * 0.7);
+for (const [i, group] of keyGroups.entries()) {
+  group.element = document.createElement('div');
+  group.element.className = 'keys';
+  group.element.style.fontSize = px(keyFontSize);
+  for (const key of group.keys) {
+    const element = document.createElement('div');
+    element.className = 'key';
+    element.textContent = key;
+    group.element.append(element);
+  }
+  $('#badges').append(group.element);
+  // Gone when the next ones come, and by the outro
+  group.start = group.presses[0];
+  group.end = Math.min(group.presses.at(-1) + keyHold + 0.2, keyGroups[i + 1]?.presses[0] ?? Infinity, recording.duration);
+}
+
+// Each export's time, with a check mark, under the window (instead of the footer, while it's shown)
+const exportBadges = config.exports.map(({ time, duration: exportDuration }) => {
+  const element = document.createElement('div');
+  element.className = 'exported';
+  element.innerHTML = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#2fbf71"/><path d="M6.5 12.5l3.5 3.5 7.5-8" fill="none" stroke="white" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span></span>';
+  element.querySelector('span').textContent = `Exported in ${exportDuration < 10 ? Math.max(0.1, exportDuration).toFixed(1) : Math.round(exportDuration)} s`;
+  element.style.fontSize = px(Math.round(config.captionSize * 0.65));
+  $('#badges').append(element);
+  // It can last into the outro, where it goes with the window
+  return { start: time, end: time + 2.6, element };
+});
+
+// Where the keys and export times go, once the text is laid out (with the fonts loaded)
+function placeBadges() {
+  const windowBottom = win.y + win.h;
+  for (const { element } of keyGroups) {
+    if (config.keysPlace === 'above') {
+      // Above the highest caption, if there are captions
+      const captionsHeight = Math.max(0, ...captions.map((caption) => caption.element.offsetHeight + config.captionGap * 0.6));
+      setStyle(element, { left: px((width - element.offsetWidth) / 2), bottom: px(height - win.y + config.captionGap + captionsHeight) });
+    } else {
+      setStyle(element, { left: px((win.x + win.w + width - element.offsetWidth) / 2), bottom: px(height - windowBottom) });
+    }
+  }
+  // Just under the window, or as low as there's room for
+  for (const { element } of exportBadges) element.style.top = px(Math.min(windowBottom + config.footerGap, height - 12 - element.offsetHeight));
+}
 
 // The icon, at the middle of the window, with the text under it
 const iconSize = Math.round(Math.min(width, height) * 0.16);
@@ -286,6 +354,26 @@ function captionAt(time, { start, end }) {
   return { opacity, transform: `translateX(-50%) translateY(${mix(0.25 * config.captionSize, 0, shown)}px) scale(${mix(0.96, 1, shown)})` };
 }
 
+// Keys pop up and are pressed down (again at each press), then fade out
+const easeOutBack = cubicBezier(0.34, 1.56, 0.64, 1);
+function keysAt(time, { start, end, presses }) {
+  const shown = progress(time, start, 0.22, easeOutBack);
+  const opacity = Math.min(progress(time, start, 0.1, linear), 1 - progress(time, end - 0.2, 0.2, linear));
+  // Down quickly, up a bit slower. The first press comes once they're up
+  const pressed = Math.max(...presses.map((press, i) => {
+    const at = press + (i === 0 ? 0.18 : 0);
+    return Math.min(progress(time, at, 0.06, linear), 1 - progress(time, at + 0.1, 0.14, ease.out));
+  }));
+  return { opacity, transform: `translateY(${mix(0.3 * keyFontSize, 0, shown)}px) scale(${mix(0.7, 1, shown)})`, pressed };
+}
+
+// An export time pops up and fades out
+function exportAt(time, { start, end }) {
+  const shown = progress(time, start, 0.35, easeOutBack);
+  const opacity = Math.min(progress(time, start, 0.15, linear), 1 - progress(time, end - 0.3, 0.3, linear));
+  return { opacity, transform: `translateX(-50%) translateY(${mix(0.4 * config.captionSize, 0, shown)}px) scale(${mix(0.85, 1, shown)})` };
+}
+
 let shownFrame;
 
 // Shows the timeline at a time (in seconds). Resolves when the recording's frame is decoded, so it's in the next screenshot
@@ -296,7 +384,19 @@ async function seek(time) {
   if (time < recordingStart) scene = introAt(time);
   else if (time >= outroStart) scene = outroAt(time - outroStart);
   setStyle(windowElement, { transform: scene.window.transform, opacity: String(scene.window.opacity) });
-  footer.style.opacity = String(scene.footer);
+  // The export times show instead of the footer
+  let exportShown = 0;
+  for (const badge of exportBadges) {
+    const { opacity, transform } = exportAt(time - recordingStart, badge);
+    setStyle(badge.element, { opacity: String(opacity * scene.footer), transform });
+    exportShown = Math.max(exportShown, opacity);
+  }
+  footer.style.opacity = String(scene.footer * (1 - exportShown));
+  for (const group of keyGroups) {
+    const { opacity, transform, pressed } = keysAt(recordingTime, group);
+    setStyle(group.element, { opacity: String(opacity), transform });
+    group.element.style.setProperty('--p', String(pressed));
+  }
   icon.style.transform = scene.icon;
   setStyle(iconLaunch, { opacity: String(scene.launch.opacity), transform: scene.launch.transform });
   if (titleText.textContent !== scene.text.title) titleText.textContent = scene.text.title;
@@ -329,7 +429,10 @@ async function seek(time) {
 
 globalThis.timeline = {
   // Fonts and images loaded, and the start shown. When rendering, a missing image fails the render (when designing, it's just left out)
-  ready: Promise.all([document.fonts.ready, icon.decode(), drawPhoto()].map(async (loaded) => (config.render ? loaded : loaded.catch(() => undefined)))).then(async () => seek(0)),
+  ready: Promise.all([document.fonts.ready, icon.decode(), drawPhoto()].map(async (loaded) => (config.render ? loaded : loaded.catch(() => undefined)))).then(async () => {
+    placeBadges();
+    await seek(0);
+  }),
   duration,
   seek,
 };

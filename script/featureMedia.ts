@@ -18,7 +18,8 @@ import clipSources from './featureMedia/clips.ts';
 import musicTracks, { defaultMusic } from './featureMedia/music.ts';
 import { checkChromium } from './featureMedia/htmlScenes.ts';
 import scenarios from './featureMedia/scenarios.ts';
-import { renderSocialVideo, type Caption, type Rect, type Zoom } from './featureMedia/socialVideo.ts';
+import getShortcutKeys from './featureMedia/shortcuts.ts';
+import { renderSocialVideo, type Caption, type Export, type KeyPress, type Rect, type Zoom } from './featureMedia/socialVideo.ts';
 
 const { values: { clips = 'dist/feature-media-clips', music: musicArg = defaultMusic, background: backgroundArg, scale: scaleArg = '1' }, positionals: [scenarioName] } = parseArgs({ allowPositionals: true, options: { clips: { type: 'string' }, music: { type: 'string' }, background: { type: 'string' }, scale: { type: 'string' } } });
 const scenario = scenarioName != null ? scenarios[scenarioName] : undefined;
@@ -162,12 +163,40 @@ try {
   let videoStart = 0;
   const captionEvents: { time: number, text: string | undefined }[] = [];
   const zoomEvents: { time: number, rect: Rect | undefined }[] = [];
+  const keyPresses: KeyPress[] = [];
+  const exportEvents: Export[] = [];
+
+  // How long each export takes, from the app's events (only a successful one has paths). Each await-event request waits for the next event
+  const eventsAbort = new AbortController();
+  const awaitEvent = async (name: string) => {
+    const response = await fetch(`http://127.0.0.1:${port}/api/await-event/${name}`, { method: 'POST', signal: eventsAbort.signal });
+    return response.json() as Promise<{ paths?: string[] }>;
+  };
+  const watchExports = async () => {
+    try {
+      for (;;) {
+        // eslint-disable-next-line no-await-in-loop
+        await awaitEvent('export-start');
+        const start = now();
+        // eslint-disable-next-line no-await-in-loop
+        const { paths } = await awaitEvent('export-complete');
+        const end = now();
+        if (paths != null) exportEvents.push({ time: end, duration: end - start });
+      }
+    } catch {
+      // Stopped after the recording
+    }
+  };
+  const watchingExports = watchExports();
   await timers.setTimeout(500);
 
   // Not async, so the caught promise itself is returned (an async function would wrap it in a new, uncaught one)
   // eslint-disable-next-line @typescript-eslint/promise-function-async
   const action = (name: string, args?: unknown) => {
     console.log('Action', name, args ?? '');
+    // Shown as keys in the social media versions, if it has a keyboard shortcut
+    const keys = getShortcutKeys(name);
+    if (keys != null) keyPresses.push({ time: now(), keys });
     const done = post(`action/${name}`, args);
     // Scenarios may await it later (e.g. after closing the dialog it opens), so a failure meanwhile mustn't be an unhandled rejection, which would skip the cleanup
     done.catch(() => undefined);
@@ -219,6 +248,8 @@ try {
   } finally {
     // ffmpeg finishes the file and exits (with code 255) on SIGINT
     recorder.kill('SIGINT');
+    eventsAbort.abort();
+    await watchingExports;
   }
   const { exitCode } = await recorder;
   assert(exitCode === 0 || exitCode === 255, `Recording failed with exit code ${exitCode}`);
@@ -235,8 +266,10 @@ try {
   const captions: Caption[] = captionEvents.flatMap(({ time, text }, i) => (text == null ? [] : [{ text, start: Math.max(0, time - socialStart), end: Math.min((captionEvents[i + 1]?.time ?? Infinity) - socialStart, duration) }]))
     .filter(({ start, end }) => end > start);
   const zooms: Zoom[] = zoomEvents.map(({ time, rect }) => ({ time: time - socialStart, rect }));
+  const inVideo = <T extends { time: number }>(events: T[]) => events.map((event) => ({ ...event, time: event.time - socialStart })).filter(({ time }) => time >= 0 && time < duration);
+  const keys = scenario.showKeys === false ? [] : inVideo(keyPresses);
   // Both at once, which is faster (each mostly waits for its Chromium)
-  await Promise.all((['landscape', 'vertical'] as const).map(async (format) => renderSocialVideo({ ffmpeg, rawVideo, videoStart: socialStart, duration, captions, zooms, description: scenario.description, music, background, windowWidth: width, windowHeight: height, format, tmpDir: configDir, outPath: join(outDir, `${scenarioName}-${format}.mp4`) })));
+  await Promise.all((['landscape', 'vertical'] as const).map(async (format) => renderSocialVideo({ ffmpeg, rawVideo, videoStart: socialStart, duration, captions, zooms, keys, exports: inVideo(exportEvents), description: scenario.description, music, background, windowWidth: width, windowHeight: height, format, tmpDir: configDir, outPath: join(outDir, `${scenarioName}-${format}.mp4`) })));
   console.log('Wrote', videoPath, 'the social media versions and screenshots in', outDir);
   if (musicTrack != null) console.log('Posts with the social media versions must credit:', musicTrack.credit);
 } finally {

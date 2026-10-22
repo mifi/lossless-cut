@@ -12,6 +12,10 @@ import openTimeline from './htmlScenes.ts';
 export interface Rect { x: number, y: number, w: number, h: number }
 export interface Caption { start: number, end: number, text: string }
 export interface Zoom { time: number, rect: Rect | undefined }
+/** An action with a keyboard shortcut, shown as its keys */
+export interface KeyPress { time: number, keys: string[] }
+/** A finished export and how long it took (in seconds) */
+export interface Export { time: number, duration: number }
 
 const fps = 30;
 const iconPath = 'src/renderer/src/icon.svg';
@@ -19,24 +23,25 @@ const iconPath = 'src/renderer/src/icon.svg';
 // The window's place on the desktop: its left and top (of the title bar) and width. The recording fills its content, below the title bar.
 // The captions go on the desktop above the window. In vertical, the window (658 px high) is a bit below the middle, so with a caption above it
 // they're about centred, and the footer (if any) is a subtle line with the icon close under it. Everything ends above the bottom quarter
-// (y 1440) that Reels, TikTok and Shorts cover with their buttons and text: the footer at about y 1370–1414
+// (y 1440) that Reels, TikTok and Shorts cover with their buttons and text: the footer at about y 1370–1414.
+// The keys of keyboard shortcuts go beside the window in landscape (in the room on its right) and above it (and the captions) in vertical
 const formats = {
-  landscape: { width: 1920, height: 1200, window: { x: 224, y: 168, width: 1472 }, captionSize: 48, captionGap: 36, footer: undefined },
-  vertical: { width: 1080, height: 1920, window: { x: 36, y: 690, width: 1008 }, captionSize: 52, captionGap: 60, footer: 'losslesscut.app' },
+  landscape: { width: 1920, height: 1200, window: { x: 224, y: 168, width: 1472 }, captionSize: 48, captionGap: 36, footer: undefined, keysPlace: 'beside' },
+  vertical: { width: 1080, height: 1920, window: { x: 36, y: 690, width: 1008 }, captionSize: 52, captionGap: 60, footer: 'losslesscut.app', keysPlace: 'above' },
 } as const;
 export type Format = keyof typeof formats;
 
 // Where the window and the recording go, for the HTML
 function getLayout(format: Format, windowWidth: number, windowHeight: number) {
-  const { width, height, window, captionSize, captionGap, footer } = formats[format];
+  const { width, height, window, captionSize, captionGap, footer, keysPlace } = formats[format];
   // From macOS points (the app's window is windowWidth points wide)
   const scale = window.width / windowWidth;
   const titleBarHeight = Math.round(28 * scale);
   const content = { x: window.x, y: window.y + titleBarHeight, w: window.width, h: Math.round(windowHeight * scale) };
-  return { width, height, scale, titleBarHeight, content, captionSize, captionGap, footer };
+  return { width, height, scale, titleBarHeight, content, captionSize, captionGap, footer, keysPlace };
 }
 
-export async function renderSocialVideo({ ffmpeg, rawVideo, videoStart, duration, captions, zooms, description, music, background, windowWidth, windowHeight, format, tmpDir, outPath }: {
+export async function renderSocialVideo({ ffmpeg, rawVideo, videoStart, duration, captions, zooms, keys, exports, description, music, background, windowWidth, windowHeight, format, tmpDir, outPath }: {
   ffmpeg: string,
   rawVideo: string,
   videoStart: number,
@@ -44,6 +49,8 @@ export async function renderSocialVideo({ ffmpeg, rawVideo, videoStart, duration
   duration: number,
   captions: Caption[],
   zooms: Zoom[],
+  keys: KeyPress[],
+  exports: Export[],
   description: string,
   /** An audio file, or undefined for no music */
   music: string | undefined,
@@ -76,6 +83,8 @@ export async function renderSocialVideo({ ffmpeg, rawVideo, videoStart, duration
       recording: { width: windowWidth, height: windowHeight, duration: recordingFrames / fps, fps, frames: `${fileUrl(framesDir)}/` },
       captions,
       zooms,
+      keys,
+      exports,
       intro: { title: 'LosslessCut', subtitle: description },
       outro: { title: 'losslesscut.app', subtitle: 'Free and open source · Windows, macOS and Linux' },
       background: fileUrl(background),
