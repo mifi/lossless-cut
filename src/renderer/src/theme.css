@@ -311,3 +311,43 @@ input[type="range"]:focus-visible {
 input[type="range"]:focus-visible::-webkit-slider-thumb {
   box-shadow: 0 0 0 4px var(--llc-accent-soft);
 }
+
+/* A choice in a list of options, e.g. "What do you want to do?" */
+.llc-option-button {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: .6em;
+  width: 100%;
+  margin-bottom: .45em;
+  padding: .7em .9em;
+  border-radius: var(--llc-radius-card);
+  background: var(--llc-card-bg);
+  border: 1px solid var(--llc-panel-border);
+  color: var(--llc-text-1);
+  cursor: pointer;
+  transition: background-color .15s, border-color .15s;
+}
+
+.llc-option-button:hover {
+  background: var(--llc-accent-soft);
+  border-color: var(--llc-accent-border);
+}
+
+.llc-option-button:focus-visible {
+  outline: 2px solid var(--llc-accent-border);
+}
+
+.llc-option-button.llc-option-cancel {
+  justify-content: center;
+  margin: .3em 0 0;
+  background: transparent;
+  border-color: transparent;
+  color: var(--llc-text-2);
+}
+
+.llc-option-button.llc-option-cancel:hover {
+  color: var(--llc-text-1);
+  background: var(--llc-control-bg-hover);
+}

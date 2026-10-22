@@ -7,4 +7,4 @@ export const ffmpegExtractWindow = 60;
 export const zoomMax = 2 ** 14;
 
 export const rightBarWidth = 280;
-export const leftBarWidth = 240;
+export const leftBarWidth = 260;

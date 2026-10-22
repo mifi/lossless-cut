@@ -12,7 +12,7 @@ import { parseYouTube } from '../edlFormats';
 import { appPath, isMasBuild, isStoreBuild, isWindows, isWindowsStoreBuild, testFailFsOperation, trashFile, unlinkWithRetry } from '../util';
 import type { ParseTimecode } from '../types';
 import type { FindKeyframeMode } from '../ffmpeg';
-import { dangerColor, primaryColor, warningColor } from '../colors';
+import { primaryColor, warningColor } from '../colors';
 import getSwal from '../swal';
 import isDev from '../isDev';
 import mainApi from '../mainApi';
@@ -113,13 +113,13 @@ export async function askForFileOpenAction(inputOptions: [OpenFileResponse, stri
         <div style={{ marginBottom: '1em' }}>{i18n.t('You opened a new file. What do you want to do?')}</div>
 
         {inputOptions.map(([key, text]) => (
-          <button type="button" key={key} onClick={() => onClick(key)} className="button-unstyled" style={{ display: 'block', marginBottom: '.5em' }}>
-            <LuArrowRight style={{ color: 'var(--gray-10)', verticalAlign: 'middle' }} /> {text}
+          <button type="button" key={key} onClick={() => onClick(key)} className="llc-option-button">
+            <LuArrowRight style={{ color: 'var(--llc-accent-text)', flexShrink: 0 }} /> {text}
           </button>
         ))}
 
-        <button type="button" onClick={() => onClick()} className="button-unstyled" style={{ display: 'block', marginTop: '.5em' }}>
-          <LuArrowRight style={{ color: dangerColor, verticalAlign: 'middle' }} /> {i18n.t('Cancel')}
+        <button type="button" onClick={() => onClick()} className="llc-option-button llc-option-cancel">
+          {i18n.t('Cancel')}
         </button>
 
       </div>

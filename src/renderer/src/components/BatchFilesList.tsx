@@ -14,12 +14,8 @@ import type { BatchFile as BatchFileType } from '../types';
 import useUserSettings from '../hooks/useUserSettings';
 
 
-const iconStyle = {
-  flexShrink: 0,
-  color: 'var(--gray-12)',
-  cursor: 'pointer',
-  padding: '.2em .3em',
-};
+// compact, so the header fits in one row next to the title
+const headerButtonStyle = { minWidth: '1.75em', height: '1.75em', padding: 0 };
 
 function BatchFilesList({ selectedBatchFiles, filePath, width, batchFiles, setBatchFiles, onBatchFileSelect, batchListRemoveFile, closeBatch, onMergeFilesClick, onBatchConvertToSupportedFormatClick, onDrop }: {
   selectedBatchFiles: string[],
@@ -88,13 +84,13 @@ function BatchFilesList({ selectedBatchFiles, filePath, width, batchFiles, setBa
       transition={springAnimation}
       onDrop={onDrop}
     >
-      <div style={{ padding: '.6em .6em .5em .9em', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap', gap: '.2em' }}>
-        <div style={{ fontSize: '.85em', fontWeight: 600 }}>{t('Batch file list')}{batchFiles.length > 0 && ` (${batchFiles.length})`}</div>
+      <div style={{ padding: '.5em .4em .4em .9em', display: 'flex', alignItems: 'center', gap: '.1em' }}>
+        <div style={{ fontSize: '.85em', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t('Batch file list')}{batchFiles.length > 0 && ` (${batchFiles.length})`}</div>
         <div style={{ flexGrow: 1 }} />
-        <LuWandSparkles role="button" title={`${t('Convert to supported format')}...`} style={iconStyle} onClick={onBatchConvertToSupportedFormatClick} />
-        <SortIcon role="button" title={t('Sort items')} style={iconStyle} onClick={onSortClick} />
-        <LuMerge className={simpleMode ? 'export-animation' : undefined} role="button" title={`${t('Merge/concatenate files')}...`} style={{ ...iconStyle, color: 'white', background: primaryColor, borderRadius: '.5em' }} onClick={onMergeFilesClick} />
-        <LuX role="button" title={t('Close batch')} style={{ ...iconStyle, fontSize: '1.1em', color: 'var(--gray-11)' }} onClick={closeBatch} />
+        <button type="button" className="llc-icon-button" title={`${t('Convert to supported format')}...`} style={headerButtonStyle} onClick={onBatchConvertToSupportedFormatClick}><LuWandSparkles /></button>
+        <button type="button" className="llc-icon-button" title={t('Sort items')} style={headerButtonStyle} onClick={onSortClick}><SortIcon /></button>
+        <button type="button" className={['llc-icon-button', ...(simpleMode ? ['export-animation'] : [])].join(' ')} title={`${t('Merge/concatenate files')}...`} style={{ ...headerButtonStyle, color: 'white', background: primaryColor }} onClick={onMergeFilesClick}><LuMerge /></button>
+        <button type="button" className="llc-icon-button" title={t('Close batch')} style={headerButtonStyle} onClick={closeBatch}><LuX /></button>
       </div>
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} onDragStart={handleDragStart} modifiers={[restrictToVerticalAxis]}>
