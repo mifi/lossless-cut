@@ -11,6 +11,7 @@ import { pipeline } from 'node:stream/promises';
 import timers from 'node:timers/promises';
 import { parseArgs } from 'node:util';
 import { execa } from 'execa';
+import clipSources from './featureMedia/clips.ts';
 import scenarios from './featureMedia/scenarios.ts';
 
 const { values: { clips = 'dist/feature-media-clips' }, positionals: [scenarioName] } = parseArgs({ allowPositionals: true, options: { clips: { type: 'string' } } });
@@ -30,17 +31,26 @@ const outDir = 'dist/feature-media';
 await mkdir(outDir, { recursive: true });
 await mkdir(clips, { recursive: true });
 
-// Get the clips, from the folder or else download them
+// Get the clips, from the folder or else make them from their sources (see clips.ts) or download them
 const clipsUrl = process.env['FEATURE_MEDIA_CLIPS_URL'] ?? 'https://static.mifi.no/losslesscut';
+// ffmpeg only uses the lowercase variable
+const httpProxy = process.env['http_proxy'] ?? process.env['HTTPS_PROXY'];
 for (const clip of scenario.clips) {
   const path = join(clips, clip);
   if (!await access(path).then(() => true, () => false)) {
-    console.log('Downloading', clip);
-    const response = await fetch(`${clipsUrl}/${clip}`);
-    assert(response.ok && response.body != null, `Failed to download ${clip}: ${response.status}`);
     // Via a temp file, so an interrupted download isn't used next time
-    await pipeline(Readable.fromWeb(response.body), createWriteStream(`${path}.part`));
-    await rename(`${path}.part`, path);
+    const partPath = `${path}.part`;
+    const sourceArgs = clipSources[clip];
+    if (sourceArgs != null) {
+      console.log('Making', clip, 'from its sources');
+      await execa(ffmpeg, ['-v', 'error', '-y', ...sourceArgs, partPath], { ...(httpProxy != null && { env: { http_proxy: httpProxy } }) });
+    } else {
+      console.log('Downloading', clip);
+      const response = await fetch(`${clipsUrl}/${clip}`);
+      assert(response.ok && response.body != null, `Failed to download ${clip}: ${response.status}`);
+      await pipeline(Readable.fromWeb(response.body), createWriteStream(partPath));
+    }
+    await rename(partPath, path);
   }
 }
 

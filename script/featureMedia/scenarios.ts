@@ -111,18 +111,18 @@ const scenarios: Record<string, Scenario> = {
       await wait(1500);
       await shot('dialog');
       // Edit the title
-      await click(743, 258);
+      await click(743, 277);
       await wait(800);
       await key('ctrl+a');
       await type('English stereo mix');
       await wait(500);
       await key('Return');
       await wait(1000);
-      // Delete the ENCODER tag
-      await click(791, 296);
+      // Delete the HANDLER_NAME tag
+      await click(791, 315);
       await wait(1500);
       await shot('edited');
-      await click(761, 547);
+      await click(761, 528);
       await wait(1500);
       await shot('tracks');
     },
