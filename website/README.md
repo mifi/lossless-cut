@@ -27,7 +27,7 @@ App versions from before that link to `https://mifi.no/losslesscut/<name>` (same
 
 ## Homepage
 
-`src/pages/index.astro` (the `<head>`) and `src/components/Home.tsx` (the content), styled by `src/styles/home.css`, with its images in `src/assets/home/` (plus the store badges and the app icon from the repo). The content is a React component, rendered to static HTML at build time (no client-side JavaScript), so it can move to another React framework if needed. It doesn't use Starlight's components, since those bring Starlight's global CSS along (see `src/components/socialIcons.ts`).
+`src/pages/index.astro` (the `<head>`) and `src/components/Home.tsx` (the content), styled by `src/styles/home.css`, with its images on static.mifi.no (URLs in `src/images.ts`), plus the store badges and the app icon from the repo. The content is a React component, rendered to static HTML at build time (no client-side JavaScript), so it can move to another React framework if needed. It doesn't use Starlight's components, since those bring Starlight's global CSS along (see `src/components/socialIcons.ts`).
 
 Official links (GitHub, stores, social media) are in `src/links.ts`.
 
