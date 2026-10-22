@@ -82,7 +82,8 @@ Lossless cuts can only start at a keyframe, so a cut starts at the keyframe befo
 
 ## Workflow
 
-- Open many media files or `.llc` projects as a batch list, and go through them one at a time. Each project opens its referenced media and saved segments (there's no batch export, but see [Batch processing](batch.md))
+- Open many media files or `.llc` projects as a batch list, and go through them one at a time. Each project opens its referenced media and saved segments
+- **Export all projects in batch** from Export options: process the selected cuts in each saved `.llc` entry with the current export settings, including full H.264/AAC re-encoding or per-project merging. Uses default tracks for each video, skips ordinary media entries and projects with no selected cuts, writes separate numbered project folders, and reports failures without interrupting the remaining projects. Supports progress and cancellation without switching the active editor. For other automation, see [Batch processing](batch.md)
 - Convert a whole batch of files to a supported format
 - Keyboard shortcut workflow, with customizable shortcuts
 - See the FFmpeg commands that were run, so you can change and re-run them on the command line

@@ -7,6 +7,7 @@ import { IoIosHelpCircle, IoIosSettings } from 'react-icons/io';
 import type { SweetAlertIcon } from 'sweetalert2';
 
 import ExportButton from './ExportButton';
+import Button from './Button';
 import ExportModeButton from './ExportModeButton';
 import FileNameTemplateEditor from './FileNameTemplateEditor';
 import HighlightedText from './HighlightedText';
@@ -113,6 +114,8 @@ function renderGenericNotice(notice: GenericNotice) {
 const rightIconStyle: CSSProperties = { fontSize: '1.2em', verticalAlign: 'middle' };
 
 function ExportConfirm({
+  batchProjectCount,
+  onExportBatchProjects,
   areWeCutting,
   segmentsToExport,
   willMerge,
@@ -143,6 +146,8 @@ function ExportConfirm({
   neighbouringKeyFrames,
   findNearestKeyFrameTime,
 } : {
+  batchProjectCount: number,
+  onExportBatchProjects: () => void,
   areWeCutting: boolean,
   segmentsToExport: SegmentToExport[],
   willMerge: boolean,
@@ -398,6 +403,24 @@ function ExportConfirm({
               {renderNoticeIcon(notices.specific['exportMode'], rightIconStyle) ?? <HelpIcon onClick={onExportModeHelpPress} />}
             </td>
           </tr>
+
+          {batchProjectCount > 0 && (
+            <tr>
+              <td>
+                {t('Projects in batch file list')}
+                <div style={{ fontSize: '.85em', color: 'var(--gray-11)', maxWidth: '28em' }}>
+                  {t('Uses saved selected segments and current export settings. Each project gets a numbered output folder. Ordinary video entries are skipped.')}
+                  {effectiveExportMode === 'segments_to_chapters' && <div>{t('Choose a cuts export mode to export batch projects.')}</div>}
+                </div>
+              </td>
+              <td>
+                <Button onClick={onExportBatchProjects} disabled={effectiveExportMode === 'segments_to_chapters'}>{t('Export all {{count}} projects', { count: batchProjectCount })}</Button>
+              </td>
+              <td>
+                <HelpIcon onClick={() => showHelpText({ text: t('Exports saved .llc projects in batch-list order without changing the active editor. Uses the default tracks for each video. Output goes into separate numbered project folders inside the working directory, or next to each video if no working directory is set. Projects without selected cuts are skipped. Failures are listed at the end; Abort stops the batch.') })} />
+              </td>
+            </tr>
+          )}
 
           <tr>
             <td>

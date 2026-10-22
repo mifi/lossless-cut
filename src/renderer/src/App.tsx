@@ -99,6 +99,8 @@ import { generateCutFileNames as generateCutFileNamesRaw, generateCutMergedFileN
 import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './util/constants';
 import BigWaveform from './components/BigWaveform';
 
+import BatchProjectExport, { type BatchExportRequest, type BatchExportReport } from './components/BatchProjectExport';
+import { getBatchProjectPaths } from './batchProjects';
 import type { BatchFile, Chapter, EdlExportType, EdlFileType, EdlImportType, FfmpegCommandLog, FilesMeta, FileStats, ParamsByFile, PlaybackMode, SegmentBase, SegmentColorIndex, SegmentTags, StateSegment, TunerType } from './types';
 import { goToTimecodeDirectArgsSchema } from './types';
 import type { CaptureFormat, KeyboardAction, ApiActionRequest } from '../../common/types.js';
@@ -191,6 +193,8 @@ function App() {
   // Batch state / concat files
   const [batchFiles, setBatchFiles] = useState<BatchFile[]>([]);
   const [selectedBatchFiles, setSelectedBatchFiles] = useState<string[]>([]);
+  const batchProjectPaths = useMemo(() => getBatchProjectPaths(batchFiles), [batchFiles]);
+  const [batchExportRequest, setBatchExportRequest] = useState<BatchExportRequest>();
 
   const allUserSettings = useUserSettingsRoot();
   const { captureFormat, keyframeCut, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, avoidNegativeTs, autoMerge, timecodeFormat, invertCutSegments, autoExportExtraStreams, askBeforeClose, enableImportChapters, enableAskForFileOpenAction, playbackVolume, autoSaveProjectFile, wheelSensitivity, waveformHeight, invertTimelineScroll, language, ffmpegExperimental, hideNotifications, hideOsNotifications, autoLoadTimecode, autoDeleteMergedSegments, exportConfirmEnabled, segmentsToChapters, simpleMode, cutFileTemplate, cutMergedFileTemplate, mergedFileTemplate, keyboardSeekAccFactor, keyboardNormalSeekSpeed, keyboardSeekSpeed2, keyboardSeekSpeed3, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, outFormatLocked, safeOutputFileName, enableAutoHtml5ify, segmentsToChaptersOnly, keyBindings, enableSmartCut, fullEncode, customFfPath, storeProjectInWorkingDir, enableOverwriteOutput, mouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, captureFrameMethod, captureFrameQuality, captureFrameFileNameFormat, enableNativeHevc, cleanupChoices, preferStrongColors, outputFileNameMinZeroPadding, cutFromAdjustmentFrames, cutToAdjustmentFrames, waveformMode: waveformModePreference, thumbnailsEnabled, keyframesEnabled, reducedMotion, ffmpegHwaccel, videoFit } = allUserSettings.settings;
@@ -1062,6 +1066,54 @@ function App() {
   }, [askForCleanupChoices, cleanupChoices, cleanupFiles, isFileOpened, setWorking, workingRef]);
 
   const closeExportConfirm = useCallback(() => setExportConfirmOpen(false), []);
+
+  const startBatchProjectExport = useCallback(() => {
+    if (workingRef.current || batchProjectPaths.length === 0 || segmentsToChaptersOnly) return;
+    const controller = new AbortController();
+    setExportConfirmOpen(false);
+    setWorking({ text: t('Exporting batch projects'), abortController: controller });
+    setProgress(0);
+    setBatchExportRequest({
+      paths: [...batchProjectPaths],
+      shortestFlag,
+      settings: allUserSettings.settings,
+      outFormat: isCustomLosslessFormatSelected || outFormatLocked ? selectedFileFormat : undefined,
+      customOutDir,
+      outputPlaybackRate,
+      rotation: isRotationSet ? effectiveRotation : undefined,
+      encBitrate,
+      lossyMode,
+      formatTimecode,
+      controller,
+      prepareOutputDir: async (mediaPath, dir) => {
+        await ensureAccessToSourceDir(mediaPath);
+        return await ensureWritableOutDir({ inputPath: mediaPath, outDir: dir }) ?? dir;
+      },
+      appendLastCommandsLog,
+      appendFfmpegCommandLog,
+    });
+  }, [shortestFlag, workingRef, batchProjectPaths, segmentsToChaptersOnly, setWorking, t, allUserSettings.settings, isCustomLosslessFormatSelected, outFormatLocked, selectedFileFormat, customOutDir, outputPlaybackRate, isRotationSet, effectiveRotation, encBitrate, formatTimecode, appendLastCommandsLog, appendFfmpegCommandLog, ensureAccessToSourceDir, ensureWritableOutDir]);
+
+  const onBatchExportProject = useCallback((index: number, name: string) => {
+    if (!batchExportRequest) return;
+    setWorking({ text: t('Exporting project {{current}} of {{total}}: {{name}}', { current: index + 1, total: batchExportRequest.paths.length, name }), abortController: batchExportRequest.controller });
+  }, [batchExportRequest, setWorking, t]);
+
+  const onBatchExportFinished = useCallback((report: BatchExportReport) => {
+    setBatchExportRequest(undefined);
+    setWorking(undefined);
+    setProgress(undefined);
+    const exported = report.results.filter((r) => r.paths.length > 0).length;
+    const failed = report.results.filter((r) => r.error != null);
+    const skipped = report.results.filter((r) => r.skipped).length;
+    const summary = t('Exported: {{exported}} projects. Skipped: {{skipped}}. Failed: {{failed}}.', { exported, skipped, failed: failed.length });
+    const details = report.results.map((r) => (r.error ? `${r.projectPath}: ${r.error}` : (r.paths.length > 0 ? dirname(r.paths[0]!) : ''))).filter(Boolean);
+    getSwal().Swal.fire({
+      title: report.cancelled ? t('Batch export cancelled') : t('Batch export finished'),
+      text: [summary, ...details].join('\n'),
+      icon: failed.length > 0 ? 'warning' : 'info',
+    }).catch(console.error);
+  }, [setWorking, t]);
 
   const willMerge = segmentsToExport.length > 1 && autoMerge;
 
@@ -2799,7 +2851,8 @@ function App() {
 
                 {/* Dialogs */}
 
-                <ExportConfirm areWeCutting={areWeCutting} segmentsOrInverse={segmentsOrInverse} segmentsToExport={segmentsToExport} willMerge={willMerge} visible={exportConfirmOpen} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} onShowStreamsSelectorClick={handleShowStreamsSelectorClick} outFormat={fileFormat} cutFileTemplate={cutFileTemplateOrDefault} cutMergedFileTemplate={cutMergedFileTemplateOrDefault} generateCutFileNames={generateCutFileNames} generateCutMergedFileNames={generateCutMergedFileNames} currentSegIndexSafe={currentSegIndexSafe} mainCopiedThumbnailStreams={mainCopiedThumbnailStreams} hvc1NeededStreams={hvc1NeededStreams} needSmartCut={needSmartCut} isEncoding={isEncoding} encBitrate={encBitrate} setEncBitrate={setEncBitrate} toggleSettings={toggleSettings} outputPlaybackRate={outputPlaybackRate} lossyMode={lossyMode} neighbouringKeyFrames={neighbouringKeyFrames} findNearestKeyFrameTime={findNearestKeyFrameTime} />
+                {batchExportRequest && <BatchProjectExport request={batchExportRequest} onProgress={setProgress} onProject={onBatchExportProject} onFinished={onBatchExportFinished} />}
+                <ExportConfirm batchProjectCount={batchProjectPaths.length} onExportBatchProjects={startBatchProjectExport} areWeCutting={areWeCutting} segmentsOrInverse={segmentsOrInverse} segmentsToExport={segmentsToExport} willMerge={willMerge} visible={exportConfirmOpen} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} onShowStreamsSelectorClick={handleShowStreamsSelectorClick} outFormat={fileFormat} cutFileTemplate={cutFileTemplateOrDefault} cutMergedFileTemplate={cutMergedFileTemplateOrDefault} generateCutFileNames={generateCutFileNames} generateCutMergedFileNames={generateCutMergedFileNames} currentSegIndexSafe={currentSegIndexSafe} mainCopiedThumbnailStreams={mainCopiedThumbnailStreams} hvc1NeededStreams={hvc1NeededStreams} needSmartCut={needSmartCut} isEncoding={isEncoding} encBitrate={encBitrate} setEncBitrate={setEncBitrate} toggleSettings={toggleSettings} outputPlaybackRate={outputPlaybackRate} lossyMode={lossyMode} neighbouringKeyFrames={neighbouringKeyFrames} findNearestKeyFrameTime={findNearestKeyFrameTime} />
 
                 <Dialog.Root open={streamsSelectorShown} onOpenChange={setStreamsSelectorShown}>
                   <Dialog.Portal>
