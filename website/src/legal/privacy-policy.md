@@ -29,7 +29,7 @@ If you got LosslessCut from an app store, that store's privacy policy covers you
 
 ## This website
 
-losslesscut.app is hosted by Cloudflare, which processes standard request logs. The homepage video is embedded from YouTube's privacy-enhanced mode, which sets no cookies until you play it. The translation page shows status badges loaded from Weblate. The site itself sets no cookies and runs no analytics.
+losslesscut.app is hosted by Cloudflare, which processes standard request logs. The translation page shows status badges loaded from Weblate. The site itself sets no cookies and runs no analytics.
 
 ## Your rights
 
@@ -39,4 +39,4 @@ You can ask to see or delete log data about you. You can also complain to the No
 
 LosslessCut is made by Mikael Finstad. For questions about this policy, email [losslesscut@mifi.no](mailto:losslesscut@mifi.no).
 
-*Last updated: 21 October 2026*
+*Last updated: 22 October 2026*

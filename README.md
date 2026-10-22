@@ -17,12 +17,11 @@
 </div>
 
 LosslessCut aims to be the ultimate cross platform FFmpeg GUI for extremely fast and lossless operations on video, audio, subtitle and other related media files.
-The main feature is lossless trimming and cutting of video and audio files, which is great for saving space by rough-cutting your large video files taken from a video camera, GoPro, drone, etc. It lets you quickly extract the good parts from your videos and discard many gigabytes of data without doing a slow re-encode and thereby losing quality. There are also many more [use cases](#typical-workflow). Everything is extremely fast because it does an almost direct data copy, fueled by the awesome FFmpeg which does all the grunt work.
+The main feature is lossless trimming and cutting of video and audio files, which is great for saving space by rough-cutting your large video files taken from a video camera, GoPro, drone, etc. It lets you quickly extract the good parts from your videos and discard many gigabytes of data without doing a slow re-encode and thereby losing quality. There are also many more [use cases](https://losslesscut.app/docs/features#example-use-cases). Everything is extremely fast because it does an almost direct data copy, fueled by the awesome FFmpeg which does all the grunt work.
 
 ## Table of contents
 
 - [Features](#features)
-- [Example lossless use cases](#example-lossless-use-cases)
 - [Download](#download)
 - [Supported formats](#supported-formats)
 - [Documentation, usage & getting started](#documentation)
@@ -32,77 +31,20 @@ The main feature is lossless trimming and cutting of video and audio files, whic
 
 ## Features
 
-- Lossless cutting of most video and audio formats
-- [Smart cut](https://github.com/mifi/lossless-cut/issues/126) (experimental)
-- Losslessly cut out parts of video/audio (for cutting away commercials etc.)
-- Losslessly rearrange the order of video/audio segments
-- Lossless merge/concatenation of arbitrary files (with identical codecs parameters, e.g. from the same camera)
-- Lossless multi track/stream editing
-  - Combine arbitrary tracks from multiple files (ex. add music or subtitle track to a video file)
-  - Remove unneeded tracks
-  - Replace or re-encode only some tracks
-  - Extract all tracks from a file (extract video, audio, subtitle, attachments and other tracks from one file into separate files)
-- View technical data about all tracks. Edit file metadata, per-track metadata and per-track disposition
-  - Suggestions for common metadata keys and languages
-  - Copy metadata from another track or file, or apply a value to all tracks of the same type
-  - See which tracks have been changed, and reset changes
-- Select video/audio tracks for playback. Playback multiple audio tracks simultaneously.
-- Fast multi-file workflow (note: no mass/batch export yet)
-- Keyboard shortcut workflow
-- Losslessly remux video/audio into a different container (file) format
-- Take full-resolution snapshots from videos in JPEG/PNG format (low or high quality)
-- Export ranges of video frames to images (every nth frame, second, by scene change, best thumbnails)
-  - Export only from a selected time range (segment)
-  - Optionally include original timestamps in image file names
-- Manual input of cutpoint times
-- Apply a per-file timecode offset (and auto load timecode from file)
-- Change rotation/orientation metadata in videos
-- Timeline zoom and frame/keyframe jumping for cutting around keyframes
-- Video thumbnails and audio waveform
-- Saves per project cut segments to project file
-- View FFmpeg last command log so you can modify and re-run recent commands on the command line
-- Undo/redo
-- Advanced segment query and mutation JS-based expression language.
-- Give labels to cut segments, annotate with tags
-- [Import/export](https://losslesscut.app/docs#importexport-projects) segments: MP4/MKV chapter marks, Text file, YouTube, CSV, CUE, XML (DaVinci, Final Cut Pro) and more
-- MKV/MP4 embedded chapters marks editor
-- View subtitles
-- Customizable keyboard hotkeys
-- Black scene detection, silent audio detection, and scene change detection
-- Divide timeline into segments of length L, size (X MB), N number of segments or even randomized segments!
-- Speed up / slow down video or audio file ([changing FPS](https://github.com/mifi/lossless-cut/issues/1712))
-- Lossless crop and aspect ratio modification
-- Basic [CLI](https://losslesscut.app/docs/cli) and [HTTP API](https://losslesscut.app/docs/api)
-- Show (DJI) embedded GPS track on a map
-- Losslessly Download videos over HTTP (e.g. HLS `.m3u8`)
-- Extremely fast removal of all non-keyframes (e.g. timelapse)
+<!-- Highlights only, the full list is docs/features.md. Keep in sync with the homepage's (website/src/components/Home.tsx) -->
+- Cut and trim video and audio losslessly, in seconds
+- Merge cut segments, or whole files with identical codecs, losslessly
+- Add, remove, replace or extract tracks: audio, subtitles and more
+- Change the format (remux), for example from MKV to MP4, without re-encoding
+- Segments, markers and tags, with import/export of chapters, CSV, EDL and more
+- Detect scenes, black frames and silence, and split by them
+- Edit metadata and rotation, and create chapters
+- Opens almost any format, even ones your player can't play
+- Snapshots and frame export, keyboard shortcuts, a [CLI](https://losslesscut.app/docs/cli) and an [HTTP API](https://losslesscut.app/docs/api)
 
-## Example lossless use cases
+**[All features and example use cases →](https://losslesscut.app/docs/features)**
 
-- Cut out commercials from a recorded TV show (and re-format from TS to MP4).
-- Remove audio tracks from a file.
-- Extract music track from a video and cut it to your needs.
-- Add music to a video (or replace existing audio track).
-- Combine audio and video tracks from separate recordings.
-- Include an external subtitle into a video
-- Copy track titles and languages from one file to another when combining tracks.
-- Quickly change a H264/H265 MKV video to MOV or MP4 for playback on iPhone.
-- Import a list of cut times from other tool as a EDL (edit decision list, CSV) and run these cuts with LosslessCut.
-- Export a list of cut times as a CSV EDL and process these in another tool.
-- Quickly cut a file by its MP4/MKV chapters.
-- Quickly cut a [YouTube video](https://youtube-dl.org/) by its chapters (or music times from a comment).
-- Change the language of a file's audio/subtitle tracks.
-- Attach cover art / thumbnail to videos / audio from an external JPEG file or from a frame on the timeline.
-- Change author, title, GPS position, recording time of a video.
-- Fix rotation of a video that has the wrong orientation flag set.
-- Loop a video / audio clip X times quickly without re-encoding, see [#284](https://github.com/mifi/lossless-cut/issues/284).
-- Convert a video or parts of it into X image files (not lossless)
-- Losslessly split a video into one file per scene (note you probably have to shift segments, see [#330](https://github.com/mifi/lossless-cut/issues/330).)
-- Cut away silent parts from an audio/video file.
-- Split video into segments to for example respect Twitter's 140 second limit.
-- Annotate each segment with one or more tags, then use those tags to organize your segments or use it to create an output folder structure or hierarchy for your segments.
-
-See also [Recipe cookbook](https://losslesscut.app/docs/recipes)
+See also the [Recipe cookbook](https://losslesscut.app/docs/recipes).
 
 ## Download
 
@@ -122,7 +64,7 @@ If you prefer to download the executables manually, this will of course always b
 - [More releases](https://github.com/mifi/lossless-cut/releases) - Note that APPX (Windows) and PKG (macOS) do **not** work
 - [Latest nightly builds 🧪](https://mifi.no/llc/nightly/)
 
-Note that the above are the [only official downloads](https://losslesscut.app/docs#faq). There are also unofficial releases like [Flathub](https://flathub.org/apps/details/no.mifi.losslesscut) (not maintained by me). Difference between App Stores and GitHub download? [Please see FAQ](https://losslesscut.app/docs#faq).
+Note that the above are the [only official downloads](https://losslesscut.app/docs/faq#can-i-download-losslesscut-from-other-websites-or-package-managers). There are also unofficial releases like [Flathub](https://flathub.org/apps/details/no.mifi.losslesscut) (not maintained by me). Difference between App Stores and GitHub download? [Please see FAQ](https://losslesscut.app/docs/faq#is-losslesscut-free-whats-the-difference-between-the-app-store-and-github-versions).
 
 [![](./donate.svg)](https://mifi.no/thanks)
 
@@ -132,12 +74,14 @@ LosslessCut is maintained by me alone and will always remain free and open sourc
 
 ## Supported formats
 
-LosslessCut uses the Chromium browser's HTML5 video player, and not all formats/codecs are [natively supported](https://www.chromium.org/audio-video). Generally, the following file formats work: `MP4`, `MOV`, `WebM`, `Matroska`, `OGG` and `WAV`. Audio codecs: `FLAC`, `MP3`, `Opus`, `PCM`, `Vorbis` and `AAC`. Video codecs: `H264`, `AV1`, `Theora`, `VP8`, `VP9` and `H265` (with hardware decoder). Learn the [difference between a codec and a format](https://losslesscut.app/docs#primer-videoaudio-codecs-vs-formats). Codecs and formats not listed above can still be converted to a supported format/codec from the `File` menu (try the option *Fastest: FFmpeg-assisted playback* first). A low quality version of the file will then be created and opened in the player. Note that the actual cut/export operation will still be performed on the original file, so it will be lossless. This allows for potentially opening any file that FFmpeg is able to decode.
+LosslessCut uses the Chromium browser's HTML5 video player, and not all formats/codecs are [natively supported](https://www.chromium.org/audio-video). Generally, the following file formats work: `MP4`, `MOV`, `WebM`, `Matroska`, `OGG` and `WAV`. Audio codecs: `FLAC`, `MP3`, `Opus`, `PCM`, `Vorbis` and `AAC`. Video codecs: `H264`, `AV1`, `Theora`, `VP8`, `VP9` and `H265` (with hardware decoder). Learn the [difference between a codec and a format](https://losslesscut.app/docs#primer-videoaudio-codecs-vs-formats). Files with other codecs and formats are played through FFmpeg instead (*FFmpeg-assisted playback*), automatically when LosslessCut knows they're unsupported, or from `File` → *Convert to supported format*. The export is still done from the original file, so it's still lossless. This means you can open almost any file that FFmpeg can decode.
 
 ## Documentation
 
 - Official website: [LosslessCut.app](https://losslesscut.app)
-- **[Getting started, FAQ and usage documentation](https://losslesscut.app/docs)**
+- **[Getting started](https://losslesscut.app/docs/getting-started)**
+- [FAQ](https://losslesscut.app/docs/faq)
+- [Usage documentation](https://losslesscut.app/docs)
 - [Troubleshooting and known issues and limitations](https://losslesscut.app/docs/troubleshooting)
 - [Contributing](CONTRIBUTING.md)
 

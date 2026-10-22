@@ -25,13 +25,19 @@ body {
   box-sizing: border-box;
 }
 
-.top-nav {
+.hero {
   align-self: stretch;
+  background-size: cover;
+  background-position: center;
+  padding: 0 30px 70px;
+  box-sizing: border-box;
+}
+.top-nav {
   display: flex;
   justify-content: flex-end;
   flex-wrap: wrap;
   gap: 4px 24px;
-  padding: 16px 30px;
+  padding: 16px 0;
 }
 .top-nav a {
   color: white;
@@ -41,44 +47,203 @@ body {
 .top-nav a:hover {
   text-decoration: underline;
 }
-
-.hero {
-  max-width: 100%;
-  margin-top: 20px;
-  margin-bottom: 40px;
-  text-align: center;
-  padding: 0 30px;
-  box-sizing: border-box;
-}
-.hero h1 {
-  margin-bottom: 10px;
-  /* smaller on narrow phones, so it fits */
-  font-size: min(60px, 14vw);
-  font-weight: 200;
-}
-.tagline {
-  font-size: 18px;
-  font-weight: 300;
-}
-.hero-buttons {
-  margin-top: 30px;
+.hero-content {
+  max-width: 1200px;
+  margin: 30px auto 0;
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: center;
+  gap: 50px;
+}
+.hero-text {
+  flex: 1 1 400px;
+  max-width: 520px;
+}
+.hero h1 {
+  margin: 0 0 10px;
+  /* smaller on narrow phones, so it fits */
+  font-size: min(64px, 14vw);
+  font-weight: 200;
+  line-height: 1.1;
+}
+.tagline {
+  font-size: 22px;
+  font-weight: 300;
+  text-wrap: balance;
+}
+.hero-subtitle {
+  margin-top: 14px;
+  font-size: 17px;
+  font-weight: 300;
+  line-height: 1.5;
+  opacity: 0.8;
+}
+.hero-buttons {
+  margin: 30px 0 18px;
+  display: flex;
+  flex-wrap: wrap;
   gap: 12px;
+}
+.hero .store-badges {
+  justify-content: flex-start;
+}
+.proof {
+  list-style: none;
+  margin: 22px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.85);
+}
+.proof li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.proof a {
+  color: inherit;
+}
+.proof svg {
+  flex-shrink: 0;
+  color: #33deef;
+}
+.proof svg.star {
+  color: #f5c518;
+  fill: #f5c518;
+}
+.hero-author {
+  margin-top: 14px;
+  font-size: 14px;
+  opacity: 0.6;
+}
+.hero-author a {
+  color: inherit;
+}
+.hero-media {
+  flex: 1 1 500px;
+  max-width: 640px;
+}
+/* <FramedVideo> in Home.tsx */
+.demo-video {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 110px 30px 80px;
+}
+.demo-video-credit {
+  margin: 8px 0 0;
+  text-align: center;
+  font-size: 0.75em;
+  opacity: 0.6;
+}
+.demo-video-credit a {
+  color: inherit;
+}
+.tracks-video {
+  width: 800px;
+  max-width: 100%;
+}
+.tracks-video .demo-video-credit {
+  color: white;
+  opacity: 0.8;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+.framed-video {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+}
+.framed-video-title {
+  position: relative;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #2b2b2b;
+  color: rgba(255, 255, 255, 0.7);
+  font: 13px system-ui, sans-serif;
+}
+.framed-video-dots {
+  position: absolute;
+  left: 12px;
+  display: flex;
+  gap: 6px;
+}
+.framed-video-dots i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.25);
+}
+.framed-video-pause {
+  position: absolute;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+/* in the bottom right corner: the top right of a panel has its close button */
+.no-title-bar .framed-video-pause {
+  bottom: 10px;
+  right: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  z-index: 1;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background-color: rgba(0, 0, 0, 0.55);
+  color: white;
+}
+.no-title-bar .framed-video-pause:hover {
+  background-color: rgba(0, 0, 0, 0.75);
+}
+.framed-video-pause:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+.framed-video-pause[hidden], .framed-video-pause:not(.paused) .play, .framed-video-pause.paused .pause {
+  display: none;
+}
+.framed-video video, .framed-video-poster {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: var(--aspect-ratio);
+}
+.framed-video-poster {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .framed-video video, .framed-video-pause {
+    display: none;
+  }
+  .framed-video-poster {
+    display: block;
+  }
 }
 .button {
   display: inline-block;
   padding: 10px 24px;
   border-radius: 6px;
-  border: 1px solid #1d8a96;
-  background-color: #1d8a96;
+  /* dark enough for white text (4.97:1) */
+  border: 1px solid #1a7b86;
+  background-color: #1a7b86;
   color: white;
   text-decoration: none;
   font-weight: 500;
 }
 .button:hover {
-  background-color: #1a7b86;
+  background-color: #166b75;
 }
 .button.secondary {
   background-color: transparent;
@@ -87,25 +252,49 @@ body {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-.screenshot {
-  max-width: 100%;
-  overflow: hidden;
-  box-shadow: rgba(0, 0, 0, 0.3) 0 0 10px 10px;
-}
-
 .quotes {
-  font-weight: 600;
-  width: 800px;
-  box-sizing: border-box;
-  padding: 40px 30px;
+  width: 1100px;
   max-width: 100%;
+  box-sizing: border-box;
+  padding: 70px 30px;
 }
 .quotes h2 {
-  padding-bottom: 20px;
-  padding-top: 20px;
-  padding-left: 35px;
+  padding-bottom: 30px;
+  text-align: center;
   color: #33deef;
   font-weight: 200;
+}
+.quote-grid {
+  columns: 3 280px;
+  column-gap: 20px;
+}
+/* one column on phones anyway. Not multi-column there, because collapsed (<Collapsible>, max-height) the cards that don't fit
+go into extra columns to the side, which Safari didn't lay out again when opened: the page then scrolled sideways */
+@media (max-width: 700px) {
+  .quote-grid {
+    columns: auto;
+  }
+}
+.quote-card {
+  break-inside: avoid;
+  margin: 0 0 20px;
+  padding: 22px 24px 22px 56px;
+  position: relative;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  line-height: 1.5;
+}
+.quote-card::before {
+  /* decorative, not read out by screen readers */
+  content: '\201C' / '';
+  position: absolute;
+  left: 16px;
+  top: 6px;
+  font-size: 56px;
+  line-height: 1;
+  font-family: Georgia, serif;
+  color: #33deef;
 }
 
 .white-section {
@@ -132,6 +321,142 @@ body {
   width: 650px;
   max-width: 100%;
 }
+.feature-grid {
+  width: 1000px;
+  max-width: 100%;
+  display: grid;
+  /* 3 columns for the 9 highlights on wide screens */
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 40px;
+}
+.note {
+  margin: 10px 0 30px 40px;
+  font-size: 15px;
+  line-height: 1.5;
+  opacity: 0.8;
+}
+.feature-card {
+  --accent: #1d8a96;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 12px;
+  background-color: #f7f9f9;
+  border: 1px solid #e4ebeb;
+  line-height: 1.45;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+/* only with a mouse: on phones, a tapped card would stay lifted */
+@media (hover: hover) {
+  .feature-card:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--accent) 35%, #e4ebeb);
+    box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 14%, transparent);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .feature-card {
+    transition: none;
+  }
+  .feature-card:hover {
+    transform: none;
+  }
+}
+/* a colour per card, by position, so the list in Home.tsx stays plain */
+.feature-card:nth-child(9n + 2) { --accent: #2f6fdc; }
+.feature-card:nth-child(9n + 3) { --accent: #7c4dcc; }
+.feature-card:nth-child(9n + 4) { --accent: #d06b12; }
+.feature-card:nth-child(9n + 5) { --accent: #c2417a; }
+.feature-card:nth-child(9n + 6) { --accent: #2e9550; }
+.feature-card:nth-child(9n + 7) { --accent: #0d86a8; }
+.feature-card:nth-child(9n + 8) { --accent: #c9473b; }
+.feature-card:nth-child(9n + 9) { --accent: #4a5bd1; }
+.feature-icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
+  color: var(--accent);
+  background-color: color-mix(in srgb, var(--accent) 13%, white);
+}
+/* The icon draws itself: on hover (desktop), and on touch screens when the card reaches the middle of the screen or is tapped (.draw,
+set by the script in index.astro, which first sets .draw-on-scroll to hide the icons until then). Every line of the icon has pathLength 1 (Home.tsx), so a dash of 1 (with a gap of 2,
+so that no dot of the next dash shows) draws each line from start to end in the same time. */
+@keyframes feature-icon-draw {
+  from { stroke-dasharray: 1 2; stroke-dashoffset: 1; }
+  to { stroke-dasharray: 1 2; stroke-dashoffset: 0; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .feature-icon {
+    transition: transform 0.2s ease;
+  }
+  @media (hover: hover) {
+    .feature-card:hover .feature-icon {
+      transform: scale(1.08);
+    }
+    .feature-card:hover .feature-icon svg * {
+      animation: feature-icon-draw 0.9s ease-out;
+    }
+  }
+  .draw-on-scroll .feature-card:not(.draw) .feature-icon svg * {
+    stroke-dasharray: 1 2;
+    stroke-dashoffset: 1;
+  }
+  .feature-card.draw .feature-icon svg * {
+    animation: feature-icon-draw 0.9s ease-out;
+  }
+}
+/* phones: the icon next to the text, so the 9 cards take less space */
+@media (max-width: 700px) {
+  .feature-grid {
+    gap: 10px;
+  }
+  .feature-card {
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+  }
+}
+/* <Collapsible> in Home.tsx: on phones, the first --collapsed-height of its content element, fading out, until the <details> is
+opened. Only where :has() works, so other browsers show everything. The wrapper takes no space of its own (display: contents),
+so the content element keeps its layout. */
+.collapsible {
+  display: contents;
+}
+.collapsible-more {
+  display: none;
+}
+@supports selector(:has(*)) {
+  @media (max-width: 700px) {
+    .collapsible:not(:has(> .collapsible-more[open])) > :first-child {
+      max-height: var(--collapsed-height);
+      overflow: hidden;
+      mask-image: linear-gradient(to bottom, black calc(100% - 120px), transparent);
+      margin-bottom: 0;
+    }
+    .collapsible-more {
+      display: flex;
+      justify-content: center;
+      margin: 8px 0 30px;
+    }
+    .collapsible-more[open] .collapsible-show,
+    .collapsible-more:not([open]) .collapsible-hide {
+      display: none;
+    }
+    .collapsible-more summary {
+      list-style: none;
+      cursor: pointer;
+    }
+    .collapsible-more summary::-webkit-details-marker {
+      display: none;
+    }
+  }
+}
 
 .download {
   padding: 30px 20px;
@@ -139,6 +464,27 @@ body {
   box-sizing: border-box;
   background-color: white;
   color: #444;
+}
+.download-facts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 20px;
+  margin: 24px 30px 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9em;
+  color: #555;
+}
+.download-facts a {
+  color: inherit;
+}
+.official-sources {
+  max-width: 560px;
+  margin: 30px 30px 0;
+  text-align: center;
+  font-size: 0.9em;
+  color: #666;
 }
 .download-inner {
   margin: 50px 0;
@@ -150,10 +496,22 @@ body {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  gap: 6px 4px;
 }
 .app-store {
   overflow: hidden;
-  margin: 0 2px;
+}
+/* rounding cuts off the corners of the badge's own border, so draw it again on the rounded shape, like Apple's badge has */
+.app-store.rounded {
+  position: relative;
+}
+.app-store.rounded::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid #a6a6a6;
+  border-radius: inherit;
+  pointer-events: none;
 }
 .app-store img {
   display: block;
@@ -172,24 +530,6 @@ body {
 }
 .image-subtitle {
   background-color: rgba(0, 0, 0, 0.4); margin: 30px 20px; border-radius: 7px; padding: 6px 10px; font-weight: 600; text-align: center;
-}
-
-.quote {
-  margin-left: 40px;
-  padding: 15px 0;
-}
-.quote::before {
-  content: '"';
-  font-size: 70px;
-  font-weight: 200;
-  vertical-align: middle;
-  margin-right: 20px;
-  margin-left: -45px;
-  color: #33deef;
-  display: inline-block;
-  height: 10px;
-  line-height: 25px;
-  font-family: cursive;
 }
 
 .key-point {
@@ -218,7 +558,15 @@ h2 {
   font-size: 1.17em;
   font-weight: bold;
 }
+.faq-question {
+  margin-bottom: 0;
+  max-width: 800px;
+}
+.faq-answer a {
+  color: inherit;
+}
 .faq-answer {
+  max-width: 800px;
   font-size: 85%;
   color: rgba(255, 255, 255, 0.8);
 }

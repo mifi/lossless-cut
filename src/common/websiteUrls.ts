@@ -17,8 +17,8 @@ import { discordInviteUrl, githubUrl } from './links.ts';
 export const websiteUrl = 'https://losslesscut.app';
 
 export const appLinkTargets = {
-  usage: '/docs#usage-typical-workflow',
-  faq: '/docs#faq',
+  usage: '/docs/getting-started#your-first-cut',
+  faq: '/docs/faq',
   troubleshooting: '/docs/troubleshooting',
   'file-name-template': '/docs/file-name-template',
   'select-segments-by-expression': '/docs/expressions#select-segments-by-expression',

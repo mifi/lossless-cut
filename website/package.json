@@ -13,6 +13,8 @@
     "@astrojs/react": "^7.1.0",
     "@astrojs/starlight": "^0.42.6",
     "astro": "^7.4.0",
+    "lucide": "1.59.0",
+    "lucide-react": "^1.59.0",
     "mdast-util-from-markdown": "^2.1.0",
     "mdast-util-to-string": "^4.0.0",
     "react": "^19.3.1",

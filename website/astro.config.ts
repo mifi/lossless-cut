@@ -38,6 +38,9 @@ export default defineConfig({
       // Docs pages (the files in ../docs) by URL path. A new doc is built, but only listed here once added.
       sidebar: [
         'docs',
+        'docs/getting-started',
+        'docs/features',
+        'docs/faq',
         'docs/installation',
         'docs/requirements',
         'docs/troubleshooting',
@@ -50,6 +53,8 @@ export default defineConfig({
         'docs/translation',
       ],
       customCss: ['./src/styles/docs.css'],
+      // adds a Download button to the header
+      components: { SocialIcons: './src/components/DocsSocialIcons.astro' },
       plugins: [starlightLinksValidator({
         // the homepage isn't a Starlight page, so the validator can't check its anchors
         exclude: ['/#download'],

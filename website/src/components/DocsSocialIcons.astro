@@ -1,0 +1,31 @@
+---
+// Starlight's header icons (components.SocialIcons in astro.config.ts), with a Download button first. Shown in the header, and on
+// phones in the menu.
+import Default from '@astrojs/starlight/components/SocialIcons.astro';
+---
+
+<a class="docs-download" href="/#download">Download</a>
+<Default />
+
+<style>
+  .docs-download {
+    padding: 0.3em 0.9em;
+    border-radius: 6px;
+    background-color: #1a7b86;
+    color: white;
+    font-size: var(--sl-text-sm);
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  /* the header is too narrow for it there: it would push the theme picker off the screen (below 50rem it's in the menu) */
+  @media (min-width: 50rem) and (max-width: 56rem) {
+    .docs-download {
+      display: none;
+    }
+  }
+  .docs-download:hover {
+    background-color: #166b75;
+    color: white;
+  }
+</style>
