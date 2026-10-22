@@ -13,8 +13,8 @@ export interface ScenarioContext {
   type: (text: string) => Promise<void>,
   /** Clicks at a position in the 1024×640 window (find it in a screenshot) */
   click: (x: number, y: number) => Promise<void>,
-  /** Saves a screenshot as <scenario>-<name>.png */
-  shot: (name: string) => Promise<void>,
+  /** Saves a screenshot as <scenario>-<name>.png, optionally of only a part of the window (as for click) */
+  shot: (name: string, crop?: Rect) => Promise<void>,
   wait: (ms: number) => Promise<void>,
   /** Starts the video here instead of at the beginning, e.g. after opening the file */
   startVideo: () => void,

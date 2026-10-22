@@ -1,6 +1,6 @@
 // Records screenshots and a video of a feature demo (see script/featureMedia/scenarios.ts and AGENTS.md "Feature media").
 // Linux only (captures the X display), e.g. in a cloud session. Run `yarn build` and `yarn download-ffmpeg-linux-x64` first, then:
-// xvfb-run -a -s "-screen 0 1024x640x24" node script/featureMedia.ts <scenario> [--clips dir] [--music audio file]
+// xvfb-run -a -s "-screen 0 1024x640x24" node script/featureMedia.ts <scenario> [--clips dir] [--music audio file] [--scale 2]
 import assert from 'node:assert';
 import { createWriteStream } from 'node:fs';
 import { access, mkdir, mkdtemp, rename, rm, writeFile } from 'node:fs/promises';
@@ -15,18 +15,22 @@ import clipSources from './featureMedia/clips.ts';
 import scenarios from './featureMedia/scenarios.ts';
 import { renderSocialVideo, type Caption, type Rect, type Zoom } from './featureMedia/socialVideo.ts';
 
-const { values: { clips = 'dist/feature-media-clips', music }, positionals: [scenarioName] } = parseArgs({ allowPositionals: true, options: { clips: { type: 'string' }, music: { type: 'string' } } });
+const { values: { clips = 'dist/feature-media-clips', music, scale: scaleArg = '1' }, positionals: [scenarioName] } = parseArgs({ allowPositionals: true, options: { clips: { type: 'string' }, music: { type: 'string' }, scale: { type: 'string' } } });
 const scenario = scenarioName != null ? scenarios[scenarioName] : undefined;
-assert(scenario != null, `Usage: node script/featureMedia.ts <scenario> [--clips dir] [--music audio file]. Scenarios: ${Object.keys(scenarios).join(', ')}`);
+assert(scenario != null, `Usage: node script/featureMedia.ts <scenario> [--clips dir] [--music audio file] [--scale 2]. Scenarios: ${Object.keys(scenarios).join(', ')}`);
 const display = process.env['DISPLAY'];
 assert(process.platform === 'linux' && display != null, 'Run under Xvfb on Linux, see the top of this file');
 
+// The window size, in the coordinates scenarios use. With --scale 2 the app is drawn at twice the pixels (like on a HiDPI screen), e.g. for sharp screenshots
 const width = 1024;
 const height = 640;
+const scale = Number(scaleArg);
+const screenWidth = width * scale;
+const screenHeight = height * scale;
 const port = 8099;
 // Scenarios click at fixed positions, so the screen must be the size of the window
 const { stdout: screenSize } = await execa('xdotool', ['getdisplaygeometry']);
-assert(screenSize === `${width} ${height}`, `The screen is ${screenSize}, run Xvfb with -screen 0 ${width}x${height}x24`);
+assert(screenSize === `${screenWidth} ${screenHeight}`, `The screen is ${screenSize}, run Xvfb with -screen 0 ${screenWidth}x${screenHeight}x24`);
 const ffmpeg = 'ffmpeg/linux-x64/lib/ffmpeg';
 const ffprobe = 'ffmpeg/linux-x64/lib/ffprobe';
 const outDir = 'dist/feature-media';
@@ -67,7 +71,7 @@ await writeFile(join(configDir, 'config.json'), JSON.stringify({ windowBounds: {
 // The app's log, including the renderer's console. Failed actions don't fail the HTTP request, so check the screenshots and this log
 const appLog = join(outDir, `${scenarioName}-app.log`);
 // The app path must come first: the app skips the first two arguments when run as `electron <app>` (process.defaultApp)
-const app = execa('node_modules/electron/dist/electron', ['.', '--no-sandbox', '--config-dir', configDir, '--disable-networking', '--http-api', String(port)], { reject: false, env: { ELECTRON_ENABLE_LOGGING: '1', GTK_THEME: 'Adwaita:dark' }, stdout: { file: appLog }, stderr: { file: appLog } });
+const app = execa('node_modules/electron/dist/electron', ['.', '--no-sandbox', '--config-dir', configDir, '--disable-networking', `--force-device-scale-factor=${scale}`, '--http-api', String(port)], { reject: false, env: { ELECTRON_ENABLE_LOGGING: '1', GTK_THEME: 'Adwaita:dark' }, stdout: { file: appLog }, stderr: { file: appLog } });
 
 async function post(path: string, body?: unknown) {
   const response = await fetch(`http://127.0.0.1:${port}/api/${path}`, {
@@ -79,7 +83,7 @@ async function post(path: string, body?: unknown) {
   assert(response.ok, `${path} failed: ${response.status} ${await response.text()}`);
 }
 
-const grab = ['-f', 'x11grab', '-draw_mouse', '0', '-framerate', '30', '-video_size', `${width}x${height}`, '-i', `${display}+0,0`];
+const grab = ['-f', 'x11grab', '-draw_mouse', '0', '-framerate', '30', '-video_size', `${screenWidth}x${screenHeight}`, '-i', `${display}+0,0`];
 const rawVideo = join(configDir, 'raw.mkv');
 
 try {
@@ -130,10 +134,11 @@ try {
       key,
       type,
       click: async (x, y) => {
-        await execa('xdotool', ['mousemove', String(x), String(y), 'click', '1']);
+        await execa('xdotool', ['mousemove', String(x * scale), String(y * scale), 'click', '1']);
       },
-      shot: async (name) => {
-        await execa(ffmpeg, ['-v', 'error', '-y', ...grab, '-frames:v', '1', join(outDir, `${scenarioName}-${name}.png`)]);
+      shot: async (name, crop) => {
+        const cropArgs = crop != null ? ['-vf', `crop=${crop.w * scale}:${crop.h * scale}:${crop.x * scale}:${crop.y * scale}`] : [];
+        await execa(ffmpeg, ['-v', 'error', '-y', ...grab, ...cropArgs, '-frames:v', '1', join(outDir, `${scenarioName}-${name}.png`)]);
       },
       wait: async (ms) => timers.setTimeout(ms),
       startVideo: () => {

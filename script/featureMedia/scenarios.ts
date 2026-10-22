@@ -141,6 +141,8 @@ const scenarios: Record<string, Scenario> = {
       }
       await wait(1000);
       await shot('selected');
+      // Only the tracks panel, e.g. for the website (sharpest with --scale 2)
+      await shot('panel', { x: 53, y: 73, w: 917, h: 517 });
       zoom();
       await action('toggleStreamsSelector');
       caption('Export with only those tracks');
