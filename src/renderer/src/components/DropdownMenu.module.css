@@ -95,3 +95,34 @@
 		transform: translateX(0);
 	}
 }
+/* in-app app menu and context menus (InAppMenu.tsx) */
+.DropdownMenuContent {
+	z-index: 10000;
+	max-height: var(--radix-dropdown-menu-content-available-height);
+	overflow-y: auto;
+	-webkit-app-region: no-drag;
+}
+
+.DropdownMenuItem[data-state="open"] {
+	background-color: var(--llc-accent-soft);
+}
+
+.DropdownMenuItem[data-disabled] {
+	opacity: .45;
+	cursor: default;
+}
+
+.indicator {
+	display: inline-flex;
+	justify-content: center;
+	width: 1em;
+	flex-shrink: 0;
+	color: var(--llc-accent-text);
+}
+
+.rightSlot {
+	margin-left: auto;
+	padding-left: 2em;
+	color: var(--llc-text-3);
+	font-size: .9em;
+}

@@ -118,6 +118,7 @@ import SwalContainer from './components/SwalContainer';
 import ErrorDialog from './components/ErrorDialog';
 import useErrorHandling from './hooks/useErrorHandling';
 import GenericDialog, { useDialog } from './components/GenericDialog';
+import { ContextMenuHost } from './components/InAppMenu';
 import useHtml5ify from './hooks/useHtml5ify';
 import WhatsNew from './components/WhatsNew';
 import mainApi from './mainApi.js';
@@ -2515,6 +2516,17 @@ function App() {
 
   const [dockContainer, setDockContainer] = useState<HTMLDivElement | null>(null);
 
+  // The main process asks before closing the window (if enabled), using our own dialog instead of a native one
+  useEffect(() => {
+    const onConfirmCloseWindow = async () => {
+      if (await confirmDialog({ title: t('Confirm quit'), description: t('Are you sure you want to quit?'), confirmButtonText: t('Yes'), cancelButtonText: t('No'), focusConfirm: true })) {
+        mainApi.confirmCloseWindow();
+      }
+    };
+    ipcRenderer.on('confirmCloseWindow', onConfirmCloseWindow);
+    return () => { ipcRenderer.off('confirmCloseWindow', onConfirmCloseWindow); };
+  }, [confirmDialog, t]);
+
   function renderSubtitles() {
     if (!activeSubtitle) return null;
     return <track default kind="subtitles" label={activeSubtitle.lang} srcLang="en" src={activeSubtitle.url} />;
@@ -2885,6 +2897,8 @@ function App() {
                 </AnimatePresence>
 
                 <GenericDialog dialog={genericDialog} onOpenChange={(open) => !open && closeGenericDialog()} />
+
+                <ContextMenuHost />
 
                 <WhatsNew />
 

@@ -75,6 +75,10 @@ let filesToOpen: string[] = [];
 let mainWindow: BrowserWindow | null;
 
 let askBeforeClose = false;
+// set once the user confirmed closing in the app's own dialog, see the 'close' handler
+let closeConfirmed = false;
+let quitRequested = false;
+let quitAfterConfirm = false;
 let rendererReady = false;
 let newVersion: string | undefined;
 
@@ -206,9 +210,19 @@ function createWindow() {
 
   // https://stackoverflow.com/questions/39574636/prompt-to-save-quit-before-closing-window/47434365
   mainWindow.on('close', (e) => {
-    if (!askBeforeClose) return;
+    if (!askBeforeClose || closeConfirmed) return;
 
     assert(mainWindow);
+
+    // Ask inside the app, so the dialog matches the rest of the UI. Fall back to a native dialog if the renderer is gone.
+    if (!mainWindow.webContents.isCrashed()) {
+      e.preventDefault();
+      quitAfterConfirm = quitRequested;
+      quitRequested = false;
+      mainWindow.webContents.send('confirmCloseWindow');
+      return;
+    }
+
     const choice = electron.dialog.showMessageBoxSync(mainWindow, {
       type: 'question',
       buttons: ['Yes', 'No'],
@@ -469,6 +483,61 @@ function quitApp() {
 
 const setProgressBar = (v: number) => mainWindow?.setProgressBar(v);
 
+app.on('before-quit', () => { quitRequested = true; });
+
+const confirmCloseWindow = () => {
+  closeConfirmed = true;
+  if (quitAfterConfirm) app.quit();
+  else mainWindow?.close();
+};
+
+export interface SerializedMenuItem {
+  label: string,
+  type: 'normal' | 'separator' | 'submenu' | 'checkbox' | 'radio' | 'header' | 'palette',
+  role?: string | undefined,
+  accelerator?: string | undefined,
+  enabled: boolean,
+  visible: boolean,
+  checked: boolean,
+  submenu?: SerializedMenuItem[] | undefined,
+}
+
+// The app menu, for drawing it inside the app (the custom title bar has no native menu bar)
+function serializeMenu(electronMenu: Electron.Menu): SerializedMenuItem[] {
+  return electronMenu.items.map((item) => ({
+    // labels use "&" for mnemonics and "&&" for a literal "&"
+    label: item.label.replaceAll('&&', '\0').replaceAll('&', '').replaceAll('\0', '&'),
+    type: item.type,
+    role: item.role,
+    accelerator: item.accelerator != null ? String(item.accelerator) : undefined,
+    enabled: item.enabled,
+    visible: item.visible,
+    checked: item.checked,
+    submenu: item.submenu != null ? serializeMenu(item.submenu) : undefined,
+  }));
+}
+
+const getAppMenu = () => {
+  const appMenu = Menu.getApplicationMenu();
+  return appMenu != null ? serializeMenu(appMenu) : [];
+};
+
+// path: index of the item at each level of the menu
+const clickAppMenuItem = (path: number[]) => {
+  let items = Menu.getApplicationMenu()?.items;
+  let item: Electron.MenuItem | undefined;
+  for (const index of path) {
+    item = items?.[index];
+    items = item?.submenu?.items;
+  }
+  if (item == null || mainWindow == null) return;
+  // this also runs the item's role (e.g. undo, toggle full screen)
+  item.click(undefined, mainWindow, mainWindow.webContents);
+};
+
+// for the renderer's cut/copy/paste context menu
+const editCommand = (command: 'undo' | 'redo' | 'cut' | 'copy' | 'paste' | 'selectAll') => mainWindow?.webContents[command]();
+
 const minimizeWindow = () => mainWindow?.minimize();
 const toggleMaximizeWindow = () => {
   if (mainWindow == null) return;
@@ -477,11 +546,6 @@ const toggleMaximizeWindow = () => {
 };
 const isWindowMaximized = () => mainWindow?.isMaximized() ?? false;
 const closeWindow = () => mainWindow?.close();
-// With the custom title bar there's no native menu bar, so the renderer shows the app menu as a popup
-const popupAppMenu = (x: number, y: number) => {
-  if (mainWindow == null) return;
-  Menu.getApplicationMenu()?.popup({ window: mainWindow, x: Math.round(x), y: Math.round(y) });
-};
 
 function sendOsNotification(options: NotificationConstructorOptions) {
   if (!Notification.isSupported()) return;
@@ -503,7 +567,10 @@ const remoteApi = {
   toggleMaximizeWindow,
   isWindowMaximized,
   closeWindow,
-  popupAppMenu,
+  confirmCloseWindow,
+  getAppMenu,
+  clickAppMenuItem,
+  editCommand,
   sendOsNotification,
   writeClipboardText: (text: string) => electron.clipboard.writeText(text),
   readClipboardText: () => electron.clipboard.readText(),
