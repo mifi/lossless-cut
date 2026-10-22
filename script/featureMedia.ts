@@ -6,7 +6,7 @@ import { createWriteStream } from 'node:fs';
 import { access, mkdir, mkdtemp, rename, rm, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { basename, join, resolve } from 'node:path';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import timers from 'node:timers/promises';
@@ -78,11 +78,13 @@ if (musicTrack != null) {
 }
 assert(music == null || await exists(music), `--music must be one of ${Object.keys(musicTracks).join(', ')}, an audio file or none, got ${musicArg}`);
 
-// The desktop's photo in the social media versions (the homepage's)
-const background = 'dist/feature-media-background.jpg';
+// The desktop's photo in the social media versions (the homepage hero's drone photo), in its largest resized version (1632×1224).
+// Named after the photo, so a different one is downloaded instead of reusing an old download
+const backgroundUrl = 'https://static.mifi.no/dist/2018/DJI_0120-edit-2000.jpg';
+const background = `dist/feature-media-background-${basename(backgroundUrl)}`;
 if (!await exists(background)) {
   console.log('Downloading the background');
-  await download('https://static.mifi.no/dist/losslesscut/website/background-2000.jpg', background);
+  await download(backgroundUrl, background);
 }
 // The social media versions are drawn with Chromium: check that it starts before recording (see AGENTS.md "Feature media" if not)
 await (await openHtmlScenes({ width: 100, height: 100 })).close();
