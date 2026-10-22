@@ -17,21 +17,22 @@ const maxZoom = 2.5;
 const iconPath = 'src/renderer/src/icon.svg';
 
 // The window's place on the desktop: its left and top (of the title bar) and width. The recording fills its content, below the title bar.
-// In landscape, the captions go on the desktop above the window. In vertical, the window is in the middle with the captions above it
+// The captions go on the desktop above the window. In vertical, the window (658 px high) is a bit below the middle, so with a caption above it
+// they're about centred, and footer (if any) is a subtle line under it, all above the bottom quarter that Reels, TikTok and Shorts cover with their buttons and text
 const formats = {
-  landscape: { width: 1920, height: 1200, window: { x: 224, y: 168, width: 1472 }, captionSize: 48, captionGap: 36 },
-  vertical: { width: 1080, height: 1920, window: { x: 36, y: 631, width: 1008 }, captionSize: 52, captionGap: 60 },
+  landscape: { width: 1920, height: 1200, window: { x: 224, y: 168, width: 1472 }, captionSize: 48, captionGap: 36, footer: undefined },
+  vertical: { width: 1080, height: 1920, window: { x: 36, y: 720, width: 1008 }, captionSize: 52, captionGap: 60, footer: 'losslesscut.app' },
 } as const;
 export type Format = keyof typeof formats;
 
 // Where the recording goes, the same numbers for the HTML and ffmpeg
 function getLayout(format: Format, windowWidth: number, windowHeight: number) {
-  const { width, height, window, captionSize, captionGap } = formats[format];
+  const { width, height, window, captionSize, captionGap, footer } = formats[format];
   // From macOS points (the app's window is windowWidth points wide)
   const scale = window.width / windowWidth;
   const titleBarHeight = Math.round(28 * scale);
   const content = { x: window.x, y: window.y + titleBarHeight, w: window.width, h: Math.round(windowHeight * scale) };
-  return { width, height, scale, titleBarHeight, content, captionSize, captionGap };
+  return { width, height, scale, titleBarHeight, content, captionSize, captionGap, footer };
 }
 
 // An ffmpeg expression for a value that eases from one setting to the next at each time
