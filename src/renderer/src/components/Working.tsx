@@ -44,22 +44,22 @@ function Working({ text, progress, onAbortClick }: {
           />
         </div>
 
-        <div style={{ marginBottom: '.2em', textAlign: 'center' }}>
+        <div style={{ marginBottom: '.2em', textAlign: 'center', fontWeight: 600 }}>
           {text}...
         </div>
 
-        <div style={{ marginBottom: '.5em', fontSize: '.9em', color: 'var(--gray-11)', textAlign: 'center' }}>
+        <div style={{ marginBottom: '.5em', fontSize: '.85em', color: 'var(--llc-text-2)', textAlign: 'center' }}>
           {t('Elapsed: {{seconds}} seconds', { seconds: (elapsedMs / 1000).toFixed(1) })}
         </div>
 
         {(progress != null) && (
-          <div style={{ marginBottom: '.5em', fontSize: '1.3em' }}>
+          <div className="llc-mono" style={{ marginBottom: '.6em', fontSize: '1.3em', color: 'var(--llc-accent-text)' }}>
             {`${(progress * 100).toFixed(1)} %`}
           </div>
         )}
 
         <div>
-          <Button onClick={onAbortClick} style={{ fontSize: '1.1em', padding: '.2em 1em' }}><Trans>Abort</Trans></Button>
+          <Button onClick={onAbortClick} style={{ fontSize: '1em', padding: '.45em 1.4em', borderRadius: 'var(--llc-radius-pill)' }}><Trans>Abort</Trans></Button>
         </div>
       </motion.div>
     </div>

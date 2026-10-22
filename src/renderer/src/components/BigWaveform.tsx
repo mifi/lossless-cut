@@ -8,7 +8,9 @@ import Spinner from './Spinner';
 import isDev from '../isDev';
 
 
-function BigWaveform({ waveforms, relevantTime, playing, fileDurationNonZero, zoom, seekRel, darkMode }: {
+const waveformGradient = 'linear-gradient(180deg, #c4b5fd 0%, #8b5cf6 35%, #6366f1 50%, #8b5cf6 65%, #c4b5fd 100%)';
+
+function BigWaveform({ waveforms, relevantTime, playing, fileDurationNonZero, zoom, seekRel }: {
   waveforms: WaveformSlice[],
   relevantTime: number,
   playing: boolean,
@@ -90,7 +92,7 @@ function BigWaveform({ waveforms, relevantTime, playing, fileDurationNonZero, zo
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <div
       ref={containerRef}
-      style={{ height: '100%', width: '100%', position: 'relative', cursor: 'grab', backgroundColor: 'var(--gray-3)' }}
+      style={{ height: '100%', width: '100%', position: 'relative', cursor: 'grab', backgroundColor: 'var(--llc-video-bg)' }}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
@@ -109,9 +111,8 @@ function BigWaveform({ waveforms, relevantTime, playing, fileDurationNonZero, zo
           height: '100%',
           width: widthPercent,
           left: leftPercent,
-          borderLeft: waveform.from === 0 ? '1px solid var(--gray-11)' : undefined,
-          borderRight: waveform.to >= fileDurationNonZero || isDev ? '1px solid var(--gray-11)' : undefined,
-          filter: darkMode ? undefined : 'invert(1)',
+          borderLeft: waveform.from === 0 ? '1px solid var(--llc-control-border)' : undefined,
+          borderRight: waveform.to >= fileDurationNonZero || isDev ? '1px solid var(--llc-control-border)' : undefined,
         };
 
         if (waveform.url == null || waveform.failed) {
@@ -126,18 +127,17 @@ function BigWaveform({ waveforms, relevantTime, playing, fileDurationNonZero, zo
           );
         }
 
+        // the waveform image is used as a mask, so it can be painted with the accent gradient
         return (
-          <img
+          <div
             key={`${waveform.from}-${waveform.to}`}
-            src={waveform.url}
             draggable={false}
-            alt=""
-            style={style}
+            style={{ ...style, background: waveformGradient, maskImage: `url(${waveform.url})`, maskSize: '100% 100%' }}
           />
         );
       })}
 
-      <div style={{ pointerEvents: 'none', position: 'absolute', height: '100%', backgroundColor: 'var(--red-11)', width: 1, left: '50%', top: 0 }} />
+      <div style={{ pointerEvents: 'none', position: 'absolute', height: '100%', backgroundColor: 'var(--gray-12)', width: 2, marginLeft: -1, borderRadius: 2, left: '50%', top: 0 }} />
     </div>
   );
 }

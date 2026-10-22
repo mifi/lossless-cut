@@ -68,7 +68,7 @@ function PlaybackStreamSelector({
   return (
     <>
       {controlVisible && (
-        <motion.div className={styles['wrapper']} initial={{ opacity: 0, transform: 'translateX(100%)' }} animate={{ opacity: 1, transform: 'translateX(0%)' }}>
+        <motion.div className={styles['wrapper']} initial={{ opacity: 0, transform: 'translateY(6px)' }} animate={{ opacity: 1, transform: 'translateY(0)' }}>
           {subtitleStreams.length > 0 && (
             <div style={{ margin: '0 .5em' }}>
               <div style={{ marginBottom: '.3em' }}>{t('Subtitle')}</div>

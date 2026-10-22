@@ -59,28 +59,95 @@ $swal2-button-focus-box-shadow: 0 0 0 1px $swal2-background, 0 0 0 3px $swal2-ou
 
 @import 'sweetalert2/src/sweetalert2.scss';
 
-// "Soft" theme overrides
+// "Soft" theme overrides.
+// sweetalert2 reads its colors from --swal2-* CSS variables (the $swal2-* Sass variables above no longer apply),
+// so point them at our tokens. The wrapper gets .dark-theme in dark mode, so the tokens follow the theme.
+#swal2-container-wrapper {
+  --swal2-outline: 0 0 0 3px var(--llc-accent-soft);
+  --swal2-backdrop: rgba(4, 3, 10, .55);
+
+  --swal2-background: var(--llc-dialog-bg);
+  --swal2-color: var(--llc-text-1);
+  --swal2-border: 1px solid var(--llc-panel-border);
+  --swal2-border-radius: 20px;
+  --swal2-padding: 0 0 1.4em;
+  --swal2-title-padding: 1em 1.4em 0;
+  --swal2-html-container-padding: .8em 1.6em .3em;
+
+  --swal2-input-border: 1px solid var(--llc-control-border);
+  --swal2-input-border-radius: var(--llc-radius-control);
+  --swal2-input-background: var(--llc-control-bg);
+  --swal2-input-box-shadow: none;
+  --swal2-input-hover-box-shadow: none;
+  --swal2-input-focus-border: 1px solid var(--llc-accent-border);
+  --swal2-input-focus-box-shadow: 0 0 0 3px var(--llc-accent-soft);
+
+  --swal2-validation-message-background: var(--llc-control-bg);
+  --swal2-validation-message-color: var(--llc-text-1);
+  --swal2-footer-border-color: var(--llc-panel-border);
+  --swal2-timer-progress-bar-background: var(--llc-accent);
+  --swal2-progress-step-background: var(--llc-accent-soft);
+
+  --swal2-close-button-font-size: 1.8em;
+  --swal2-close-button-color: var(--llc-text-3);
+
+  --swal2-confirm-button-border-radius: var(--llc-radius-pill);
+  --swal2-confirm-button-background-color: var(--llc-accent);
+  --swal2-confirm-button-color: #fff;
+  --swal2-deny-button-border-radius: var(--llc-radius-pill);
+  --swal2-deny-button-background-color: #e5484d;
+  --swal2-cancel-button-border-radius: var(--llc-radius-pill);
+  --swal2-cancel-button-background-color: var(--llc-control-bg-hover);
+  --swal2-cancel-button-color: var(--llc-text-1);
+
+  --swal2-toast-border: 1px solid var(--llc-panel-border);
+  --swal2-toast-box-shadow: 0 10px 30px rgba(0, 0, 0, .3);
+}
+
 .swal2-popup {
-  border: 1px solid var(--llc-panel-border);
-  box-shadow: 0 24px 70px rgba(0, 0, 0, .4);
   font-family: var(--llc-font-ui);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .4);
+  backdrop-filter: blur(24px) saturate(1.3);
 }
 
 .swal2-popup.swal2-toast {
   border-radius: 14px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, .3);
+}
+
+.swal2-title {
+  font-size: 1.3em;
+  font-weight: 600;
+}
+
+.swal2-html-container {
+  color: var(--llc-text-2);
 }
 
 .swal2-styled {
-  border-radius: var(--llc-radius-pill) !important;
-  padding: .55em 1.4em !important;
-  font-weight: 600 !important;
+  padding: .55em 1.4em;
+  font-weight: 600;
 }
 
 .swal2-styled.swal2-confirm {
-  background: var(--llc-accent-gradient) !important;
+  background: var(--llc-accent-gradient);
+  box-shadow: var(--llc-accent-glow);
 }
 
-.swal2-input, .swal2-textarea, .swal2-select {
-  border-radius: var(--llc-radius-control) !important;
+.swal2-cancel.swal2-styled {
+  border: 1px solid var(--llc-control-border);
+}
+
+.swal2-close {
+  border-radius: 50%;
+  margin: .3em;
+}
+
+.swal2-close:hover {
+  color: var(--llc-text-1);
+  background: var(--llc-control-bg-hover);
+}
+
+.swal2-input, .swal2-textarea, .swal2-select, .swal2-file {
+  color: var(--llc-text-1);
+  font-size: 1em;
 }

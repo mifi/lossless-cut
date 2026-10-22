@@ -234,3 +234,74 @@ All redesign colors, radii and shadows live here, so components only reference -
 ::-webkit-scrollbar-corner {
   background: transparent;
 }
+
+/* Native radio buttons and sliders, used in a few dialogs, sweetalert2 prompts, settings and the volume control */
+input[type="radio"] {
+  appearance: none;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 1.05em;
+  height: 1.05em;
+  margin: 0 .1em 0 0;
+  vertical-align: -.15em;
+  border: 1.5px solid var(--llc-control-border);
+  border-radius: 50%;
+  background: var(--llc-control-bg);
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s;
+}
+
+input[type="radio"]:hover {
+  border-color: var(--llc-accent-border);
+}
+
+input[type="radio"]:checked {
+  border-color: var(--llc-accent);
+  background: radial-gradient(circle, var(--llc-accent) 0 38%, var(--llc-control-bg) 42%);
+}
+
+input[type="radio"]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--llc-accent-soft);
+}
+
+input[type="radio"] + label {
+  cursor: pointer;
+}
+
+input[type="range"] {
+  appearance: none;
+  height: 1.2em;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 4px;
+  background: var(--llc-control-bg-hover);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--llc-accent);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .35);
+  transition: transform .15s;
+}
+
+input[type="range"]:hover::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+
+input[type="range"]:focus-visible {
+  outline: none;
+}
+
+input[type="range"]:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px var(--llc-accent-soft);
+}

@@ -1,15 +1,17 @@
+/* opens above the overlay pill in the bottom right corner of the video, so it doesn't run into the playback dock */
 .wrapper {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 10px);
   display: flex;
-  margin: 0 .3em;
-  padding: .5em;
-  border-radius: .3em;
-  color: var(--gray-12);
-  background: var(--white-a8);
-  box-shadow: 0 0 .3em .3em var(--white-a5);
-  backdrop-filter: blur(7px);
-}
-
-:global(.dark-theme) .wrapper {
-  background: var(--black-a8);
-  box-shadow: 0 0 .3em .3em var(--black-a5);
+  gap: .4em;
+  padding: .8em .6em;
+  border-radius: var(--llc-radius-card);
+  color: #ecebf3;
+  background: rgba(14, 12, 24, .75);
+  border: 1px solid rgba(255, 255, 255, .12);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+  backdrop-filter: blur(16px) saturate(1.2);
+  white-space: nowrap;
+  font-size: .9em;
 }
