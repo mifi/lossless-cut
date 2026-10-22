@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { memo, useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { LuFilter, LuListVideo, LuLock, LuLockOpen, LuMoon, LuScissors, LuSettings, LuSun } from 'react-icons/lu';
+import { LuFilter, LuListVideo, LuLock, LuLockOpen, LuMoon, LuSettings, LuSun } from 'react-icons/lu';
 import Button from './components/Button';
 
 import ExportModeButton from './components/ExportModeButton';
@@ -16,6 +16,7 @@ import type { SegmentToExport } from './types';
 import useUserSettings from './hooks/useUserSettings';
 import useActionTitle from './hooks/useActionTitle';
 import styles from './TopMenu.module.css';
+import appIcon from './icon.svg';
 import OutDirSelector from './components/OutDirSelector';
 
 
@@ -106,7 +107,7 @@ function TopMenu({
       {customTitleBar && <AppMenuButton />}
 
       <div className={styles['brand']}>
-        <div className={styles['logo']}><LuScissors /></div>
+        <img src={appIcon} alt="" className={styles['logo']} draggable={false} />
         <div style={{ minWidth: 0 }}>
           <div className={styles['fileName']} title={filePath}>{filePath ? basename(filePath) : 'LosslessCut'}</div>
           {fileInfo && <div className={styles['fileInfo']}>{fileInfo}</div>}

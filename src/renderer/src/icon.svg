@@ -1,59 +1,62 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
-<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve">
-<g>
-	<circle style="fill:#14B0BF;" cx="256" cy="256" r="256"/>
-	<path style="fill:#3387B5;" d="M437.018,437.018c59.699-59.699,83.722-141.548,72.12-219.09L401.833,109.86L96.691,163.666
-		l8.771,49.731l2.463-0.435l0.077,0.435h-2.54v168.397c0,6.38,3.036,12.032,7.67,15.77c0.916,1.137,112.067,112.067,112.579,112.579
-		C300.913,519.05,379.31,494.725,437.018,437.018z"/>
-	<path style="fill:#0F303F;" d="M415.309,381.788c0,11.192-9.16,20.352-20.352,20.352H125.809c-11.192,0-20.352-9.16-20.352-20.352
-		V233.743c0-11.192,9.16-20.352,20.352-20.352h269.148c11.192,0,20.352,9.16,20.352,20.352V381.788z"/>
-	<rect x="105.462" y="213.396" style="fill:#FFFFFF;" width="309.862" height="50.499"/>
-	<path style="fill:#0F303F;" d="M156.001,220.314l-36.874,37.366h37.366l36.874-37.366H156.001z M311.322,220.314l-36.874,37.366
-		h37.366l36.874-37.366H311.322z M207.775,220.314L170.9,257.679h37.366l36.874-37.366H207.775z M259.548,220.314l-36.874,37.366
-		h37.366l36.874-37.366H259.548z M363.095,220.314l-36.874,37.366h37.366l36.874-37.366H363.095z M414.868,220.314l-36.874,37.366
-		h37.315v-37.366H414.868z M105.462,220.314v37.366h0.246l36.874-37.366H105.462z"/>
-	
-		<rect x="98.721" y="136.353" transform="matrix(0.9848 -0.1736 0.1736 0.9848 -24.203 46.4881)" style="fill:#FFFFFF;" width="309.857" height="50.498"/>
-	<path style="fill:#0F303F;" d="M316.467,131.937l42.803,30.397l36.797-6.487l-42.803-30.397L316.467,131.937z M163.502,158.904
-		l42.803,30.397l36.797-6.487L200.3,152.417L163.502,158.904z M265.477,140.928l42.803,30.397l36.797-6.487l-42.803-30.397
-		L265.477,140.928z M214.492,149.919l42.803,30.397l36.797-6.487l-42.803-30.397L214.492,149.919z M112.517,167.895l42.803,30.397
-		l36.797-6.487l-42.803-30.397L112.517,167.895z M97.894,170.476l6.487,36.797l36.746-6.482l-42.803-30.397L97.894,170.476z
-		 M366.479,123.116l42.803,30.397l0.241-0.041l-6.487-36.797L366.479,123.116z"/>
-	<path style="fill:#FDC00F;" d="M394.634,317.379h-0.072v-36.552h-269.44v103.235h269.44v-62.172h0.072V317.379z M390.497,284.897
-		v32.481h-101.13v-32.481L390.497,284.897L390.497,284.897z M284.856,284.897v32.481H177.05v-32.481L284.856,284.897
-		L284.856,284.897z M129.193,379.991v-95.094h43.341v95.094H129.193z M177.05,379.991v-58.102h107.807v58.102L177.05,379.991
-		L177.05,379.991z M390.497,379.991h-101.13v-58.102h101.125v58.102H390.497z"/>
-</g>
-<g>
-</g>
-<g>
-</g>
-<g>
-</g>
-<g>
-</g>
-<g>
-</g>
-<g>
-</g>
-<g>
-</g>
-<g>
-</g>
-<g>
-</g>
-<g>
-</g>
-<g>
-</g>
-<g>
-</g>
-<g>
-</g>
-<g>
-</g>
-<g>
-</g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- LosslessCut: a film strip with one clean cut, and a marker at the cut point -->
+  <defs>
+    <linearGradient id="llc-bg" x1="24" y1="24" x2="488" y2="488" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#a78bfa"/>
+      <stop offset=".45" stop-color="#7c3aed"/>
+      <stop offset="1" stop-color="#4338ca"/>
+    </linearGradient>
+    <radialGradient id="llc-sheen" cx="120" cy="80" r="330" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff" stop-opacity=".38"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="llc-glow" cx="440" cy="470" r="260" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#22d3ee" stop-opacity=".6"/>
+      <stop offset="1" stop-color="#22d3ee" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="llc-strip" x1="0" y1="188" x2="0" y2="324" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff"/>
+      <stop offset="1" stop-color="#ede9fe"/>
+    </linearGradient>
+    <!-- the film strip, with sprocket holes and the slanted cut taken out -->
+    <mask id="llc-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+      <rect x="80" y="188" width="352" height="136" rx="34" fill="#fff"/>
+      <g fill="#000">
+        <rect x="108" y="204" width="22" height="16" rx="5"/>
+        <rect x="150" y="204" width="22" height="16" rx="5"/>
+        <rect x="192" y="204" width="22" height="16" rx="5"/>
+        <rect x="298" y="204" width="22" height="16" rx="5"/>
+        <rect x="340" y="204" width="22" height="16" rx="5"/>
+        <rect x="382" y="204" width="22" height="16" rx="5"/>
+        <rect x="108" y="292" width="22" height="16" rx="5"/>
+        <rect x="150" y="292" width="22" height="16" rx="5"/>
+        <rect x="192" y="292" width="22" height="16" rx="5"/>
+        <rect x="298" y="292" width="22" height="16" rx="5"/>
+        <rect x="340" y="292" width="22" height="16" rx="5"/>
+        <rect x="382" y="292" width="22" height="16" rx="5"/>
+        <path d="M254 166h38l-30 180h-38z"/>
+      </g>
+    </mask>
+    <filter id="llc-shadow" x="-20%" y="-20%" width="140%" height="160%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="10"/>
+      <feOffset dy="10" result="blur"/>
+      <feFlood flood-color="#1e1b4b" flood-opacity=".45"/>
+      <feComposite in2="blur" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect x="24" y="24" width="464" height="464" rx="112" fill="url(#llc-bg)"/>
+  <rect x="24" y="24" width="464" height="464" rx="112" fill="url(#llc-glow)"/>
+  <rect x="24" y="24" width="464" height="464" rx="112" fill="url(#llc-sheen)"/>
+  <rect x="26" y="26" width="460" height="460" rx="110" fill="none" stroke="#fff" stroke-opacity=".22" stroke-width="4"/>
+
+  <g filter="url(#llc-shadow)">
+    <rect x="80" y="188" width="352" height="136" rx="34" fill="url(#llc-strip)" mask="url(#llc-cut)"/>
+    <!-- marker pointing at the cut -->
+    <path d="M252 104h42a8 8 0 0 1 6.4 12.8l-21 28a8 8 0 0 1-12.8 0l-21-28A8 8 0 0 1 252 104z" fill="#fff"/>
+  </g>
 </svg>
