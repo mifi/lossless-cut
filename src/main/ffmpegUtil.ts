@@ -18,7 +18,7 @@ function toInterval(start: number, end: number) {
 }
 
 // e.g. `[Parsed_blackdetect_0 @ 0x5581e0c2e540]`. On Windows, the address has no 0x: `[Parsed_blackdetect_0 @ 00000244af592040]`
-const filterLogPrefix = (name: string) => `^\\[Parsed_${name}_\\d+ @ (?:0x)?[0-9a-f]+\\]`;
+const filterLogPrefix = (name: string) => `^\\[Parsed_${name}_\\d+ @ (?:0x)?[0-9a-fA-F]+\\]`;
 const blackDetectRegex = new RegExp(`${filterLogPrefix('blackdetect')} black_start:([\\d.]+) black_end:([\\d.]+) black_duration:[\\d.]+`);
 const silenceDetectRegex = new RegExp(`${filterLogPrefix('silencedetect')} silence_end: ([\\d.]+)[|\\s]+silence_duration: ([\\d.]+)`);
 
