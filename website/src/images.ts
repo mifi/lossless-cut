@@ -1,4 +1,4 @@
-// The homepage's images are hosted on static.mifi.no (originals in src/, resized versions in dist/).
+// The homepage's images are hosted on static.mifi.no (resized versions in dist/; the originals are private).
 const baseUrl = 'https://static.mifi.no';
 
 // The `''` size is about 0.3 megapixels and `-2000` is the full image for these, so they make a 1x/2x pair
