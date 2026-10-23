@@ -7,6 +7,7 @@ import { IoIosHelpCircle, IoIosSettings } from 'react-icons/io';
 import type { SweetAlertIcon } from 'sweetalert2';
 
 import ExportButton from './ExportButton';
+import Button from './Button';
 import ExportModeButton from './ExportModeButton';
 import FileNameTemplateEditor from './FileNameTemplateEditor';
 import HighlightedText from './HighlightedText';
@@ -113,6 +114,8 @@ function renderGenericNotice(notice: GenericNotice) {
 const rightIconStyle: CSSProperties = { fontSize: '1.2em', verticalAlign: 'middle' };
 
 function ExportConfirm({
+  batchProjectCount,
+  onExportBatchProjects,
   areWeCutting,
   segmentsToExport,
   willMerge,
@@ -143,6 +146,8 @@ function ExportConfirm({
   neighbouringKeyFrames,
   findNearestKeyFrameTime,
 } : {
+  batchProjectCount: number,
+  onExportBatchProjects: () => void,
   areWeCutting: boolean,
   segmentsToExport: SegmentToExport[],
   willMerge: boolean,
@@ -175,7 +180,7 @@ function ExportConfirm({
 }) {
   const { t } = useTranslation();
 
-  const { keyframeCut, toggleKeyframeCut, preserveMovData, setPreserveMovData, preserveMetadata, setPreserveMetadata, preserveChapters, setPreserveChapters, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode, enableOverwriteOutput, setEnableOverwriteOutput, ffmpegExperimental, setFfmpegExperimental, cutFromAdjustmentFrames, setCutFromAdjustmentFrames, cutToAdjustmentFrames, setCutToAdjustmentFrames, setCutFileTemplate, setCutMergedFileTemplate, simpleMode, keyframesEnabled } = useUserSettings();
+  const { fullEncode, setFullEncode, keyframeCut, toggleKeyframeCut, preserveMovData, setPreserveMovData, preserveMetadata, setPreserveMetadata, preserveChapters, setPreserveChapters, movFastStart, setMovFastStart, avoidNegativeTs, setAvoidNegativeTs, autoDeleteMergedSegments, exportConfirmEnabled, toggleExportConfirmEnabled, segmentsToChapters, setSegmentsToChapters, preserveMetadataOnMerge, setPreserveMetadataOnMerge, enableSmartCut, setEnableSmartCut, effectiveExportMode, enableOverwriteOutput, setEnableOverwriteOutput, ffmpegExperimental, setFfmpegExperimental, cutFromAdjustmentFrames, setCutFromAdjustmentFrames, cutToAdjustmentFrames, setCutToAdjustmentFrames, setCutFileTemplate, setCutMergedFileTemplate, simpleMode, keyframesEnabled } = useUserSettings();
 
   const [showAdvanced, setShowAdvanced] = useState(!simpleMode);
 
@@ -247,7 +252,7 @@ function ExportConfirm({
       if (outputPlaybackRate !== 1) {
         generic.push({ warning: true, text: t('Adjusting the output FPS and cutting at the same time will cause incorrect cuts. Consider instead doing it in two separate steps.') });
       }
-      if (keyframesEnabled && haveSegmentWithProblematicKeyframe) {
+      if (!fullEncode && keyframesEnabled && haveSegmentWithProblematicKeyframe) {
         generic.push({ warning: true, text: t('A segment may result in an unexpectedly long output file length after exporting, because your video file doesn\'t have any keyframes near the start time of the segment you\'re trying to cut.'), url: troubleshootingUrl });
       }
     }
@@ -257,7 +262,7 @@ function ExportConfirm({
       specific,
       totalNum: generic.filter((n) => n.warning).length + Object.values(specific).filter((n) => n != null && n.warning).length,
     };
-  }, [effectiveExportMode, areWeCuttingProblematicStreams, mainCopiedThumbnailStreams, isMov, isIpod, movFastStart, t, preserveMovData, areWeCutting, needSmartCut, isEncoding, keyframeCut, enableOverwriteOutput, simpleMode, willMerge, avoidNegativeTs, outFormat, outputPlaybackRate, keyframesEnabled, haveSegmentWithProblematicKeyframe, hvc1NeededStreams]);
+  }, [fullEncode, effectiveExportMode, areWeCuttingProblematicStreams, mainCopiedThumbnailStreams, isMov, isIpod, movFastStart, t, preserveMovData, areWeCutting, needSmartCut, isEncoding, keyframeCut, enableOverwriteOutput, simpleMode, willMerge, avoidNegativeTs, outFormat, outputPlaybackRate, keyframesEnabled, haveSegmentWithProblematicKeyframe, hvc1NeededStreams]);
 
   const exportModeDescription = useMemo(() => ({
     segments_to_chapters: t('Don\'t cut the file, but instead export an unmodified original which has chapters generated from segments'),
@@ -396,6 +401,37 @@ function ExportConfirm({
             </td>
             <td>
               {renderNoticeIcon(notices.specific['exportMode'], rightIconStyle) ?? <HelpIcon onClick={onExportModeHelpPress} />}
+            </td>
+          </tr>
+
+          {batchProjectCount > 0 && (
+            <tr>
+              <td>
+                {t('Projects in batch file list')}
+                <div style={{ fontSize: '.85em', color: 'var(--gray-11)', maxWidth: '28em' }}>
+                  {t('Uses saved selected segments and current export settings. Each project gets a numbered output folder. Ordinary video entries are skipped.')}
+                  {effectiveExportMode === 'segments_to_chapters' && <div>{t('Choose a cuts export mode to export batch projects.')}</div>}
+                </div>
+              </td>
+              <td>
+                <Button onClick={onExportBatchProjects} disabled={effectiveExportMode === 'segments_to_chapters'}>{t('Export all {{count}} projects', { count: batchProjectCount })}</Button>
+              </td>
+              <td>
+                <HelpIcon onClick={() => showHelpText({ text: t('Exports saved .llc projects in batch-list order without changing the active editor. Uses the default tracks for each video. Output goes into separate numbered project folders inside the working directory, or next to each video if no working directory is set. Projects without selected cuts are skipped. Failures are listed at the end; Abort stops the batch.') })} />
+              </td>
+            </tr>
+          )}
+
+          <tr>
+            <td>
+              {t('Full re-encode (H.264/AAC MP4)')}
+              {fullEncode && <div style={{ fontSize: '.85em', color: 'var(--gray-11)', maxWidth: '28em' }}>{t('Frame-accurate cuts. Re-encodes selected video and audio tracks at high quality; slower, with some quality loss.')}</div>}
+            </td>
+            <td>
+              <Switch checked={fullEncode} onCheckedChange={setFullEncode} aria-label={t('Full re-encode (H.264/AAC MP4)')} />
+            </td>
+            <td>
+              <HelpIcon onClick={() => showHelpText({ text: t('Re-encodes each entire segment as H.264 video and AAC audio in an MP4 file. Cuts do not depend on keyframes. Uses CRF 18 and the fast preset. Smart cut and keyframe cut are bypassed. Only selected video and audio tracks from the main file are included.') })} />
             </td>
           </tr>
 
@@ -607,7 +643,7 @@ function ExportConfirm({
                 </>
               )}
 
-              {areWeCutting && (
+              {areWeCutting && !fullEncode && (
                 <>
                   <AnimatedTr>
                     <td>
@@ -640,7 +676,7 @@ function ExportConfirm({
               )}
 
 
-              {isEncoding && (
+              {isEncoding && !fullEncode && (
                 <AnimatedTr>
                   <td>
                     {t('Smart cut auto detect bitrate')}
@@ -660,7 +696,7 @@ function ExportConfirm({
                 </AnimatedTr>
               )}
 
-              {lossyMode != null && (
+              {lossyMode != null && !fullEncode && (
                 <AnimatedTr>
                   <td>
                     {t('Lossy mode')}

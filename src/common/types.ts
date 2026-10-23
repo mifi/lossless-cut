@@ -57,6 +57,7 @@ export const configSchema = z.object({
   autoDeleteMergedSegments: z.boolean(),
   segmentsToChaptersOnly: z.boolean(),
   enableSmartCut: z.boolean(),
+  fullEncode: z.boolean(),
   timecodeFormat: timecodeFormatSchema,
   invertCutSegments: z.boolean(),
   autoExportExtraStreams: z.boolean(),

@@ -99,6 +99,8 @@ import { generateCutFileNames as generateCutFileNamesRaw, generateCutMergedFileN
 import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './util/constants';
 import BigWaveform from './components/BigWaveform';
 
+import BatchProjectExport, { type BatchExportRequest, type BatchExportReport } from './components/BatchProjectExport';
+import { getBatchProjectPaths } from './batchProjects';
 import type { BatchFile, Chapter, EdlExportType, EdlFileType, EdlImportType, FfmpegCommandLog, FilesMeta, FileStats, ParamsByFile, PlaybackMode, SegmentBase, SegmentColorIndex, SegmentTags, StateSegment, TunerType } from './types';
 import { goToTimecodeDirectArgsSchema } from './types';
 import type { CaptureFormat, KeyboardAction, ApiActionRequest } from '../../common/types.js';
@@ -167,7 +169,7 @@ function App() {
   const [cacheBuster, setCacheBuster] = useState(0);
   const [currentFileExportCount, setCurrentFileExportCount] = useState(0);
 
-  const { fileFormat, setFileFormat, detectedFileFormat, setDetectedFileFormat, isCustomFormatSelected } = useFileFormatState();
+  const { fileFormat: selectedFileFormat, setFileFormat, detectedFileFormat, setDetectedFileFormat, isCustomFormatSelected: isCustomLosslessFormatSelected } = useFileFormatState();
 
   // State per application launch
   const [ffmpegInfo, setFfmpegInfo] = useState<Awaited<ReturnType<typeof runStartupCheck>>>();
@@ -191,10 +193,17 @@ function App() {
   // Batch state / concat files
   const [batchFiles, setBatchFiles] = useState<BatchFile[]>([]);
   const [selectedBatchFiles, setSelectedBatchFiles] = useState<string[]>([]);
+  const batchProjectPaths = useMemo(() => getBatchProjectPaths(batchFiles), [batchFiles]);
+  const [batchExportRequest, setBatchExportRequest] = useState<BatchExportRequest>();
 
   const allUserSettings = useUserSettingsRoot();
-  const { captureFormat, keyframeCut, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, avoidNegativeTs, autoMerge, timecodeFormat, invertCutSegments, autoExportExtraStreams, askBeforeClose, enableImportChapters, enableAskForFileOpenAction, playbackVolume, autoSaveProjectFile, wheelSensitivity, waveformHeight, invertTimelineScroll, language, ffmpegExperimental, hideNotifications, hideOsNotifications, autoLoadTimecode, autoDeleteMergedSegments, exportConfirmEnabled, segmentsToChapters, simpleMode, cutFileTemplate, cutMergedFileTemplate, mergedFileTemplate, keyboardSeekAccFactor, keyboardNormalSeekSpeed, keyboardSeekSpeed2, keyboardSeekSpeed3, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, outFormatLocked, safeOutputFileName, enableAutoHtml5ify, segmentsToChaptersOnly, keyBindings, enableSmartCut, customFfPath, storeProjectInWorkingDir, enableOverwriteOutput, mouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, captureFrameMethod, captureFrameQuality, captureFrameFileNameFormat, enableNativeHevc, cleanupChoices, preferStrongColors, outputFileNameMinZeroPadding, cutFromAdjustmentFrames, cutToAdjustmentFrames, waveformMode: waveformModePreference, thumbnailsEnabled, keyframesEnabled, reducedMotion, ffmpegHwaccel, videoFit } = allUserSettings.settings;
+  const { captureFormat, keyframeCut, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, avoidNegativeTs, autoMerge, timecodeFormat, invertCutSegments, autoExportExtraStreams, askBeforeClose, enableImportChapters, enableAskForFileOpenAction, playbackVolume, autoSaveProjectFile, wheelSensitivity, waveformHeight, invertTimelineScroll, language, ffmpegExperimental, hideNotifications, hideOsNotifications, autoLoadTimecode, autoDeleteMergedSegments, exportConfirmEnabled, segmentsToChapters, simpleMode, cutFileTemplate, cutMergedFileTemplate, mergedFileTemplate, keyboardSeekAccFactor, keyboardNormalSeekSpeed, keyboardSeekSpeed2, keyboardSeekSpeed3, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, outFormatLocked, safeOutputFileName, enableAutoHtml5ify, segmentsToChaptersOnly, keyBindings, enableSmartCut, fullEncode, customFfPath, storeProjectInWorkingDir, enableOverwriteOutput, mouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, captureFrameMethod, captureFrameQuality, captureFrameFileNameFormat, enableNativeHevc, cleanupChoices, preferStrongColors, outputFileNameMinZeroPadding, cutFromAdjustmentFrames, cutToAdjustmentFrames, waveformMode: waveformModePreference, thumbnailsEnabled, keyframesEnabled, reducedMotion, ffmpegHwaccel, videoFit } = allUserSettings.settings;
   const { setCaptureFormat, setCustomOutDir, setKeyframeCut, setPlaybackVolume, setExportConfirmEnabled, setSimpleMode, setOutFormatLocked, setSafeOutputFileName, setKeyBindings, resetKeyBindings, setStoreProjectInWorkingDir, setCleanupChoices, darkMode, toggleDarkMode, setWaveformMode, setThumbnailsEnabled, setKeyframesEnabled, prefersReducedMotion, customOutDir } = allUserSettings;
+
+  // Full encoding always produces MP4; keep the lossless container choice so
+  // switching back restores it, including for files opened while this is enabled.
+  const fileFormat = fullEncode ? 'mp4' : selectedFileFormat;
+  const isCustomFormatSelected = fullEncode || isCustomLosslessFormatSelected;
 
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(!simpleMode);
 
@@ -593,12 +602,12 @@ function App() {
   const shouldShowWaveform = calcShouldShowWaveform(zoomedDuration) || overviewWaveform != null;
 
   const areWeCutting = useMemo(() => segmentsToExport.some(({ start, end }) => isCuttingStart(start) || isCuttingEnd(end, fileDuration)), [fileDuration, segmentsToExport]);
-  const needSmartCut = areWeCutting && enableSmartCut;
-  const isEncoding = needSmartCut || lossyMode != null;
+  const needSmartCut = areWeCutting && enableSmartCut && !fullEncode;
+  const isEncoding = fullEncode || needSmartCut || lossyMode != null;
 
   const {
     concatFiles, html5ifyDummy, cutMultiple, concatCutSegments, html5ify, fixInvalidDuration, decimate, extractStreams, tryDeleteFiles,
-  } = useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, isEncoding, lossyMode, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, cutToAdjustmentFrames, appendLastCommandsLog, encCustomBitrate: encBitrate, appendFfmpegCommandLog, ffmpegHwaccel });
+  } = useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, isEncoding, fullEncode, lossyMode, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, cutToAdjustmentFrames, appendLastCommandsLog, encCustomBitrate: encBitrate, appendFfmpegCommandLog, ffmpegHwaccel });
 
   const { previewFilePath, setPreviewFilePath, usingDummyVideo, setUsingDummyVideo, userHtml5ifyCurrentFile, convertFormatBatch, html5ifyAndLoadWithPreferences } = useHtml5ify({
     filePath, hasVideo, hasAudio, workingRef, setWorking, ensureWritableOutDir, customOutDir, batchFiles, enableAutoHtml5ify, setProgress, html5ify, html5ifyDummy, withErrorHandling, showGenericDialog,
@@ -1058,6 +1067,54 @@ function App() {
 
   const closeExportConfirm = useCallback(() => setExportConfirmOpen(false), []);
 
+  const startBatchProjectExport = useCallback(() => {
+    if (workingRef.current || batchProjectPaths.length === 0 || segmentsToChaptersOnly) return;
+    const controller = new AbortController();
+    setExportConfirmOpen(false);
+    setWorking({ text: t('Exporting batch projects'), abortController: controller });
+    setProgress(0);
+    setBatchExportRequest({
+      paths: [...batchProjectPaths],
+      shortestFlag,
+      settings: allUserSettings.settings,
+      outFormat: isCustomLosslessFormatSelected || outFormatLocked ? selectedFileFormat : undefined,
+      customOutDir,
+      outputPlaybackRate,
+      rotation: isRotationSet ? effectiveRotation : undefined,
+      encBitrate,
+      lossyMode,
+      formatTimecode,
+      controller,
+      prepareOutputDir: async (mediaPath, dir) => {
+        await ensureAccessToSourceDir(mediaPath);
+        return await ensureWritableOutDir({ inputPath: mediaPath, outDir: dir }) ?? dir;
+      },
+      appendLastCommandsLog,
+      appendFfmpegCommandLog,
+    });
+  }, [shortestFlag, workingRef, batchProjectPaths, segmentsToChaptersOnly, setWorking, t, allUserSettings.settings, isCustomLosslessFormatSelected, outFormatLocked, selectedFileFormat, customOutDir, outputPlaybackRate, isRotationSet, effectiveRotation, encBitrate, formatTimecode, appendLastCommandsLog, appendFfmpegCommandLog, ensureAccessToSourceDir, ensureWritableOutDir]);
+
+  const onBatchExportProject = useCallback((index: number, name: string) => {
+    if (!batchExportRequest) return;
+    setWorking({ text: t('Exporting project {{current}} of {{total}}: {{name}}', { current: index + 1, total: batchExportRequest.paths.length, name }), abortController: batchExportRequest.controller });
+  }, [batchExportRequest, setWorking, t]);
+
+  const onBatchExportFinished = useCallback((report: BatchExportReport) => {
+    setBatchExportRequest(undefined);
+    setWorking(undefined);
+    setProgress(undefined);
+    const exported = report.results.filter((r) => r.paths.length > 0).length;
+    const failed = report.results.filter((r) => r.error != null);
+    const skipped = report.results.filter((r) => r.skipped).length;
+    const summary = t('Exported: {{exported}} projects. Skipped: {{skipped}}. Failed: {{failed}}.', { exported, skipped, failed: failed.length });
+    const details = report.results.map((r) => (r.error ? `${r.projectPath}: ${r.error}` : (r.paths.length > 0 ? dirname(r.paths[0]!) : ''))).filter(Boolean);
+    getSwal().Swal.fire({
+      title: report.cancelled ? t('Batch export cancelled') : t('Batch export finished'),
+      text: [summary, ...details].join('\n'),
+      icon: failed.length > 0 ? 'warning' : 'info',
+    }).catch(console.error);
+  }, [setWorking, t]);
+
   const willMerge = segmentsToExport.length > 1 && autoMerge;
 
   const onExportConfirm = useCallback(async () => {
@@ -1202,7 +1259,7 @@ function App() {
         }
       }
 
-      if (areWeCutting) notices.add(i18n.t('Cutpoints may be inaccurate.'));
+      if (areWeCutting && !fullEncode) notices.add(i18n.t('Cutpoints may be inaccurate.'));
 
       if (simpleMode && !prefersReducedMotion) shootConfetti({ ticks: 50 });
 
@@ -1261,7 +1318,7 @@ function App() {
       setWorking(undefined);
       setProgress(undefined);
     }
-  }, [filePath, numStreamsToCopy, haveInvalidSegs, workingRef, setWorking, segmentsToChaptersOnly, cutFileTemplateOrDefault, generateCutFileNames, cutMultiple, outputDir, customOutDir, fileFormat, fileDuration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, segmentsToExport, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, avoidNegativeTs, paramsByFile, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormat, mainStreams, exportExtraStreams, areWeCutting, simpleMode, prefersReducedMotion, cleanupChoices, hideAllNotifications, segmentsOrInverse.selected, t, cutMergedFileTemplateOrDefault, segmentsToChapters, invertCutSegments, generateCutMergedFileNames, concatCutSegments, autoDeleteMergedSegments, tryDeleteFiles, nonCopiedExtraStreams, extractStreams, askForCleanupChoices, cleanupFiles, showOsNotification, openCutFinishedDialog, handleExportFailed]);
+  }, [fullEncode, filePath, numStreamsToCopy, haveInvalidSegs, workingRef, setWorking, segmentsToChaptersOnly, cutFileTemplateOrDefault, generateCutFileNames, cutMultiple, outputDir, customOutDir, fileFormat, fileDuration, isRotationSet, effectiveRotation, copyFileStreams, allFilesMeta, keyframeCut, segmentsToExport, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, avoidNegativeTs, paramsByFile, detectedFps, willMerge, enableOverwriteOutput, exportConfirmEnabled, mainFileFormat, mainStreams, exportExtraStreams, areWeCutting, simpleMode, prefersReducedMotion, cleanupChoices, hideAllNotifications, segmentsOrInverse.selected, t, cutMergedFileTemplateOrDefault, segmentsToChapters, invertCutSegments, generateCutMergedFileNames, concatCutSegments, autoDeleteMergedSegments, tryDeleteFiles, nonCopiedExtraStreams, extractStreams, askForCleanupChoices, cleanupFiles, showOsNotification, openCutFinishedDialog, handleExportFailed]);
 
   const onExportPress = useCallback(async () => {
     if (!filePath) return;
@@ -1581,12 +1638,13 @@ function App() {
 
   const seekAccelerationRef = useRef(1);
 
-  const userOpenSingleFile = useCallback(async ({ path: pathIn, isLlcProject }: { path: string, isLlcProject?: boolean }) => {
+  const userOpenSingleFile = useCallback(async ({ path: pathIn }: { path: string }) => {
     let path = pathIn;
     let projectPath: string | undefined;
 
-    // Open .llc AND media referenced within
-    if (isLlcProject) {
+    // Detect projects here so batch entries and single-file drops use the same
+    // path: open the referenced media and load this project's saved segments.
+    if (path.toLowerCase().endsWith('.llc')) {
       console.log('Loading LLC project', path);
       const project = await loadLlcProject(path);
       const { mediaFileName } = project;
@@ -1920,7 +1978,7 @@ function App() {
         else if (newFilePaths.length === 1) openFileResponse = 'open';
 
         if (openFileResponse === 'open') {
-          await userOpenSingleFile({ path: firstNewFilePath, isLlcProject });
+          await userOpenSingleFile({ path: firstNewFilePath });
           return;
         }
         if (openFileResponse === 'project') {
@@ -2481,8 +2539,8 @@ function App() {
   }, []);
 
   const renderOutFmt = useCallback((style: CSSProperties) => (
-    <OutputFormatSelect style={style} detectedFileFormat={detectedFileFormat} fileFormat={fileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
-  ), [detectedFileFormat, fileFormat, onOutputFormatUserChange]);
+    fullEncode ? <span style={style}>MP4 (H.264/AAC)</span> : <OutputFormatSelect style={style} detectedFileFormat={detectedFileFormat} fileFormat={fileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
+  ), [detectedFileFormat, fileFormat, fullEncode, onOutputFormatUserChange]);
 
   const onTunerRequested = useCallback((type: TunerType) => {
     setSettingsVisible(false);
@@ -2793,7 +2851,8 @@ function App() {
 
                 {/* Dialogs */}
 
-                <ExportConfirm areWeCutting={areWeCutting} segmentsOrInverse={segmentsOrInverse} segmentsToExport={segmentsToExport} willMerge={willMerge} visible={exportConfirmOpen} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} onShowStreamsSelectorClick={handleShowStreamsSelectorClick} outFormat={fileFormat} cutFileTemplate={cutFileTemplateOrDefault} cutMergedFileTemplate={cutMergedFileTemplateOrDefault} generateCutFileNames={generateCutFileNames} generateCutMergedFileNames={generateCutMergedFileNames} currentSegIndexSafe={currentSegIndexSafe} mainCopiedThumbnailStreams={mainCopiedThumbnailStreams} hvc1NeededStreams={hvc1NeededStreams} needSmartCut={needSmartCut} isEncoding={isEncoding} encBitrate={encBitrate} setEncBitrate={setEncBitrate} toggleSettings={toggleSettings} outputPlaybackRate={outputPlaybackRate} lossyMode={lossyMode} neighbouringKeyFrames={neighbouringKeyFrames} findNearestKeyFrameTime={findNearestKeyFrameTime} />
+                {batchExportRequest && <BatchProjectExport request={batchExportRequest} onProgress={setProgress} onProject={onBatchExportProject} onFinished={onBatchExportFinished} />}
+                <ExportConfirm batchProjectCount={batchProjectPaths.length} onExportBatchProjects={startBatchProjectExport} areWeCutting={areWeCutting} segmentsOrInverse={segmentsOrInverse} segmentsToExport={segmentsToExport} willMerge={willMerge} visible={exportConfirmOpen} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} onShowStreamsSelectorClick={handleShowStreamsSelectorClick} outFormat={fileFormat} cutFileTemplate={cutFileTemplateOrDefault} cutMergedFileTemplate={cutMergedFileTemplateOrDefault} generateCutFileNames={generateCutFileNames} generateCutMergedFileNames={generateCutMergedFileNames} currentSegIndexSafe={currentSegIndexSafe} mainCopiedThumbnailStreams={mainCopiedThumbnailStreams} hvc1NeededStreams={hvc1NeededStreams} needSmartCut={needSmartCut} isEncoding={isEncoding} encBitrate={encBitrate} setEncBitrate={setEncBitrate} toggleSettings={toggleSettings} outputPlaybackRate={outputPlaybackRate} lossyMode={lossyMode} neighbouringKeyFrames={neighbouringKeyFrames} findNearestKeyFrameTime={findNearestKeyFrameTime} />
 
                 <Dialog.Root open={streamsSelectorShown} onOpenChange={setStreamsSelectorShown}>
                   <Dialog.Portal>
@@ -2861,7 +2920,7 @@ function App() {
                   </Dialog.Portal>
                 </Dialog.Root>
 
-                <ConcatDialog isShown={batchFiles.length > 0 && concatDialogOpen} onHide={() => setConcatDialogOpen(false)} paths={batchFilePaths} mergedFileTemplate={mergedFileTemplateOrDefault} generateMergedFileNames={generateMergedFileNames} onConcat={userConcatFiles} setAlwaysConcatMultipleFiles={setAlwaysConcatMultipleFiles} alwaysConcatMultipleFiles={alwaysConcatMultipleFiles} fileFormat={fileFormat} setFileFormat={setFileFormat} detectedFileFormat={detectedFileFormat} setDetectedFileFormat={setDetectedFileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
+                <ConcatDialog isShown={batchFiles.length > 0 && concatDialogOpen} onHide={() => setConcatDialogOpen(false)} paths={batchFilePaths} mergedFileTemplate={mergedFileTemplateOrDefault} generateMergedFileNames={generateMergedFileNames} onConcat={userConcatFiles} setAlwaysConcatMultipleFiles={setAlwaysConcatMultipleFiles} alwaysConcatMultipleFiles={alwaysConcatMultipleFiles} fileFormat={selectedFileFormat} setFileFormat={setFileFormat} detectedFileFormat={detectedFileFormat} setDetectedFileFormat={setDetectedFileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
 
                 <KeyboardShortcuts isShown={keyboardShortcutsVisible} onHide={() => setKeyboardShortcutsVisible(false)} keyBindings={keyBindings} setKeyBindings={setKeyBindings} currentCutSeg={currentCutSeg} resetKeyBindings={resetKeyBindings} getKeyboardAction={getKeyboardAction} />
 
