@@ -1,6 +1,7 @@
 {
   "name": "lossless-cut",
   "productName": "LosslessCut",
+  "desktopName": "losslesscut.desktop",
   "description": "The swiss army knife of lossless video/audio editing",
   "copyright": "Copyright © 2026 ${author}",
   "version": "3.70.1",
