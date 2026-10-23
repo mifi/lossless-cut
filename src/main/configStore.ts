@@ -6,6 +6,7 @@ import assert from 'node:assert';
 import { copyFile } from 'node:fs/promises';
 
 import type { KeyBinding, Config } from '../common/types.js';
+import { batchExportModeSchema } from '../common/types.js';
 import logger from './logger.js';
 import { isWindows, pathExists } from './util.js';
 import { fallbackLng } from './i18nCommon.js';
@@ -105,6 +106,7 @@ const defaults: Config = {
   autoMerge: false,
   autoDeleteMergedSegments: true,
   segmentsToChaptersOnly: false,
+  batchExportMode: 'merge',
   enableSmartCut: false,
   timecodeFormat: 'timecodeWithDecimalFraction',
   invertCutSegments: false,
@@ -281,6 +283,13 @@ export async function init({ customConfigDir }: { customConfigDir: string | unde
     store.delete('customOutDir');
     set('recentCustomOutDirs', [customOutDir]);
     set('enableCustomOutDir', customOutDir != null);
+  }
+
+  // reset invalid batchExportMode values (e.g. from development versions) to the default
+  const batchExportMode = store.get('batchExportMode');
+  if (!batchExportModeSchema.safeParse(batchExportMode).success) {
+    logger.info('Migrating invalid batchExportMode', batchExportMode);
+    reset('batchExportMode');
   }
 
   // const configVersion: number = store.get('version');

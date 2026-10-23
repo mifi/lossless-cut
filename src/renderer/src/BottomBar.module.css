@@ -1,0 +1,32 @@
+.splitExportButton {
+  display: inline-flex;
+  vertical-align: middle;
+  border-radius: .3em;
+  overflow: hidden;
+}
+
+.splitExportMain {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+.splitExportToggle {
+  all: unset;
+  display: grid;
+  place-items: center;
+  min-width: 1.6em;
+  padding: 0 .25em;
+  color: white;
+  border-left: 1px solid rgba(255, 255, 255, .35);
+  cursor: pointer;
+}
+
+.splitExportToggle:hover,
+.splitExportToggle[data-state="open"] {
+  filter: brightness(1.08);
+}
+
+.splitExportToggle:focus-visible {
+  outline: .1em solid white;
+  outline-offset: -.2em;
+}
