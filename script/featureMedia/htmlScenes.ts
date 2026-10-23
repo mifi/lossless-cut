@@ -12,8 +12,8 @@ interface TimelineWindow { timeline: { ready: Promise<unknown>, duration: number
 async function launch() {
   // The browser from `yarn playwright install chromium`, or another Chromium or Chrome
   const executablePath = process.env['FEATURE_MEDIA_CHROMIUM'];
-  // The same colours on every computer
-  return chromium.launch({ ...(executablePath != null && { executablePath }), args: ['--force-color-profile=srgb'] });
+  // The same colours on every computer. featureMedia.ts handles Ctrl-C (Playwright would exit right away, skipping the cleanup)
+  return chromium.launch({ ...(executablePath != null && { executablePath }), args: ['--force-color-profile=srgb'], handleSIGINT: false, handleSIGTERM: false, handleSIGHUP: false });
 }
 
 /** Checks that Chromium starts */
@@ -41,12 +41,9 @@ export default async function openTimeline({ width, height, config, fps }: { wid
       /** Renders the frames in order, as JPEGs */
       async render(onFrame: (jpeg: Buffer) => Promise<void>) {
         for (let i = 0; i < frames; i += 1) {
-          // eslint-disable-next-line no-await-in-loop
           await page.evaluate(async (time) => (globalThis as unknown as TimelineWindow).timeline.seek(time), i / fps);
-          // eslint-disable-next-line no-await-in-loop
           // The frames are opaque, and JPEG is a lot faster than PNG. At this quality it's still much closer to the PNG than the video encoding is
           const { data } = await cdp.send('Page.captureScreenshot', { format: 'jpeg', quality: 95, optimizeForSpeed: true });
-          // eslint-disable-next-line no-await-in-loop
           await onFrame(Buffer.from(data, 'base64'));
         }
       },

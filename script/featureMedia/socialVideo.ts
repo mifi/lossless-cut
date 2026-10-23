@@ -3,7 +3,7 @@
 // The whole video is an HTML timeline (desktop.html) that Chromium renders frame by frame, with the recording's frames (decoded by ffmpeg) in the window,
 // and ffmpeg encodes the frames with the music.
 import { once } from 'node:events';
-import { mkdir, readdir, rm } from 'node:fs/promises';
+import { mkdir, readdir } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { execa } from 'execa';
@@ -24,29 +24,50 @@ const iconPath = 'src/renderer/src/icon.svg';
 // The captions go on the desktop above the window. In vertical, the window (658 px high) is a bit below the middle, so with a caption above it
 // they're about centred, and the footer (if any) is a subtle line with the icon close under it. Everything ends above the bottom quarter
 // (y 1440) that Reels, TikTok and Shorts cover with their buttons and text: the footer at about y 1370–1414.
-// The keys of keyboard shortcuts go beside the window in landscape (in the room on its right) and above it (and the captions) in vertical
+// The keys of keyboard shortcuts (keySize is their text's) and the export times go under the window in landscape (the keys at its right,
+// which is why it's a bit narrower than the room there is), and above the window (and the captions) in vertical
 const formats = {
-  landscape: { width: 1920, height: 1200, window: { x: 224, y: 168, width: 1472 }, captionSize: 48, captionGap: 36, footer: undefined, keysPlace: 'beside' },
-  vertical: { width: 1080, height: 1920, window: { x: 36, y: 690, width: 1008 }, captionSize: 52, captionGap: 60, footer: 'losslesscut.app', keysPlace: 'above' },
+  landscape: { width: 1920, height: 1200, window: { x: 272, y: 168, width: 1376 }, captionSize: 48, captionGap: 36, footer: undefined, keysPlace: 'below', keySize: 46 },
+  vertical: { width: 1080, height: 1920, window: { x: 36, y: 690, width: 1008 }, captionSize: 52, captionGap: 60, footer: 'losslesscut.app', keysPlace: 'above', keySize: 56 },
 } as const;
 export type Format = keyof typeof formats;
 
 // Where the window and the recording go, for the HTML
 function getLayout(format: Format, windowWidth: number, windowHeight: number) {
-  const { width, height, window, captionSize, captionGap, footer, keysPlace } = formats[format];
+  const { width, height, window, captionSize, captionGap, footer, keysPlace, keySize } = formats[format];
   // From macOS points (the app's window is windowWidth points wide)
   const scale = window.width / windowWidth;
   const titleBarHeight = Math.round(28 * scale);
   const content = { x: window.x, y: window.y + titleBarHeight, w: window.width, h: Math.round(windowHeight * scale) };
-  return { width, height, scale, titleBarHeight, content, captionSize, captionGap, footer, keysPlace };
+  return { width, height, scale, titleBarHeight, content, captionSize, captionGap, footer, keysPlace, keySize };
 }
 
-export async function renderSocialVideo({ ffmpeg, rawVideo, videoStart, duration, captions, zooms, keys, exports, description, music, background, windowWidth, windowHeight, format, tmpDir, outPath }: {
+/**
+ * Decodes the recording into frames (00000.jpg…) in a folder, for the page to show, and returns how many there are. Once for both formats.
+ * fps fills in the frames x11grab dropped. Scaled up 2x (of the window's size, also with --scale 2), so they stay sharp when zoomed in
+ * (Chromium scales images up less sharply). JPEG decodes faster than PNG, and at this quality (with all the colour) it's about as sharp
+ */
+export async function extractRecordingFrames({ ffmpeg, rawVideo, videoStart, duration, windowWidth, windowHeight, dir, signal }: {
   ffmpeg: string,
   rawVideo: string,
   videoStart: number,
   /** Of the video after videoStart */
   duration: number,
+  windowWidth: number,
+  windowHeight: number,
+  dir: string,
+  signal: AbortSignal,
+}) {
+  await mkdir(dir, { recursive: true });
+  await execa(ffmpeg, ['-v', 'error', '-y', '-ss', String(videoStart), '-t', String(duration), '-i', rawVideo, '-vf', `fps=${fps},scale=${windowWidth * 2}:${windowHeight * 2}:flags=lanczos`, '-frames:v', String(Math.round(duration * fps)), '-pix_fmt', 'yuvj444p', '-q:v', '1', '-start_number', '0', join(dir, '%05d.jpg')], { cancelSignal: signal });
+  return (await readdir(dir)).filter((name) => name.endsWith('.jpg')).length;
+}
+
+export async function renderSocialVideo({ ffmpeg, framesDir, recordingFrames, captions, zooms, keys, exports, description, music, background, windowWidth, windowHeight, format, outPath, signal }: {
+  ffmpeg: string,
+  /** From extractRecordingFrames */
+  framesDir: string,
+  recordingFrames: number,
   captions: Caption[],
   zooms: Zoom[],
   keys: KeyPress[],
@@ -59,20 +80,14 @@ export async function renderSocialVideo({ ffmpeg, rawVideo, videoStart, duration
   windowWidth: number,
   windowHeight: number,
   format: Format,
-  tmpDir: string,
+  /** An MP4 (whatever its extension) */
   outPath: string,
+  /** Stops the render, e.g. when the other format's failed */
+  signal: AbortSignal,
 }) {
   const layout = getLayout(format, windowWidth, windowHeight);
   const { width, height } = layout;
-  const framesDir = join(tmpDir, `${format}-frames`);
   const fileUrl = (path: string) => pathToFileURL(resolve(path)).href;
-  await rm(framesDir, { recursive: true, force: true });
-  await mkdir(framesDir, { recursive: true });
-
-  // The recording's frames, for the page to show. fps fills in the frames x11grab dropped. Scaled up 2x, so they stay sharp when zoomed in
-  // (Chromium scales images up less sharply). JPEG decodes faster than PNG, and at this quality (with all the colour) it's about as sharp
-  await execa(ffmpeg, ['-v', 'error', '-y', '-ss', String(videoStart), '-t', String(duration), '-i', rawVideo, '-vf', `fps=${fps},scale=iw*2:ih*2:flags=lanczos`, '-frames:v', String(Math.round(duration * fps)), '-pix_fmt', 'yuvj444p', '-q:v', '1', '-start_number', '0', join(framesDir, '%05d.jpg')]);
-  const recordingFrames = (await readdir(framesDir)).filter((name) => name.endsWith('.jpg')).length;
 
   const timeline = await openTimeline({
     width,
@@ -96,18 +111,20 @@ export async function renderSocialVideo({ ffmpeg, rawVideo, videoStart, duration
     const musicInput = music != null ? ['-stream_loop', '-1', '-i', music] : [];
     const audio = music != null ? ['-map', '1:a', '-af', `atrim=0:${total},afade=in:d=0.5,afade=out:st=${total - 1.5}:d=1.5,loudnorm=I=-14:TP=-1.5:LRA=11`, '-c:a', 'aac', '-b:a', '192k', '-ar', '48000'] : [];
     // The page's screenshots, piped in
-    const encoder = execa(ffmpeg, ['-v', 'error', '-y', '-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'mjpeg', '-i', '-', ...musicInput, '-map', '0:v', ...audio, '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p', '-r', String(fps), '-t', String(total), '-movflags', '+faststart', outPath], { stdin: 'pipe', stderr: 'inherit' });
+    const encoder = execa(ffmpeg, ['-v', 'error', '-y', '-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'mjpeg', '-i', '-', ...musicInput, '-map', '0:v', ...audio, '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p', '-r', String(fps), '-t', String(total), '-movflags', '+faststart', '-f', 'mp4', outPath], { stdin: 'pipe', stderr: 'inherit', cancelSignal: signal });
     const { stdin } = encoder;
     try {
       await timeline.render(async (frame) => {
+        signal.throwIfAborted();
         if (!stdin.write(frame)) await once(stdin, 'drain');
       });
       stdin.end();
     } catch (err) {
-      // e.g. ffmpeg failed (it has printed why)
-      encoder.kill();
-      await encoder.catch(() => undefined);
-      throw err;
+      // If ffmpeg failed (it has printed why), writing to it fails, and its own error says more
+      const encoderFailed = err instanceof Error && 'code' in err && err.code === 'EPIPE';
+      if (!encoderFailed) encoder.kill();
+      const encoderError: unknown = await encoder.then(() => undefined, (error: unknown) => error);
+      throw encoderFailed && encoderError != null ? encoderError : err;
     }
     await encoder;
   } finally {

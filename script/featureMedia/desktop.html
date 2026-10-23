@@ -99,10 +99,11 @@ const defaults = {
   captions: [{ start: 0.5, end: 3, text: 'See every track in the file' }, { start: 3, end: 7, text: 'Choose the ones to keep' }],
   // From each time in the recording, zoomed in on a part of it (in the recording's pixels), or back out with no rect
   zooms: [{ time: 3, rect: { x: 60, y: 230, w: 560, h: 300 } }, { time: 5.5 }],
-  // When the scenario ran an action with a keyboard shortcut, and its keys (see shortcuts.ts). They're shown on the desktop beside
-  // the window (on its right, at the bottom) or above it (and its captions)
-  keys: [{ time: 1, keys: ['I'] }, { time: 2.2, keys: ['O'] }, { time: 3.4, keys: ['⌘', 'E'] }, { time: 3.7, keys: ['⌘', 'E'] }],
-  keysPlace: 'beside',
+  // When the scenario ran an action with a keyboard shortcut, and its keys (see shortcuts.ts). They're shown on the desktop under
+  // the window (at its right, beside the export times) or above it (and its captions), at keySize (their text's)
+  keys: [{ time: 1, keys: ['I'] }, { time: 2.2, keys: ['⌥', '⇧', 'PgUp'] }, { time: 3.4, keys: ['⌘', 'E'] }, { time: 3.7, keys: ['⌘', 'E'] }],
+  keysPlace: 'below',
+  keySize: 46,
   // When an export finished, and how long it took (in seconds)
   exports: [{ time: 4.4, duration: 0.4 }],
   intro: { title: 'LosslessCut', subtitle: 'Choose which tracks to keep, then export' },
@@ -174,11 +175,10 @@ for (const { time, keys } of config.keys) {
   if (last != null && last.keys.join() === keys.join() && time - last.presses.at(-1) < keyHold) last.presses.push(time);
   else keyGroups.push({ keys, presses: [time] });
 }
-const keyFontSize = Math.round(config.captionSize * 0.7);
 for (const [i, group] of keyGroups.entries()) {
   group.element = document.createElement('div');
   group.element.className = 'keys';
-  group.element.style.fontSize = px(keyFontSize);
+  group.element.style.fontSize = px(config.keySize);
   for (const key of group.keys) {
     const element = document.createElement('div');
     element.className = 'key';
@@ -206,17 +206,21 @@ const exportBadges = config.exports.map(({ time, duration: exportDuration }) => 
 // Where the keys and export times go, once the text is laid out (with the fonts loaded)
 function placeBadges() {
   const windowBottom = win.y + win.h;
+  // Just under the window, or as low as there's room for
+  for (const { element } of exportBadges) element.style.top = px(Math.min(windowBottom + config.footerGap, height - 12 - element.offsetHeight));
+  const exportsWidth = Math.max(0, ...exportBadges.map(({ element }) => element.offsetWidth));
   for (const { element } of keyGroups) {
+    // Smaller if it doesn't fit: under the window, between the export times (in the middle) and the window's right edge
+    const room = config.keysPlace === 'above' ? width - 2 * win.x : win.x + win.w - (width + exportsWidth) / 2 - 24;
+    if (element.offsetWidth > room) element.style.fontSize = px(config.keySize * (room / element.offsetWidth));
     if (config.keysPlace === 'above') {
       // Above the highest caption, if there are captions
       const captionsHeight = Math.max(0, ...captions.map((caption) => caption.element.offsetHeight + config.captionGap * 0.6));
       setStyle(element, { left: px((width - element.offsetWidth) / 2), bottom: px(height - win.y + config.captionGap + captionsHeight) });
     } else {
-      setStyle(element, { left: px((win.x + win.w + width - element.offsetWidth) / 2), bottom: px(height - windowBottom) });
+      setStyle(element, { left: px(win.x + win.w - element.offsetWidth), top: px(windowBottom + config.footerGap * 0.7) });
     }
   }
-  // Just under the window, or as low as there's room for
-  for (const { element } of exportBadges) element.style.top = px(Math.min(windowBottom + config.footerGap, height - 12 - element.offsetHeight));
 }
 
 // The icon, at the middle of the window, with the text under it
@@ -364,7 +368,7 @@ function keysAt(time, { start, end, presses }) {
     const at = press + (i === 0 ? 0.18 : 0);
     return Math.min(progress(time, at, 0.06, linear), 1 - progress(time, at + 0.1, 0.14, ease.out));
   }));
-  return { opacity, transform: `translateY(${mix(0.3 * keyFontSize, 0, shown)}px) scale(${mix(0.7, 1, shown)})`, pressed };
+  return { opacity, transform: `translateY(${mix(0.3 * config.keySize, 0, shown)}px) scale(${mix(0.7, 1, shown)})`, pressed };
 }
 
 // An export time pops up and fades out

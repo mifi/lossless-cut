@@ -19,7 +19,7 @@ import musicTracks, { defaultMusic } from './featureMedia/music.ts';
 import { checkChromium } from './featureMedia/htmlScenes.ts';
 import scenarios from './featureMedia/scenarios.ts';
 import getShortcutKeys from './featureMedia/shortcuts.ts';
-import { renderSocialVideo, type Caption, type Export, type KeyPress, type Rect, type Zoom } from './featureMedia/socialVideo.ts';
+import { extractRecordingFrames, renderSocialVideo, type Caption, type Export, type KeyPress, type Rect, type Zoom } from './featureMedia/socialVideo.ts';
 
 const { values: { clips = 'dist/feature-media-clips', music: musicArg = defaultMusic, background: backgroundArg, scale: scaleArg = '1' }, positionals: [scenarioName] } = parseArgs({ allowPositionals: true, options: { clips: { type: 'string' }, music: { type: 'string' }, background: { type: 'string' }, scale: { type: 'string' } } });
 const scenario = scenarioName != null ? scenarios[scenarioName] : undefined;
@@ -53,8 +53,14 @@ const exists = async (path: string) => access(path).then(() => true, () => false
 
 // Writes to a temp file first, so an interrupted download isn't used next time
 async function writeVia(path: string, write: (partPath: string) => Promise<unknown>) {
-  await write(`${path}.part`);
-  await rename(`${path}.part`, path);
+  const partPath = `${path}.part`;
+  try {
+    await write(partPath);
+  } catch (err) {
+    await rm(partPath, { force: true });
+    throw err;
+  }
+  await rename(partPath, path);
 }
 
 async function download(url: string, path: string) {
@@ -124,6 +130,17 @@ for (const clip of scenario.clips) {
 // Show more of the UI than the defaults do
 const demoConfig = { simpleMode: false, thumbnailsEnabled: true };
 
+// Ctrl-C stops the run and cleans up (the temp folder below), a second one exits right away.
+// Not process.once: execa's exit handler would see it gone and exit, skipping the cleanup
+const stop = new AbortController();
+process.on('SIGINT', () => {
+  if (stop.signal.aborted) process.exit(130);
+  console.log('Stopping (Ctrl-C again to exit right away)');
+  stop.abort(new Error('Stopped with Ctrl-C'));
+});
+const { signal } = stop;
+const sleep = async (ms: number) => timers.setTimeout(ms, undefined, { signal });
+
 // A fresh config, so the demo doesn't depend on (or change) your own settings, doesn't hand over to your running LosslessCut, and saves no project file next to the clip (it would be loaded next time)
 const configDir = await mkdtemp(join(tmpdir(), 'losslesscut-feature-media-'));
 // Exports go to the temp dir too
@@ -139,7 +156,7 @@ async function post(path: string, body?: unknown) {
     method: 'POST',
     ...(body !== undefined && { headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }),
     // Actions wait until they're done (e.g. a scene detection), but don't hang forever on one that opens a dialog
-    signal: AbortSignal.timeout(60_000),
+    signal: AbortSignal.any([AbortSignal.timeout(60_000), signal]),
   });
   assert(response.ok, `${path} failed: ${response.status} ${await response.text()}`);
 }
@@ -152,9 +169,9 @@ try {
   for (let i = 0; ; i += 1) {
     if (await fetch(`http://127.0.0.1:${port}/`).then(() => true, () => false)) break;
     assert(i < 60 && app.exitCode == null, `LosslessCut did not start, see ${appLog}`);
-    await timers.setTimeout(500);
+    await sleep(500);
   }
-  await timers.setTimeout(3000);
+  await sleep(3000);
 
   // Lossless while recording, re-encoded below
   const recorder = execa(ffmpeg, ['-v', 'error', ...grab, '-c:v', 'libx264', '-preset', 'ultrafast', '-qp', '0', rawVideo], { reject: false, stderr: 'inherit' });
@@ -164,31 +181,29 @@ try {
   const captionEvents: { time: number, text: string | undefined }[] = [];
   const zoomEvents: { time: number, rect: Rect | undefined }[] = [];
   const keyPresses: KeyPress[] = [];
-  const exportEvents: Export[] = [];
 
-  // How long each export takes, from the app's events (only a successful one has paths). Each await-event request waits for the next event
+  // How long each export takes, from the app's events (only a successful one has paths). Each await-event request waits for the next event,
+  // and both are waited for at once, so a quick export's complete event isn't missed. Paired after the recording
+  const exportStarts: number[] = [];
+  const exportCompletes: number[] = [];
   const eventsAbort = new AbortController();
-  const awaitEvent = async (name: string) => {
-    const response = await fetch(`http://127.0.0.1:${port}/api/await-event/${name}`, { method: 'POST', signal: eventsAbort.signal });
-    return response.json() as Promise<{ paths?: string[] }>;
-  };
-  const watchExports = async () => {
+  const watchEvent = async (name: string, onEvent: (event: { paths?: string[] }) => void) => {
     try {
       for (;;) {
-        // eslint-disable-next-line no-await-in-loop
-        await awaitEvent('export-start');
-        const start = now();
-        // eslint-disable-next-line no-await-in-loop
-        const { paths } = await awaitEvent('export-complete');
-        const end = now();
-        if (paths != null) exportEvents.push({ time: end, duration: end - start });
+        const response = await fetch(`http://127.0.0.1:${port}/api/await-event/${name}`, { method: 'POST', signal: eventsAbort.signal });
+        onEvent(await response.json() as { paths?: string[] });
       }
     } catch {
       // Stopped after the recording
     }
   };
-  const watchingExports = watchExports();
-  await timers.setTimeout(500);
+  const watchingExports = Promise.all([
+    watchEvent('export-start', () => exportStarts.push(now())),
+    watchEvent('export-complete', ({ paths }) => {
+      if (paths != null) exportCompletes.push(now());
+    }),
+  ]);
+  await sleep(500);
 
   // Not async, so the caught promise itself is returned (an async function would wrap it in a new, uncaught one)
   // eslint-disable-next-line @typescript-eslint/promise-function-async
@@ -216,11 +231,11 @@ try {
       actionWithDialog: async (name, text) => {
         // The action finishes when the dialog is closed
         const done = action(name);
-        await timers.setTimeout(1000);
+        await sleep(1000);
         if (text != null) {
           await key('ctrl+a');
           await type(text);
-          await timers.setTimeout(500);
+          await sleep(500);
         }
         await key('Return');
         await done;
@@ -234,7 +249,7 @@ try {
         const cropArgs = crop != null ? ['-vf', `crop=${crop.w * scale}:${crop.h * scale}:${crop.x * scale}:${crop.y * scale}`] : [];
         await execa(ffmpeg, ['-v', 'error', '-y', ...grab, ...cropArgs, '-frames:v', '1', join(outDir, `${scenarioName}-${name}.png`)]);
       },
-      wait: async (ms) => timers.setTimeout(ms),
+      wait: sleep,
       startVideo: () => {
         videoStart = now();
       },
@@ -257,7 +272,7 @@ try {
   app.kill();
   // A high quality master (web versions are made from it elsewhere), with the index at the start for streaming
   const videoPath = join(outDir, `${scenarioName}.mp4`);
-  await execa(ffmpeg, ['-v', 'error', '-y', '-ss', String(videoStart), '-i', rawVideo, '-vf', 'fps=30', '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-tune', 'animation', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', videoPath]);
+  await execa(ffmpeg, ['-v', 'error', '-y', '-ss', String(videoStart), '-i', rawVideo, '-vf', 'fps=30', '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-tune', 'animation', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', videoPath], { cancelSignal: signal });
 
   // The social media versions start just before the first caption (after the intro, the opening of the file isn't needed)
   const socialStart = Math.max(videoStart, (captionEvents[0]?.time ?? 0) - 0.5);
@@ -268,8 +283,31 @@ try {
   const zooms: Zoom[] = zoomEvents.map(({ time, rect }) => ({ time: time - socialStart, rect }));
   const inVideo = <T extends { time: number }>(events: T[]) => events.map((event) => ({ ...event, time: event.time - socialStart })).filter(({ time }) => time >= 0 && time < duration);
   const keys = scenario.showKeys === false ? [] : inVideo(keyPresses);
-  // Both at once, which is faster (each mostly waits for its Chromium)
-  await Promise.all((['landscape', 'vertical'] as const).map(async (format) => renderSocialVideo({ ffmpeg, rawVideo, videoStart: socialStart, duration, captions, zooms, keys, exports: inVideo(exportEvents), description: scenario.description, music, background, windowWidth: width, windowHeight: height, format, tmpDir: configDir, outPath: join(outDir, `${scenarioName}-${format}.mp4`) })));
+  // Each export from the last start before it (one that didn't export has no complete event). Its events can come in either order
+  const exportEvents: Export[] = exportCompletes.flatMap((time) => {
+    const start = exportStarts.findLast((startTime) => startTime <= time + 0.05);
+    return start != null ? [{ time, duration: Math.max(0, time - start) }] : [];
+  });
+
+  // The recording's frames, for both formats
+  const framesDir = join(configDir, 'frames');
+  try {
+    const recordingFrames = await extractRecordingFrames({ ffmpeg, rawVideo, videoStart: socialStart, duration, windowWidth: width, windowHeight: height, dir: framesDir, signal });
+    // Both at once, which is faster (each mostly waits for its Chromium). If one fails, the other stops, and neither leaves a file
+    const failed = new AbortController();
+    const results = await Promise.allSettled((['landscape', 'vertical'] as const).map(async (format) => {
+      try {
+        await writeVia(join(outDir, `${scenarioName}-${format}.mp4`), async (partPath) => renderSocialVideo({ ffmpeg, framesDir, recordingFrames, captions, zooms, keys, exports: inVideo(exportEvents), description: scenario.description, music, background, windowWidth: width, windowHeight: height, format, outPath: partPath, signal: AbortSignal.any([signal, failed.signal]) }));
+      } catch (err) {
+        failed.abort(err);
+        throw err;
+      }
+    }));
+    // The first error, not the other's being stopped
+    if (results.some(({ status }) => status === 'rejected')) throw failed.signal.reason;
+  } finally {
+    await rm(framesDir, { recursive: true, force: true });
+  }
   console.log('Wrote', videoPath, 'the social media versions and screenshots in', outDir);
   if (musicTrack != null) console.log('Posts with the social media versions must credit:', musicTrack.credit);
 } finally {
