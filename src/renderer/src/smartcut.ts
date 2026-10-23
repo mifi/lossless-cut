@@ -3,12 +3,36 @@ import i18n from 'i18next';
 import { getRealVideoStreams, getVideoTimebase } from './util/streams';
 
 import { readKeyframesAroundTime, findNextKeyframe, findKeyframeAtExactTime } from './ffmpeg';
+import { pickActualCutStart } from './util/keyframes';
 import type { FFprobeStream } from '../../common/ffprobe';
 import { UserFacingError } from '../errors';
 import { readFileSize } from './util';
 
 
 const mapVideoCodec = (codec: string) => ({ av1: 'libsvtav1' }[codec] ?? codec);
+
+/**
+ * Determines the actual time of the first frame that a lossless keyframe cut will produce for `desiredCutFrom`.
+ *
+ * With keyframe cut enabled and `-ss` placed before `-i`, ffmpeg seeks to the keyframe at or before the cut point,
+ * so the output starts earlier than requested. The embedded timecode must be based on that actual first frame to
+ * stay in sync with the video, otherwise the timecode would be ahead of the content.
+ */
+export async function getActualKeyframeCutStart({ path, desiredCutFrom, videoStream }: {
+  path: string,
+  desiredCutFrom: number,
+  videoStream: Pick<FFprobeStream, 'index'>,
+}) {
+  let actualStart = desiredCutFrom;
+  for (const window of [10, 60]) {
+    // eslint-disable-next-line no-await-in-loop
+    const keyframes = await readKeyframesAroundTime({ filePath: path, streamIndex: videoStream.index, aroundTime: desiredCutFrom, window });
+    actualStart = pickActualCutStart(keyframes, desiredCutFrom);
+    // Found a keyframe to snap to - no need for a larger window
+    if (actualStart < desiredCutFrom) break;
+  }
+  return actualStart;
+}
 
 export async function needsSmartCut({ path, desiredCutFrom, videoStream }: {
   path: string,

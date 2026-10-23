@@ -128,6 +128,7 @@ const defaults: Config = {
   hideNotifications: undefined,
   hideOsNotifications: undefined,
   autoLoadTimecode: false,
+  updateTimecodeOnCut: true,
   segmentsToChapters: false,
   simpleMode: true,
   outSegTemplate: undefined,
