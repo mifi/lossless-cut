@@ -1,11 +1,59 @@
-.wrapper button, .wrapper select {
-  background-color: var(--gray-1);
+.wrapper {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .4em;
+  min-height: 2.9em;
+  padding: .4em .5em .4em .55em;
+  box-sizing: border-box;
+}
+
+/* the top bar doubles as the window title bar, so it moves the window */
+.wrapper {
+  -webkit-app-region: drag;
+}
+
+.wrapper button, .wrapper select, .wrapper input, .wrapper a, .wrapper [role="button"], .wrapper [role="radiogroup"] {
+  -webkit-app-region: no-drag;
 }
 
 .wrapper button {
-  padding: .3em .3em;
+  display: inline-flex;
+  align-items: center;
+  gap: .45em;
+  white-space: nowrap;
 }
 
-.wrapper select {
-  padding: .3em 1.4em .3em .3em;
+.brand {
+  display: flex;
+  align-items: center;
+  gap: .6em;
+  min-width: 0;
+  max-width: 32em;
+}
+
+.logo {
+  flex-shrink: 0;
+  width: 2.1em;
+  height: 2.1em;
+  /* the icon artwork has a small margin around its tile */
+  margin: -.15em -.1em -.15em -.15em;
+  filter: drop-shadow(0 2px 6px rgba(124, 58, 237, .35));
+}
+
+.fileName {
+  font-size: .85em;
+  font-weight: 600;
+  color: var(--llc-text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fileInfo {
+  font-size: .7em;
+  color: var(--llc-text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

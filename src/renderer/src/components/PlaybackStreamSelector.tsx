@@ -1,7 +1,7 @@
 import type { ChangeEventHandler, ChangeEvent } from 'react';
 import { memo, useState, useCallback, useRef, useEffect } from 'react';
-import { MdSubtitles } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
+import { LuCaptions } from 'react-icons/lu';
 import { motion } from 'motion/react';
 
 import Select from './Select';
@@ -68,7 +68,7 @@ function PlaybackStreamSelector({
   return (
     <>
       {controlVisible && (
-        <motion.div className={styles['wrapper']} initial={{ opacity: 0, transform: 'translateX(100%)' }} animate={{ opacity: 1, transform: 'translateX(0%)' }}>
+        <motion.div className={styles['wrapper']} initial={{ opacity: 0, transform: 'translateY(6px)' }} animate={{ opacity: 1, transform: 'translateY(0)' }}>
           {subtitleStreams.length > 0 && (
             <div style={{ margin: '0 .5em' }}>
               <div style={{ marginBottom: '.3em' }}>{t('Subtitle')}</div>
@@ -125,10 +125,10 @@ function PlaybackStreamSelector({
         </motion.div>
       )}
 
-      <MdSubtitles
-        size={30}
+      <LuCaptions
+        size={17}
         role="button"
-        style={{ margin: '0 7px', color: 'var(--gray-12)', opacity: 0.7 }}
+        style={{ margin: '0 .45em', color: '#fff', opacity: 0.85, cursor: 'pointer' }}
         onClick={onIconClick}
       />
     </>

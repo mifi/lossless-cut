@@ -2,16 +2,16 @@
   all: unset;
   position: absolute;
   padding: .5em;
-  margin: .2em;
+  margin: .6em;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   border-radius: 100%;
-  font-size: 1.3em;
+  font-size: 1.1em;
 
   border: .1em solid transparent;
-  color: var(--gray-12);
+  color: var(--llc-text-2);
   background-color: none;
   transition: background-color 0.2s ease-in-out;
 }
@@ -21,7 +21,8 @@
 }
 
 .close-button:hover {
-  background-color: var(--gray-4);
+  background-color: var(--llc-control-bg-hover);
+  color: var(--llc-text-1);
 }
 
 /* need to rotate the inner svg because https://github.com/mifi/lossless-cut/issues/2606#issuecomment-3512693358 */

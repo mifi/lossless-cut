@@ -1,26 +1,21 @@
 import type { DragEventHandler } from 'react';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { LuArrowDownAZ, LuArrowUpAZ, LuMerge, LuWandSparkles, LuX } from 'react-icons/lu';
 import { motion } from 'motion/react';
-import { FaTimes, FaHatWizard, FaSortAlphaDown, FaSortAlphaUp } from 'react-icons/fa';
-import { AiOutlineMergeCells } from 'react-icons/ai';
 import type { DragEndEvent, DragStartEvent, UniqueIdentifier } from '@dnd-kit/core';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 
 import BatchFile from './BatchFile';
-import { controlsBackground, darkModeTransition, primaryColor } from '../colors';
+import { darkModeTransition, primaryColor } from '../colors';
 import type { BatchFile as BatchFileType } from '../types';
 import useUserSettings from '../hooks/useUserSettings';
 
 
-const iconStyle = {
-  flexShrink: 0,
-  color: 'var(--gray-12)',
-  cursor: 'pointer',
-  padding: '.2em .3em',
-};
+// compact, so the header fits in one row next to the title
+const headerButtonStyle = { minWidth: '1.75em', height: '1.75em', padding: 0 };
 
 function BatchFilesList({ selectedBatchFiles, filePath, width, batchFiles, setBatchFiles, onBatchFileSelect, batchListRemoveFile, closeBatch, onMergeFilesClick, onBatchConvertToSupportedFormatClick, onDrop }: {
   selectedBatchFiles: string[],
@@ -53,7 +48,7 @@ function BatchFilesList({ selectedBatchFiles, filePath, width, batchFiles, setBa
     setSortDesc(newSortDesc);
   }, [batchFiles, setBatchFiles, sortDesc]);
 
-  const SortIcon = sortDesc ? FaSortAlphaDown : FaSortAlphaUp;
+  const SortIcon = sortDesc ? LuArrowDownAZ : LuArrowUpAZ;
 
   const sensors = useSensors(useSensor(PointerSensor, {
     activationConstraint: {
@@ -81,26 +76,26 @@ function BatchFilesList({ selectedBatchFiles, filePath, width, batchFiles, setBa
 
   return (
     <motion.div
-      className="no-user-select"
-      style={{ width, background: controlsBackground, color: 'var(--gray-12)', borderRight: '1px solid var(--gray-7)', transition: darkModeTransition, display: 'flex', flexDirection: 'column', overflowY: 'hidden', overflowX: 'hidden', resize: 'horizontal' }}
+      className="no-user-select llc-panel"
+      style={{ width, flexShrink: 0, color: 'var(--llc-text-1)', transition: darkModeTransition, display: 'flex', flexDirection: 'column', overflowY: 'hidden', overflowX: 'hidden', resize: 'horizontal' }}
       initial={{ x: -width }}
       animate={{ x: 0 }}
       exit={{ x: -width }}
       transition={springAnimation}
       onDrop={onDrop}
     >
-      <div style={{ paddingBottom: '.5em', paddingTop: 0, paddingLeft: '.5em', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap', gap: '.2em' }}>
-        <div style={{ fontSize: '.8em' }}>{t('Batch file list')}{batchFiles.length > 0 && ` (${batchFiles.length})`}</div>
+      <div style={{ padding: '.5em .4em .4em .9em', display: 'flex', alignItems: 'center', gap: '.1em' }}>
+        <div style={{ fontSize: '.85em', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t('Batch file list')}{batchFiles.length > 0 && ` (${batchFiles.length})`}</div>
         <div style={{ flexGrow: 1 }} />
-        <FaHatWizard role="button" title={`${t('Convert to supported format')}...`} style={iconStyle} onClick={onBatchConvertToSupportedFormatClick} />
-        <SortIcon role="button" title={t('Sort items')} style={iconStyle} onClick={onSortClick} />
-        <AiOutlineMergeCells className={simpleMode ? 'export-animation' : undefined} role="button" title={`${t('Merge/concatenate files')}...`} style={{ ...iconStyle, color: 'white', background: primaryColor, borderRadius: '.5em' }} onClick={onMergeFilesClick} />
-        <FaTimes role="button" title={t('Close batch')} style={{ ...iconStyle, fontSize: '1.1em', color: 'var(--gray-11)' }} onClick={closeBatch} />
+        <button type="button" className="llc-icon-button" title={`${t('Convert to supported format')}...`} style={headerButtonStyle} onClick={onBatchConvertToSupportedFormatClick}><LuWandSparkles /></button>
+        <button type="button" className="llc-icon-button" title={t('Sort items')} style={headerButtonStyle} onClick={onSortClick}><SortIcon /></button>
+        <button type="button" className={['llc-icon-button', ...(simpleMode ? ['export-animation'] : [])].join(' ')} title={`${t('Merge/concatenate files')}...`} style={{ ...headerButtonStyle, color: 'white', background: primaryColor }} onClick={onMergeFilesClick}><LuMerge /></button>
+        <button type="button" className="llc-icon-button" title={t('Close batch')} style={headerButtonStyle} onClick={closeBatch}><LuX /></button>
       </div>
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} onDragStart={handleDragStart} modifiers={[restrictToVerticalAxis]}>
         <SortableContext items={sortableList} strategy={verticalListSortingStrategy}>
-          <div style={{ overflowX: 'hidden', overflowY: 'auto' }}>
+          <div style={{ overflowX: 'hidden', overflowY: 'auto', padding: '0 .5em .5em', display: 'flex', flexDirection: 'column', gap: 2 }}>
             {sortableList.map(({ batchFile: { path, name } }, index) => (
               <BatchFile key={path} index={index} path={path} name={name} isSelected={selectedBatchFiles.includes(path)} isOpen={filePath === path} onSelect={onBatchFileSelect} onDelete={batchListRemoveFile} />
             ))}

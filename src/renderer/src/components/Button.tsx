@@ -2,7 +2,6 @@ import type { ButtonHTMLAttributes, DetailedHTMLProps } from 'react';
 import { forwardRef } from 'react';
 
 import styles from './Button.module.css';
-import { primaryColor, primaryTextColor } from '../colors';
 
 export type ButtonProps = DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>;
 
@@ -17,5 +16,5 @@ export default Button;
 // eslint-disable-next-line react/display-name
 export const DialogButton = forwardRef<HTMLButtonElement, { primary?: boolean } & ButtonProps>(({ primary, ...props }, ref) => (
   // eslint-disable-next-line react/jsx-props-no-spreading
-  <Button ref={ref} style={{ padding: '.5em 2em', ...(primary && { color: 'white', backgroundColor: primaryColor, borderColor: primaryTextColor }) }} {...props} />
+  <Button ref={ref} style={{ padding: '.55em 1.8em', borderRadius: 'var(--llc-radius-pill)', ...(primary && { color: 'white', fontWeight: 600, background: 'var(--llc-accent-gradient)', borderColor: 'transparent', boxShadow: 'var(--llc-accent-glow)' }) }} {...props} />
 ));

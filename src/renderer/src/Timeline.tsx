@@ -25,7 +25,7 @@ import { calculateTimelinePercent as calculateTimelinePercent2, calculateTimelin
 
 type CalculateTimelinePercent = (time: number) => string | undefined;
 
-const currentTimeWidth = 1;
+const currentTimeWidth = 2;
 // contrasting outline, so that the cursor/keyframes are visible on top of any segment color, in both light and dark mode #1199
 const outlineShadow = '0 0 0 1px var(--gray-1)';
 
@@ -41,7 +41,7 @@ const Waveform = memo(({ waveform, calculateTimelinePercent, fileDurationNonZero
   const width = 'to' in waveform ? ((Math.min(waveform.to, fileDurationNonZero) - waveform.from) / fileDurationNonZero) * 100 : 100;
 
   const style = useMemo<CSSProperties>(() => ({
-    pointerEvents: 'none', position: 'absolute', height: '100%', left: leftPos, width: `${width}%`, filter: darkMode ? undefined : 'invert(1)', imageRendering: 'pixelated',
+    pointerEvents: 'none', position: 'absolute', height: '100%', left: leftPos, width: `${width}%`, filter: darkMode ? undefined : 'invert(1)', opacity: 0.7, imageRendering: 'pixelated',
   }), [darkMode, leftPos, width]);
 
   if (waveform.url == null) {
@@ -79,13 +79,13 @@ const CommandedTime = memo(({ commandedTimePercent }: { commandedTimePercent: st
   return (
     <>
       <FaCaretDown style={{ ...commonStyle, top: 0, color, fontSize: 14, marginLeft: -7, marginTop: -6 }} />
-      <div style={{ ...commonStyle, bottom: 0, top: 0, backgroundColor: color, width: currentTimeWidth, boxShadow: outlineShadow }} />
+      <div style={{ ...commonStyle, bottom: 0, top: 0, marginLeft: -currentTimeWidth / 2, backgroundColor: color, width: currentTimeWidth, borderRadius: currentTimeWidth, boxShadow: outlineShadow }} />
       <FaCaretUp style={{ ...commonStyle, bottom: 0, color, fontSize: 14, marginLeft: -7, marginBottom: -5 }} />
     </>
   );
 });
 
-const timelineHeight = 36;
+const timelineHeight = 40;
 
 function Timeline({
   fileDurationNonZero,
@@ -370,7 +370,7 @@ function Timeline({
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions,jsx-a11y/mouse-events-have-key-events
     <div
       className="no-user-select"
-      style={{ position: 'relative', borderTop: '1px solid var(--gray-7)', borderBottom: '1px solid var(--gray-7)' }}
+      style={{ position: 'relative' }}
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
       // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
@@ -384,7 +384,7 @@ function Timeline({
       )}
 
       <div
-        style={{ overflowX: 'scroll', overflowY: 'hidden' }}
+        style={{ overflowX: 'scroll', overflowY: 'hidden', borderRadius: 'var(--llc-radius-card)', background: timelineBackground, border: '1px solid var(--llc-panel-border)' }}
         className="hide-scrollbar"
         onWheel={onWheel}
         onScroll={onTimelineScroll}
@@ -403,21 +403,21 @@ function Timeline({
         )}
 
         {showThumbnails && (
-          <div style={{ height: 60, width: `${zoom * 100}%`, position: 'relative', marginBottom: 3 }}>
+          <div style={{ height: 56, width: `${zoom * 100}%`, position: 'relative', margin: '4px 0' }}>
             {thumbnails.map((thumbnail, i) => {
               const leftPercent = (thumbnail.time / fileDurationNonZero) * 100;
               const nextThumbnail = thumbnails[i + 1];
               const nextThumbTime = nextThumbnail ? nextThumbnail.time : fileDurationNonZero;
               const maxWidthPercent = ((nextThumbTime - thumbnail.time) / fileDurationNonZero) * 100 * 0.9;
               return (
-                <img key={thumbnail.url} src={thumbnail.url} alt="" style={{ position: 'absolute', left: `${leftPercent}%`, height: '100%', boxSizing: 'border-box', maxWidth: `${maxWidthPercent}%`, objectFit: 'cover', border: '1px solid rgba(255, 255, 255, 0.5)', borderBottomRightRadius: 15, borderTopLeftRadius: 15, borderTopRightRadius: 15, pointerEvents: 'none' }} />
+                <img key={thumbnail.url} src={thumbnail.url} alt="" style={{ position: 'absolute', left: `${leftPercent}%`, height: '100%', boxSizing: 'border-box', maxWidth: `${maxWidthPercent}%`, objectFit: 'cover', borderRadius: 6, pointerEvents: 'none' }} />
               );
             })}
           </div>
         )}
 
         <div
-          style={{ height: timelineHeight, width: `${zoom * 100}%`, position: 'relative', backgroundColor: timelineBackground, transition: darkModeTransition }}
+          style={{ height: timelineHeight, width: `${zoom * 100}%`, position: 'relative', transition: darkModeTransition }}
           ref={timelineWrapperRef}
         >
           {inverseCutSegments.map((seg) => (
@@ -453,7 +453,7 @@ function Timeline({
           ))}
 
           {currentTimePercent !== undefined && (
-            <motion.div transition={springAnimation} animate={{ left: currentTimePercent }} style={{ position: 'absolute', bottom: 0, top: 0, backgroundColor: 'var(--gray-12)', width: currentTimeWidth, boxShadow: outlineShadow, pointerEvents: 'none' }} />
+            <motion.div transition={springAnimation} animate={{ left: currentTimePercent }} style={{ position: 'absolute', bottom: 0, top: 0, marginLeft: -currentTimeWidth / 2, backgroundColor: 'var(--gray-12)', width: currentTimeWidth, borderRadius: currentTimeWidth, boxShadow: outlineShadow, pointerEvents: 'none' }} />
           )}
           {commandedTimePercent !== undefined && (
             <CommandedTime commandedTimePercent={commandedTimePercent} />

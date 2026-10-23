@@ -1,14 +1,31 @@
 .exportButton {
   all: unset;
+  box-sizing: border-box;
   cursor: pointer;
-  color: white;
-  border-radius: .3em;
-  padding-bottom: .1em;
-  padding-left: .4em;
-  padding-right: .4em;
+  display: inline-flex;
+  align-items: center;
+  gap: .45em;
+  height: 2.1em;
+  padding: 0 1.1em;
+  border-radius: var(--llc-radius-pill);
+  background: var(--llc-accent-gradient);
+  box-shadow: var(--llc-accent-glow);
+  color: var(--llc-on-accent);
+  font-size: .85em;
+  font-weight: 600;
   white-space: nowrap;
+  transition: filter .15s, transform .15s;
 }
 
-.exportButton:focus {
-  outline: .1em solid white;
+.exportButton:hover {
+  filter: brightness(1.1);
+}
+
+.exportButton:active {
+  transform: translateY(1px);
+}
+
+.exportButton:focus-visible {
+  outline: 2px solid var(--llc-accent-text);
+  outline-offset: 2px;
 }

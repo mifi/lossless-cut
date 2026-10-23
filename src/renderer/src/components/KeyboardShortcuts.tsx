@@ -1,7 +1,7 @@
 import type { ReactNode, SetStateAction, Dispatch } from 'react';
 import { memo, Fragment, useEffect, useMemo, useCallback, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FaMouse, FaPlus, FaStepForward, FaStepBackward, FaUndo, FaTrash, FaSave, FaHammer } from 'react-icons/fa';
+import { LuHammer, LuMouse, LuPlus, LuSave, LuSkipBack, LuSkipForward, LuTrash2, LuUndo2 } from 'react-icons/lu';
 import groupBy from 'lodash/groupBy';
 import orderBy from 'lodash/orderBy';
 import uniq from 'lodash/uniq';
@@ -19,6 +19,7 @@ import Warning from './Warning';
 import Button, { DialogButton } from './Button';
 import Action from './Action';
 import TextInput from './TextInput';
+import styles from './KeyboardShortcuts.module.css';
 import Kbd from './Kbd';
 import { useAppContext } from '../contexts';
 
@@ -30,7 +31,7 @@ type ActionsMap = Record<KeyboardAction, { name: string, category?: Category, be
 
 const renderKeys = (keys: string[]) => keys.map((key, i) => (
   <Fragment key={key}>
-    {i > 0 && <FaPlus style={{ verticalAlign: 'middle', fontSize: '.4em', opacity: 0.8, marginLeft: '.4em', marginRight: '.4em' }} />}
+    {i > 0 && <LuPlus style={{ verticalAlign: 'middle', fontSize: '.4em', opacity: 0.8, marginLeft: '.4em', marginRight: '.4em' }} />}
     <Kbd code={key} />
   </Fragment>
 ));
@@ -123,13 +124,13 @@ const CreateBinding = memo(({
           <div style={{ marginBottom: '1em', display: 'flex', gap: '.5em', flexWrap: 'wrap' }}>
             {!keysDown.includes('esc') && <Button style={{ padding: '.2em .4em' }} onClick={() => addKeyDown('esc')}>ESC</Button>}
             {keysDown.length > 0 && (
-              <Button onClick={() => setKeysDown([])}><FaUndo style={{ fontSize: '.8em', verticalAlign: 'middle', marginRight: '.3em' }} />{t('Start over')}</Button>
+              <Button onClick={() => setKeysDown([])}><LuUndo2 style={{ fontSize: '.8em', verticalAlign: 'middle', marginRight: '.3em' }} />{t('Start over')}</Button>
             )}
           </div>
 
           <Dialog.ButtonRow>
             <DialogButton disabled={fixedKeys.length === 0 || isComboInvalid} onClick={() => action != null && onNewKeyBindingConfirmed(action, keysDown)} primary>
-              <FaSave style={{ marginRight: '.3em', verticalAlign: 'middle' }} />{t('Save')}
+              <LuSave style={{ marginRight: '.3em', verticalAlign: 'middle' }} />{t('Save')}
             </DialogButton>
           </Dialog.ButtonRow>
 
@@ -140,7 +141,7 @@ const CreateBinding = memo(({
   );
 });
 
-const rowStyle = { display: 'flex', alignItems: 'center', borderBottom: '1px solid rgba(0,0,0,0.1)', paddingBottom: '.2em' };
+const rowStyle = { display: 'flex', alignItems: 'center', padding: '.45em .6em' };
 
 function WheelModifier({ text, wheelText, modifier }: { text: string, wheelText: string, modifier: ModifierKey }) {
   return (
@@ -148,7 +149,7 @@ function WheelModifier({ text, wheelText, modifier }: { text: string, wheelText:
       <span>{text}</span>
       <div style={{ flexGrow: 1 }} />
       <kbd style={{ marginRight: '.7em' }}>{getModifier(modifier)}</kbd>
-      <FaMouse style={{ marginRight: '.3em' }} />
+      <LuMouse style={{ marginRight: '.3em' }} />
       <span>{wheelText}</span>
     </div>
   );
@@ -321,12 +322,12 @@ const KeyboardShortcuts = memo(({
       jumpCutStart: {
         name: t('Jump to current segment\'s start time'),
         category: seekingCategory,
-        before: <SegmentCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaStepBackward} style={{ verticalAlign: 'middle', marginRight: 5 }} />,
+        before: <SegmentCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={LuSkipBack} style={{ verticalAlign: 'middle', marginRight: 5 }} />,
       },
       jumpCutEnd: {
         name: t('Jump to current segment\'s end time'),
         category: seekingCategory,
-        before: <SegmentCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaStepForward} style={{ verticalAlign: 'middle', marginRight: 5 }} />,
+        before: <SegmentCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={LuSkipForward} style={{ verticalAlign: 'middle', marginRight: 5 }} />,
       },
       jumpTimelineStart: {
         name: t('Jump to start of video'),
@@ -761,7 +762,7 @@ const KeyboardShortcuts = memo(({
         <div key="1" style={{ ...rowStyle, alignItems: 'center' }}>
           <span>{t('Pan timeline')}</span>
           <div style={{ flexGrow: 1 }} />
-          <FaMouse style={{ marginRight: '.3em' }} />
+          <LuMouse style={{ marginRight: '.3em' }} />
           <span>{t('Mouse scroll/wheel up/down')}</span>
         </div>,
 
@@ -776,7 +777,7 @@ const KeyboardShortcuts = memo(({
           <span>{t('Manipulate segments on timeline')}</span>
           <div style={{ flexGrow: 1 }} />
           <kbd style={{ marginRight: '.7em' }}>{getModifier(segmentMouseModifierKey)}</kbd>
-          <FaMouse style={{ marginRight: '.3em' }} />
+          <LuMouse style={{ marginRight: '.3em' }} />
           <span>{t('Mouse click and drag')}</span>
         </div>,
       ],
@@ -878,7 +879,7 @@ const KeyboardShortcuts = memo(({
 
         {categoriesWithActions.map(([category, actionsInCategory]) => (
           <div key={category}>
-            {category !== 'undefined' && <div style={{ marginTop: '2em', marginBottom: '.7em', fontSize: '1.4em' }}>{category}</div>}
+            {category !== 'undefined' && <div className={styles['category']}>{category}</div>}
 
             {actionsInCategory.map(([action, actionObj]) => {
               const actionName = (actionObj && actionObj.name) || action;
@@ -887,11 +888,11 @@ const KeyboardShortcuts = memo(({
               const bindingsForThisAction = keyBindings.filter((keyBinding) => keyBinding.action === action);
 
               return (
-                <div key={action} style={rowStyle}>
+                <div key={action} className={styles['row']}>
                   <div>
                     {beforeContent}
-                    <span title={action} style={{ marginRight: '.5em', opacity: 0.9 }}>{actionName}</span>
-                    <div style={{ fontSize: '.8em', opacity: 0.3 }} title={t('API action name: {{action}}', { action })}>{action} <Button onClick={() => onTriggerActionClick(action)}><FaHammer /></Button></div>
+                    <span title={action} className={styles['actionName']}>{actionName}</span>
+                    <div className={styles['apiName']} title={t('API action name: {{action}}', { action })}>{action} <button type="button" className="llc-icon-button" style={{ minWidth: '1.6em', height: '1.6em', padding: 0 }} onClick={() => onTriggerActionClick(action)}><LuHammer /></button></div>
                   </div>
 
                   <div style={{ flexGrow: 1 }} />
@@ -901,14 +902,14 @@ const KeyboardShortcuts = memo(({
                       <div key={keys} style={{ display: 'flex', alignItems: 'center' }}>
                         {renderKeys(splitKeyboardKeys(keys))}
 
-                        <Button title={t('Remove key binding')} onClick={() => onDeleteBindingClick({ action, keys })} style={{ marginLeft: '.9em' }}><FaTrash style={{ fontSize: '.8em', verticalAlign: 'middle' }} /></Button>
+                        <button type="button" className={`llc-icon-button ${styles['deleteButton']}`} title={t('Remove key binding')} onClick={() => onDeleteBindingClick({ action, keys })} style={{ marginLeft: '.4em' }}><LuTrash2 /></button>
                       </div>
                     ))}
 
-                    {bindingsForThisAction.length === 0 && <span style={{ opacity: 0.8, fontSize: '.8em' }}>{t('No binding')}</span>}
+                    {bindingsForThisAction.length === 0 && <span className={styles['noBinding']}>{t('No binding')}</span>}
                   </div>
 
-                  <Button title={t('Bind new key to action')} onClick={() => onAddBindingClick(action)} style={{ marginLeft: '.5em' }}><FaPlus style={{ fontSize: '.8em', verticalAlign: 'middle' }} /></Button>
+                  <button type="button" className="llc-icon-button" title={t('Bind new key to action')} onClick={() => onAddBindingClick(action)}><LuPlus /></button>
                 </div>
               );
             })}
@@ -918,7 +919,7 @@ const KeyboardShortcuts = memo(({
         ))}
       </div>
 
-      {!isSearching && <Button onClick={onResetClick} style={{ marginBottom: '1em' }}><FaUndo style={{ marginRight: '.3em', verticalAlign: 'middle', padding: '.5em' }} />{t('Reset')}</Button>}
+      {!isSearching && <Button onClick={onResetClick} style={{ marginBottom: '1em' }}><LuUndo2 style={{ marginRight: '.3em', verticalAlign: 'middle', padding: '.5em' }} />{t('Reset')}</Button>}
 
       <CreateBinding actionsMap={actionsMap} action={creatingBinding} setCreatingBinding={setCreatingBinding} onNewKeyBindingConfirmed={onNewKeyBindingConfirmed} />
     </>
@@ -948,7 +949,7 @@ function KeyboardShortcutsDialog({
     <Dialog.Root open={isShown} onOpenChange={(v) => v === false && onHide()}>
       <Dialog.Portal>
         <Dialog.Overlay />
-        <Dialog.Content style={{ width: '40em' }} aria-describedby={undefined}>
+        <Dialog.Content style={{ width: '52em' }} aria-describedby={undefined}>
           <Dialog.Title>{t('Keyboard & mouse shortcuts')}</Dialog.Title>
 
           <KeyboardShortcuts keyBindings={keyBindings} setKeyBindings={setKeyBindings} currentCutSeg={currentCutSeg} resetKeyBindings={resetKeyBindings} onTriggerActionClick={handleTriggerActionClick} />

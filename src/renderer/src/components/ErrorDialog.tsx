@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { FaExclamationTriangle } from 'react-icons/fa';
+import { LuTriangleAlert } from 'react-icons/lu';
 
 import * as Dialog from './Dialog';
 import { DialogButton } from './Button';
@@ -28,7 +28,7 @@ export default function ErrorDialog({ error, onOpenChange }: {
           {error != null && (
             <>
               <Dialog.Title>
-                <FaExclamationTriangle style={{ color: warningColor, marginRight: '.5em', verticalAlign: 'middle' }} />
+                <LuTriangleAlert style={{ color: warningColor, marginRight: '.5em', verticalAlign: 'middle' }} />
                 {error.title ?? t('Error')}
               </Dialog.Title>
 

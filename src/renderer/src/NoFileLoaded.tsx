@@ -1,13 +1,12 @@
-import { Fragment, memo, useMemo, useState } from 'react';
+import type { CSSProperties } from 'react';
+import { Fragment, memo, useState } from 'react';
 import type { MotionStyle } from 'motion/react';
 import { motion } from 'motion/react';
-import { FaMouse } from 'react-icons/fa';
+import { LuArrowLeftToLine, LuArrowRightToLine, LuFilm, LuMouse } from 'react-icons/lu';
 import { useTranslation, Trans } from 'react-i18next';
 
-import SetCutpointButton from './components/SetCutpointButton';
 import SimpleModeButton from './components/SimpleModeButton';
 import useUserSettings from './hooks/useUserSettings';
-import type { StateSegment } from './types';
 import type { KeyBinding } from '../../common/types';
 import { splitKeyboardKeys } from './util';
 import { getModifier } from './hooks/useTimelineScroll';
@@ -25,27 +24,37 @@ function Keys({ keys }: { keys: string | undefined }) {
   ));
 }
 
+// Mirrors the Start/End buttons in the bottom bar. Must stay a leaf element, so that the translation key doesn't change
+function CutpointIcon({ side }: { side: 'start' | 'end' }) {
+  const Icon = side === 'start' ? LuArrowRightToLine : LuArrowLeftToLine;
+  return <span className="llc-chip" style={{ verticalAlign: 'middle' }}><Icon /></span>;
+}
+
 const dropzoneStyle: MotionStyle = {
   position: 'absolute',
   left: 0,
   right: 0,
   top: 0,
   bottom: 0,
-  color: 'var(--gray-12)',
-  margin: '2em',
+  color: 'var(--llc-text-1)',
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
   alignItems: 'center',
+  gap: '.7em',
   whiteSpace: 'nowrap',
-  borderWidth: '.7em',
+  borderWidth: 2,
   borderStyle: 'dashed',
-  borderColor: 'var(--gray-3)',
+  borderRadius: 'var(--llc-radius-panel)',
+  borderColor: 'var(--llc-control-border)',
+  background: 'var(--llc-panel-bg)',
+  cursor: 'pointer',
 };
 
-function NoFileLoaded({ mifiLink, currentCutSeg, onClick, darkMode, keyBindingByAction }: {
+const hintStyle: CSSProperties = { fontSize: '.85em', color: 'var(--llc-text-2)' };
+
+function NoFileLoaded({ mifiLink, onClick, darkMode, keyBindingByAction }: {
   mifiLink: unknown,
-  currentCutSeg: StateSegment | undefined,
   onClick: () => void,
   darkMode?: boolean,
   keyBindingByAction: Record<string, KeyBinding>,
@@ -54,29 +63,31 @@ function NoFileLoaded({ mifiLink, currentCutSeg, onClick, darkMode, keyBindingBy
   const { simpleMode, segmentMouseModifierKey } = useUserSettings();
   const [dragging, setDragging] = useState(false);
 
-  const currentCutSegOrDefault = useMemo(() => currentCutSeg ?? { segColorIndex: 0 }, [currentCutSeg]);
-
   return (
     <motion.div
       className="no-user-select"
       style={dropzoneStyle}
-      animate={{ borderColor: dragging ? 'var(--gray-9)' : 'var(--gray-3)' }}
+      animate={{ borderColor: dragging ? 'var(--llc-accent-border)' : 'var(--llc-control-border)' }}
       onDragOver={() => setDragging(true)}
       onDragLeave={() => setDragging(false)}
       role="button"
       onClick={onClick}
     >
-      <div style={{ fontSize: '1.7em', textTransform: 'uppercase', color: 'var(--gray-11)', marginBottom: '.1em' }}>{t('DROP FILE(S)')}</div>
+      <div style={{ width: '3.6em', height: '3.6em', borderRadius: '1.1em', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--llc-accent-gradient)', boxShadow: 'var(--llc-accent-glow)', color: '#fff', marginBottom: '.4em' }}>
+        <LuFilm size={26} />
+      </div>
 
-      <div style={{ fontSize: '1.3em', color: 'var(--gray-11)', marginBottom: '.1em' }}>
+      <div style={{ fontSize: '1.4em', fontWeight: 600, letterSpacing: '.02em' }}>{t('DROP FILE(S)')}</div>
+
+      <div style={hintStyle}>
         <Trans>See <b>Help</b> menu for help</Trans>
       </div>
 
-      <div style={{ fontSize: '1.3em', color: 'var(--gray-11)' }}>
-        <Trans><SetCutpointButton currentCutSeg={currentCutSegOrDefault} side="start" style={{ verticalAlign: 'middle' }} /> <SetCutpointButton currentCutSeg={currentCutSegOrDefault} side="end" style={{ verticalAlign: 'middle' }} />, <Keys keys={keyBindingByAction['setCutStart']?.keys} /> <Keys keys={keyBindingByAction['setCutEnd']?.keys} /> or <span><kbd style={{ marginRight: '.1em' }}>{getModifier(segmentMouseModifierKey)}</kbd></span>+<FaMouse style={{ marginRight: '.1em', verticalAlign: 'middle' }} /> to set cutpoints</Trans>
+      <div style={{ ...hintStyle, marginTop: '1em' }}>
+        <Trans><CutpointIcon side="start" /> <CutpointIcon side="end" />, <Keys keys={keyBindingByAction['setCutStart']?.keys} /> <Keys keys={keyBindingByAction['setCutEnd']?.keys} /> or <span><kbd style={{ marginRight: '.1em' }}>{getModifier(segmentMouseModifierKey)}</kbd></span>+<LuMouse style={{ marginRight: '.1em', verticalAlign: 'middle' }} /> to set cutpoints</Trans>
       </div>
 
-      <div style={{ fontSize: '1.3em', color: 'var(--gray-11)' }} role="button" onClick={(e) => e.stopPropagation()}>
+      <div style={hintStyle} role="button" onClick={(e) => e.stopPropagation()}>
         {simpleMode ? (
           <Trans><SimpleModeButton style={{ verticalAlign: 'middle' }} /> to show advanced view</Trans>
         ) : (

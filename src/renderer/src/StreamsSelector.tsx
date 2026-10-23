@@ -1,10 +1,8 @@
 import type { Dispatch, SetStateAction, CSSProperties, ReactNode, ChangeEventHandler, DragEventHandler } from 'react';
 import { memo, useState, useMemo, useCallback } from 'react';
 
-import { FaImage, FaPaperclip, FaVideo, FaVideoSlash, FaFileImport, FaVolumeUp, FaVolumeMute, FaBan, FaFileExport, FaBook, FaInfoCircle, FaFilter, FaEye, FaEdit, FaTrash, FaSortNumericDown, FaSortNumericUp, FaHamburger, FaMap, FaLanguage, FaUndo } from 'react-icons/fa';
-import { GoFileBinary } from 'react-icons/go';
-import { MdSubtitles } from 'react-icons/md';
 import { useTranslation, Trans } from 'react-i18next';
+import { LuArrowDown01, LuArrowUp01, LuBan, LuBinary, LuBookOpen, LuCaptions, LuEllipsis, LuEye, LuFileInput, LuFileOutput, LuFilter, LuImage, LuInfo, LuLanguages, LuMap, LuPaperclip, LuPencil, LuTrash2, LuUndo2, LuVideo, LuVideoOff, LuVolume2, LuVolumeX } from 'react-icons/lu';
 import prettyBytes from 'pretty-bytes';
 import { Button as ThemesButton, Callout, Tabs, TextField } from '@radix-ui/themes';
 import { produce } from 'immer';
@@ -42,7 +40,7 @@ type ResetParams = (path: string, streamId?: number) => void;
 
 // highlighted when there are changes
 function EditButton({ title, onClick, highlighted }: { title: string, onClick: () => void, highlighted: boolean }) {
-  return <Button title={title} onClick={onClick}><FaEdit style={{ verticalAlign: 'middle', color: highlighted ? 'var(--accent-11)' : undefined }} /></Button>;
+  return <Button title={title} onClick={onClick}><LuPencil style={{ verticalAlign: 'middle', color: highlighted ? 'var(--accent-11)' : undefined }} /></Button>;
 }
 
 // Without streamId: resets the file's own params (not its tracks). Keeps disposition (see hasStreamEdits)
@@ -98,7 +96,7 @@ function useCommonTagInfo(): TagInfo {
 function ActionCallout({ color, style, text, actionText, onAction }: { color: 'amber' | 'blue', style?: CSSProperties, text: string, actionText: string, onAction: () => void }) {
   return (
     <Callout.Root size="1" color={color} style={style}>
-      <Callout.Icon><FaInfoCircle /></Callout.Icon>
+      <Callout.Icon><LuInfo /></Callout.Icon>
       <Callout.Text>
         {text}{' '}
         <ThemesButton size="1" variant="soft" onClick={onAction}>{actionText}</ThemesButton>
@@ -126,7 +124,7 @@ function MovMetadataNotice({ outFormat, metadata, isStream }: { outFormat: strin
 
 function ResetButton({ disabled, onClick }: { disabled: boolean, onClick: () => void }) {
   const { t } = useTranslation();
-  return <DialogButton disabled={disabled} onClick={onClick}><FaUndo style={{ verticalAlign: 'baseline', fontSize: '.8em', marginRight: '.3em' }} />{t('Reset')}</DialogButton>;
+  return <DialogButton disabled={disabled} onClick={onClick}><LuUndo2 style={{ verticalAlign: 'baseline', fontSize: '.8em', marginRight: '.3em' }} />{t('Reset')}</DialogButton>;
 }
 
 function KeyValue({ name, value }: { name: ReactNode, value: ReactNode }) {
@@ -539,28 +537,28 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
   const streamDuration = parseInt(stream.duration, 10);
   const duration = !Number.isNaN(streamDuration) ? streamDuration : fileDuration;
 
-  let Icon: typeof FaBan;
+  let Icon: typeof LuBan;
   let codecTypeHuman;
   // eslint-disable-next-line unicorn/prefer-switch
   if (stream.codec_type === 'audio') {
-    Icon = copyStream ? FaVolumeUp : FaVolumeMute;
+    Icon = copyStream ? LuVolume2 : LuVolumeX;
     codecTypeHuman = t('audio');
   } else if (stream.codec_type === 'video') {
     if (effectiveDisposition === attachedPicDisposition) {
-      Icon = copyStream ? FaImage : FaBan;
+      Icon = copyStream ? LuImage : LuBan;
       codecTypeHuman = t('thumbnail');
     } else {
-      Icon = copyStream ? FaVideo : FaVideoSlash;
+      Icon = copyStream ? LuVideo : LuVideoOff;
       codecTypeHuman = t('video');
     }
   } else if (stream.codec_type === 'subtitle') {
-    Icon = copyStream ? MdSubtitles : FaBan;
+    Icon = copyStream ? LuCaptions : LuBan;
     codecTypeHuman = t('subtitle');
   } else if (stream.codec_type === 'attachment') {
-    Icon = copyStream ? FaPaperclip : FaBan;
+    Icon = copyStream ? LuPaperclip : LuBan;
     codecTypeHuman = t('attachment');
   } else {
-    Icon = copyStream ? GoFileBinary : FaBan;
+    Icon = copyStream ? LuBinary : LuBan;
     codecTypeHuman = stream.codec_type;
   }
 
@@ -609,7 +607,7 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
       <td style={{ maxWidth: '2.5em', overflow: 'hidden' }} title={effectiveLanguage}>{effectiveLanguage}</td>
       <td>{stream.width && stream.height && `${stream.width}x${stream.height}`} {stream.channels && `${stream.channels}c`} {stream.channel_layout} {sampleRate > 0 && `${sampleRate / 1000}kHz`} {streamFps && `${streamFps.toFixed(2)}fps`}</td>
       <td>
-        <Select style={{ width: '6em' }} value={effectiveDisposition || unchangedDispositionValue} onChange={onDispositionChange}>
+        <Select style={{ width: '8em' }} value={effectiveDisposition || unchangedDispositionValue} onChange={onDispositionChange}>
           <option value="" disabled>{t('Disposition')}</option>
           <option value={unchangedDispositionValue}>{t('Unchanged')}</option>
           <option value={deleteDispositionValue}>{t('Remove')}</option>
@@ -624,20 +622,20 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
         {hasStreamEdits(streamParams) && <EditButton title={t('This track has been edited')} onClick={() => setEditingStream({ streamId: stream.index, path: filePath })} highlighted />}
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
-            <Button><FaHamburger style={{ verticalAlign: 'middle', padding: '.4em' }} /></Button>
+            <Button><LuEllipsis style={{ verticalAlign: 'middle', padding: '.4em' }} /></Button>
           </DropdownMenu.Trigger>
 
           <DropdownMenu.Portal>
             <DropdownMenu.Content sideOffset={5}>
               <Json5Dialog title={t('Track {{num}} info', { num: stream.index + 1 })} json={stream}>
                 <DropdownMenu.Item onSelect={(e) => e.preventDefault()}>
-                  <FaInfoCircle style={{ verticalAlign: 'middle', marginRight: '.3em' }} />
+                  <LuInfo style={{ verticalAlign: 'middle', marginRight: '.3em' }} />
                   {t('Track {{num}} info', { num: stream.index + 1 })}
                 </DropdownMenu.Item>
               </Json5Dialog>
 
               <DropdownMenu.Item onClick={() => setEditingStream({ streamId: stream.index, path: filePath })}>
-                <FaEdit style={{ marginRight: '.3em' }} />
+                <LuPencil style={{ marginRight: '.3em' }} />
                 {t('Edit track metadata')}
               </DropdownMenu.Item>
 
@@ -645,14 +643,14 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
 
               {onExtractStreamPress && (
                 <DropdownMenu.Item onClick={onExtractStreamPress}>
-                  <FaFileExport style={{ marginRight: '.3em' }} />
+                  <LuFileOutput style={{ marginRight: '.3em' }} />
                   {t('Extract this track as file')}
                 </DropdownMenu.Item>
               )}
 
               {stream.codec_type === 'subtitle' && (
                 <DropdownMenu.Item onClick={onLoadSubtitleTrackToSegmentsClick}>
-                  <MdSubtitles style={{ marginRight: '.3em' }} />
+                  <LuCaptions style={{ marginRight: '.3em' }} />
                   {t('Create segments from subtitles')}
                 </DropdownMenu.Item>
               )}
@@ -662,7 +660,7 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
                   <Dialog.Trigger asChild>
                     {/* https://github.com/radix-ui/primitives/issues/1836#issuecomment-1674338372 */}
                     <DropdownMenu.Item onSelect={(e) => e.preventDefault()}>
-                      <FaMap style={{ marginRight: '.3em' }} />
+                      <LuMap style={{ marginRight: '.3em' }} />
                       {t('Show GPS map')}
                     </DropdownMenu.Item>
                   </Dialog.Trigger>
@@ -684,7 +682,7 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
               <DropdownMenu.Separator />
 
               <DropdownMenu.Item onClick={() => toggleCopyStreamIds((s) => s.codec_type === stream.codec_type)}>
-                <FaEye style={{ marginRight: '.3em' }} />
+                <LuEye style={{ marginRight: '.3em' }} />
                 {t('Toggle {{type}} tracks', { type: codecTypeHuman })}
               </DropdownMenu.Item>
 
@@ -719,18 +717,18 @@ function FileHeading({ path, format, onEditClick, edited, toggleCopyAllStreams, 
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '.2em', fontSize: '1.3em', marginBottom: '.2em' }}>
         {chapters && chapters.length > 0 && (
           <Json5Dialog title={t('Chapters')} json={chapters}>
-            <Button title={t('Chapters')}><FaBook style={{ verticalAlign: 'middle' }} /></Button>
+            <Button title={t('Chapters')}><LuBookOpen style={{ verticalAlign: 'middle' }} /></Button>
           </Json5Dialog>
         )}
         <Json5Dialog title={t('File info')} json={format}>
-          <Button title={t('File info')}><FaInfoCircle style={{ verticalAlign: 'middle' }} /></Button>
+          <Button title={t('File info')}><LuInfo style={{ verticalAlign: 'middle' }} /></Button>
         </Json5Dialog>
         {onEditClick && <EditButton title={t('Edit file metadata')} onClick={onEditClick} highlighted={edited} />}
-        <Button title={t('Toggle all tracks')} onClick={() => toggleCopyAllStreams()}><FaEye style={{ verticalAlign: 'middle' }} /></Button>
-        {changeEnabledStreamsFilter && <Button title={t('Filter tracks')} onClick={changeEnabledStreamsFilter}><FaFilter style={{ verticalAlign: 'middle' }} /></Button>}
-        {onExtractAllStreamsPress && <Button title={t('Export each track as individual files')} onClick={onExtractAllStreamsPress}><FaFileExport style={{ verticalAlign: 'middle' }} /></Button>}
+        <Button title={t('Toggle all tracks')} onClick={() => toggleCopyAllStreams()}><LuEye style={{ verticalAlign: 'middle' }} /></Button>
+        {changeEnabledStreamsFilter && <Button title={t('Filter tracks')} onClick={changeEnabledStreamsFilter}><LuFilter style={{ verticalAlign: 'middle' }} /></Button>}
+        {onExtractAllStreamsPress && <Button title={t('Export each track as individual files')} onClick={onExtractAllStreamsPress}><LuFileOutput style={{ verticalAlign: 'middle' }} /></Button>}
 
-        {onTrashClick && <Button onClick={onTrashClick}><FaTrash style={{ verticalAlign: 'middle' }} /></Button>}
+        {onTrashClick && <Button onClick={onTrashClick}><LuTrash2 style={{ verticalAlign: 'middle' }} /></Button>}
       </div>
     </div>
   );
@@ -746,7 +744,7 @@ function Thead() {
         <th>{t('Duration')}</th>
         <th>{t('Bitrate')}</th>
         <th>{t('Title')}</th>
-        <th title={t('Language')}><FaLanguage style={{ fontSize: '1.9em', verticalAlign: 'top' }} /></th>
+        <th title={t('Language')}><LuLanguages style={{ fontSize: '1.9em', verticalAlign: 'top' }} /></th>
         <th>{t('Data')}</th>
         <th>{t('Disposition')}</th>
         <th />
@@ -888,12 +886,12 @@ function StreamsSelector({
 
       <div style={{ margin: '1em 0' }}>
         <Button style={{ marginBottom: '1em', padding: '0.3em 1em' }} onClick={showAddStreamSourceDialog}>
-          <FaFileImport style={{ verticalAlign: 'middle', marginRight: '.5em' }} /> {t('Include more tracks from other file')}
+          <LuFileInput style={{ verticalAlign: 'middle', marginRight: '.5em' }} /> {t('Include more tracks from other file')}
         </Button>
 
         {haveEdits && (
           <Button style={{ marginBottom: '1em', marginLeft: '.5em', padding: '0.3em 1em' }} onClick={onResetAllClick}>
-            <FaUndo style={{ verticalAlign: 'middle', marginRight: '.5em' }} /> {t('Reset all changes')}
+            <LuUndo2 style={{ verticalAlign: 'middle', marginRight: '.5em' }} /> {t('Reset all changes')}
           </Button>
         )}
 
@@ -908,7 +906,7 @@ function StreamsSelector({
           <div style={{ marginBottom: '1em' }}>
             <div style={{ marginBottom: '.5em' }}>{t('When tracks have different lengths, do you want to make the output file as long as the longest or the shortest track?')}</div>
             <Button style={{ padding: '0.3em 1em' }} onClick={() => setShortestFlag((value) => !value)}>
-              {shortestFlag ? <><FaSortNumericDown style={{ verticalAlign: 'middle', marginRight: '.5em' }} />{t('Shortest')}</> : <><FaSortNumericUp style={{ verticalAlign: 'middle', marginRight: '.5em' }} />{t('Longest')}</>}
+              {shortestFlag ? <><LuArrowDown01 style={{ verticalAlign: 'middle', marginRight: '.5em' }} />{t('Shortest')}</> : <><LuArrowUp01 style={{ verticalAlign: 'middle', marginRight: '.5em' }} />{t('Longest')}</>}
             </Button>
           </div>
         )}

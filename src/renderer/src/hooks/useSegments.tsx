@@ -6,7 +6,7 @@ import pMap from 'p-map';
 import invariant from 'tiny-invariant';
 import sortBy from 'lodash/sortBy';
 import { Trans, useTranslation } from 'react-i18next';
-import { FaLink } from 'react-icons/fa';
+import { LuLink } from 'react-icons/lu';
 
 import TextInput from '../components/TextInput';
 import { detectSceneChanges as ffmpegDetectSceneChanges, readFrames, mapTimesToSegments, findKeyframeNearTime } from '../ffmpeg';
@@ -272,7 +272,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
 
           <Dialog.Description>{description}</Dialog.Description>
 
-          {docUrl && <p><Button onClick={() => mainApi.openExternal(docUrl)}><FaLink style={{ fontSize: '.8em' }} /> {t('Read more')}</Button></p>}
+          {docUrl && <p><Button onClick={() => mainApi.openExternal(docUrl)}><LuLink style={{ fontSize: '.8em' }} /> {t('Read more')}</Button></p>}
 
           <form onSubmit={handleSubmit}>
             {Object.entries(parametersIn).map(([key, parameter], i) => {

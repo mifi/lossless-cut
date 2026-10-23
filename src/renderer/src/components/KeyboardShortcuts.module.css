@@ -1,0 +1,42 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: .4em;
+  padding: .45em .6em;
+  border-radius: var(--llc-radius-control);
+}
+
+.row:hover {
+  background: var(--llc-card-bg-hover);
+}
+
+.category {
+  margin: 1.8em 0 .5em .6em;
+  font-size: .75em;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--llc-text-3);
+}
+
+.actionName {
+  margin-right: .5em;
+  color: var(--llc-text-1);
+}
+
+.apiName {
+  display: flex;
+  align-items: center;
+  gap: .3em;
+  font-size: .75em;
+  color: var(--llc-text-3);
+}
+
+.noBinding {
+  font-size: .8em;
+  color: var(--llc-text-3);
+}
+
+.deleteButton:hover {
+  color: #e5484d;
+}

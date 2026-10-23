@@ -1,8 +1,8 @@
 import type { CSSProperties } from 'react';
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { LuClipboardList } from 'react-icons/lu';
 
-import { MdEventNote } from 'react-icons/md';
 
 import { primaryTextColor } from '../colors';
 import useUserSettings from '../hooks/useUserSettings';
@@ -13,7 +13,7 @@ function ToggleExportConfirm({ size = 23, style }: { size?: string | number | un
   const { exportConfirmEnabled, toggleExportConfirmEnabled } = useUserSettings();
 
   return (
-    <MdEventNote style={{ color: exportConfirmEnabled ? primaryTextColor : 'var(--gray-11)', ...style, cursor: 'pointer' }} size={size} title={t('Show export options screen before exporting?')} role="button" onClick={toggleExportConfirmEnabled} />
+    <LuClipboardList style={{ color: exportConfirmEnabled ? primaryTextColor : 'var(--gray-11)', ...style, cursor: 'pointer' }} size={size} title={t('Show export options screen before exporting?')} role="button" onClick={toggleExportConfirmEnabled} />
   );
 }
 
