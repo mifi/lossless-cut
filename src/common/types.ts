@@ -100,6 +100,7 @@ export const configSchema = z.object({
   enableAutoHtml5ify: z.boolean(),
   keyBindings: keyBindingSchema.array(),
   customFfPath: z.string().or(z.undefined()),
+  lastDialogDir: z.string().or(z.undefined()),
   storeProjectInWorkingDir: z.boolean(),
   enableOverwriteOutput: z.boolean(),
   mouseWheelZoomModifierKey: modifierKeySchema,

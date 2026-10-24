@@ -7,9 +7,6 @@ import { Arch, type AfterPackContext } from 'electron-builder';
 import { execa } from 'execa';
 
 export default async function afterPack({ appOutDir, arch, electronPlatformName, packager }: AfterPackContext) {
-  // We have no ffmpeg builds for Linux armv7l (see script/downloadFfmpeg.ts)
-  if (electronPlatformName === 'linux' && arch === Arch.armv7l) return;
-
   const resourcesDir = packager.getResourcesDir(appOutDir);
   for (const name of ['ffmpeg', 'ffprobe']) {
     const path = join(resourcesDir, electronPlatformName === 'win32' ? `${name}.exe` : name);

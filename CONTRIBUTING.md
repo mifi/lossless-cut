@@ -129,6 +129,11 @@ Use the newest stable release branch that all platforms can get (BtbN may lag be
 
 For every Electron or other dependency upgrade (especially major versions), go through its changelog / breaking changes (for Electron: [breaking changes](https://github.com/electron/electron/blob/main/docs/breaking-changes.md) and the [release notes](https://releases.electronjs.org/)) and check the APIs and behaviours LosslessCut relies on, like we do for [FFmpeg](#upgrade-ffmpeg).
 
+If the upgrade drops an OS version or architecture, release it as a minor version and update:
+- [requirements](docs/requirements.md) and `supportedOs` in [Home.tsx](./website/src/components/Home.tsx)
+- removed architectures: the `electron-builder` targets in [package.json](./package.json), [afterPack.ts](./script/afterPack.ts), the [build workflow](./.github/workflows/build.yml) uploads and the [README](./README.md) download links
+- removed macOS versions: `MACOSX_DEPLOYMENT_TARGET` in [ffmpeg-build-script](https://github.com/mifi/ffmpeg-build-script/blob/master/build-ffmpeg) can be raised to match, with the next FFmpeg upgrade (older targets still run on newer macOS, so there's no hurry). See [`LSMinimumSystemVersion`](#macos-lsminimumsystemversion).
+
 ### Keep dependencies up to date
 
 ```bash

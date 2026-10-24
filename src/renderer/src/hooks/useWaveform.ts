@@ -2,7 +2,8 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import sortBy from 'lodash/sortBy';
 import invariant from 'tiny-invariant';
 
-import { renderWaveformPng, safeCreateBlob } from '../ffmpeg';
+import { renderWaveformPng } from '../ffmpeg';
+import { safeCreateBlob } from '../util';
 import type { OverviewWaveform, WaveformSlice } from '../types';
 import type { FFprobeStream } from '../../../common/ffprobe';
 
