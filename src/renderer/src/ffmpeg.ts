@@ -8,7 +8,7 @@ import invariant from 'tiny-invariant';
 import z from 'zod';
 
 import { pcmAudioCodecs, isMov } from './util/streams';
-import { isExecaError } from './util';
+import { decodeText, isExecaError, safeCreateBlob } from './util';
 import { isDurationValid } from './segments';
 import type { FFprobeChapter, FFprobeFormat, FFprobeProbeResult, FFprobeStream } from '../../common/ffprobe';
 import { parseSrt, parseSrtToSegments } from './edlFormats';
@@ -30,17 +30,6 @@ export class RefuseOverwriteError extends Error {
     this.name = 'RefuseOverwriteError';
   }
 }
-
-// execa's stdout/stderr (from main, via @electron/remote) are backed by a resizable ArrayBuffer,
-// which Web APIs don't accept, e.g. "Failed to construct 'Blob': The provided ArrayBufferView value must not be resizable."
-// (and since Electron 43 also TextDecoder), so we copy them first.
-// maybe when moving away from @electron/remote, it's not needed anymore?
-// https://stackoverflow.com/a/25255750/6519037
-const copyResizable = (array: Uint8Array) => new Uint8Array(array);
-
-export const safeCreateBlob = (array: Uint8Array, options?: BlobPropertyBag) => new Blob([copyResizable(array)], options);
-
-export const decodeText = (array: Uint8Array) => new TextDecoder().decode(copyResizable(array));
 
 export function logStdoutStderr({ stdout, stderr }: { stdout: Uint8Array, stderr: Uint8Array }) {
   if (stdout.length > 0) {

@@ -293,7 +293,18 @@ export const isAbortedError = (err: unknown) => (
   || (err instanceof Error && err.name === 'AbortError')
 );
 
-export const getStdioString = (stdio: string | Uint8Array) => (stdio instanceof Uint8Array ? Buffer.from(stdio).toString('utf8') : stdio);
+// execa's stdout/stderr (from main, via @electron/remote) are backed by a resizable ArrayBuffer,
+// which Web APIs don't accept, e.g. "Failed to construct 'Blob': The provided ArrayBufferView value must not be resizable."
+// (and since Electron 43 also TextDecoder), so we copy them first.
+// maybe when moving away from @electron/remote, it's not needed anymore?
+// https://stackoverflow.com/a/25255750/6519037
+const copyResizable = (array: Uint8Array) => new Uint8Array(array);
+
+export const safeCreateBlob = (array: Uint8Array, options?: BlobPropertyBag) => new Blob([copyResizable(array)], options);
+
+export const decodeText = (array: Uint8Array) => new TextDecoder().decode(copyResizable(array));
+
+export const getStdioString = (stdio: string | Uint8Array) => (stdio instanceof Uint8Array ? decodeText(stdio) : stdio);
 
 // A bit hacky but it works, unless someone has a file called "No space left on device" ( ͡° ͜ʖ ͡°)
 export const isOutOfSpaceError = (err: InvariantExecaError) => (
