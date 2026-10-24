@@ -56,7 +56,7 @@ const usageScenarios = [
 ];
 
 // as in docs/requirements.md
-const supportedOs = 'Windows 10 and 11, macOS 12 or newer, Linux';
+const supportedOs = 'Windows 10 and 11, macOS 13 or newer, Linux';
 
 // A few from docs/faq.md, shortened
 const faqs: { question: string, answer: ReactNode }[] = [
