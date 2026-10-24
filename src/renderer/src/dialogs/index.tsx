@@ -18,7 +18,7 @@ import getSwal from '../swal';
 import isDev from '../isDev';
 import mainApi from '../mainApi';
 
-const { lstat } = window.require('node:fs/promises');
+const { lstat, stat } = window.require('node:fs/promises');
 const remote = window.require('@electron/remote');
 const { dialog } = remote;
 const { configStore } = remote.require('./index.js');
@@ -28,7 +28,7 @@ const { configStore } = remote.require('./index.js');
 async function getLastDialogDir() {
   const dir = configStore.get('lastDialogDir');
   // A missing folder would end up in the file name box on Windows
-  if (dir == null || !(await lstat(dir).then((stat) => stat.isDirectory(), () => false))) return undefined;
+  if (dir == null || !(await stat(dir).then((stats) => stats.isDirectory(), () => false))) return undefined;
   return dir;
 }
 
@@ -42,7 +42,13 @@ export const showOpenDialog = async ({
   const effectiveDefaultPath = defaultPath || await getLastDialogDir();
   const result = await dialog.showOpenDialog({ ...props, title, ...(effectiveDefaultPath != null && { defaultPath: effectiveDefaultPath }), ...(filters != null ? { filters } : {}) });
   const [firstPath] = result.filePaths;
-  if (!result.canceled && firstPath != null) configStore.set('lastDialogDir', dirname(firstPath));
+  if (!result.canceled && firstPath != null) {
+    try {
+      configStore.set('lastDialogDir', dirname(firstPath));
+    } catch (err) {
+      console.error('Failed to save last dialog folder', err);
+    }
+  }
   return result;
 };
 
