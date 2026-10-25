@@ -222,6 +222,10 @@ const KeyboardShortcuts = memo(({
         name: t('Slow down playback more'),
         category: playbackCategory,
       },
+      togglePlaybackRate: {
+        name: t('Toggle between normal and last used playback speed'),
+        category: playbackCategory,
+      },
       increaseVolume: {
         name: t('Increase audio volume'),
         category: playbackCategory,
