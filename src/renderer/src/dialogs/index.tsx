@@ -1,8 +1,8 @@
 import type { CSSProperties, ReactNode } from 'react';
 import i18n from 'i18next';
 import { Trans } from 'react-i18next';
+import { LuArrowRight, LuCircleHelp, LuInfo, LuTriangleAlert } from 'react-icons/lu';
 import invariant from 'tiny-invariant';
-import { FaArrowRight, FaExclamationTriangle, FaInfoCircle, FaQuestionCircle } from 'react-icons/fa';
 import ky from 'ky';
 import pMap from 'p-map';
 
@@ -12,7 +12,7 @@ import { parseYouTube } from '../edlFormats';
 import { appPath, isMasBuild, isStoreBuild, isWindows, isWindowsStoreBuild, testFailFsOperation, trashFile, unlinkWithRetry } from '../util';
 import type { ParseTimecode } from '../types';
 import type { FindKeyframeMode } from '../ffmpeg';
-import { dangerColor, primaryColor, warningColor } from '../colors';
+import { primaryColor, warningColor } from '../colors';
 import getSwal from '../swal';
 import isDev from '../isDev';
 import mainApi from '../mainApi';
@@ -113,13 +113,13 @@ export async function askForFileOpenAction(inputOptions: [OpenFileResponse, stri
         <div style={{ marginBottom: '1em' }}>{i18n.t('You opened a new file. What do you want to do?')}</div>
 
         {inputOptions.map(([key, text]) => (
-          <button type="button" key={key} onClick={() => onClick(key)} className="button-unstyled" style={{ display: 'block', marginBottom: '.5em' }}>
-            <FaArrowRight style={{ color: 'var(--gray-10)', verticalAlign: 'middle' }} /> {text}
+          <button type="button" key={key} onClick={() => onClick(key)} className="llc-option-button">
+            <LuArrowRight style={{ color: 'var(--llc-accent-text)', flexShrink: 0 }} /> {text}
           </button>
         ))}
 
-        <button type="button" onClick={() => onClick()} className="button-unstyled" style={{ display: 'block', marginTop: '.5em' }}>
-          <FaArrowRight style={{ color: dangerColor, verticalAlign: 'middle' }} /> {i18n.t('Cancel')}
+        <button type="button" onClick={() => onClick()} className="llc-option-button llc-option-cancel">
+          {i18n.t('Cancel')}
         </button>
 
       </div>
@@ -489,13 +489,13 @@ export const ListItem = ({ icon, iconColor, children, style }: { icon: ReactNode
 );
 
 export const Notices = ({ notices }: { notices: string[] }) => notices.map((msg) => (
-  <ListItem key={msg} icon={<FaInfoCircle />} iconColor={primaryColor}>{msg}</ListItem>
+  <ListItem key={msg} icon={<LuInfo />} iconColor={primaryColor}>{msg}</ListItem>
 ));
 export const Warnings = ({ warnings }: { warnings: string[] }) => warnings.map((msg) => (
-  <ListItem key={msg} icon={<FaExclamationTriangle />} iconColor={warningColor}>{msg}</ListItem>
+  <ListItem key={msg} icon={<LuTriangleAlert />} iconColor={warningColor}>{msg}</ListItem>
 ));
 export const OutputIncorrectSeeHelpMenu = () => (
-  <ListItem icon={<FaQuestionCircle />}>{i18n.t('If output does not look right, see the Help menu.')}</ListItem>
+  <ListItem icon={<LuCircleHelp />}>{i18n.t('If output does not look right, see the Help menu.')}</ListItem>
 );
 
 export async function askForPlaybackRate({ detectedFps, outputPlaybackRate }: { detectedFps: number | undefined, outputPlaybackRate: number }) {

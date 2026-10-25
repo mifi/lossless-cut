@@ -1,32 +1,15 @@
 import type { BrowserWindow } from 'electron';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { Menu } from 'electron';
 
+export interface EditContextMenuRequest { x: number, y: number, isEditable: boolean, hasSelection: boolean }
+
+// The cut/copy/paste menu for text fields and selected text is drawn by the renderer (InAppMenu), to match the rest of the UI.
 // https://github.com/electron/electron/issues/4068#issuecomment-274159726
 export default (window: BrowserWindow) => {
-  const selectionMenu = Menu.buildFromTemplate([
-    { role: 'copy' },
-    { type: 'separator' },
-    { role: 'selectAll' },
-  ]);
-
-  const inputMenu = Menu.buildFromTemplate([
-    { role: 'undo' },
-    { role: 'redo' },
-    { type: 'separator' },
-    { role: 'cut' },
-    { role: 'copy' },
-    { role: 'paste' },
-    { type: 'separator' },
-    { role: 'selectAll' },
-  ]);
-
   window.webContents.on('context-menu', (_e, props) => {
-    const { selectionText, isEditable } = props;
-    if (isEditable) {
-      inputMenu.popup({ window });
-    } else if (selectionText && selectionText.trim() !== '') {
-      selectionMenu.popup({ window });
+    const { selectionText, isEditable, x, y } = props;
+    const hasSelection = selectionText != null && selectionText.trim() !== '';
+    if (isEditable || hasSelection) {
+      window.webContents.send('editContextMenu', { x, y, isEditable, hasSelection } satisfies EditContextMenuRequest);
     }
   });
 };

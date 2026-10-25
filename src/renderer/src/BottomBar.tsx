@@ -1,25 +1,19 @@
 import type { CSSProperties, ClipboardEvent, Dispatch, FormEvent, KeyboardEvent, SetStateAction } from 'react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { motion } from 'motion/react';
-import { MdRotate90DegreesCcw } from 'react-icons/md';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { IoIosCamera, IoMdKey, IoMdSpeedometer } from 'react-icons/io';
-import { FaYinYang, FaTrashAlt, FaStepBackward, FaStepForward, FaCaretLeft, FaCaretRight, FaPause, FaPlay, FaImages, FaKey, FaExclamationTriangle } from 'react-icons/fa';
-import { GiSoundWaves } from 'react-icons/gi';
+import { LuArrowLeftToLine, LuArrowRightToLine, LuAudioWaveform, LuCamera, LuChevronFirst, LuChevronLast, LuChevronLeft, LuChevronRight, LuDiamond, LuGauge, LuImages, LuKeyRound, LuPause, LuPlay, LuRotateCcw, LuSkipBack, LuSkipForward, LuTrash2, LuTriangleAlert, LuZoomIn } from 'react-icons/lu';
 // import useTraceUpdate from 'use-trace-update';
 import invariant from 'tiny-invariant';
 
-import { primaryTextColor, primaryColor, darkModeTransition, dangerColor } from './colors';
-import SegmentCutpointButton from './components/SegmentCutpointButton';
-import SetCutpointButton from './components/SetCutpointButton';
-import ExportButton from './components/ExportButton';
+import { darkModeTransition, dangerColor } from './colors';
 import ToggleExportConfirm from './components/ToggleExportConfirm';
 import CaptureFormatButton from './components/CaptureFormatButton';
 import Select from './components/Select';
 
 import SimpleModeButton from './components/SimpleModeButton';
-import { withBlur, mirrorTransform } from './util';
-import getSwal, { errorToast } from './swal';
+import { withBlur } from './util';
+import { errorToast } from './swal';
 import { UserFacingError } from '../errors';
 import { getSegColor as getSegColorRaw } from './util/colors';
 import { useSegColors } from './contexts';
@@ -27,59 +21,14 @@ import { isExactTimecodeMatch } from './util/duration';
 import useUserSettings from './hooks/useUserSettings';
 import useActionTitle from './hooks/useActionTitle';
 import { askForPlaybackRate, checkAppPath } from './dialogs';
-import type { FormatTimecode, GetFrameCount, ParseTimecode, PlaybackMode, SegmentColorIndex, SegmentToExport, StateSegment } from './types';
+import type { FormatTimecode, GetFrameCount, ParseTimecode, PlaybackMode, SegmentColorIndex, StateSegment } from './types';
 import type { WaveformMode } from '../../common/types';
 import type { Frame } from './ffmpeg';
 import mainApi from './mainApi';
+import styles from './BottomBar.module.css';
 
 
 const zoomOptions = Array.from({ length: 13 }).fill(undefined).map((_unused, z) => 2 ** z);
-
-const leftRightWidth = 100;
-
-const timeWrapperStyle: CSSProperties = {
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  position: 'absolute',
-  inset: 0,
-  marginLeft: '1.5em',
-  pointerEvents: 'none',
-};
-
-// eslint-disable-next-line react/display-name
-const InvertCutModeButton = memo(({ invertCutSegments, setInvertCutSegments }: { invertCutSegments: boolean, setInvertCutSegments: Dispatch<SetStateAction<boolean>> }) => {
-  const { t } = useTranslation();
-
-  const onYinYangClick = useCallback(() => {
-    setInvertCutSegments((v) => {
-      const newVal = !v;
-      getSwal().toast.fire({
-        title: newVal
-          ? t('When you export, selected segments on the timeline will be REMOVED - the surrounding areas will be KEPT')
-          : t('When you export, selected segments on the timeline will be KEPT - the surrounding areas will be REMOVED.'),
-      });
-      return newVal;
-    });
-  }, [setInvertCutSegments, t]);
-
-  return (
-    <div>
-      <motion.div
-        animate={{ rotateX: invertCutSegments ? 0 : 180 }}
-        transition={{ duration: 0.3 }}
-      >
-        <FaYinYang
-          role="button"
-          title={invertCutSegments ? t('Discard selected segments') : t('Keep selected segments')}
-          style={{ display: 'block', fontSize: '1.5em', color: invertCutSegments ? dangerColor : undefined }}
-          onClick={onYinYangClick}
-        />
-      </motion.div>
-    </div>
-  );
-});
-
 
 // eslint-disable-next-line react/display-name
 const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeOffset, seekAbs, currentCutSeg, isStart, formatTimecode, parseTimecode }: {
@@ -114,7 +63,7 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
 
   const border = useMemo(() => {
     const segColor = getSegColor(currentCutSeg);
-    return `.1em solid ${darkMode ? segColor.desaturate(0.4).lightness(50).string() : segColor.desaturate(0.2).lightness(60).string()}`;
+    return `3px solid ${darkMode ? segColor.desaturate(0.2).lightness(60).string() : segColor.desaturate(0.2).lightness(50).string()}`;
   }, [currentCutSeg, darkMode, getSegColor]);
 
   const setTime = useCallback((timeWithOffset: number | undefined, seek: boolean) => {
@@ -236,24 +185,23 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
   }, [pasteCutTime]);
 
   const style = useMemo<CSSProperties>(() => ({
-    border,
-    borderRadius: 5,
-    backgroundColor: 'var(--gray-5)',
+    border: '1px solid var(--llc-control-border)',
+    borderLeft: border,
+    borderRadius: 'var(--llc-radius-control)',
+    backgroundColor: 'var(--llc-track-bg)',
     transition: darkModeTransition,
-    fontSize: 13,
+    fontSize: 12,
     textAlign: 'center',
-    padding: '1px 3px',
-    marginTop: 0,
-    marginBottom: 0,
-    marginLeft: isStart ? 0 : 5,
-    marginRight: isStart ? 5 : 0,
+    height: '2em',
+    padding: '0 6px',
+    margin: 0,
     boxSizing: 'border-box',
-    fontFamily: 'monospace',
-    letterSpacing: '-.05em',
-    width: 94,
+    fontFamily: 'var(--llc-font-mono)',
+    fontVariantNumeric: 'tabular-nums',
+    width: 104,
     outline: 'none',
-    color: error ? dangerColor : (isCutTimeManualSet ? 'var(--gray-12)' : 'var(--gray-11)'),
-  }), [border, error, isCutTimeManualSet, isStart]);
+    color: error ? dangerColor : (isCutTimeManualSet ? 'var(--llc-text-1)' : 'var(--llc-text-2)'),
+  }), [border, error, isCutTimeManualSet]);
 
   function renderValue() {
     if (isCutTimeManualSet) return cutTimeManual;
@@ -281,8 +229,8 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
 
 function BottomBar({
   zoom, setZoom, timelineToggleComfortZoom,
-  isRotationSet, rotation, areWeCutting, increaseRotation, cleanupFilesDialog,
-  captureSnapshot, onExportPress, segmentsToExport, hasVideo,
+  isRotationSet, rotation, increaseRotation, cleanupFilesDialog,
+  captureSnapshot, hasVideo, dockContainer,
   seekAbs, currentSegIndexSafe, cutSegments, currentCutSeg, setCutStart, setCutEnd,
   setCurrentSegIndex,
   jumpTimelineStart, jumpTimelineEnd, jumpCutEnd, jumpCutStart, startTimeOffset, setCutTime,
@@ -299,12 +247,10 @@ function BottomBar({
   timelineToggleComfortZoom: () => void,
   isRotationSet: boolean,
   rotation: number,
-  areWeCutting: boolean,
   increaseRotation: () => void,
   cleanupFilesDialog: () => void,
   captureSnapshot: () => void,
-  onExportPress: () => void,
-  segmentsToExport: SegmentToExport[],
+  dockContainer: HTMLElement | null,
   hasVideo: boolean,
   seekAbs: (a: number) => void,
   currentSegIndexSafe: number,
@@ -351,18 +297,6 @@ function BottomBar({
 
   const isZoomed = zoom > 1;
 
-  const playStyle = useMemo<CSSProperties>(() => ({
-    paddingLeft: playing ? 0 : '.1em',
-    color: 'white',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '2.3em',
-    height: '2.3em',
-    borderRadius: '50%',
-    boxSizing: 'border-box',
-  }), [playing]);
-
   // ok this is a bit over-engineered but what the hell!
   const loopSelectedSegmentsButtonStyle = useMemo<CSSProperties>(() => {
     // need at least 2 gradient elements:
@@ -382,19 +316,23 @@ function BottomBar({
     }).join(', ');
 
     return {
-      ...playStyle,
-      fontSize: '.7em',
-      backgroundOffset: 30,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '1.55em',
+      height: '1.55em',
+      borderRadius: '50%',
+      color: 'white',
       background: `linear-gradient(90deg, ${gradientColors})`,
-      border: '1px solid var(--gray-10)',
+      boxShadow: '0 0 0 1px rgba(255, 255, 255, .35)',
     };
-  }, [playStyle, selectedSegments]);
+  }, [selectedSegments]);
 
   const keyframeStyle = useMemo(() => ({
-    color: currentFrame != null && currentFrame.keyframe ? primaryTextColor : undefined,
+    color: currentFrame != null && currentFrame.keyframe ? '#c4b5fd' : undefined, // the dock is always dark
   }), [currentFrame]);
 
-  const { invertCutSegments, setInvertCutSegments, simpleMode, toggleSimpleMode, exportConfirmEnabled } = useUserSettings();
+  const { simpleMode, toggleSimpleMode, exportConfirmEnabled } = useUserSettings();
   const actionTitle = useActionTitle();
 
   const rotationStr = `${rotation}°`;
@@ -410,255 +348,217 @@ function BottomBar({
 
   const playbackRateRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    playbackRateRef.current?.animate([{ transform: 'scale(2)', color: 'var(--gray-12)', backgroundColor: playbackRate === 1 ? 'var(--cyan-10)' : (playbackRate < 1 ? 'var(--yellow-8)' : 'var(--orange-10)') }, {}], { duration: 200 });
+    playbackRateRef.current?.animate([{ transform: 'scale(2)', color: 'var(--gray-12)', backgroundColor: playbackRate === 1 ? 'var(--violet-10)' : (playbackRate < 1 ? 'var(--yellow-8)' : 'var(--orange-10)') }, {}], { duration: 200 });
   }, [playbackRate]);
 
   function renderJumpCutpointButton(direction: number) {
     const newIndex = currentSegIndexSafe + direction;
     const seg = cutSegments[newIndex];
 
-    const backgroundColor = seg && getSegColor(seg).desaturate(0.6).lightness(darkMode ? 35 : 55).string();
-    const opacity = seg ? undefined : 0.5;
-    const text = seg ? `${newIndex + 1}` : '-';
-    const segButtonStyle: CSSProperties = {
-      backgroundColor, opacity, padding: '6px 0', borderRadius: 10, color: seg ? 'white' : undefined, fontSize: text.length === 1 ? 14 : (text.length === 2 ? 12 : 10), width: 20, boxSizing: 'border-box', letterSpacing: -1, lineHeight: '10px', fontWeight: 'bold', margin: '0 6px', whiteSpace: 'nowrap', textAlign: 'center',
-    };
+    const backgroundColor = seg ? getSegColor(seg).desaturate(0.3).lightness(45).alpha(0.85).string() : 'rgba(255, 255, 255, .1)';
+    const text = seg ? `${newIndex + 1}` : '–';
 
     return (
-      <div
-        style={segButtonStyle}
-        role="button"
+      <button
+        type="button"
+        className={styles['segJump']}
+        style={{ backgroundColor, opacity: seg ? undefined : 0.5, margin: '0 .25em' }}
         title={`${direction > 0 ? t('Select next segment') : t('Select previous segment')} (${newIndex + 1})`}
         onClick={() => seg && setCurrentSegIndex(newIndex)}
       >
         {text}
-      </div>
+      </button>
     );
   }
 
-  const PlayPause = playing ? FaPause : FaPlay;
-  const PlayPauseMode = playing && (playbackMode === 'play-selected-segments' || playbackMode === 'loop-selected-segments') ? FaPause : FaPlay;
+  const PlayPause = playing ? LuPause : LuPlay;
+  const PlayPauseMode = playing && (playbackMode === 'play-selected-segments' || playbackMode === 'loop-selected-segments') ? LuPause : LuPlay;
 
-  const currentCutSegOrDefault = useMemo(() => currentCutSeg ?? { segColorIndex: 0 }, [currentCutSeg]);
+  const cutChipColor = useMemo(() => getSegColor(currentCutSeg ?? { segColorIndex: 0 }).desaturate(0.2).lightness(darkMode ? 60 : 50).string(), [currentCutSeg, darkMode, getSegColor]);
 
   const displayTimeFrameCount = useMemo(() => getFrameCount(displayTime), [displayTime, getFrameCount]);
 
-  return (
-    <>
-      <div className="no-user-select" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: isFileOpened ? 1 : 0.5 }}>
-        <div style={{ display: 'flex', alignItems: 'center', flexBasis: leftRightWidth }}>
-          {!simpleMode && (
-            <>
-              {hasAudio && (
-                <GiSoundWaves
-                  style={{ fontSize: '1.6em', padding: '0 .1em', color: waveformMode != null ? primaryTextColor : undefined }}
-                  role="button"
-                  title={actionTitle(t('Show waveform'), 'toggleWaveformMode')}
-                  onClick={() => toggleWaveformMode()}
-                />
-              )}
-              {hasVideo && (
-                <>
-                  <FaImages
-                    style={{ fontSize: '1.1em', padding: '0 .2em', color: showThumbnails ? primaryTextColor : undefined }}
-                    role="button"
-                    title={actionTitle(t('Show thumbnails'), 'toggleShowThumbnails')}
-                    onClick={toggleShowThumbnails}
-                  />
+  const toolbarOpacity = isFileOpened ? 1 : 0.5;
 
-                  <FaKey
-                    style={{ fontSize: '1em', padding: '0 .2em', color: keyframesEnabled ? primaryTextColor : undefined }}
-                    role="button"
-                    title={actionTitle(t('Show keyframes'), 'toggleShowKeyframes')}
-                    onClick={toggleShowKeyframes}
-                  />
-                </>
-              )}
-            </>
-          )}
-        </div>
-
-        <div style={{ flexGrow: 1 }} />
-
+  const dock = (
+    <div className={styles['dockWrapper']}>
+      <div className={`no-user-select llc-video-overlay ${styles['dock']}`}>
         {!simpleMode && (
           <>
-            <FaStepBackward
-              size={16}
-              style={{ flexShrink: 0 }}
-              title={actionTitle(t('Jump to start of video'), 'jumpTimelineStart')}
-              role="button"
-              onClick={jumpTimelineStart}
-            />
+            <button type="button" className="llc-icon-button" title={actionTitle(t('Jump to start of video'), 'jumpTimelineStart')} onClick={jumpTimelineStart}>
+              <LuChevronFirst size={18} />
+            </button>
 
             {renderJumpCutpointButton(-1)}
 
-            <SegmentCutpointButton currentCutSeg={currentCutSeg} side="start" Icon={FaStepBackward} onClick={jumpCutStart} title={actionTitle(t('Jump to current segment\'s start time'), 'jumpCutStart')} style={{ marginRight: 5 }} />
+            <button type="button" className="llc-icon-button" title={actionTitle(t('Jump to current segment\'s start time'), 'jumpCutStart')} onClick={jumpCutStart}>
+              <LuSkipBack size={16} />
+            </button>
           </>
         )}
 
-        <SetCutpointButton currentCutSeg={currentCutSegOrDefault} side="start" onClick={setCutStart} title={actionTitle(t('Start current segment at current time'), 'setCutStart')} style={{ marginRight: 5 }} />
-
-        {!simpleMode && <CutTimeInput disabled={!isFileOpened} darkMode={darkMode} currentCutSeg={currentCutSeg} startTimeOffset={startTimeOffset} seekAbs={seekAbs} cutTime={currentCutSeg?.start} setCutTime={setCutTime} isStart formatTimecode={formatTimecode} parseTimecode={parseTimecode} />}
-
         {keyframesEnabled && (
-          <IoMdKey
-            size={25}
-            role="button"
-            title={actionTitle(t('Seek previous keyframe'), 'seekBackwardsKeyframe')}
-            style={{ flexShrink: 0, marginRight: 2, transform: mirrorTransform, ...keyframeStyle }}
-            onClick={() => seekClosestKeyframe(-1)}
-          />
+          <button type="button" className="llc-icon-button" style={keyframeStyle} title={actionTitle(t('Seek previous keyframe'), 'seekBackwardsKeyframe')} onClick={() => seekClosestKeyframe(-1)}>
+            <LuDiamond size={11} /><LuChevronLeft size={14} style={{ marginLeft: '-.4em' }} />
+          </button>
         )}
 
         {!simpleMode && (
-          <FaCaretLeft
-            style={{ flexShrink: 0, marginLeft: -6, marginRight: -4 }}
-            size={28}
-            role="button"
-            title={actionTitle(t('One frame back'), 'seekPreviousFrame')}
-            onClick={() => shortStep(-1)}
-          />
+          <button type="button" className="llc-icon-button" title={actionTitle(t('One frame back'), 'seekPreviousFrame')} onClick={() => shortStep(-1)}>
+            <LuChevronLeft size={20} />
+          </button>
         )}
 
-        <div title={actionTitle(t('Play/pause'), 'togglePlayResetSpeed')} role="button" onClick={() => togglePlay()} style={{ ...playStyle, margin: '.1em .1em 0 .2em', background: primaryColor }}>
-          <PlayPause style={{ fontSize: '.9em' }} />
-        </div>
+        <button type="button" className={styles['play']} title={actionTitle(t('Play/pause'), 'togglePlayResetSpeed')} onClick={() => togglePlay()}>
+          <PlayPause size={18} fill="currentColor" style={{ marginLeft: playing ? 0 : '.12em' }} />
+        </button>
 
         {!simpleMode && (
-          <FaCaretRight
-            style={{ flexShrink: 0, marginRight: -6, marginLeft: -4 }}
-            size={28}
-            role="button"
-            title={actionTitle(t('One frame forward'), 'seekNextFrame')}
-            onClick={() => shortStep(1)}
-          />
+          <button type="button" className="llc-icon-button" title={actionTitle(t('One frame forward'), 'seekNextFrame')} onClick={() => shortStep(1)}>
+            <LuChevronRight size={20} />
+          </button>
         )}
 
         {keyframesEnabled && (
-          <IoMdKey
-            style={{ flexShrink: 0, marginLeft: 2, ...keyframeStyle }}
-            size={25}
-            role="button"
-            title={actionTitle(t('Seek next keyframe'), 'seekForwardsKeyframe')}
-            onClick={() => seekClosestKeyframe(1)}
-          />
+          <button type="button" className="llc-icon-button" style={keyframeStyle} title={actionTitle(t('Seek next keyframe'), 'seekForwardsKeyframe')} onClick={() => seekClosestKeyframe(1)}>
+            <LuChevronRight size={14} style={{ marginRight: '-.4em' }} /><LuDiamond size={11} />
+          </button>
         )}
-
-        {!simpleMode && <CutTimeInput disabled={!isFileOpened} darkMode={darkMode} currentCutSeg={currentCutSeg} startTimeOffset={startTimeOffset} seekAbs={seekAbs} cutTime={currentCutSeg?.end} setCutTime={setCutTime} formatTimecode={formatTimecode} parseTimecode={parseTimecode} />}
-
-        <SetCutpointButton currentCutSeg={currentCutSeg} side="end" onClick={setCutEnd} title={actionTitle(t('End current segment at current time'), 'setCutEnd')} style={{ marginLeft: 5 }} />
 
         {!simpleMode && (
           <>
-            <SegmentCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaStepForward} onClick={jumpCutEnd} title={actionTitle(t('Jump to current segment\'s end time'), 'jumpCutEnd')} style={{ marginLeft: 5 }} />
+            <button type="button" className="llc-icon-button" title={actionTitle(t('Jump to current segment\'s end time'), 'jumpCutEnd')} onClick={jumpCutEnd}>
+              <LuSkipForward size={16} />
+            </button>
 
             {renderJumpCutpointButton(1)}
 
-            <FaStepForward
-              size={16}
-              style={{ flexShrink: 0 }}
-              title={actionTitle(t('Jump to end of video'), 'jumpTimelineEnd')}
-              role="button"
-              onClick={jumpTimelineEnd}
-            />
+            <button type="button" className="llc-icon-button" title={actionTitle(t('Jump to end of video'), 'jumpTimelineEnd')} onClick={jumpTimelineEnd}>
+              <LuChevronLast size={18} />
+            </button>
           </>
         )}
 
-        <div style={{ flexGrow: 1 }} />
+        <div className="llc-divider" />
 
-        <div style={{ flexBasis: leftRightWidth }} />
-      </div>
-
-      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '.1em .3em', gap: '.5em', height: '2em' }}>
-        <InvertCutModeButton invertCutSegments={invertCutSegments} setInvertCutSegments={setInvertCutSegments} />
-
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <SimpleModeButton />
-
-          {simpleMode && (
-            <div role="button" onClick={toggleSimpleMode} style={{ fontSize: '.8em', marginLeft: '.2em' }}>{t('Toggle advanced view')}</div>
-          )}
-        </div>
-
-        {isFileOpened && !simpleMode && (
-          <>
-            <div role="button" title={t('Zoom')} onClick={timelineToggleComfortZoom}>{Math.floor(zoom)}x</div>
-
-            <Select style={{ width: '4.5em' }} value={zoomOptions.includes(zoom) ? zoom.toString() : ''} title={t('Zoom')} onChange={withBlur((e) => setZoom(() => parseInt(e.target.value, 10)))}>
-              <option key="" value="" disabled>{t('Zoom')}</option>
-              {zoomOptions.map((val) => (
-                <option key={val} value={String(val)}>{t('Zoom')} {val}x</option>
-              ))}
-            </Select>
-
-            <div ref={playbackRateRef} title={t('Playback rate')} style={{ color: 'var(--gray-11)', fontSize: '.7em', borderRadius: '.5em' }}>{playbackRate.toFixed(1)}</div>
-
-            <div style={{ whiteSpace: 'nowrap' }}>
-              <IoMdSpeedometer title={t('Change FPS')} style={{ fontSize: '1.3em', verticalAlign: 'middle' }} role="button" onClick={handleChangePlaybackRateClick} />
-
-              {detectedFps != null && (
-                <span title={t('Video FPS')} role="button" onClick={handleChangePlaybackRateClick} style={{ color: 'var(--gray-11)', fontSize: '.7em', marginLeft: '.3em' }}>{(detectedFps * outputPlaybackRate).toFixed(3)}</span>
-              )}
-            </div>
-          </>
-        )}
-
-        {isFileOpened && !simpleMode && hasVideo && (
-          <div onClick={increaseRotation} role="button" style={{ whiteSpace: 'nowrap' }}>
-            <MdRotate90DegreesCcw
-              style={{ fontSize: '1.3em', verticalAlign: 'middle', color: isRotationSet ? primaryTextColor : undefined }}
-              title={actionTitle(`${t('Set output rotation. Current: ')} ${isRotationSet ? rotationStr : t('Don\'t modify')}`, 'increaseRotation')}
-            />
-            <span style={{ textAlign: 'right', display: 'inline-block', fontSize: '.8em', marginLeft: '.1em' }}>{isRotationSet && rotationStr}</span>
-          </div>
-        )}
-
-        <div style={{ flexGrow: 1 }} />
-
-        <div style={timeWrapperStyle}>
-          <div style={{ fontFamily: 'monospace', letterSpacing: '-0.08em', pointerEvents: 'auto' }}>
-            {formatTimecode({ seconds: displayTime })}
-            <span style={{ display: 'inline-block', minWidth: '3.5em', marginLeft: '.5em' }}>
-              {displayTimeFrameCount ?? 0}<span style={{ opacity: 0.5, userSelect: 'none' }}>f</span>
-              {isZoomed && <span style={{ marginLeft: '.5em' }}>{Math.round((displayTime / fileDurationNonZero) * 100)}<span style={{ opacity: 0.5, userSelect: 'none' }}>%</span></span>}
-            </span>
-          </div>
-        </div>
-
-        {!simpleMode && isFileOpened && (
-          <FaTrashAlt
-            title={actionTitle(t('Close file and clean up'), 'cleanupFilesDialog')}
-            style={{ fontSize: '1em', color: dangerColor }}
-            onClick={cleanupFilesDialog}
-            role="button"
-          />
-        )}
+        <button type="button" className="llc-icon-button" onClick={toggleLoopSelectedSegments} title={actionTitle(t('Play selected segments in order'), 'toggleLoopSelectedSegments')}>
+          <span style={loopSelectedSegmentsButtonStyle}>
+            <PlayPauseMode size={10} fill="currentColor" />
+          </span>
+        </button>
 
         {hasVideo && (
-          <div style={{ whiteSpace: 'nowrap' }}>
-            <IoIosCamera
-              role="button"
-              style={{ fontSize: '1.9em', verticalAlign: 'middle' }}
-              title={actionTitle(t('Capture frame'), 'captureSnapshot')}
-              onClick={captureSnapshot}
-            />
-
-            {!simpleMode && <CaptureFormatButton style={{ width: '3.7em', textAlign: 'center', marginLeft: '.1em' }} />}
-          </div>
+          <button type="button" className="llc-icon-button" title={actionTitle(t('Capture frame'), 'captureSnapshot')} onClick={captureSnapshot}>
+            <LuCamera size={17} />
+          </button>
         )}
+      </div>
+    </div>
+  );
 
-        {isFileOpened && (
-          <div role="button" onClick={toggleLoopSelectedSegments} title={actionTitle(t('Play selected segments in order'), 'toggleLoopSelectedSegments')} style={loopSelectedSegmentsButtonStyle}>
-            <PlayPauseMode />
-          </div>
-        )}
+  return (
+    <>
+      {dockContainer != null && isFileOpened && createPortal(dock, dockContainer)}
 
-        {!exportConfirmEnabled && (<FaExclamationTriangle style={{ color: dangerColor, marginLeft: '.4em' }} title={t('Export options screen is disabled, and you will not see any important notices or warnings.')} />)}
-        {(!simpleMode || !exportConfirmEnabled) && <ToggleExportConfirm style={{ marginLeft: exportConfirmEnabled ? '.4em' : undefined }} />}
+      <div className={`no-user-select ${styles['toolbar']}`}>
+        <div className={styles['left']} style={{ opacity: toolbarOpacity }}>
+          <button type="button" className={styles['cutChip']} title={actionTitle(t('Start current segment at current time'), 'setCutStart')} onClick={setCutStart}>
+            <span className={styles['cutChipDot']} style={{ background: cutChipColor }} />
+            <LuArrowRightToLine size={14} />
+            {t('Start')}
+          </button>
 
-        {isFileOpened && (
-          <ExportButton segmentsToExport={segmentsToExport} areWeCutting={areWeCutting} onClick={withBlur(onExportPress)} />
-        )}
+          {!simpleMode && <CutTimeInput disabled={!isFileOpened} darkMode={darkMode} currentCutSeg={currentCutSeg} startTimeOffset={startTimeOffset} seekAbs={seekAbs} cutTime={currentCutSeg?.start} setCutTime={setCutTime} isStart formatTimecode={formatTimecode} parseTimecode={parseTimecode} />}
+
+          {!simpleMode && <span className={styles['rangeArrow']}>→</span>}
+
+          {!simpleMode && <CutTimeInput disabled={!isFileOpened} darkMode={darkMode} currentCutSeg={currentCutSeg} startTimeOffset={startTimeOffset} seekAbs={seekAbs} cutTime={currentCutSeg?.end} setCutTime={setCutTime} formatTimecode={formatTimecode} parseTimecode={parseTimecode} />}
+
+          <button type="button" className={styles['cutChip']} title={actionTitle(t('End current segment at current time'), 'setCutEnd')} onClick={setCutEnd}>
+            {t('End')}
+            <LuArrowLeftToLine size={14} />
+            <span className={styles['cutChipDot']} style={{ background: cutChipColor }} />
+          </button>
+        </div>
+
+        <div className={`llc-mono ${styles['time']}`}>
+          {formatTimecode({ seconds: displayTime })}
+          <span className={styles['timeSecondary']}>
+            {displayTimeFrameCount ?? 0}f
+            {isZoomed && ` · ${Math.round((displayTime / fileDurationNonZero) * 100)}%`}
+          </span>
+        </div>
+
+        <div className={styles['right']}>
+          {!simpleMode && isFileOpened && (
+            <>
+              {hasAudio && (
+                <button type="button" className="llc-icon-button" aria-pressed={waveformMode != null} title={actionTitle(t('Show waveform'), 'toggleWaveformMode')} onClick={() => toggleWaveformMode()}>
+                  <LuAudioWaveform size={17} />
+                </button>
+              )}
+              {hasVideo && (
+                <>
+                  <button type="button" className="llc-icon-button" aria-pressed={showThumbnails} title={actionTitle(t('Show thumbnails'), 'toggleShowThumbnails')} onClick={toggleShowThumbnails}>
+                    <LuImages size={16} />
+                  </button>
+
+                  <button type="button" className="llc-icon-button" aria-pressed={keyframesEnabled} title={actionTitle(t('Show keyframes'), 'toggleShowKeyframes')} onClick={toggleShowKeyframes}>
+                    <LuKeyRound size={16} />
+                  </button>
+                </>
+              )}
+
+              <div className="llc-divider" />
+
+              <button type="button" className="llc-icon-button llc-mono" title={t('Zoom')} onClick={timelineToggleComfortZoom}>
+                <LuZoomIn size={16} />
+                <span className={styles['small']}>{Math.floor(zoom)}x</span>
+              </button>
+
+              <Select value={zoomOptions.includes(zoom) ? zoom.toString() : ''} title={t('Zoom')} onChange={withBlur((e) => setZoom(() => parseInt(e.target.value, 10)))}>
+                <option key="" value="" disabled>{t('Zoom')}</option>
+                {zoomOptions.map((val) => (
+                  <option key={val} value={String(val)}>{t('Zoom')} {val}x</option>
+                ))}
+              </Select>
+
+              <button type="button" className="llc-icon-button llc-mono" title={t('Change FPS')} onClick={handleChangePlaybackRateClick}>
+                <LuGauge size={16} />
+                <span ref={playbackRateRef} title={t('Playback rate')} className={styles['small']} style={{ borderRadius: '.5em' }}>{playbackRate.toFixed(1)}×</span>
+                {detectedFps != null && (
+                  <span title={t('Video FPS')} className={styles['small']}>{(detectedFps * outputPlaybackRate).toFixed(3)}</span>
+                )}
+              </button>
+
+              {hasVideo && (
+                <button type="button" className="llc-icon-button" aria-pressed={isRotationSet} title={actionTitle(`${t('Set output rotation. Current: ')} ${isRotationSet ? rotationStr : t('Don\'t modify')}`, 'increaseRotation')} onClick={increaseRotation}>
+                  <LuRotateCcw size={16} />
+                  {isRotationSet && <span className={styles['small']}>{rotationStr}</span>}
+                </button>
+              )}
+
+              <div className="llc-divider" />
+            </>
+          )}
+
+          {hasVideo && !simpleMode && <CaptureFormatButton />}
+
+          {!simpleMode && isFileOpened && (
+            <button type="button" className="llc-icon-button" style={{ color: dangerColor }} title={actionTitle(t('Close file and clean up'), 'cleanupFilesDialog')} onClick={cleanupFilesDialog}>
+              <LuTrash2 size={16} />
+            </button>
+          )}
+
+          {!exportConfirmEnabled && (<LuTriangleAlert style={{ color: dangerColor, margin: '0 .3em' }} title={t('Export options screen is disabled, and you will not see any important notices or warnings.')} />)}
+          {(!simpleMode || !exportConfirmEnabled) && <ToggleExportConfirm size={19} style={{ margin: '0 .3em' }} />}
+
+          <SimpleModeButton style={{ margin: '0 .3em' }} />
+
+          {simpleMode && (
+            <div role="button" onClick={toggleSimpleMode} className={styles['small']}>{t('Toggle advanced view')}</div>
+          )}
+        </div>
       </div>
     </>
   );

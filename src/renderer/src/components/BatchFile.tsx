@@ -1,12 +1,12 @@
 import type { CSSProperties, MouseEventHandler } from 'react';
 import { memo, useRef, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FaFile, FaTimes } from 'react-icons/fa';
+import { LuFile, LuX } from 'react-icons/lu';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
 import useContextMenu from '../hooks/useContextMenu';
-import { dangerColor, primaryColor, primaryTextColor } from '../colors';
+import { dangerColor, primaryTextColor } from '../colors';
 
 function BatchFile({ path, index, isOpen, isSelected, name, onSelect, onDelete, dragging }: {
   path: string,
@@ -45,14 +45,16 @@ function BatchFile({ path, index, isOpen, isSelected, name, onSelect, onDelete, 
     opacity: dragging ? 0.6 : 1,
     transform: CSS.Transform.toString(sortable.transform),
     transition: sortable.transition,
-    background: isSelected ? 'var(--gray-7)' : undefined,
+    background: isOpen ? 'var(--llc-accent-soft)' : (isSelected ? 'var(--llc-card-bg-hover)' : undefined),
+    border: `1px solid ${isOpen ? 'var(--llc-accent-border)' : 'transparent'}`,
+    borderRadius: 'var(--llc-radius-control)',
     cursor: dragging ? 'grabbing' : 'default',
     fontSize: 13,
-    padding: '.2em .2em .2em .4em',
+    gap: '.35em',
+    padding: '.35em .4em .35em .6em',
     display: 'flex',
     alignItems: 'center',
     alignContent: 'flex-start',
-    borderRight: `.3em solid ${isOpen ? primaryColor : 'transparent'}`,
   }), [sortable.isDragging, sortable.transform, sortable.transition, dragging, isSelected, isOpen]);
 
   const handleClick = useCallback<MouseEventHandler<HTMLDivElement>>((e) => {
@@ -79,13 +81,13 @@ function BatchFile({ path, index, isOpen, isSelected, name, onSelect, onDelete, 
       title={path}
       onClick={handleClick}
     >
-      <FaFile style={{ color: isSelected ? primaryTextColor : undefined, flexShrink: 0, fontSize: '1em', marginRight: '.1em' }} />
+      <LuFile style={{ color: isSelected ? primaryTextColor : undefined, flexShrink: 0, fontSize: '1em', marginRight: '.1em' }} />
       <div style={{ flexShrink: 0, marginRight: '.1em' }}>{index + 1}.</div>
       <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', direction: 'rtl' }}>
         <span style={{ direction: 'ltr', unicodeBidi: 'isolate', display: 'inline-block' }}>{name}</span>
       </div>
       <div style={{ flexGrow: 1 }} />
-      {onDelete && <FaTimes style={{ color: dangerColor, fontSize: '.9em', marginRight: '-.3em', flexShrink: 0, cursor: 'pointer', padding: '.3em' }} role="button" onClick={handleDeleteClick} />}
+      {onDelete && <LuX style={{ color: dangerColor, fontSize: '.9em', marginRight: '-.3em', flexShrink: 0, cursor: 'pointer', padding: '.3em' }} role="button" onClick={handleDeleteClick} />}
     </div>
   );
 }

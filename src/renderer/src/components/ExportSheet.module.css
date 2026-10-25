@@ -4,9 +4,9 @@
   right: 0;
   top: 0;
   bottom: 0;
-  background: var(--white-a9);
-  color: var(--gray-12);
-  backdrop-filter: blur(30px);
+  background: rgba(243, 242, 248, .7);
+  color: var(--llc-text-1);
+  backdrop-filter: blur(30px) saturate(1.2);
   overflow-y: scroll;
   display: flex;
   justify-content: center;
@@ -14,19 +14,18 @@
 }
 
 :global(.dark-theme) .sheet {
-  background: var(--black-a9);
+  background: rgba(8, 6, 16, .72);
 }
 
 .box {
-  margin: 15px 15px 50px 15px;
-  border-radius: 10px;
-  padding: 10px 20px;
+  margin: 24px 15px 70px 15px;
+  border-radius: 20px;
+  padding: 1.3em 1.8em;
   min-height: 500px;
   position: relative;
   max-width: 100%;
-  background: var(--white-a11);
-}
-
-:global(.dark-theme) .box {
-  background: var(--black-a11);
+  box-sizing: border-box;
+  background: var(--llc-dialog-bg);
+  border: 1px solid var(--llc-panel-border);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .35);
 }

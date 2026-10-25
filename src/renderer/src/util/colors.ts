@@ -3,8 +3,8 @@ import invariant from 'tiny-invariant';
 
 import type { SegmentColorIndex } from '../types';
 
-// http://phrogz.net/css/distinct-colors.html
-const colorStrings = '#ff5100, #ffc569, #ddffd1, #00ccff, #e9d1ff, #ff0084, #ff6975, #ffe6d1, #ffff69, #69ff96, #008cff, #ae00ff, #ff002b, #ff8c00, #8cff00, #69ffff, #0044ff, #ff00d4, #ffd1d9'.split(',').map((str) => str.trim());
+// Bright, evenly spaced hues that read well on both the dark and light theme
+const colorStrings = '#34d399, #fbbf24, #f472b6, #60a5fa, #a78bfa, #fb923c, #22d3ee, #a3e635, #f87171, #2dd4bf, #e879f9, #facc15, #818cf8, #4ade80, #fb7185, #38bdf8, #c084fc, #fdba74, #5eead4'.split(',').map((str) => str.trim());
 const colors = colorStrings.map((str) => color(str));
 
 function getColor(n: number) {

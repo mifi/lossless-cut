@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { LuCode, LuFile } from 'react-icons/lu';
 import semver from 'semver';
-import { FaCode, FaFile } from 'react-icons/fa';
 import Markdown from 'react-markdown';
 
 import * as Dialog from './Dialog';
@@ -52,8 +52,8 @@ export default function WhatsNew() {
                 <div key={version} className={styles['version']}>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1em' }}>
                     {!(isMasBuild && matchingVersions.length === 1) && <h2>v{version}</h2>}
-                    <Button onClick={() => mainApi.openExternal(getReleaseUrl(version))}><FaFile style={{ verticalAlign: 'middle' }} /> {t('All release notes')}</Button>
-                    <Button onClick={() => mainApi.openExternal(compareReleasesUrl(prevVersion, version))}><FaCode style={{ verticalAlign: 'middle' }} /> {t('All code changes')}</Button>
+                    <Button onClick={() => mainApi.openExternal(getReleaseUrl(version))}><LuFile style={{ verticalAlign: 'middle' }} /> {t('All release notes')}</Button>
+                    <Button onClick={() => mainApi.openExternal(compareReleasesUrl(prevVersion, version))}><LuCode style={{ verticalAlign: 'middle' }} /> {t('All code changes')}</Button>
                   </div>
 
 

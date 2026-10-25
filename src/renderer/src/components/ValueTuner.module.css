@@ -2,16 +2,12 @@
   min-width: 20em;
   position: absolute;
   bottom: 0;
-  padding: 1.2em;
+  padding: 1.1em 1.3em;
   margin: 1em;
-  border-radius: 1em;
-  color: var(--gray-12);
-  background: var(--white-a7);
-  box-shadow: 0 0 .3em .3em var(--white-a8);
-  backdrop-filter: blur(10px);
-}
-
-:global(.dark-theme) .value-tuner {
-  background: var(--black-a7);
-  box-shadow: 0 0 .3em .3em var(--black-a8);
+  border-radius: var(--llc-radius-panel);
+  color: var(--llc-text-1);
+  background: var(--llc-dialog-bg);
+  border: 1px solid var(--llc-panel-border);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, .35);
+  backdrop-filter: blur(24px) saturate(1.3);
 }

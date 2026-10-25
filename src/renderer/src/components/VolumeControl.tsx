@@ -1,7 +1,7 @@
 import type { ChangeEventHandler } from 'react';
 import { memo, useState, useCallback, useRef, useEffect } from 'react';
-import { FaVolumeMute, FaVolumeUp } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
+import { LuVolume2, LuVolumeX } from 'react-icons/lu';
 
 import useActionTitle from '../hooks/useActionTitle';
 
@@ -36,7 +36,7 @@ function VolumeControl({ playbackVolume, setPlaybackVolume, onToggleMutedClick }
     }
   }, [onToggleMutedClick, volumeControlVisible]);
 
-  const VolumeIcon = playbackVolume === 0 ? FaVolumeMute : FaVolumeUp;
+  const VolumeIcon = playbackVolume === 0 ? LuVolumeX : LuVolume2;
 
   return (
     <>
@@ -46,16 +46,16 @@ function VolumeControl({ playbackVolume, setPlaybackVolume, onToggleMutedClick }
           min={0}
           max={100}
           value={playbackVolume * 100}
-          style={{ height: 30 }}
+          style={{ height: 17, width: '6em', accentColor: 'var(--llc-accent)' }}
           onChange={onVolumeChange}
         />
       )}
 
       <VolumeIcon
         title={actionTitle(t('Mute preview? (will not affect output)'), 'toggleMuted')}
-        size={30}
+        size={17}
         role="button"
-        style={{ margin: '0 7px', color: 'var(--gray-12)', opacity: 0.7 }}
+        style={{ margin: '0 .45em', color: '#fff', opacity: 0.85, cursor: 'pointer' }}
         onClick={onVolumeIconClick}
       />
     </>

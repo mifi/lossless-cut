@@ -1,24 +1,25 @@
 .wrapper {
-  background: var(--white-a4);
+  background: rgba(20, 16, 40, .25);
+  backdrop-filter: blur(3px);
 }
 
 :global(.dark-theme) .wrapper {
-  background: var(--black-a4);
+  background: rgba(4, 3, 10, .45);
 }
 
 .loader-box {
-  max-width: 16em;
-  min-width: 13em;
-  border-radius: 1.5em;
-  padding: 2.5% 1% 1.7% 1%;
-  color: white;
+  max-width: 17em;
+  min-width: 14em;
+  border-radius: 20px;
+  padding: 1.2em 1.4em 1.3em;
+  color: var(--llc-text-1);
   font-size: 14px;
   display: flex;
   flex-direction: column;
   align-items: center;
 
-  background: var(--black-a6);
-  box-shadow: var(--black-a6) 0 0 .7em 0;
-  border: 1px solid var(--white-a5);
-  backdrop-filter: blur(7px);
+  background: var(--llc-dialog-bg);
+  border: 1px solid var(--llc-panel-border);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .4);
+  backdrop-filter: blur(24px) saturate(1.3);
 }

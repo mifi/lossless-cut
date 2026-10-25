@@ -1,0 +1,162 @@
+.toolbar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: .5em;
+  min-height: 2.4em;
+}
+
+.left, .right {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .25em;
+  min-width: 0;
+}
+
+.right {
+  justify-content: flex-end;
+}
+
+.time {
+  display: flex;
+  align-items: baseline;
+  gap: .5em;
+  padding: .25em .85em;
+  border-radius: var(--llc-radius-pill);
+  background: var(--llc-track-bg);
+  border: 1px solid var(--llc-control-border);
+  color: var(--llc-text-1);
+  font-size: .85em;
+  white-space: nowrap;
+}
+
+.timeSecondary {
+  color: var(--llc-text-3);
+  font-size: .85em;
+}
+
+.cutChip {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: .4em;
+  height: 2em;
+  padding: 0 .7em;
+  border-radius: var(--llc-radius-pill);
+  background: var(--llc-control-bg);
+  border: 1px solid var(--llc-control-border);
+  color: var(--llc-text-1);
+  font-size: .78em;
+  white-space: nowrap;
+  transition: background-color .15s;
+}
+
+.cutChip:hover {
+  background: var(--llc-control-bg-hover);
+}
+
+.cutChip:focus-visible {
+  outline: 2px solid var(--llc-accent-border);
+}
+
+.cutChipDot {
+  width: .55em;
+  height: .55em;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.rangeArrow {
+  color: var(--llc-text-3);
+  font-size: .8em;
+}
+
+.small {
+  font-size: .72em;
+  color: var(--llc-text-2);
+}
+
+/* Floating transport over the video */
+
+.dockWrapper {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  z-index: 1;
+  transition: opacity .25s;
+}
+
+.dock {
+  display: flex;
+  align-items: center;
+  gap: .1em;
+  padding: .3em .5em;
+  border-radius: var(--llc-radius-pill);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+  color: #ecebf3;
+}
+
+/* the dock sits on video, so it always uses light-on-dark colors */
+.dock :global(.llc-icon-button) {
+  color: rgba(236, 235, 243, .8);
+}
+
+.dock :global(.llc-icon-button):hover {
+  color: #fff;
+  background: rgba(255, 255, 255, .12);
+}
+
+.dock :global(.llc-divider) {
+  background: rgba(255, 255, 255, .15);
+}
+
+.play {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5em;
+  height: 2.5em;
+  margin: 0 .3em;
+  border-radius: 50%;
+  background: #fff;
+  color: #0d0c14;
+  flex-shrink: 0;
+  transition: transform .15s;
+}
+
+.play:hover {
+  transform: scale(1.06);
+}
+
+.play:focus-visible {
+  outline: 2px solid var(--llc-accent-text);
+  outline-offset: 2px;
+}
+
+.segJump {
+  all: unset;
+  cursor: pointer;
+  box-sizing: border-box;
+  min-width: 1.6em;
+  height: 1.6em;
+  padding: 0 .35em;
+  border-radius: var(--llc-radius-pill);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .7em;
+  font-weight: 700;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+/* get out of the way while playing, come back when the mouse is over the video */
+:global(.llc-video-stage[data-playing="true"]:not(:hover)) .dockWrapper {
+  opacity: 0;
+}

@@ -1,6 +1,7 @@
 import type { CSSProperties, ChangeEventHandler, TdHTMLAttributes } from 'react';
 import { memo, useCallback, useMemo } from 'react';
-import { FaYinYang, FaKeyboard, FaGlobe, FaBroom, FaCogs, FaHashtag, FaClock, FaFolder, FaFile, FaTimes } from 'react-icons/fa';
+import { FaYinYang } from 'react-icons/fa';
+import { LuClock, LuEraser, LuFile, LuFolder, LuGlobe, LuHash, LuKeyboard, LuSettings2, LuX } from 'react-icons/lu';
 import { useTranslation } from 'react-i18next';
 import invariant from 'tiny-invariant';
 
@@ -121,7 +122,7 @@ function Settings({
 
       <tbody>
         <Row>
-          <KeyCell><FaGlobe style={{ verticalAlign: 'middle', fontSize: '1.2em', marginRight: '.3em' }} /> App language</KeyCell>
+          <KeyCell><LuGlobe style={{ verticalAlign: 'middle', fontSize: '1.2em', marginRight: '.3em' }} /> App language</KeyCell>
           <td>
             <Select value={language ?? ''} onChange={onLangChange} style={{ fontSize: '1em' }}>
               <option key="" value="">{t('System language')}</option>
@@ -170,7 +171,7 @@ function Settings({
             <KeyCell>{t('Store project file (.llc) in the working directory or next to loaded media file?')}</KeyCell>
             <td>
               <Button disabled={!autoSaveProjectFile} onClick={toggleStoreProjectInWorkingDir}>
-                {storeProjectInWorkingDir ? <FaFolder style={{ verticalAlign: 'middle', fontSize: '1.1em', marginRight: '.3em' }} /> : <FaFile style={{ verticalAlign: 'middle', fontSize: '1.1em', marginRight: '.3em' }} />}
+                {storeProjectInWorkingDir ? <LuFolder style={{ verticalAlign: 'middle', fontSize: '1.1em', marginRight: '.3em' }} /> : <LuFile style={{ verticalAlign: 'middle', fontSize: '1.1em', marginRight: '.3em' }} />}
                 {storeProjectInWorkingDir ? t('Store in working directory') : t('Store next to media file')}
               </Button>
             </td>
@@ -188,11 +189,11 @@ function Settings({
             <td>
               <Truncated maxWidth="15em">{customFfPath}</Truncated>
               <Button onClick={changeCustomFfPath}>
-                <FaCogs style={{ verticalAlign: 'middle', marginRight: '.4em' }} />{customFfPath ? t('Using external ffmpeg') : t('Using built-in ffmpeg')}
+                <LuSettings2 style={{ verticalAlign: 'middle', marginRight: '.4em' }} />{customFfPath ? t('Using external ffmpeg') : t('Using built-in ffmpeg')}
               </Button>
               {customFfPath && (
                 <Button onClick={clearCustomFfPath} title={t('Clear')}>
-                  <FaTimes />
+                  <LuX />
                 </Button>
               )}
             </td>
@@ -249,7 +250,7 @@ function Settings({
             <Truncated maxWidth="15em">{customOutDir}</Truncated>
             <OutDirSelector>
               <Button>
-                {customOutDir ? <FaFolder style={{ marginRight: '.3em', verticalAlign: 'middle' }} /> : <FaFile style={{ marginRight: '.3em', verticalAlign: 'middle' }} />}
+                {customOutDir ? <LuFolder style={{ marginRight: '.3em', verticalAlign: 'middle' }} /> : <LuFile style={{ marginRight: '.3em', verticalAlign: 'middle' }} />}
                 {customOutDir ? t('Custom working directory') : t('Same directory as input file')}...
               </Button>
             </OutDirSelector>
@@ -306,7 +307,7 @@ function Settings({
         <Row>
           <KeyCell>{t('Cleanup files after export?')}</KeyCell>
           <td>
-            <Button onClick={askForCleanupChoices}><FaBroom style={{ verticalAlign: 'middle', marginRight: '.3em' }} />{t('Change preferences')}</Button>
+            <Button onClick={askForCleanupChoices}><LuEraser style={{ verticalAlign: 'middle', marginRight: '.3em' }} />{t('Change preferences')}</Button>
           </td>
         </Row>
 
@@ -366,7 +367,7 @@ function Settings({
             </KeyCell>
             <td>
               <Button onClick={() => setCaptureFrameFileNameFormat((existing) => (existing === 'timestamp' ? 'index' : 'timestamp'))}>
-                {captureFrameFileNameFormat === 'timestamp' ? <FaClock style={{ verticalAlign: 'middle', marginRight: '.3em' }} /> : <FaHashtag style={{ verticalAlign: 'middle', marginRight: '.3em' }} />}
+                {captureFrameFileNameFormat === 'timestamp' ? <LuClock style={{ verticalAlign: 'middle', marginRight: '.3em' }} /> : <LuHash style={{ verticalAlign: 'middle', marginRight: '.3em' }} />}
                 {captureFrameFileNameFormat === 'timestamp' ? t('Frame timestamp') : t('Frame number')}
               </Button>
             </td>
@@ -379,7 +380,7 @@ function Settings({
         <Row>
           <KeyCell>{t('Keyboard & mouse shortcuts')}</KeyCell>
           <td>
-            <Button onClick={onKeyboardShortcutsDialogRequested}><FaKeyboard style={{ verticalAlign: 'middle', marginRight: '.3em' }} /> {t('Keyboard & mouse shortcuts')}</Button>
+            <Button onClick={onKeyboardShortcutsDialogRequested}><LuKeyboard style={{ verticalAlign: 'middle', marginRight: '.3em' }} /> {t('Keyboard & mouse shortcuts')}</Button>
           </td>
         </Row>
 
@@ -391,35 +392,35 @@ function Settings({
         <Row>
           <KeyCell>{t('Timeline trackpad/wheel sensitivity')}</KeyCell>
           <td>
-            <Button onClick={() => onTunerRequested('wheelSensitivity')}><FaCogs style={{ verticalAlign: 'middle', marginRight: '.4em' }} />{t('Change value')}</Button>
+            <Button onClick={() => onTunerRequested('wheelSensitivity')}><LuSettings2 style={{ verticalAlign: 'middle', marginRight: '.4em' }} />{t('Change value')}</Button>
           </td>
         </Row>
 
         <Row>
           <KeyCell>{t('Timeline keyboard seek interval')}</KeyCell>
           <td>
-            <Button onClick={() => onTunerRequested('keyboardNormalSeekSpeed')}><FaCogs style={{ verticalAlign: 'middle', marginRight: '.4em' }} /> {t('Change value')}</Button>
+            <Button onClick={() => onTunerRequested('keyboardNormalSeekSpeed')}><LuSettings2 style={{ verticalAlign: 'middle', marginRight: '.4em' }} /> {t('Change value')}</Button>
           </td>
         </Row>
 
         <Row>
           <KeyCell>{t('Timeline keyboard seek interval (longer)')}</KeyCell>
           <td>
-            <Button onClick={() => onTunerRequested('keyboardSeekSpeed2')}><FaCogs style={{ verticalAlign: 'middle', marginRight: '.4em' }} /> {t('Change value')}</Button>
+            <Button onClick={() => onTunerRequested('keyboardSeekSpeed2')}><LuSettings2 style={{ verticalAlign: 'middle', marginRight: '.4em' }} /> {t('Change value')}</Button>
           </td>
         </Row>
 
         <Row>
           <KeyCell>{t('Timeline keyboard seek interval (longest)')}</KeyCell>
           <td>
-            <Button onClick={() => onTunerRequested('keyboardSeekSpeed3')}><FaCogs style={{ verticalAlign: 'middle', marginRight: '.4em' }} /> {t('Change value')}</Button>
+            <Button onClick={() => onTunerRequested('keyboardSeekSpeed3')}><LuSettings2 style={{ verticalAlign: 'middle', marginRight: '.4em' }} /> {t('Change value')}</Button>
           </td>
         </Row>
 
         <Row>
           <KeyCell>{t('Timeline keyboard seek acceleration')}</KeyCell>
           <td>
-            <Button onClick={() => onTunerRequested('keyboardSeekAccFactor')}><FaCogs style={{ verticalAlign: 'middle', marginRight: '.4em' }} /> {t('Change value')}</Button>
+            <Button onClick={() => onTunerRequested('keyboardSeekAccFactor')}><LuSettings2 style={{ verticalAlign: 'middle', marginRight: '.4em' }} /> {t('Change value')}</Button>
           </td>
         </Row>
 
@@ -446,7 +447,7 @@ function Settings({
           <Row>
             <KeyCell>{t('Waveform height')}</KeyCell>
             <td>
-              <Button onClick={() => onTunerRequested('waveformHeight')}><FaCogs style={{ verticalAlign: 'middle', marginRight: '.4em' }} /> {t('Change value')}</Button>
+              <Button onClick={() => onTunerRequested('waveformHeight')}><LuSettings2 style={{ verticalAlign: 'middle', marginRight: '.4em' }} /> {t('Change value')}</Button>
             </td>
           </Row>
         )}
@@ -516,8 +517,8 @@ function Settings({
           <td>
             <Button onClick={onTimecodeFormatClick}>
               {timecodeFormat === 'frameCount'
-                ? <FaHashtag style={{ verticalAlign: 'middle', marginRight: '.3em' }} />
-                : <FaClock style={{ verticalAlign: 'middle', marginRight: '.3em' }} />}{timecodeFormatOptions[timecodeFormat]}
+                ? <LuHash style={{ verticalAlign: 'middle', marginRight: '.3em' }} />
+                : <LuClock style={{ verticalAlign: 'middle', marginRight: '.3em' }} />}{timecodeFormatOptions[timecodeFormat]}
             </Button>
           </td>
         </Row>

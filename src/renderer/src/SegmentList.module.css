@@ -1,0 +1,178 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--llc-text-2);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .3em;
+  padding: .6em .5em .5em .9em;
+}
+
+.title {
+  font-size: .85em;
+  font-weight: 600;
+  color: var(--llc-text-1);
+}
+
+.subtitle {
+  font-size: .72em;
+  color: var(--llc-text-3);
+  margin-left: .5em;
+  font-weight: 400;
+}
+
+.card {
+  position: relative;
+  box-sizing: border-box;
+  padding: .55em .7em .55em .95em;
+  border-radius: var(--llc-radius-card);
+  background: var(--llc-card-bg);
+  border: 1px solid transparent;
+  overflow: hidden;
+  transition: background-color .15s, border-color .15s, opacity .1s;
+}
+
+.card:hover {
+  background: var(--llc-card-bg-hover);
+}
+
+.card.active {
+  background: var(--llc-accent-soft);
+  border-color: var(--llc-accent-border);
+}
+
+.colorBar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: .45em;
+  min-width: 0;
+}
+
+.number {
+  flex-shrink: 0;
+  min-width: 1.5em;
+  height: 1.5em;
+  padding: 0 .35em;
+  box-sizing: border-box;
+  border-radius: var(--llc-radius-pill);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .68em;
+  font-weight: 700;
+}
+
+.name {
+  flex-grow: 1;
+  min-width: 0;
+  font-size: .8em;
+  font-weight: 600;
+  color: var(--llc-text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.duration {
+  flex-shrink: 0;
+  font-size: .68em;
+  color: var(--llc-text-1);
+  background: var(--llc-control-bg-hover);
+  padding: .15em .55em;
+  border-radius: var(--llc-radius-pill);
+}
+
+.range {
+  margin-top: .35em;
+  font-size: .7em;
+  color: var(--llc-text-2);
+  white-space: nowrap;
+}
+
+.details {
+  margin-top: .4em;
+  font-size: .65em;
+  color: var(--llc-text-3);
+  padding-right: 1.8em;
+}
+
+.tag {
+  display: inline-block;
+  font-size: .65em;
+  background: var(--llc-control-bg-hover);
+  color: var(--llc-text-1);
+  border-radius: var(--llc-radius-pill);
+  padding: .1em .5em;
+  margin: .35em .25em 0 0;
+}
+
+.check {
+  position: absolute;
+  right: .55em;
+  bottom: .5em;
+  color: var(--llc-text-2);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0;
+  padding: .45em .5em;
+  border-top: 1px solid var(--llc-panel-border);
+}
+
+.actions :global(.llc-icon-button) {
+  min-width: 1.75em;
+  padding: 0 .25em;
+}
+
+.addButton {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: .35em;
+  height: 2em;
+  padding: 0 .8em 0 .6em;
+  margin-right: auto;
+  border-radius: var(--llc-radius-pill);
+  font-size: .78em;
+  font-weight: 600;
+  color: #fff;
+  transition: filter .15s;
+}
+
+.addButton:hover {
+  filter: brightness(1.1);
+}
+
+.addButton:focus-visible {
+  outline: 2px solid var(--llc-accent-border);
+}
+
+.total {
+  display: flex;
+  justify-content: space-between;
+  padding: .55em .9em .7em;
+  font-size: .72em;
+  color: var(--llc-text-3);
+}
+
+.totalValue {
+  color: var(--llc-text-1);
+}

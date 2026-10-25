@@ -1,8 +1,7 @@
 import type { CSSProperties, Dispatch, SetStateAction } from 'react';
 import { memo, useState, useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AiOutlineMergeCells } from 'react-icons/ai';
-import { FaQuestionCircle, FaExclamationTriangle, FaCog, FaCheck, FaInfoCircle } from 'react-icons/fa';
+import { LuCheck, LuCircleHelp, LuInfo, LuMerge, LuSettings, LuTriangleAlert } from 'react-icons/lu';
 import invariant from 'tiny-invariant';
 import pMap from 'p-map';
 import { Table } from '@radix-ui/themes';
@@ -33,7 +32,7 @@ const rowStyle: CSSProperties = {
 
 function Alert({ text }: { text: string }) {
   return (
-    <div style={{ marginBottom: '1em' }}><FaExclamationTriangle style={{ color: warningColor, verticalAlign: 'middle', marginRight: '.2em' }} /> {text}</div>
+    <div style={{ marginBottom: '1em' }}><LuTriangleAlert style={{ color: warningColor, verticalAlign: 'middle', marginRight: '.2em' }} /> {text}</div>
   );
 }
 
@@ -254,7 +253,7 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate: storedMerged
                     problemsByFile[path] ? (
                       <Dialog.Root>
                         <Dialog.Trigger asChild>
-                          <Button title={t('Mismatches detected')} style={{ color: warningColor, marginLeft: '1em' }}><FaExclamationTriangle /></Button>
+                          <Button title={t('Mismatches detected')} style={{ color: warningColor, marginLeft: '1em' }}><LuTriangleAlert /></Button>
                         </Dialog.Trigger>
 
                         <Dialog.Portal>
@@ -306,10 +305,10 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate: storedMerged
                         </Dialog.Portal>
                       </Dialog.Root>
                     ) : (
-                      <FaCheck style={{ color: saveColor, verticalAlign: 'middle', marginLeft: '1em' }} />
+                      <LuCheck style={{ color: saveColor, verticalAlign: 'middle', marginLeft: '1em' }} />
                     )
                   ) : (
-                    <FaQuestionCircle style={{ color: warningColor, verticalAlign: 'middle', marginLeft: '1em' }} />
+                    <LuCircleHelp style={{ color: warningColor, verticalAlign: 'middle', marginLeft: '1em' }} />
                   )}
                 </div>
               </div>
@@ -339,7 +338,7 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate: storedMerged
 
             {simpleMode && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '0 .5em', color: primaryTextColor }}>
-                <FaInfoCircle color={primaryTextColor} style={{ verticalAlign: 'middle' }} />
+                <LuInfo color={primaryTextColor} style={{ verticalAlign: 'middle' }} />
                 {t('You are in simple mode, meaning some functionality has been simplified or hidden.')}
               </div>
             )}
@@ -356,7 +355,7 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate: storedMerged
 
             <Dialog.Root>
               <Dialog.Trigger asChild>
-                <Button style={{ padding: '.3em .5em' }}><FaCog style={{ verticalAlign: 'middle', fontSize: '1.4em', marginRight: '.2em' }} /> {t('Options')}</Button>
+                <Button style={{ padding: '.3em .5em' }}><LuSettings style={{ verticalAlign: 'middle', fontSize: '1.4em', marginRight: '.2em' }} /> {t('Options')}</Button>
               </Dialog.Trigger>
 
               <Dialog.Portal>
@@ -392,7 +391,7 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate: storedMerged
             <OutputFormatSelect disabled={fileFormat == null || detectedFileFormat == null} style={{ height: '2.1em', maxWidth: '20em' }} detectedFileFormat={detectedFileFormat} fileFormat={fileFormat} onOutputFormatUserChange={onOutputFormatUserChange} />
 
             <DialogButton disabled={fileFormat == null} onClick={onConcatClick} primary>
-              <AiOutlineMergeCells style={{ fontSize: '1.3em', verticalAlign: 'middle', marginRight: '.3em' }} />
+              <LuMerge style={{ fontSize: '1.3em', verticalAlign: 'middle', marginRight: '.3em' }} />
               {t('Merge files')}
             </DialogButton>
           </Dialog.ButtonRow>

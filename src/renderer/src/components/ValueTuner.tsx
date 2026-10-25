@@ -6,7 +6,6 @@ import styles from './ValueTuner.module.css';
 
 import Switch from './Switch';
 import Button from './Button';
-import { primaryColor } from '../colors';
 
 
 function ValueTuner({ title, value, setValue, onFinished, resolution, decimals, min: minIn = 0, max: maxIn = 1, resetToDefault }: {
@@ -56,7 +55,7 @@ function ValueTuner({ title, value, setValue, onFinished, resolution, decimals, 
     <div className={styles['value-tuner']}>
       <div style={{ display: 'flex', alignItems: 'center', flexBasis: 400, marginBottom: '.3em' }}>
         <div>{title}</div>
-        <div style={{ marginLeft: '.6em', fontSize: '1.3em', marginRight: '.5em', fontFamily: 'monospace', width: '5.5em' }}>{value.toFixed(decimals)}</div>
+        <div className="llc-mono" style={{ marginLeft: '.6em', fontSize: '1.2em', marginRight: '.5em', width: '5.5em', color: 'var(--llc-accent-text)' }}>{value.toFixed(decimals)}</div>
         <Switch checked={isZoomed} onCheckedChange={toggleZoom} style={{ flexShrink: 0 }} /><span style={{ marginLeft: '.3em' }}>{t('Precise')}</span>
       </div>
 
@@ -66,7 +65,7 @@ function ValueTuner({ title, value, setValue, onFinished, resolution, decimals, 
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '.3em' }}>
         <Button onClick={handleResetToDefaultClick}>{t('Default')}</Button>
-        <Button onClick={onFinished} style={{ backgroundColor: primaryColor, color: 'white' }}>{t('Done')}</Button>
+        <Button onClick={onFinished} style={{ background: 'var(--llc-accent-gradient)', borderColor: 'transparent', color: 'white', fontWeight: 600 }}>{t('Done')}</Button>
       </div>
     </div>
   );

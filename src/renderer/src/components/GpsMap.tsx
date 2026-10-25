@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
+import { LuMapPin } from 'react-icons/lu';
 import { MapContainer, Popup, TileLayer } from 'react-leaflet';
 import { Marker } from '@adamscybot/react-leaflet-component-marker';
 import 'leaflet/dist/leaflet.css';
-import { FaMapMarkerAlt } from 'react-icons/fa';
 import i18n from 'i18next';
 
 import { extractSrtGpsTrack } from '../ffmpeg';
@@ -79,7 +79,7 @@ export default function GpsMap({ filePath, streamIndex }: {
         />
 
         {points.map((point, i) => (
-          <Marker key={point.index} position={[point.lat, point.lng]} icon={<FaMapMarkerAlt color="#af0e0e" size={20} />}>
+          <Marker key={point.index} position={[point.lat, point.lng]} icon={<LuMapPin color="#af0e0e" size={20} />}>
             <Popup>
               <div>Point {i + 1} / {points.length}</div>
               {point.raw}

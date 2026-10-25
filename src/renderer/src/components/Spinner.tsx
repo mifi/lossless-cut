@@ -1,7 +1,7 @@
-import { FaSpinner } from 'react-icons/fa';
+import { LuLoaderCircle } from 'react-icons/lu';
 
 export default function Spinner() {
   return (
-    <FaSpinner className="spinner-animation" />
+    <LuLoaderCircle className="spinner-animation" />
   );
 }

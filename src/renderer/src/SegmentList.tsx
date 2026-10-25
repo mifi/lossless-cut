@@ -1,7 +1,7 @@
 import type { SetStateAction, Dispatch, MouseEventHandler, CSSProperties } from 'react';
 import { memo, useMemo, useRef, useCallback, useState, useEffect } from 'react';
-import { FaYinYang, FaSave, FaPlus, FaMinus, FaTag, FaSortNumericDown, FaRegCheckCircle, FaRegCircle, FaTimes } from 'react-icons/fa';
-import { AiOutlineSplitCells } from 'react-icons/ai';
+import { FaYinYang } from 'react-icons/fa';
+import { LuArrowDown01, LuCircle, LuCircleCheck, LuListChecks, LuMinus, LuPlus, LuSave, LuSquareSplitHorizontal, LuTag, LuX } from 'react-icons/lu';
 import { motion } from 'motion/react';
 import { useTranslation, Trans } from 'react-i18next';
 import type { DragEndEvent, DragStartEvent, UniqueIdentifier } from '@dnd-kit/core';
@@ -16,7 +16,7 @@ import prettyBytes from 'pretty-bytes';
 import useContextMenu from './hooks/useContextMenu';
 import useUserSettings from './hooks/useUserSettings';
 import useActionTitle from './hooks/useActionTitle';
-import { saveColor, controlsBackground, primaryTextColor, darkModeTransition } from './colors';
+import { saveColor, darkModeTransition } from './colors';
 import { useSegColors } from './contexts';
 import { getSegmentTags } from './segments';
 import TagEditor, { cancelTagEditOnEscape } from './components/TagEditor';
@@ -25,14 +25,8 @@ import type { UseSegments } from './hooks/useSegments';
 import * as Dialog from './components/Dialog';
 import { DialogButton } from './components/Button';
 import getSwal from './swal';
+import styles from './SegmentList.module.css';
 
-
-const buttonBaseStyle: CSSProperties = {
-  margin: '0 3px', borderRadius: 3, color: 'white', cursor: 'pointer', userSelect: 'none',
-};
-
-const disabledButtonStyle = { color: 'var(--gray-10)', backgroundColor: 'var(--gray-6)' };
-const neutralButtonColor = 'var(--gray-9)';
 
 // eslint-disable-next-line react/display-name
 const Segment = memo(({
@@ -160,21 +154,16 @@ const Segment = memo(({
   const timeStr = useMemo(() => (
     seg.end == null
       ? formatTimecode({ seconds: seg.start })
-      : `${formatTimecode({ seconds: seg.start })} - ${formatTimecode({ seconds: seg.end })}`
+      : `${formatTimecode({ seconds: seg.start })} → ${formatTimecode({ seconds: seg.end })}`
   ), [formatTimecode, seg]);
 
   function renderNumber() {
     if (invertCutSegments || !('segColorIndex' in seg)) {
-      return <FaSave style={{ color: saveColor, marginRight: '.2em', verticalAlign: 'middle' }} size={14} />;
+      return <LuSave style={{ color: saveColor, marginRight: '.2em', verticalAlign: 'middle' }} size={14} />;
     }
 
-    const segColor = getSegColor(seg);
-
-    const color = segColor.desaturate(0.25).lightness(darkMode ? 35 : 55);
-    const borderColor = darkMode ? color.lighten(0.5) : color.darken(0.3);
-
     return (
-      <b style={{ color: 'white', padding: '0 .3em', marginRight: '.3em', marginLeft: '-.23em', background: color.string(), border: `.05em solid ${isActive ? borderColor.string() : 'transparent'}`, borderRadius: '.35em', fontSize: '.7em' }}>
+      <b className={styles['number']} style={{ background: getSegColor(seg).string(), color: '#15121f' }}>
         {index + 1}
       </b>
     );
@@ -185,7 +174,7 @@ const Segment = memo(({
     jumpSegStart(index);
   }, [index, invertCutSegments, jumpSegStart]);
 
-  const CheckIcon = selected ? FaRegCheckCircle : FaRegCircle;
+  const CheckIcon = selected ? LuCircleCheck : LuCircle;
 
   const onToggleSegmentSelectedClick = useCallback<MouseEventHandler>((e) => {
     e.stopPropagation();
@@ -221,24 +210,21 @@ const Segment = memo(({
     ];
     return {
       visibility: sortable.isDragging ? 'hidden' : undefined,
-      padding: '3px 5px',
-      margin: '1px 0',
-      boxSizing: 'border-box',
       originY: 0,
-      position: 'relative',
       transform: CSS.Transform.toString(sortable.transform),
       transition: transitions.length > 0 ? transitions.join(', ') : undefined,
-      background: 'var(--gray-1)',
-      border: `1px solid ${isActive ? 'var(--gray-10)' : 'transparent'}`,
-      borderRadius: 5,
       opacity: !selected && !invertCutSegments ? 0.5 : undefined,
     };
-  }, [invertCutSegments, isActive, selected, sortable.isDragging, sortable.transform, sortable.transition]);
+  }, [invertCutSegments, selected, sortable.isDragging, sortable.transform, sortable.transition]);
+
+  const barColor = useMemo(() => (invertCutSegments || !('segColorIndex' in seg) ? saveColor : getSegColor(seg).desaturate(0.2).lightness(darkMode ? 60 : 50).string()), [darkMode, getSegColor, invertCutSegments, seg]);
 
   const setRef = useCallback((node: HTMLDivElement | null) => {
     sortable.setNodeRef(node);
     ref.current = node;
   }, [sortable]);
+
+  const name = 'name' in seg && seg.name ? seg.name : undefined;
 
   return (
     <div
@@ -247,8 +233,10 @@ const Segment = memo(({
       onClick={handleSegmentClick}
       onDoubleClick={onDoubleClick}
       style={style}
-      className="segment-list-entry"
+      className={['segment-list-entry', styles['card'], ...(isActive ? [styles['active']] : [])].join(' ')}
     >
+      <div className={styles['colorBar']} style={{ background: barColor }} />
+
       <div
         // eslint-disable-next-line react/jsx-props-no-spreading
         {...sortable.attributes}
@@ -256,39 +244,44 @@ const Segment = memo(({
         {...sortable.listeners}
         role="button"
         tabIndex={-1}
-        style={{ cursor, color: 'var(--gray-12)', marginBottom: duration != null ? '.1em' : undefined, display: 'flex', alignItems: 'center', height: '1em' }}
+        style={{ cursor }}
         onClick={handleDraggableClick}
       >
-        {renderNumber()}
-        <span style={{ cursor, fontSize: `${Math.min(1, 26 / timeStr.length) * 0.75}em`, whiteSpace: 'nowrap' }}>{timeStr}</span>
+        <div className={styles['row']}>
+          {renderNumber()}
+          {name ? (
+            <span className={styles['name']}>{name}</span>
+          ) : (
+            <span className={`llc-mono ${styles['name']}`} style={{ fontWeight: 500, fontSize: '.7em' }}>{timeStr}</span>
+          )}
+          {name && duration != null && (
+            <span className={`llc-mono ${styles['duration']}`} title={t('Duration')}>{formatTimecode({ seconds: duration, shorten: true })}</span>
+          )}
+        </div>
+
+        {name && <div className={`llc-mono ${styles['range']}`}>{timeStr}</div>}
       </div>
 
-      {'name' in seg && seg.name && <span style={{ fontSize: '.75em', color: primaryTextColor, marginRight: '.3em' }}>{seg.name}</span>}
-      {Object.entries(tags).map(([name, value]) => (
-        <span style={{ fontSize: '.7em', backgroundColor: 'var(--gray-5)', color: 'var(--gray-12)', borderRadius: '.4em', padding: '0 .2em', marginRight: '.1em' }} key={name}>{name}:<b>{value}</b></span>
+      {Object.entries(tags).map(([tagName, value]) => (
+        <span className={styles['tag']} key={tagName}>{tagName}: <b>{value}</b></span>
       ))}
 
       {duration != null && (
-        <>
-          <div style={{ fontSize: '.75em' }}>
-            {t('Duration')} {formatTimecode({ seconds: duration, shorten: true })}
-          </div>
-          <div style={{ fontSize: '.75em' }}>
-            <Trans>{{ durationMsFormatted: Math.floor(duration * 1000) }} ms</Trans>
-            <span>, <Trans>{{ frameCount: (duration && getFrameCount(duration)) ?? '?' }} frames</Trans></span>
-            {estimatedSize != null && (
-              <span style={{ fontSize: '.9em' }}>
-                , ~{prettyBytes(estimatedSize, { space: false, maximumFractionDigits: 1, minimumFractionDigits: 0 })}
-              </span>
-            )}
-
-          </div>
-        </>
+        <div className={styles['details']}>
+          {!name && <span className={`llc-mono ${styles['duration']}`} style={{ marginRight: '.6em', fontSize: '1em' }} title={t('Duration')}>{formatTimecode({ seconds: duration, shorten: true })}</span>}
+          <Trans>{{ durationMsFormatted: Math.floor(duration * 1000) }} ms</Trans>
+          <span>, <Trans>{{ frameCount: (duration && getFrameCount(duration)) ?? '?' }} frames</Trans></span>
+          {estimatedSize != null && (
+            <span>
+              , ~{prettyBytes(estimatedSize, { space: false, maximumFractionDigits: 1, minimumFractionDigits: 0 })}
+            </span>
+          )}
+        </div>
       )}
 
       {!invertCutSegments && selected != null && (
-        <div style={{ position: 'absolute', right: 3, bottom: 3 }}>
-          <CheckIcon className="selected" size={20} color="var(--gray-12)" onClick={onToggleSegmentSelectedClick} />
+        <div className={styles['check']}>
+          <CheckIcon className="selected" size={17} onClick={onToggleSegmentSelectedClick} />
         </div>
       )}
     </div>
@@ -309,7 +302,6 @@ function SegmentList({
   removeSegment,
   onRemoveSelected,
   onLabelSegment,
-  currentCutSeg,
   firstSegmentAtCursor,
   toggleSegmentsList,
   splitCurrentSegment,
@@ -350,7 +342,6 @@ function SegmentList({
   removeSegment: UseSegments['removeSegment'],
   onRemoveSelected: UseSegments['removeSelectedSegments'],
   onLabelSegment: UseSegments['labelSegment'],
-  currentCutSeg: UseSegments['currentCutSeg'],
   firstSegmentAtCursor: StateSegment | undefined,
   toggleSegmentsList: () => void,
   splitCurrentSegment: UseSegments['splitCurrentSegment'],
@@ -386,7 +377,6 @@ function SegmentList({
   const actionTitle = useActionTitle();
 
   const getButtonColor = useCallback((seg: SegmentColorIndex | undefined, next?: boolean) => getSegColor(seg ? { segColorIndex: next ? seg.segColorIndex + 1 : seg.segColorIndex } : undefined).desaturate(0.3).lightness(darkMode ? 45 : 55).string(), [darkMode, getSegColor]);
-  const currentSegColor = useMemo(() => getButtonColor(currentCutSeg), [currentCutSeg, getButtonColor]);
   const segAtCursorColor = useMemo(() => getButtonColor(firstSegmentAtCursor), [getButtonColor, firstSegmentAtCursor]);
   const nextSegmentColor = useMemo(() => getButtonColor({ segColorIndex: nextSegColorIndex }, false), [getButtonColor, nextSegColorIndex]);
 
@@ -437,65 +427,79 @@ function SegmentList({
   function renderFooter() {
     return (
       <>
-        <div style={{ display: 'flex', padding: '5px 0', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid var(--gray-6)' }}>
-          <FaPlus
-            size={24}
-            style={{ ...buttonBaseStyle, background: nextSegmentColor }}
-            role="button"
+        <div className={styles['actions']}>
+          <button
+            type="button"
+            className={styles['addButton']}
+            style={{ background: nextSegmentColor }}
             title={actionTitle(t('Add segment'), 'addSegment')}
             onClick={addSegment}
-          />
+          >
+            <LuPlus size={15} />
+            {t('Add segment')}
+          </button>
 
-          <FaMinus
-            size={24}
-            style={{ ...buttonBaseStyle, ...(cutSegments.length > 0 ? { backgroundColor: currentSegColor } : disabledButtonStyle) }}
-            role="button"
+          <button
+            type="button"
+            className="llc-icon-button"
+            aria-disabled={cutSegments.length === 0}
             title={actionTitle(t('Remove cutpoint from segment {{segmentNumber}}', { segmentNumber: currentSegIndex + 1 }), 'removeCurrentCutpoint')}
             onClick={() => removeSegment(currentSegIndex)}
-          />
+          >
+            <LuMinus size={16} />
+          </button>
 
           {!invertCutSegments && !simpleMode && (
             <>
-              <FaSortNumericDown
-                size={16}
+              <button
+                type="button"
+                className="llc-icon-button"
+                aria-disabled={cutSegments.length < 2}
                 title={actionTitle(t('Change segment order'), 'reorderSegsByStartTime')}
-                role="button"
-                style={{ ...buttonBaseStyle, padding: 4, ...(cutSegments.length >= 2 ? { backgroundColor: currentSegColor } : disabledButtonStyle) }}
                 onClick={() => onReorderSegs(currentSegIndex)}
-              />
+              >
+                <LuArrowDown01 size={16} />
+              </button>
 
-              <FaTag
-                size={16}
+              <button
+                type="button"
+                className="llc-icon-button"
+                aria-disabled={cutSegments.length === 0}
                 title={actionTitle(t('Label segment'), 'labelCurrentSegment')}
-                role="button"
-                style={{ ...buttonBaseStyle, padding: 4, ...(cutSegments.length > 0 ? { backgroundColor: currentSegColor } : disabledButtonStyle) }}
                 onClick={() => onLabelSegment(currentSegIndex)}
-              />
+              >
+                <LuTag size={15} />
+              </button>
             </>
           )}
 
-          <AiOutlineSplitCells
-            size={22}
+          <button
+            type="button"
+            className="llc-icon-button"
+            aria-disabled={!firstSegmentAtCursor}
+            style={firstSegmentAtCursor ? { color: segAtCursorColor } : undefined}
             title={actionTitle(t('Split segment at cursor'), 'splitCurrentSegment')}
-            role="button"
-            style={{ ...buttonBaseStyle, padding: 1, ...(firstSegmentAtCursor ? { backgroundColor: segAtCursorColor } : disabledButtonStyle) }}
             onClick={splitCurrentSegment}
-          />
+          >
+            <LuSquareSplitHorizontal size={16} />
+          </button>
 
           {!invertCutSegments && (
-            <FaRegCheckCircle
-              size={22}
+            <button
+              type="button"
+              className="llc-icon-button"
+              aria-disabled={cutSegments.length === 0}
               title={actionTitle(t('Invert segment selection'), 'invertSelectedSegments')}
-              role="button"
-              style={{ ...buttonBaseStyle, padding: 1, ...(cutSegments.length > 0 ? { backgroundColor: neutralButtonColor } : disabledButtonStyle) }}
               onClick={onInvertSelectedSegments}
-            />
+            >
+              <LuListChecks size={16} />
+            </button>
           )}
         </div>
 
-        <div style={{ padding: '5px 10px', boxSizing: 'border-box', borderBottom: '1px solid var(--gray-6)', borderTop: '1px solid var(--gray-6)', display: 'flex', justifyContent: 'space-between', fontSize: '.8em' }}>
+        <div className={styles['total']}>
           <div>{t('Segments total:')}</div>
-          <div>{formatTimecode({ seconds: segmentsTotal })}</div>
+          <div className={`llc-mono ${styles['totalValue']}`}>{formatTimecode({ seconds: segmentsTotal })}</div>
         </div>
       </>
     );
@@ -624,7 +628,7 @@ function SegmentList({
 
             <Dialog.ButtonRow>
               <DialogButton onClick={onSegmentTagsConfirm} disabled={editingTag != null} primary>
-                <FaSave style={{ verticalAlign: 'baseline', fontSize: '.8em', marginRight: '.3em' }} />
+                <LuSave style={{ verticalAlign: 'baseline', fontSize: '.8em', marginRight: '.3em' }} />
                 {t('Save')}
               </DialogButton>
             </Dialog.ButtonRow>
@@ -635,26 +639,27 @@ function SegmentList({
       </Dialog.Root>
 
       <motion.div
-        style={{ width, background: controlsBackground, borderLeft: '1px solid var(--gray-7)', color: 'var(--gray-11)', transition: darkModeTransition, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
+        className={`llc-panel ${styles['panel']}`}
+        style={{ width, flexShrink: 0, transition: darkModeTransition }}
         initial={{ x: width }}
         animate={{ x: 0 }}
         exit={{ x: width }}
         transition={springAnimation}
       >
-        <div style={{ padding: '.2em .5em', color: 'var(--gray-12)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '.2em' }} className="no-user-select">
-          <span style={{ fontSize: '.8em' }}>{getHeader()}</span>
+        <div className={`no-user-select ${styles['header']}`}>
+          <span className={styles['title']}>
+            {getHeader()}
+            {segmentsOrInverse.length > 0 && <span className={styles['subtitle']}>{segmentsOrInverse.length}</span>}
+          </span>
 
-          <FaTimes
-            title={actionTitle(t('Close sidebar'), 'toggleSegmentsList')}
-            style={{ fontSize: '1.1em', verticalAlign: 'middle', color: 'var(--gray-11)', cursor: 'pointer', padding: '.2em .3em' }}
-            role="button"
-            onClick={toggleSegmentsList}
-          />
+          <button type="button" className="llc-icon-button" title={actionTitle(t('Close sidebar'), 'toggleSegmentsList')} onClick={toggleSegmentsList}>
+            <LuX size={16} />
+          </button>
         </div>
 
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} onDragStart={handleDragStart} modifiers={[restrictToVerticalAxis]}>
           <SortableContext items={sortableList} strategy={verticalListSortingStrategy}>
-            <div ref={scrollerRef} style={{ padding: '0 .2em 0 .5em', overflowX: 'hidden', overflowY: 'scroll', flexGrow: 1 }} className="consistent-scrollbar">
+            <div ref={scrollerRef} style={{ padding: '0 .3em 0 .6em', overflowX: 'hidden', overflowY: 'scroll', flexGrow: 1 }} className="consistent-scrollbar">
               <div style={{ height: rowVirtualizer.getTotalSize(), position: 'relative', overflow: 'hidden' }}>
                 {rowVirtualizer.getVirtualItems().map((virtualRow) => {
                   const { id, seg } = sortableList[virtualRow.index]!;

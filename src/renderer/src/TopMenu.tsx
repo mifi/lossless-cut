@@ -1,24 +1,29 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { memo, useCallback, useEffect, useRef } from 'react';
-import { IoIosSettings } from 'react-icons/io';
-import { FaFilter, FaList, FaLock, FaMoon, FaSun, FaUnlock } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
+import { LuFilter, LuListVideo, LuLock, LuLockOpen, LuMoon, LuSettings, LuSun } from 'react-icons/lu';
 import Button from './components/Button';
 
 import ExportModeButton from './components/ExportModeButton';
+import ExportButton from './components/ExportButton';
+import KeepRemoveToggle from './components/KeepRemoveToggle';
+import WindowControls, { AppMenuButton, customTitleBar } from './components/WindowControls';
 
 import { withBlur } from './util';
-import { primaryTextColor, controlsBackground, darkModeTransition } from './colors';
+import { primaryTextColor, darkModeTransition } from './colors';
+import { basename } from './util/path';
+import type { SegmentToExport } from './types';
 import useUserSettings from './hooks/useUserSettings';
 import useActionTitle from './hooks/useActionTitle';
 import styles from './TopMenu.module.css';
+import appIcon from './icon.svg';
 import OutDirSelector from './components/OutDirSelector';
 
 
 const { stat } = window.require('node:fs/promises');
 const { webUtils } = window.require('electron');
 
-const outFmtStyle = { maxWidth: 100 };
+const outFmtStyle = { maxWidth: 130 };
 const exportModeStyle = { flexGrow: 0, flexBasis: 140 };
 
 function TopMenu({
@@ -35,6 +40,10 @@ function TopMenu({
   selectedSegments,
   isCustomFormatSelected,
   toggleDarkMode,
+  fileInfo,
+  segmentsToExport,
+  areWeCutting,
+  onExportPress,
 }: {
   filePath: string | undefined,
   fileFormat: string | undefined,
@@ -49,22 +58,26 @@ function TopMenu({
   selectedSegments: unknown[],
   isCustomFormatSelected: boolean,
   toggleDarkMode: () => void,
+  fileInfo: string | undefined,
+  segmentsToExport: SegmentToExport[],
+  areWeCutting: boolean,
+  onExportPress: () => void,
 }) {
   const { t } = useTranslation();
   const { customOutDir, setCustomOutDir, simpleMode, outFormatLocked, setOutFormatLocked, darkMode } = useUserSettings();
   const actionTitle = useActionTitle();
   const workingDirButtonRef = useRef<HTMLButtonElement>(null);
 
-  const DarkMode = darkMode ? FaSun : FaMoon;
+  const DarkMode = darkMode ? LuSun : LuMoon;
 
   const onOutFormatLockedClick = useCallback(() => setOutFormatLocked((v) => (v ? undefined : fileFormat)), [fileFormat, setOutFormatLocked]);
 
   const showClearWorkingDirButton = !!customOutDir;
 
   function renderFormatLock() {
-    const Icon = outFormatLocked ? FaLock : FaUnlock;
+    const Icon = outFormatLocked ? LuLock : LuLockOpen;
     return (
-      <Button style={{ marginRight: '.7em' }}>
+      <Button>
         <Icon onClick={onOutFormatLockedClick} title={t('Lock/unlock output format')} style={{ fontSize: '.8em', color: outFormatLocked ? primaryTextColor : undefined }} />
       </Button>
     );
@@ -88,13 +101,29 @@ function TopMenu({
 
   return (
     <div
-      className={`no-user-select ${styles['wrapper']}`}
-      style={{ background: controlsBackground, transition: darkModeTransition, display: 'flex', alignItems: 'center', padding: '.3em .3em', gap: '.3em', justifyContent: 'space-between', flexWrap: 'wrap' }}
+      className={`no-user-select llc-panel ${styles['wrapper']}`}
+      style={{ transition: darkModeTransition }}
     >
+      {customTitleBar && <AppMenuButton />}
+
+      <div className={styles['brand']}>
+        <img src={appIcon} alt="" className={styles['logo']} draggable={false} />
+        <div style={{ minWidth: 0 }}>
+          <div className={styles['fileName']} title={filePath}>{filePath ? basename(filePath) : 'LosslessCut'}</div>
+          {fileInfo && <div className={styles['fileInfo']}>{fileInfo}</div>}
+        </div>
+      </div>
+
+      <div style={{ flexGrow: 1 }} />
+
+      {filePath && <KeepRemoveToggle />}
+
+      <div style={{ flexGrow: 1 }} />
+
       {filePath && (
         <>
           <Button onClick={withBlur(() => setStreamsSelectorShown(true))}>
-            <FaList style={{ fontSize: '.7em', marginRight: '.5em' }} />
+            <LuListVideo style={{ fontSize: '.8em' }} />
             {t('Tracks')} ({numStreamsToCopy}/{numStreamsTotal})
           </Button>
 
@@ -103,22 +132,18 @@ function TopMenu({
               onClick={withBlur(() => applyEnabledStreamsFilter())}
               title={actionTitle(t('Toggle tracks using current filter'), 'toggleStripCurrentFilter')}
             >
-              <FaFilter
-                style={{ fontSize: '.8em', verticalAlign: 'middle' }}
-              />
+              <LuFilter style={{ fontSize: '.8em' }} />
             </Button>
           )}
 
           <Button
             onClick={changeEnabledStreamsFilter}
           >
-            {enabledStreamsFilter == null && <FaFilter style={{ fontSize: '.7em', marginRight: '.4em' }} />}
+            {enabledStreamsFilter == null && <LuFilter style={{ fontSize: '.8em' }} />}
             {t('Filter tracks')}
           </Button>
         </>
       )}
-
-      <div style={{ flexGrow: 1 }} />
 
       <OutDirSelector>
         <Button
@@ -140,13 +165,19 @@ function TopMenu({
 
       {!simpleMode && (
         <Button onClick={toggleDarkMode} title={actionTitle(t('Toggle dark mode'), 'toggleDarkMode')}>
-          <DarkMode style={{ verticalAlign: 'middle', fontSize: '.9em' }} />
+          <DarkMode style={{ fontSize: '.9em' }} />
         </Button>
       )}
 
       <Button onClick={toggleSettings} title={actionTitle(t('Settings'), 'toggleSettings')}>
-        <IoIosSettings style={{ fontSize: '1em', verticalAlign: 'bottom' }} />
+        <LuSettings style={{ fontSize: '1.1em' }} />
       </Button>
+
+      {filePath && (
+        <ExportButton segmentsToExport={segmentsToExport} areWeCutting={areWeCutting} onClick={withBlur(onExportPress)} />
+      )}
+
+      {customTitleBar && <WindowControls />}
     </div>
   );
 }

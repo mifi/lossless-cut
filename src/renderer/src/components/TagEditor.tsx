@@ -1,9 +1,9 @@
 import type { FormEventHandler, KeyboardEventHandler } from 'react';
 import { memo, useRef, useState, useMemo, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { LuCheck, LuChevronDown, LuClipboard, LuClipboardList, LuCopy, LuCopyPlus, LuInfo, LuPencil, LuPlus, LuTrash2, LuUndo2 } from 'react-icons/lu';
 import invariant from 'tiny-invariant';
 import { motion } from 'motion/react';
-import { FaCheck, FaChevronDown, FaClipboard, FaClipboardList, FaClone, FaCopy, FaEdit, FaInfo, FaPlus, FaTrash, FaUndo } from 'react-icons/fa';
 import { IconButton, Tooltip, Button, TextArea, DropdownMenu } from '@radix-ui/themes';
 
 import type { SegmentTags } from '../types';
@@ -220,26 +220,26 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
 
                   {tagInfo?.[tag]?.description && !editingThis && (
                     <Tooltip content={tagInfo[tag].description}>
-                      <IconButton size="1" variant="ghost" color="gray" style={{ cursor: tagInfo[tag]?.url ? 'pointer' : undefined }} onClick={() => tagInfo[tag]?.url && mainApi.openExternal(tagInfo[tag].url)}><FaInfo /></IconButton>
+                      <IconButton size="1" variant="ghost" color="gray" style={{ cursor: tagInfo[tag]?.url ? 'pointer' : undefined }} onClick={() => tagInfo[tag]?.url && mainApi.openExternal(tagInfo[tag].url)}><LuInfo /></IconButton>
                     </Tooltip>
                   )}
 
-                  <IconButton disabled={editingOther} size="1" variant="ghost" color={editingThis ? 'cyan' : 'gray'} title={t('Edit')} onClick={() => onEditClick(tag)}>{editingThis ? <FaCheck /> : <FaEdit />}</IconButton>
+                  <IconButton disabled={editingOther} size="1" variant="ghost" color={editingThis ? 'violet' : 'gray'} title={t('Edit')} onClick={() => onEditClick(tag)}>{editingThis ? <LuCheck /> : <LuPencil />}</IconButton>
 
                   {editingThis && thisTagNew && (
-                    <IconButton size="1" color="red" variant="ghost" title={t('Delete')} onClick={onResetClick}><FaTrash /></IconButton>
+                    <IconButton size="1" color="red" variant="ghost" title={t('Delete')} onClick={onResetClick}><LuTrash2 /></IconButton>
                   )}
 
                   {editingThis && !thisTagNew && (
-                    <IconButton size="1" color="red" variant="ghost" title={t('Reset')} onClick={onResetClick}><FaUndo /></IconButton>
+                    <IconButton size="1" color="red" variant="ghost" title={t('Reset')} onClick={onResetClick}><LuUndo2 /></IconButton>
                   )}
 
                   {onApplyToAll && !editingThis && (
-                    <IconButton disabled={editingOther} size="1" variant="ghost" color="gray" title={applyToAllTitle} onClick={() => onApplyToAll(tag, value ?? '')}><FaClone /></IconButton>
+                    <IconButton disabled={editingOther} size="1" variant="ghost" color="gray" title={applyToAllTitle} onClick={() => onApplyToAll(tag, value ?? '')}><LuCopyPlus /></IconButton>
                   )}
 
                   {canDeleteExisting && !isDeletedExisting && !editingThis && existingTags[tag] != null && (
-                    <IconButton disabled={editingOther} size="1" color="red" variant="ghost" title={t('Delete')} onClick={() => onDeleteExistingClick(tag)}><FaTrash /></IconButton>
+                    <IconButton disabled={editingOther} size="1" color="red" variant="ghost" title={t('Delete')} onClick={() => onDeleteExistingClick(tag)}><LuTrash2 /></IconButton>
                   )}
                 </td>
               </motion.tr>
@@ -252,22 +252,22 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
 
       <form onSubmit={onAddSubmit} style={{ opacity: canAdd ? undefined : 0.5, marginBottom: '1em', display: 'flex', alignItems: 'center' }}>
         <SuggestionTextField ref={addRef} disabled={!canAdd} value={newTagKeyInput} onValueChange={setNewTagKeyInput} suggestions={availableKeySuggestions} placeholder={addTagTitle} style={{ marginRight: '1em' }} />
-        <IconButton size="2" type="submit" disabled={!canAdd} title={addTagTitle} onClick={add}><FaPlus /></IconButton>
+        <IconButton size="2" type="submit" disabled={!canAdd} title={addTagTitle} onClick={add}><LuPlus /></IconButton>
       </form>
 
       {newTagKeyInputError && <Warning>{t('Invalid character(s) found in key')}</Warning>}
 
       <div style={{ marginBottom: '1em', display: 'flex', alignItems: 'center' }}>
         <CopyClipboardButton text={JSON.stringify(effectiveTags, null, 2)} style={{ marginRight: '.3em', verticalAlign: 'middle' }}>
-          {({ onClick }) => <Button color="gray" size="1" onClick={onClick}><FaClipboardList />{t('Copy to clipboard')}</Button>}
+          {({ onClick }) => <Button color="gray" variant="soft" radius="full" size="1" onClick={onClick}><LuClipboardList />{t('Copy to clipboard')}</Button>}
         </CopyClipboardButton>
 
-        <Button color="gray" size="1" disabled={editingTag != null} onClick={onPasteClick} style={{ marginRight: '.3em' }}><FaClipboard />{t('Paste')}</Button>
+        <Button color="gray" variant="soft" radius="full" size="1" disabled={editingTag != null} onClick={onPasteClick} style={{ marginRight: '.3em' }}><LuClipboard />{t('Paste')}</Button>
 
         {copyFromSources.length > 0 && (
           <DropdownMenu.Root>
             <DropdownMenu.Trigger disabled={editingTag != null}>
-              <Button color="gray" size="1"><FaCopy />{t('Copy from')}<FaChevronDown /></Button>
+              <Button color="gray" variant="soft" radius="full" size="1"><LuCopy />{t('Copy from')}<LuChevronDown /></Button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content size="1" style={{ maxHeight: '20em' }}>
               {copyFromSources.map(({ key, label, metadata }) => (

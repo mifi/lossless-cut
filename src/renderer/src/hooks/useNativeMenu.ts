@@ -1,33 +1,41 @@
 import type { MenuItemConstructorOptions, MenuItem } from 'electron';
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 
-// TODO pull out?
-const { getCurrentWindow, Menu } = window.require('@electron/remote');
-// eslint-disable-next-line prefer-destructuring
+import type { MenuNode } from '../components/InAppMenu';
+import { closeContextMenu, openContextMenu } from '../components/InAppMenu';
 
-// https://github.com/transflow/use-electron-context-menu
-// https://www.electronjs.org/docs/latest/api/menu-item
+
+function toMenuNodes(template: (MenuItemConstructorOptions | MenuItem)[]): MenuNode[] {
+  return template.map((item) => ({
+    label: item.label,
+    type: item.type === 'separator' || item.type === 'checkbox' || item.type === 'radio' ? item.type : undefined,
+    enabled: item.enabled,
+    visible: item.visible,
+    checked: item.checked,
+    accelerator: item.accelerator != null ? String(item.accelerator) : undefined,
+    // our templates only use click(), without its arguments
+    // @ts-expect-error menu item click handlers expect electron arguments
+    onSelect: item.click != null ? () => item.click() : undefined,
+    submenu: Array.isArray(item.submenu) ? toMenuNodes(item.submenu) : undefined,
+  }));
+}
+
+// Context menus are drawn inside the app (see InAppMenu), so they match the rest of the UI.
+// The template uses electron's menu item format, as it used to be shown as a native menu.
 export default function useNativeMenu(
   template: (MenuItemConstructorOptions | MenuItem)[],
-  options: { x?: number, y?: number, onContext?: (e: MouseEvent) => void, onClose?: () => void } = {},
+  options: { x?: number, y?: number, onContext?: (e: MouseEvent) => void } = {},
 ) {
-  const menu = useMemo(() => Menu.buildFromTemplate(template), [template]);
-
-  const { x, y, onContext, onClose } = options;
+  const { x, y, onContext } = options;
 
   const openMenu = useCallback((e: MouseEvent) => {
-    // @ts-expect-error todo type this
-    menu.popup({
-      window: getCurrentWindow(),
-      x,
-      y,
-      callback: onClose,
-    });
+    e.preventDefault();
+    openContextMenu(toMenuNodes(template), x ?? e.clientX, y ?? e.clientY);
 
     if (onContext) onContext(e);
-  }, [menu, onClose, onContext, x, y]);
+  }, [onContext, template, x, y]);
 
-  const closeMenu = useCallback(() => menu.closePopup(), [menu]);
+  const closeMenu = useCallback(() => closeContextMenu(), []);
 
   return { openMenu, closeMenu };
 }

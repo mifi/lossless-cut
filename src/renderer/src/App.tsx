@@ -1,14 +1,12 @@
 import type { CSSProperties, ReactEventHandler, FocusEventHandler, DragEventHandler } from 'react';
 import { memo, useEffect, useState, useCallback, useRef, useMemo } from 'react';
-import { FaRegTimesCircle } from 'react-icons/fa';
-import { MdRotate90DegreesCcw } from 'react-icons/md';
 import { AnimatePresence, MotionConfig } from 'motion/react';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
+import { LuCircleX, LuPanelRight, LuRotateCcw } from 'react-icons/lu';
 import { produce } from 'immer';
 import screenfull from 'screenfull';
 import type { IpcRendererEvent } from 'electron';
-import { IoMdMenu } from 'react-icons/io';
 import fromPairs from 'lodash/fromPairs';
 import sum from 'lodash/sum';
 import invariant from 'tiny-invariant';
@@ -120,6 +118,7 @@ import SwalContainer from './components/SwalContainer';
 import ErrorDialog from './components/ErrorDialog';
 import useErrorHandling from './hooks/useErrorHandling';
 import GenericDialog, { useDialog } from './components/GenericDialog';
+import { ContextMenuHost } from './components/InAppMenu';
 import useHtml5ify from './hooks/useHtml5ify';
 import WhatsNew from './components/WhatsNew';
 import mainApi from './mainApi.js';
@@ -2515,6 +2514,19 @@ function App() {
 
   const showLeftBar = batchFiles.length > 0;
 
+  const [dockContainer, setDockContainer] = useState<HTMLDivElement | null>(null);
+
+  // The main process asks before closing the window (if enabled), using our own dialog instead of a native one
+  useEffect(() => {
+    const onConfirmCloseWindow = async () => {
+      if (await confirmDialog({ title: t('Confirm quit'), description: t('Are you sure you want to quit?'), confirmButtonText: t('Yes'), cancelButtonText: t('No'), focusConfirm: true })) {
+        mainApi.confirmCloseWindow();
+      }
+    };
+    ipcRenderer.on('confirmCloseWindow', onConfirmCloseWindow);
+    return () => { ipcRenderer.off('confirmCloseWindow', onConfirmCloseWindow); };
+  }, [confirmDialog, t]);
+
   function renderSubtitles() {
     if (!activeSubtitle) return null;
     return <track default kind="subtitles" label={activeSubtitle.lang} srcLang="en" src={activeSubtitle.url} />;
@@ -2529,10 +2541,20 @@ function App() {
     ...(prefersReducedMotion ? ['no-animations'] : []),
   ].join(' '), [darkMode, prefersReducedMotion]);
 
-  const rootStyle = useMemo<CSSProperties>(() => ({ ...baseColorStyle, display: 'flex', flexDirection: 'column', height: '100vh', transition: darkModeTransition }), [baseColorStyle]);
+  const rootStyle = useMemo<CSSProperties>(() => ({ ...baseColorStyle, background: 'var(--llc-bg-image), var(--llc-bg)', display: 'flex', flexDirection: 'column', height: '100vh', boxSizing: 'border-box', padding: 'var(--llc-gap)', gap: 'var(--llc-gap)', transition: darkModeTransition }), [baseColorStyle]);
+
+  const fileInfo = useMemo(() => {
+    if (!isFileOpened) return undefined;
+    const parts: string[] = [];
+    if (activeVideoStream?.width != null && activeVideoStream.height != null) parts.push(`${activeVideoStream.width}×${activeVideoStream.height}`);
+    if (detectedFps != null) parts.push(`${Number(detectedFps.toFixed(3))} fps`);
+    if (activeVideoStream != null) parts.push(activeVideoStream.codec_name.toUpperCase());
+    if (fileDuration != null) parts.push(formatTimecode({ seconds: fileDuration, shorten: true }));
+    return parts.join(' · ');
+  }, [activeVideoStream, detectedFps, fileDuration, formatTimecode, isFileOpened]);
 
   return (
-    <Theme appearance={darkMode ? 'dark' : 'light'} accentColor="cyan">
+    <Theme appearance={darkMode ? 'dark' : 'light'} accentColor="violet" grayColor="mauve" radius="large">
       <MotionConfig reducedMotion={reducedMotion}>
         <AppContext.Provider value={appContext}>
           <SegColorsContext.Provider value={segColorsContext}>
@@ -2552,9 +2574,13 @@ function App() {
                   setStreamsSelectorShown={setStreamsSelectorShown}
                   selectedSegments={segmentsOrInverse.selected}
                   toggleDarkMode={toggleDarkMode}
+                  fileInfo={fileInfo}
+                  segmentsToExport={segmentsToExport}
+                  areWeCutting={areWeCutting}
+                  onExportPress={onExportPress}
                 />
 
-                <div style={{ flexGrow: 1, display: 'flex', overflowY: 'hidden' }}>
+                <div style={{ flexGrow: 1, display: 'flex', overflowY: 'hidden', gap: 'var(--llc-gap)' }}>
                   <AnimatePresence>
                     {showLeftBar && (
                       <BatchFilesList
@@ -2574,8 +2600,10 @@ function App() {
                   </AnimatePresence>
 
                   {/* Middle part (also shown in fullscreen): */}
-                  <div style={{ position: 'relative', flexGrow: 1, overflow: 'hidden' }} ref={videoContainerRef}>
-                    {!isFileOpened && <NoFileLoaded mifiLink={mifiLink} currentCutSeg={currentCutSeg} onClick={openFilesDialog} darkMode={darkMode} keyBindingByAction={keyBindingByAction} />}
+                  <div className="llc-video-stage" data-playing={playing} style={{ position: 'relative', flexGrow: 1, overflow: 'hidden', borderRadius: fullscreen ? undefined : 'var(--llc-radius-panel)', background: isFileOpened ? 'var(--llc-video-bg)' : undefined }} ref={videoContainerRef}>
+                    <div ref={setDockContainer} style={{ display: 'contents' }} />
+
+                    {!isFileOpened && <NoFileLoaded mifiLink={mifiLink} onClick={openFilesDialog} darkMode={darkMode} keyBindingByAction={keyBindingByAction} />}
 
                     <div className="no-user-select" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, visibility: !isFileOpened || !hasVideo || bigWaveformEnabled ? 'hidden' : undefined }} onWheel={onTimelineWheel}>
                       {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
@@ -2608,7 +2636,7 @@ function App() {
                       <div style={{ position: 'absolute', top: 0, right: 0, left: 0, marginTop: '1em', marginLeft: '1em', color: 'var(--gray-12)', opacity: 0.7, display: 'flex', alignItems: 'center', pointerEvents: 'none' }}>
                         {isRotationSet ? (
                           <>
-                            <MdRotate90DegreesCcw size={26} style={{ marginRight: 5 }} />
+                            <LuRotateCcw size={26} style={{ marginRight: 5 }} />
                             {t('Rotation preview')}
                           </>
                         ) : (
@@ -2619,12 +2647,12 @@ function App() {
 
                         <div style={{ cursor: 'pointer', pointerEvents: 'initial', color: 'var(--gray-12)', opacity: 0.7, padding: '.2em', marginLeft: '.5em' }} role="button" onClick={() => incrementMediaSourceQuality()} title={t('Select playback quality')}>{mediaSourceQualities[mediaSourceQuality]}</div>
 
-                        {!compatPlayerRequired && <FaRegTimesCircle role="button" style={{ cursor: 'pointer', pointerEvents: 'initial', verticalAlign: 'middle', padding: '.2em' }} onClick={handleHideCompatPlayerClick} />}
+                        {!compatPlayerRequired && <LuCircleX role="button" style={{ cursor: 'pointer', pointerEvents: 'initial', verticalAlign: 'middle', padding: '.2em' }} onClick={handleHideCompatPlayerClick} />}
                       </div>
                     )}
 
                     {isFileOpened && (
-                      <div className="no-user-select" style={{ position: 'absolute', right: 0, bottom: 0, marginBottom: 10, display: 'flex', alignItems: 'flex-end' }}>
+                      <div className="no-user-select llc-video-overlay" style={{ position: 'absolute', right: 14, bottom: 14, display: 'flex', alignItems: 'center', padding: '.55em .35em', borderRadius: 'var(--llc-radius-pill)', color: '#fff' }}>
                         <VolumeControl playbackVolume={playbackVolume} setPlaybackVolume={setPlaybackVolume} onToggleMutedClick={toggleMuted} />
 
                         {shouldShowPlaybackStreamSelector && (
@@ -2632,11 +2660,11 @@ function App() {
                         )}
 
                         {!showRightBar && (
-                          <IoMdMenu
+                          <LuPanelRight
                             title={t('Show sidebar')}
-                            size={30}
+                            size={18}
                             role="button"
-                            style={{ marginRight: 10, color: 'var(--gray-12)', opacity: 0.7 }}
+                            style={{ margin: '0 .45em', color: '#fff', opacity: 0.85, cursor: 'pointer' }}
                             onClick={toggleSegmentsList}
                           />
                         )}
@@ -2661,7 +2689,6 @@ function App() {
                         updateSegOrder={updateSegOrder}
                         updateSegOrders={updateSegOrders}
                         onLabelSegment={labelSegment}
-                        currentCutSeg={currentCutSeg}
                         firstSegmentAtCursor={firstSegmentAtCursor}
                         addSegment={addSegment}
                         onDuplicateSegmentClick={duplicateSegment}
@@ -2696,44 +2723,7 @@ function App() {
                   </AnimatePresence>
                 </div>
 
-                <div style={bottomStyle}>
-                  <Timeline
-                    shouldShowKeyframes={shouldShowKeyframes}
-                    waveforms={waveforms}
-                    overviewWaveform={overviewWaveform}
-                    shouldShowWaveform={shouldShowWaveform}
-                    waveformEnabled={waveformEnabled}
-                    waveformHeight={waveformHeight}
-                    showThumbnails={showThumbnails}
-                    neighbouringKeyFrames={neighbouringKeyFrames}
-                    thumbnails={thumbnailsSorted}
-                    playerTime={playerTime}
-                    commandedTime={commandedTime}
-                    relevantTime={relevantTime}
-                    commandedTimeRef={commandedTimeRef}
-                    startTimeOffset={startTimeOffset}
-                    zoom={zoom}
-                    seekAbs={seekAbs}
-                    fileDurationNonZero={fileDurationNonZero}
-                    cutSegments={cutSegments}
-                    setCurrentSegIndex={setCurrentSegIndex}
-                    currentSegIndexSafe={currentSegIndexSafe}
-                    currentCutSeg={currentCutSeg}
-                    inverseCutSegments={inverseCutSegments}
-                    formatTimecode={formatTimecode}
-                    zoomWindowStartTime={zoomWindowStartTime}
-                    zoomWindowEndTime={zoomWindowEndTime}
-                    onZoomWindowStartTimeChange={setZoomWindowStartTime}
-                    onGenerateOverviewWaveformClick={generateOverviewWaveform}
-                    playing={playing}
-                    isFileOpened={isFileOpened}
-                    onWheel={onTimelineWheel}
-                    goToTimecode={goToTimecode}
-                    darkMode={darkMode}
-                    setCutTime={setCutTime}
-                    setHoveringTime={setHoveringTime}
-                  />
-
+                <div className="llc-panel" style={bottomStyle}>
                   <BottomBar
                     zoom={zoom}
                     setZoom={zoomAbs}
@@ -2741,12 +2731,10 @@ function App() {
                     hasVideo={hasVideo}
                     isRotationSet={isRotationSet}
                     rotation={rotation}
-                    areWeCutting={areWeCutting}
                     increaseRotation={increaseRotation}
                     cleanupFilesDialog={cleanupFilesDialog}
                     captureSnapshot={captureSnapshot}
-                    onExportPress={onExportPress}
-                    segmentsToExport={segmentsToExport}
+                    dockContainer={dockContainer}
                     seekAbs={seekAbs}
                     currentSegIndexSafe={currentSegIndexSafe}
                     cutSegments={cutSegments}
@@ -2787,6 +2775,44 @@ function App() {
                     fileDurationNonZero={fileDurationNonZero}
                     getFrameCount={getFrameCount}
                   />
+
+                  <Timeline
+                    shouldShowKeyframes={shouldShowKeyframes}
+                    waveforms={waveforms}
+                    overviewWaveform={overviewWaveform}
+                    shouldShowWaveform={shouldShowWaveform}
+                    waveformEnabled={waveformEnabled}
+                    waveformHeight={waveformHeight}
+                    showThumbnails={showThumbnails}
+                    neighbouringKeyFrames={neighbouringKeyFrames}
+                    thumbnails={thumbnailsSorted}
+                    playerTime={playerTime}
+                    commandedTime={commandedTime}
+                    relevantTime={relevantTime}
+                    commandedTimeRef={commandedTimeRef}
+                    startTimeOffset={startTimeOffset}
+                    zoom={zoom}
+                    seekAbs={seekAbs}
+                    fileDurationNonZero={fileDurationNonZero}
+                    cutSegments={cutSegments}
+                    setCurrentSegIndex={setCurrentSegIndex}
+                    currentSegIndexSafe={currentSegIndexSafe}
+                    currentCutSeg={currentCutSeg}
+                    inverseCutSegments={inverseCutSegments}
+                    formatTimecode={formatTimecode}
+                    zoomWindowStartTime={zoomWindowStartTime}
+                    zoomWindowEndTime={zoomWindowEndTime}
+                    onZoomWindowStartTimeChange={setZoomWindowStartTime}
+                    onGenerateOverviewWaveformClick={generateOverviewWaveform}
+                    playing={playing}
+                    isFileOpened={isFileOpened}
+                    onWheel={onTimelineWheel}
+                    goToTimecode={goToTimecode}
+                    darkMode={darkMode}
+                    setCutTime={setCutTime}
+                    setHoveringTime={setHoveringTime}
+                  />
+
                 </div>
 
                 {tunerVisible != null && <ValueTuners type={tunerVisible} onFinished={() => setTunerVisible(undefined)} />}
@@ -2871,6 +2897,8 @@ function App() {
                 </AnimatePresence>
 
                 <GenericDialog dialog={genericDialog} onOpenChange={(open) => !open && closeGenericDialog()} />
+
+                <ContextMenuHost />
 
                 <WhatsNew />
 

@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FaImage } from 'react-icons/fa';
+import { LuImage } from 'react-icons/lu';
 
 import useUserSettings from '../hooks/useUserSettings';
 import useActionTitle from '../hooks/useActionTitle';
@@ -19,7 +19,7 @@ function CaptureFormatButton({ showIcon = false, ...props }: { showIcon?: boolea
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...props}
     >
-      {showIcon && <FaImage style={{ verticalAlign: 'middle', fontSize: '1.3em', marginRight: '.7em' }} />}
+      {showIcon && <LuImage style={{ verticalAlign: 'middle', fontSize: '1.3em', marginRight: '.7em' }} />}
       {captureFormat.toUpperCase()}
     </Button>
   );

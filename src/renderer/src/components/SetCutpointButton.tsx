@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { FaHandPointUp } from 'react-icons/fa';
+import { LuArrowLeftToLine } from 'react-icons/lu';
 
 import SegmentCutpointButton from './SegmentCutpointButton';
 import { mirrorTransform } from '../util';
@@ -13,7 +13,7 @@ const SetCutpointButton = ({ currentCutSeg, side, title, onClick, style }: {
   onClick?: () => void,
   style?: CSSProperties,
 }) => (
-  <SegmentCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={FaHandPointUp} onClick={onClick} title={title} style={{ transform: side === 'start' ? mirrorTransform : undefined, ...style }} />
+  <SegmentCutpointButton currentCutSeg={currentCutSeg} side="end" Icon={LuArrowLeftToLine} onClick={onClick} title={title} style={{ transform: side === 'start' ? mirrorTransform : undefined, ...style }} />
 );
 
 export default SetCutpointButton;

@@ -3,7 +3,7 @@ process.traceProcessWarnings = true;
 
 /* eslint-disable import/first */
 // eslint-disable-next-line import/no-extraneous-dependencies
-import electron, { BrowserWindow, type BrowserWindowConstructorOptions, nativeTheme, shell, app, ipcMain, Notification, type NotificationConstructorOptions } from 'electron';
+import electron, { BrowserWindow, type BrowserWindowConstructorOptions, nativeTheme, shell, app, ipcMain, Menu, Notification, type NotificationConstructorOptions } from 'electron';
 import i18n from 'i18next';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import debounce from 'lodash/debounce.js';
@@ -42,6 +42,9 @@ import * as compatPlayer from './compatPlayer.js';
 import { downloadMediaUrl } from './ffmpeg.js';
 import { hasDisabledNetworking, setDisableNetworking } from './networking.js';
 
+// The renderer draws its own title bar with window controls, except on macOS which keeps its native traffic lights
+const customTitleBar = !isMac;
+
 
 electronUnhandled({ showDialog: true, logger: (err) => logger.error('electron-unhandled', err) });
 
@@ -72,6 +75,10 @@ let filesToOpen: string[] = [];
 let mainWindow: BrowserWindow | null;
 
 let askBeforeClose = false;
+// set once the user confirmed closing in the app's own dialog, see the 'close' handler
+let closeConfirmed = false;
+let quitRequested = false;
+let quitAfterConfirm = false;
 let rendererReady = false;
 let newVersion: string | undefined;
 
@@ -166,6 +173,7 @@ function createWindow() {
 
   mainWindow = new BrowserWindow({
     ...savedBounds.options,
+    frame: !customTitleBar,
     darkTheme: true,
     webPreferences: {
       contextIsolation: false,
@@ -202,9 +210,19 @@ function createWindow() {
 
   // https://stackoverflow.com/questions/39574636/prompt-to-save-quit-before-closing-window/47434365
   mainWindow.on('close', (e) => {
-    if (!askBeforeClose) return;
+    if (!askBeforeClose || closeConfirmed) return;
 
     assert(mainWindow);
+
+    // Ask inside the app, so the dialog matches the rest of the UI. Fall back to a native dialog if the renderer is gone.
+    if (!mainWindow.webContents.isCrashed()) {
+      e.preventDefault();
+      quitAfterConfirm = quitRequested;
+      quitRequested = false;
+      mainWindow.webContents.send('confirmCloseWindow');
+      return;
+    }
+
     const choice = electron.dialog.showMessageBoxSync(mainWindow, {
       type: 'question',
       buttons: ['Yes', 'No'],
@@ -226,6 +244,10 @@ function createWindow() {
 
   mainWindow.on('maximize', debouncedSaveWindowState);
   mainWindow.on('unmaximize', debouncedSaveWindowState);
+
+  const sendMaximized = () => mainWindow?.webContents.send('windowMaximizedChange', mainWindow.isMaximized());
+  mainWindow.on('maximize', sendMaximized);
+  mainWindow.on('unmaximize', sendMaximized);
   mainWindow.on('resize', debouncedSaveWindowState);
   mainWindow.on('move', debouncedSaveWindowState);
 }
@@ -461,6 +483,70 @@ function quitApp() {
 
 const setProgressBar = (v: number) => mainWindow?.setProgressBar(v);
 
+app.on('before-quit', () => { quitRequested = true; });
+
+const confirmCloseWindow = () => {
+  closeConfirmed = true;
+  if (quitAfterConfirm) app.quit();
+  else mainWindow?.close();
+};
+
+export interface SerializedMenuItem {
+  label: string,
+  type: 'normal' | 'separator' | 'submenu' | 'checkbox' | 'radio' | 'header' | 'palette',
+  role?: string | undefined,
+  accelerator?: string | undefined,
+  enabled: boolean,
+  visible: boolean,
+  checked: boolean,
+  submenu?: SerializedMenuItem[] | undefined,
+}
+
+// The app menu, for drawing it inside the app (the custom title bar has no native menu bar)
+function serializeMenu(electronMenu: Electron.Menu): SerializedMenuItem[] {
+  return electronMenu.items.map((item) => ({
+    // labels use "&" for mnemonics and "&&" for a literal "&"
+    label: item.label.replaceAll('&&', '\0').replaceAll('&', '').replaceAll('\0', '&'),
+    type: item.type,
+    role: item.role,
+    accelerator: item.accelerator != null ? String(item.accelerator) : undefined,
+    enabled: item.enabled,
+    visible: item.visible,
+    checked: item.checked,
+    submenu: item.submenu != null ? serializeMenu(item.submenu) : undefined,
+  }));
+}
+
+const getAppMenu = () => {
+  const appMenu = Menu.getApplicationMenu();
+  return appMenu != null ? serializeMenu(appMenu) : [];
+};
+
+// path: index of the item at each level of the menu
+const clickAppMenuItem = (path: number[]) => {
+  let items = Menu.getApplicationMenu()?.items;
+  let item: Electron.MenuItem | undefined;
+  for (const index of path) {
+    item = items?.[index];
+    items = item?.submenu?.items;
+  }
+  if (item == null || mainWindow == null) return;
+  // this also runs the item's role (e.g. undo, toggle full screen)
+  item.click(undefined, mainWindow, mainWindow.webContents);
+};
+
+// for the renderer's cut/copy/paste context menu
+const editCommand = (command: 'undo' | 'redo' | 'cut' | 'copy' | 'paste' | 'selectAll') => mainWindow?.webContents[command]();
+
+const minimizeWindow = () => mainWindow?.minimize();
+const toggleMaximizeWindow = () => {
+  if (mainWindow == null) return;
+  if (mainWindow.isMaximized()) mainWindow.unmaximize();
+  else mainWindow.maximize();
+};
+const isWindowMaximized = () => mainWindow?.isMaximized() ?? false;
+const closeWindow = () => mainWindow?.close();
+
 function sendOsNotification(options: NotificationConstructorOptions) {
   if (!Notification.isSupported()) return;
   const notification = new Notification(options);
@@ -477,6 +563,14 @@ const remoteApi = {
   focusWindow,
   quitApp,
   setProgressBar,
+  minimizeWindow,
+  toggleMaximizeWindow,
+  isWindowMaximized,
+  closeWindow,
+  confirmCloseWindow,
+  getAppMenu,
+  clickAppMenuItem,
+  editCommand,
   sendOsNotification,
   writeClipboardText: (text: string) => electron.clipboard.writeText(text),
   readClipboardText: () => electron.clipboard.readText(),
@@ -501,6 +595,7 @@ const remoteApiLegacy = {
   platform,
   arch,
   isDev,
+  customTitleBar,
   lossyMode,
   pathToFileURL,
   hasDisabledNetworking,

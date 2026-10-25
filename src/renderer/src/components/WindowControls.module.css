@@ -1,0 +1,40 @@
+.controls {
+  display: flex;
+  align-items: center;
+  gap: .4em;
+  margin-left: .35em;
+  padding-left: .7em;
+  border-left: 1px solid var(--llc-control-border);
+}
+
+.control {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  width: 1.65em;
+  height: 1.65em;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--llc-text-1);
+  background: var(--llc-control-bg);
+  transition: background-color .15s, color .15s;
+}
+
+.control:hover {
+  background: var(--llc-control-bg-hover);
+}
+
+.control:focus-visible {
+  outline: 2px solid var(--llc-accent-border);
+}
+
+.close:hover {
+  background: #e5484d;
+  color: #fff;
+}
+
+.menuButton {
+  margin-right: .1em;
+}
