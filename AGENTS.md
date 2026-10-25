@@ -36,7 +36,7 @@ When a visual or especially interesting feature lands in master, suggest a short
 
 - Record it with a scenario (see [Feature media](#feature-media)), and post its social media version, or ask the user for a screenshot or a short silent screen recording (about 10 seconds) that shows it.
 - Say that people can try it now in the latest nightly build (https://mifi.no/llc/nightly/), and that it will be in the next release.
-- Its plain master can also go on the homepage (silent, with a still of its first frame as the poster): upload it to static.mifi.no and add it to `website/src/images.ts` (e.g. `heroVideo`).
+- Its plain master can also go on the homepage (silent, with a still as the poster: its first frame, or one that shows the feature): ask the maintainer (Mikael) to publish it on static.mifi.no, and put the `media/<public id>/` URLs they give you in `website/src/images.ts` (e.g. `heroVideo`). Don't upload files yourself.
 
 ## Feature media
 
