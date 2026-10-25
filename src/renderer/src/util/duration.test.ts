@@ -54,6 +54,20 @@ it('should format and parse duration with correct rounding', () => {
   expect(formatDuration({ seconds: parseDuration('1000') })).toBe('00:16:40.000');
 });
 
+// https://github.com/mifi/lossless-cut/issues/3166
+it('should parse a fraction without a leading zero', () => {
+  expect(parseDuration('.21')).toBe(0.21);
+  expect(parseDuration('-.08')).toBe(-0.08);
+  expect(parseDuration(',5')).toBe(0.5);
+  expect(parseDuration('.15', 30)).toBe(0.5);
+  expect(parseDuration('1:.5')).toBe(60.5);
+  expect(parseDuration('.')).toBeUndefined();
+  expect(parseDuration('-')).toBeUndefined();
+  expect(parseDuration('')).toBeUndefined();
+  expect(parseDuration('1:')).toBeUndefined();
+  expect(parseDuration('potato')).toBeUndefined();
+});
+
 it('should detect complete timecodes for the active format', () => {
   const decimalFormat = ({ seconds }: { seconds: number }) => formatDuration({ seconds });
   const frameFormat = ({ seconds }: { seconds: number }) => formatDuration({ seconds, fps: 30 });

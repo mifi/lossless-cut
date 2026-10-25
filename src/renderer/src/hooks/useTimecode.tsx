@@ -43,10 +43,11 @@ export default ({ detectedFps, timecodeFormat, showGenericDialog }: {
   const parseTimecode = useCallback<ParseTimecode>((val: string) => {
     if (timecodeFormat === 'frameCount') {
       const parsed = parseInt(val, 10);
-      return frameCountToDuration(parsed);
+      return Number.isNaN(parsed) ? undefined : frameCountToDuration(parsed);
     }
     if (timecodeFormat === 'seconds') {
-      return parseFloat(val);
+      const parsed = parseFloat(val);
+      return Number.isNaN(parsed) ? undefined : parsed;
     }
     if (timecodeFormat === 'timecodeWithFramesFraction') {
       return parseDuration(val, detectedFps);
