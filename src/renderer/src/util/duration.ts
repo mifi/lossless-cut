@@ -46,7 +46,7 @@ export function formatDuration({ seconds: totalSecondsIn, fileNameFriendly, show
   return `${sign}${hoursPart}${minutesPadded}${delim}${secondsPadded}${fraction}`;
 }
 
-const durationRegex = /^(-?)(?:(?:(\d+):)?(\d{1,2}):)?(\d+(?:[,.]\d+)?)$/;
+const durationRegex = /^(-?)(?:(?:(\d+):)?(\d{1,2}):)?(\d+(?:[,.]\d+)?|[,.]\d+)$/;
 
 export const isExactTimecodeMatch = (str: string, parseTimecode: ParseTimecode, formatTimecode: FormatTimecode) => {
   const seconds = parseTimecode(str);
@@ -73,7 +73,7 @@ export function parseDuration(str: string, fps?: number) {
     time = ((hour * 60) + min) * 60 + parseFloat(secWithFraction);
   } else {
     const [secStr, framesStr] = secWithFraction.split('.');
-    const wholeSeconds = ((hour * 60) + min) * 60 + parseInt(secStr!, 10);
+    const wholeSeconds = ((hour * 60) + min) * 60 + (secStr ? parseInt(secStr, 10) : 0);
     const frames = framesStr != null ? parseInt(framesStr, 10) : 0;
     // inverse of formatDuration (which floors the frame remainder), needed for non-integer fps like 29.97
     time = Math.max(0, Math.ceil(wholeSeconds * fps + frames - 1e-6)) / fps;

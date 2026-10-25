@@ -12,7 +12,7 @@ import { showItemInFolder } from '../util';
 import type { CleanupChoice, CleanupChoicesType } from '../dialogs';
 import { ListItem, Notices, OutputIncorrectSeeHelpMenu, UnorderedList, Warnings } from '../dialogs';
 import Checkbox from './Checkbox';
-import { saveColor, warningColor } from '../colors';
+import { dangerColor, saveColor, warningColor } from '../colors';
 
 
 export interface GenericDialogParams {
@@ -307,37 +307,34 @@ export function useDialog() {
       const { onOpenChange } = useGenericDialogContext();
       const [startValue, setStartValue] = useState('');
       const [endValue, setEndValue] = useState('');
+      const [error, setError] = useState<string>();
 
+      // undefined: empty (no shift), null: invalid
       const parseValue = useCallback((value: string) => {
-        let parseableValue = value.trim();
-        if (!parseableValue) return undefined;
-        let sign = 1;
-        if (parseableValue[0] === '-') {
-          sign = -1;
-          parseableValue = parseableValue.slice(1);
-        }
-
-        const duration = parseTimecode(parseableValue);
-        invariant(duration != null);
-        if (duration === 0) return undefined;
-        return duration * sign;
+        const trimmed = value.trim();
+        if (!trimmed) return undefined;
+        const duration = parseTimecode(trimmed);
+        return duration != null && Number.isFinite(duration) ? duration : null;
       }, []);
 
       const handleSubmit = useCallback<FormEventHandler<HTMLFormElement>>((e) => {
         e.preventDefault();
-        try {
-          const start = parseValue(startValue);
-          const end = parseValue(endValue);
-          // require at least one of them to be set
-          invariant(start != null || end != null);
-          const out: { startShift?: number, endShift?: number } = {};
-          if (start != null) out.startShift = start;
-          if (end != null) out.endShift = end;
-          resolve(out);
-          onOpenChange(false);
-        } catch (err) {
-          console.warn(err);
+        const start = parseValue(startValue);
+        const end = parseValue(endValue);
+        if (start === null || end === null) {
+          setError(t('Invalid timecode format'));
+          return;
         }
+        // require a non-zero shift in at least one of the fields
+        if (!start && !end) {
+          setError(t('Please enter a non-zero amount in at least one of the fields'));
+          return;
+        }
+        const out: { startShift?: number, endShift?: number } = {};
+        if (start) out.startShift = start;
+        if (end) out.endShift = end;
+        resolve(out);
+        onOpenChange(false);
       }, [parseValue, startValue, endValue, onOpenChange]);
 
       return (
@@ -357,6 +354,10 @@ export function useDialog() {
               {t('Shift end by')}<br />
               <TextField.Root value={endValue} placeholder={inputPlaceholder} onChange={(e) => setEndValue(e.target.value)} />
             </label>
+
+            {error != null && (
+              <div style={{ color: dangerColor, fontWeight: 'bold', marginBottom: '.3em' }}>{error}</div>
+            )}
 
             <Dialog.ButtonRow>
               <Dialog.Close asChild>
