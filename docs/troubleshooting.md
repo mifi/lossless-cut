@@ -128,6 +128,8 @@ If you have an issue with the Snap or Flatpak version of LosslessCut, please try
   - Try to run LosslessCut from the [command line](cli.md) with `--disable-gpu` and/or `--disable-features=VizDisplayCompositor` (see [#781](https://github.com/mifi/lossless-cut/issues/781))
   - Try [removing the AppContainer restrictions](https://github.com/mifi/lossless-cut/discussions/2043#discussioncomment-14909957) on LosslessCut.
   - Disable your anti-virus or whitelist LosslessCut. See [#18](https://github.com/mifi/lossless-cut/issues/18), [#1114](https://github.com/mifi/lossless-cut/issues/1114). 
+- Windows says *"Part of this app has been blocked"* (e.g. `libGLESv2.dll`), or Smart App Control won't let LosslessCut start
+  - This is Windows' Smart App Control blocking files that aren't code signed. The GitHub version of LosslessCut isn't signed, but the [Microsoft Store version](https://apps.microsoft.com/detail/9p30lsr4705l) is, so it doesn't have this problem. See [#2705](https://github.com/mifi/lossless-cut/issues/2705). `libGLESv2.dll` is part of Chromium (which LosslessCut is built on), used for GPU rendering.
 - Video preview playback slow, stuttering, low FPS, flickering (NVIDIA)
   - Try to turn off *Max Frame Rate* and *Background Application Max Frame Rate* in NVIDIA Control Panel → Manage 3D settings (either globally, or just for LosslessCut under Program Settings).
   - For flickering, try to turn off *Antialiasing - FXAA* and *Multi-Frame Sampled AA (MFAA)* for LosslessCut in the same place.
