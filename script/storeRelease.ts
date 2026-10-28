@@ -57,6 +57,11 @@ function requireEnv(name: string) {
 
 const log = (...rest: unknown[]) => console.log(...rest);
 const plan = (msg: string) => log(write ? `→ ${msg}` : `[dry run] would: ${msg}`);
+// stops a real run, but lets a dry run go on to show the rest of its plan
+const blocker = (msg: string) => {
+  assert(!write, msg);
+  log(`[dry run] BLOCKED, --submit would stop here: ${msg}`);
+};
 
 async function fetchJson(url: string, init: RequestInit & { hint?: string } = {}) {
   const { hint, ...rest } = init;
@@ -162,7 +167,7 @@ async function mas(version: string) {
     return;
   }
   const inFlight = versions.find((v) => ['WAITING_FOR_REVIEW', 'WAITING_FOR_EXPORT_COMPLIANCE', 'IN_REVIEW', 'ACCEPTED', 'PENDING_DEVELOPER_RELEASE', 'PENDING_APPLE_RELEASE', 'PROCESSING_FOR_DISTRIBUTION'].includes(String(v.attributes['appVersionState'])));
-  assert(editable || !inFlight, `App Store version ${inFlight?.attributes['versionString']} is ${inFlight?.attributes['appVersionState']}; release it (or remove it from review) before creating a new version`);
+  if (!editable && inFlight) blocker(`App Store version ${inFlight.attributes['versionString']} is ${inFlight.attributes['appVersionState']}; release it (or remove it from review) before creating a new version`);
   const [major, minor] = String(versions[0]!.attributes['versionString']).split('.').map(Number);
   const versionString = editable ? String(editable.attributes['versionString']) : `${major}.${minor! + 1}`;
 
@@ -301,14 +306,12 @@ async function msstore(version: string) {
       log(`${version} is already submitted, nothing to do. Once certified, click "Publish now" in Partner Center`);
       return;
     }
-    assert(!write, pending.status === 'PendingCommit'
+    blocker(pending.status === 'PendingCommit'
       ? 'The pending submission was never submitted (maybe left by a failed run). Delete it in Partner Center and run again'
       : 'Finish or delete the pending submission in Partner Center first');
   }
   if (published.packageDeliveryOptions.packageRollout.packageRolloutStatus === 'PackageRolloutInProgress') {
-    const msg = 'The last published submission\'s gradual rollout is still in progress; finalize it first (msstore-rollout 100) or halt it in Partner Center';
-    assert(!write, msg);
-    log(`Warning: ${msg}`);
+    blocker('The last published submission\'s gradual rollout is still in progress; finalize it first (msstore-rollout 100) or halt it in Partner Center');
   }
 
   const packages = msStoreArchs.map((arch) => ({
