@@ -836,7 +836,7 @@
   "Start over": "Reanudar",
   "Subtitles (SRT)": "Subtítulos (SRT)",
   "subtitle": "subtítulo",
-  "Store next to media file": "Guardar junto al archivo multimedia",
+  "Store next to media file": "Almacenar junto al archivo multimedia",
   "The file name template is missing {{ext}} and will result in a file without the suggested extension. This may result in an unplayable output file.": "A la plantilla del nombre del archivo le falta {{ext}} y dará como resultado un archivo sin la extensión sugerida. Esto puede dar lugar a un archivo de salida no se pueda reproducir.",
   "The media file referenced by the project file you tried to open does not exist in the same directory as the project file: {{mediaFileName}}": "El archivo multimedia al que hace referencia el archivo de proyecto que ha intentado abrir no existe en la misma carpeta que el archivo del proyecto: {{mediaFileName}}",
   "This option allows you to shift all segment start times forward by one or more frames before cutting. This can be useful if the output video starts from the wrong (preceding) keyframe.": "Esta opción le permite cambiar el tiempo de inicio de todos los segmentos en uno o más fotogramas antes de editarlos. Esto puede resultar útil si el vídeo comienza en el fotograma clave incorrecto (anterior).",
@@ -972,7 +972,7 @@
   "Extract frames of the selected segments as images": "Extraer fotogramas de los segmentos seleccionados como imágenes",
   "Extract segment frames as image files": "Extraer fotogramas de segmento como imágenes",
   "Extraneous": "Ajeno",
-  "Failed to read file. Perhaps it has been moved?": "No se pudo leer el archivo. ¿Quizá se ha movido?.",
+  "Failed to read file. Perhaps it has been moved?": "No se pudo leer el archivo. ¿Quizá se ha movido?",
   "Fatal: FFmpeg executable not found": "Fatal: ejecutable FFmpeg no encontrado",
   "Fatal: FFmpeg not accessible": "Fatal: FFmpeg no accesible",
   "FFmpeg is non-functional": "FFmpeg no funciona",
@@ -1104,5 +1104,6 @@
   "Segment start to previous keyframe and end to next keyframe": "Comienzo del segmento al fotograma clave anterior y final al siguiente fotograma clave",
   "Shift the timestamps of all tracks in this file by a specified number of seconds, relative to other files. Positive values will delay the file's tracks, negative will advance it.": "Desplace las marcas de tiempo de todas las pistas en este archivo por un número específico de segundos, en relación a otros archivos. Los valores positivos retrasarán las pistas del archivo, los negativos las avanzarán.",
   "The language tag (ISO 639-2 code). For example \"eng\" for English. This is used by some players to select the appropriate audio/subtitle track based on the user's language preferences.": "La etiqueta de idioma (código ISO 639-2). Por ejemplo \"es\" para español. Algunos reproductores utilizan esto para seleccionar la pista de audio/subtítulos apropiada dependiendo de las preferencias de idioma del usuario.",
-  "Track {{trackNumbers}} is HEVC without the \"{{tag}}\" codec tag, so it may not play on Apple devices (QuickTime, Safari, iOS). You can set the tag in the track editor.": "La pista {{trackNumbers}} es HEVC sin la etiqueta de códec \"{{tag}}\", así que puede que no se reproduzca en dispositivos Apple (QuickTime, Safari, iOS). Puede establecer la etiqueta en el editor de pista."
+  "Track {{trackNumbers}} is HEVC without the \"{{tag}}\" codec tag, so it may not play on Apple devices (QuickTime, Safari, iOS). You can set the tag in the track editor.": "La pista {{trackNumbers}} es HEVC sin la etiqueta de códec \"{{tag}}\", así que puede que no se reproduzca en dispositivos Apple (QuickTime, Safari, iOS). Puede establecer la etiqueta en el editor de pista.",
+  "<p>If you're having a problem or question about LosslessCut, please first check the links in the <1>Help</1> menu. If you cannot find any resolution, you may ask a question in <3>GitHub discussions</3> or on <5>Discord.</5></p><p>If you believe that you found a bug in LosslessCut, you may <1>report a bug</1>.</p>": "<p>Si tiene un problema o duda sobre LossLessCut, por favor, compruebe primero los enlaces en el menú <1>Ayuda</1>. Si no encuentra solución, puede preguntar en <3>GitHub discussions</3> o en <5>Discord</5>. Si cree haber encontrado un fallo en LossLessCut, puede <1>informar de un error</1>.</p>"
 }
