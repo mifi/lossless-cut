@@ -872,8 +872,9 @@ const KeyboardShortcuts = memo(({
   return (
     <>
       <div style={{ marginBottom: '1em' }}>
-        <div style={{ marginBottom: '1em' }}>
-          <TextInput ref={searchInputRef} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search" style={{ width: '100%', padding: '.4em .8em', boxSizing: 'border-box' }} />
+        <div style={{ marginBottom: '1em', display: 'flex', alignItems: 'center', gap: '.5em' }}>
+          <TextInput ref={searchInputRef} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search" style={{ flexGrow: 1, padding: '.4em .8em', boxSizing: 'border-box' }} />
+          <Button onClick={onResetClick} style={{ flexShrink: 0, whiteSpace: 'nowrap' }}><FaUndo style={{ marginRight: '.3em', verticalAlign: 'middle', padding: '.5em' }} />{t('Reset all to defaults')}</Button>
         </div>
 
         {categoriesWithActions.map(([category, actionsInCategory]) => (
@@ -917,8 +918,6 @@ const KeyboardShortcuts = memo(({
           </div>
         ))}
       </div>
-
-      {!isSearching && <Button onClick={onResetClick} style={{ marginBottom: '1em' }}><FaUndo style={{ marginRight: '.3em', verticalAlign: 'middle', padding: '.5em' }} />{t('Reset')}</Button>}
 
       <CreateBinding actionsMap={actionsMap} action={creatingBinding} setCreatingBinding={setCreatingBinding} onNewKeyBindingConfirmed={onNewKeyBindingConfirmed} />
     </>
