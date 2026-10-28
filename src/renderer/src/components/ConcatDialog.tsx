@@ -209,7 +209,7 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate: storedMerged
       }
       setAllFilesMeta((existing) => ({ ...existing, ...Object.fromEntries(newMetaEntries) }));
       setUniqueSuffix(Date.now());
-    })().catch((err) => {
+    })().catch((err: unknown) => {
       if (err instanceof Error && err.name === 'AbortError') return;
       console.error(err);
     });

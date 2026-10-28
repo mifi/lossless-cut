@@ -140,7 +140,7 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
     addArgs(`-c:${outputIndex}`, codec);
   }
 
-  // eslint-disable-next-line unicorn/prefer-switch
+  // eslint-disable-next-line unicorn-js/prefer-switch
   if (stream.codec_type === 'subtitle') {
     // mp4/mov only supports mov_text, so convert it https://stackoverflow.com/a/17584272/6519037
     // https://github.com/mifi/lossless-cut/issues/418
@@ -156,7 +156,7 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
       // Only WebVTT subtitles are supported for WebM.
       // https://github.com/mifi/lossless-cut/issues/2179#issuecomment-2395413115
       addCodecArgs('webvtt');
-    // eslint-disable-next-line unicorn/prefer-switch
+    // eslint-disable-next-line unicorn-js/prefer-switch
     } else if (outFormat === 'srt') { // not technically lossless but why not
       addCodecArgs('srt');
     } else if (outFormat === 'ass') { // not technically lossless but why not
@@ -350,7 +350,7 @@ export function getKeyframeCutSeekCompensation({ formatName, streams, cutFrom }:
 export const getAudioStreams = <T extends Pick<FFprobeStream, 'codec_type'>>(streams: T[]) => streams.filter((stream) => stream.codec_type === 'audio');
 export const getRealVideoStreams = <T extends Pick<FFprobeStream, 'codec_type' | 'disposition'>>(streams: T[]) => streams.filter((stream) => stream.codec_type === 'video' && !isStreamThumbnail(stream));
 export const getSubtitleStreams = <T extends Pick<FFprobeStream, 'codec_type'>>(streams: T[]) => streams.filter((stream) => stream.codec_type === 'subtitle');
-export const isGpsStream = <T extends Pick<FileStream, 'guessedType' | 'codec_type' | 'tags'>>(stream: T) => stream.codec_type === 'subtitle' && (stream.tags?.['handler_name'] === '\u0010DJI.Subtitle' || stream.guessedType === 'dji-gps-srt');
+export const isGpsStream = (stream: Pick<FileStream, 'guessedType' | 'codec_type' | 'tags'>) => stream.codec_type === 'subtitle' && (stream.tags?.['handler_name'] === '\u0010DJI.Subtitle' || stream.guessedType === 'dji-gps-srt');
 
 // videoTracks/audioTracks seems to be 1-indexed, while ffmpeg is 0-indexes
 const getHtml5TrackId = (ffmpegTrackIndex: number) => String(ffmpegTrackIndex + 1);

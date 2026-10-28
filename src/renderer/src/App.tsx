@@ -134,7 +134,7 @@ const { hasDisabledNetworking, pathToFileURL, lossyMode, isLinux } = window.requ
 
 const hevcPlaybackSupportedPromise = doesPlayerSupportHevcPlayback();
 // eslint-disable-next-line unicorn/prefer-top-level-await
-hevcPlaybackSupportedPromise.catch((err) => console.error(err));
+hevcPlaybackSupportedPromise.catch((err: unknown) => console.error(err));
 
 function emitEvent(appEvent: AppEvent) {
   ipcRenderer.send('appEvent', appEvent satisfies AppEvent);
@@ -551,7 +551,7 @@ function App() {
   const toggleWaveformMode = useCallback(() => {
     if (forceBigWaveform) return;
 
-    // eslint-disable-next-line unicorn/prefer-switch
+    // eslint-disable-next-line unicorn-js/prefer-switch
     if (waveformModePreference === 'waveform') {
       setWaveformMode('big-waveform');
     } else if (waveformModePreference === 'big-waveform') {
@@ -1356,7 +1356,7 @@ function App() {
         setProgress(totalProgress / segments.length);
       };
 
-      // eslint-disable-next-line no-restricted-syntax
+      // eslint-disable-next-line eslint-js/no-restricted-syntax
       for (const [index, segment] of segments.entries()) {
         const { start, end } = segment;
         invariant(filePath != null);

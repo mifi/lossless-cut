@@ -55,7 +55,7 @@ function useTimelineScroll({ wheelSensitivity, mouseWheelZoomModifierKey, mouseW
 }) {
   const isCtrlHeldRef = useIsCtrlHeldRef();
 
-  const onWheel = useCallback<WheelEventHandler<Element>>((wheelEvent) => {
+  const onWheel = useCallback<WheelEventHandler>((wheelEvent) => {
     const { pixelX, pixelY } = normalizeWheel(wheelEvent);
     const { ctrlKey, shiftKey, altKey, metaKey } = wheelEvent;
     // if unknown, assume ctrl is really held (not a pinch)

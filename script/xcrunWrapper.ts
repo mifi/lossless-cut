@@ -76,7 +76,7 @@ async function runAttempt() {
     if (err instanceof Error && 'exitCode' in err && err.exitCode === 1 && 'stdout' in err && err.stdout && typeof err.stdout === 'string') {
       const errorJson = JSON.parse(err.stdout) as unknown;
       if (!(errorJson != null && typeof errorJson === 'object' && 'product-errors' in errorJson && Array.isArray(errorJson['product-errors']))) {
-        throw new TypeError('Invalid JSON');
+        throw new TypeError('Invalid JSON', { cause: err });
       }
       const productErrors = errorJson['product-errors'];
       // Unable to authenticate

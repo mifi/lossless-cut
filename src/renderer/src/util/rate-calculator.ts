@@ -1,4 +1,3 @@
-// eslint-disable-line unicorn/filename-case
 import clamp from 'lodash/clamp';
 
 /**

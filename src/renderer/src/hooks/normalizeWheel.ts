@@ -119,11 +119,11 @@ const PAGE_HEIGHT = 800;
  *         Firefox v4/Win7  |     undefined    |       3
  *
  */
-type LegacyWheelEvent = WheelEvent<Element> & { axis?: number, HORIZONTAL_AXIS?: number };
+type LegacyWheelEvent = WheelEvent & { axis?: number, HORIZONTAL_AXIS?: number };
 
-export default function normalizeWheel(/* object */ event: WheelEvent<Element>) /* object */ {
+export default function normalizeWheel(/* object */ event: WheelEvent) /* object */ {
   let sX = 0; let sY = 0; // spinX, spinY
-  let pX = 0; let pY = 0; // pixelX, pixelY
+  let pX: number; let pY: number; // pixelX, pixelY
 
   // Legacy
   if ('detail' in event) { sY = event.detail; }

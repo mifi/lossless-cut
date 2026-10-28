@@ -1,9 +1,9 @@
 import winston from 'winston';
 import util from 'node:util';
-// eslint-disable-next-line import/no-extraneous-dependencies
+// eslint-disable-next-line import-js/no-extraneous-dependencies
 import { app } from 'electron';
 import { join } from 'node:path';
-// eslint-disable-next-line import/no-extraneous-dependencies
+// eslint-disable-next-line import-js/no-extraneous-dependencies
 import type { TransformableInfo } from 'logform';
 
 

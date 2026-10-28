@@ -155,7 +155,7 @@ export function hasAnySegmentOverlap(sortedSegments: { start: number, end: numbe
   return overlappingGroups.length > 0;
 }
 
-// eslint-disable-next-line space-before-function-paren
+// eslint-disable-next-line eslint-js/space-before-function-paren
 export function invertSegments(
   sortedSegmentsIn: ({ start: number, end?: number | undefined, segId?: string | undefined, name?: string | undefined })[],
   includeFirstSegment: boolean,

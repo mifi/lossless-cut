@@ -3,7 +3,7 @@
 import fs from 'node:fs/promises';
 
 // the app's list, shared through the repo rather than as a package
-// eslint-disable-next-line import/no-relative-packages
+// eslint-disable-next-line import-js/no-relative-packages
 import { appLinkPrefix, appLinkTargets, websiteUrl } from '../../src/common/websiteUrls.ts';
 
 const distDir = new URL('../dist/', import.meta.url);
@@ -33,7 +33,7 @@ await Promise.all(Object.entries(appLinkTargets).map(async ([name, target]) => {
 }));
 
 if (problems.length > 0) {
-  console.error(`The app links to website pages that don't exist (see src/common/websiteUrls.ts):\n${problems.sort().join('\n')}`);
+  console.error(`The app links to website pages that don't exist (see src/common/websiteUrls.ts):\n${problems.toSorted().join('\n')}`);
   process.exitCode = 1;
 } else {
   // https://developers.cloudflare.com/workers/static-assets/redirects/

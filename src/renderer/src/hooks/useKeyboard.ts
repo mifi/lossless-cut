@@ -106,13 +106,13 @@ export default ({ keyBindings, keyUpActions, getKeyboardAction, closeExportConfi
   }, [onKeyUp2]);
 
   useEffect(() => {
-    const keyBindingsByKeyCode = keyBindings.reduce((acc, kb) => {
+    const keyBindingsByKeyCode = keyBindings.reduce<Record<string, KeyBinding[]>>((acc, kb) => {
       kb.keys.split('+').forEach((key) => {
         if (!acc[key]) acc[key] = [];
         acc[key].push(kb);
       });
       return acc;
-    }, {} as Record<string, KeyBinding[]>);
+    }, {});
 
     function onKeyDown(params: KeyEventParams) {
       if (onKeyDownRef.current == null) return true;

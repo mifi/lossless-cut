@@ -319,7 +319,7 @@ function Timeline({
       const mouseDragTimelinePos = getMouseTimelinePos(e2);
       seekAbs(mouseDragTimelinePos);
       try {
-        // eslint-disable-next-line unicorn/prefer-switch
+        // eslint-disable-next-line unicorn-js/prefer-switch
         if (resizingSegmentRef.current?.operation === 'start') {
           setCutTime('start', mouseDragTimelinePos);
         } else if (resizingSegmentRef?.current?.operation === 'end') {

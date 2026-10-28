@@ -30,7 +30,7 @@ export default function WhatsNew() {
 
   const matchingVersions = useMemo(() => versions
     .filter(({ version }) => semver.gt(version, initialLastAppVersion) && semver.lte(version, appVersion))
-    .sort(({ version: a }, { version: b }) => semver.compare(b, a)), [initialLastAppVersion]);
+    .toSorted(({ version: a }, { version: b }) => semver.compare(b, a)), [initialLastAppVersion]);
 
   if (initialLastAppVersion === appVersion) return null;
 

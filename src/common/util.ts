@@ -37,6 +37,7 @@ const ellipsis = '…';
 // Truncate a file name to `maxLength`, keeping its extension (if any), and without splitting characters.
 // We cut out the middle, because the end of the name often has the parts that make it unique (e.g. cut times, segment number)
 export function truncateFileName(name: string, maxLength: number, utf16 = false) {
+  // eslint-disable-next-line @typescript-eslint/no-misused-spread -- we want code points
   const getLength = (str: string) => [...str].reduce((acc, char) => acc + getCharLength(char, utf16), 0);
   if (getLength(name) <= maxLength) return name;
 
@@ -44,11 +45,12 @@ export function truncateFileName(name: string, maxLength: number, utf16 = false)
   // only treat a short suffix as an extension, so that a dot early in the name doesn't make us exceed the limit
   const ext = extIndex > 0 && name.length - extIndex <= 10 ? name.slice(extIndex) : '';
   const stem = name.slice(0, name.length - ext.length);
+  // eslint-disable-next-line @typescript-eslint/no-misused-spread -- we want code points
   const chars = [...stem];
 
   const budget = maxLength - getLength(ext) - getLength(ellipsis);
   const head = takeChars(chars, Math.floor(budget / 2), utf16);
-  const tail = takeChars(chars.toReversed(), budget - getLength(head.join('')), utf16).reverse();
+  const tail = takeChars(chars.toReversed(), budget - getLength(head.join('')), utf16).toReversed();
   return head.join('') + ellipsis + tail.join('') + ext;
 }
 

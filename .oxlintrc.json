@@ -1,0 +1,95 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "extends": [
+    "./node_modules/@mifi/lint-config/oxlintrc.json"
+  ],
+  "ignorePatterns": [
+    ".yarn",
+    "dist",
+    "out",
+    "main-ts-dist",
+    "common-ts-dist",
+    "website/dist",
+    "website/.wrangler",
+    "website/.astro",
+    "**/*.astro"
+  ],
+  "settings": {
+    "react": {
+      "version": "19"
+    }
+  },
+  "rules": {
+    "jsx-a11y/click-events-have-key-events": "off",
+    "jsx-a11y/interactive-supports-focus": "off",
+    "jsx-a11y/control-has-associated-label": "off",
+    "react-js/no-unused-prop-types": "off",
+    "eslint-js/func-call-spacing": "off"
+  },
+  "overrides": [
+    {
+      "files": [
+        "src/renderer/**"
+      ],
+      "env": {
+        "node": false,
+        "browser": true
+      },
+      "rules": {
+        "no-console": "off",
+        "import-js/no-extraneous-dependencies": "off",
+        "unicorn/prefer-global-this": "off"
+      }
+    },
+    {
+      "files": [
+        "src/preload/**"
+      ],
+      "env": {
+        "browser": true
+      },
+      "rules": {
+        "no-console": "off",
+        "import-js/no-extraneous-dependencies": "off",
+        "unicorn/prefer-global-this": "off"
+      }
+    },
+    {
+      "files": [
+        "script/**",
+        "website/**",
+        "electron.vite.config.ts"
+      ],
+      "rules": {
+        "import-js/no-extraneous-dependencies": [
+          "error",
+          {
+            "devDependencies": true,
+            "optionalDependencies": false
+          }
+        ],
+        "no-console": "off"
+      }
+    },
+    {
+      "files": [
+        "src/renderer/src/util/rate-calculator.ts",
+        "src/renderer/src/util/rate-calculator.test.ts",
+        "src/main/pathToFileURL.test.ts"
+      ],
+      "rules": {
+        "unicorn/filename-case": "off"
+      }
+    },
+    {
+      "files": [
+        "src/renderer/src/App.tsx"
+      ],
+      "rules": {
+        "react-hooks/refs": "off",
+        "react-hooks/immutability": "off",
+        "react-hooks/preserve-manual-memoization": "off"
+      }
+    }
+  ]
+}

@@ -541,7 +541,7 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
 
   let Icon: typeof FaBan;
   let codecTypeHuman;
-  // eslint-disable-next-line unicorn/prefer-switch
+  // eslint-disable-next-line unicorn-js/prefer-switch
   if (stream.codec_type === 'audio') {
     Icon = copyStream ? FaVolumeUp : FaVolumeMute;
     codecTypeHuman = t('audio');
@@ -601,7 +601,7 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
       </td>
       <td style={{ maxWidth: '3em', overflow: 'hidden' }} title={stream.codec_name}>{stream.codec_name} {codecTag}</td>
       <td>
-        {duration != null && !Number.isNaN(duration) && `${formatTimecode({ seconds: duration, shorten: true })}`}
+        {duration != null && !Number.isNaN(duration) && formatTimecode({ seconds: duration, shorten: true })}
         {stream.nb_frames != null ? <span> {stream.nb_frames}f</span> : null}
       </td>
       <td>{!Number.isNaN(bitrate) && (stream.codec_type === 'audio' ? `${Math.round(bitrate / 1000)} kbps` : prettyBytes(bitrate, { bits: true }))}</td>

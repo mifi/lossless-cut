@@ -6,7 +6,7 @@ import type { Options as ExecaOptions, ResultPromise } from 'execa';
 import { execa } from 'execa';
 import assert from 'node:assert';
 import type { Readable } from 'node:stream';
-// eslint-disable-next-line import/no-extraneous-dependencies
+// eslint-disable-next-line import-js/no-extraneous-dependencies
 import { app, clipboard, nativeImage } from 'electron';
 
 import { platform, arch, isWindows, isLinux } from './util.js';

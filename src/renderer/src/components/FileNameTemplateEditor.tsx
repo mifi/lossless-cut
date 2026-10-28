@@ -162,7 +162,7 @@ function FileNameTemplateEditor(opts: {
     input!.setSelectionRange(startPos, endPos);
     if (document.execCommand('insertText', false, formatVariable(toInsert))) return;
 
-    const newValue = `${text.slice(0, startPos)}${`${formatVariable(toInsert)}${text.slice(endPos)}`}`;
+    const newValue = `${text.slice(0, startPos)}${formatVariable(toInsert)}${text.slice(endPos)}`;
     setText(newValue);
     debouncedSetTemplate(newValue);
   }, [debouncedSetTemplate, text]);

@@ -184,7 +184,7 @@ export function filenamify(name: string) {
   return name.replaceAll(/[^\p{L}\p{N} ._-]/gu, '_');
 }
 
-// eslint-disable-next-line space-before-function-paren
+// eslint-disable-next-line eslint-js/space-before-function-paren
 export function withBlur<T extends { target?: { blur?: () => unknown } | object }>(cb: (a: T) => void) {
   return (e: T) => {
     cb(e);

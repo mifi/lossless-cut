@@ -329,7 +329,7 @@ export default function Home({ stars, release }: { stars: number, release: Relea
           <div className="social-links">
             {socialLinks.map(({ label, href, icon }) => (
               // rel=me: see links.ts
-              // eslint-disable-next-line react/no-invalid-html-attribute
+              // eslint-disable-next-line react-js/no-invalid-html-attribute
               <a key={label} href={href} rel={label === 'Mastodon' ? 'me' : undefined} title={label} aria-label={label}>
                 <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="currentColor">
                   {socialIconPaths[icon].map((d) => <path key={d} d={d} />)}
@@ -338,6 +338,7 @@ export default function Home({ stars, release }: { stars: number, release: Relea
             ))}
           </div>
 
+          {/* eslint-disable-next-line react-hooks/purity -- the year doesn't need to be stable between renders */}
           <div className="footer-secondary" style={{ marginTop: '20px' }}>{new Date().getFullYear()} © Mikael Finstad</div>
         </footer>
       </div>

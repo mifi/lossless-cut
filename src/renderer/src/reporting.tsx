@@ -37,6 +37,7 @@ export function openSendReportDialog({ err, message, state }: {
 
   const errorText = (() => {
     if (err == null) return 'No error occurred.';
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string -- err can be anything
     return err instanceof Error ? err.stack : String(err);
   })();
 

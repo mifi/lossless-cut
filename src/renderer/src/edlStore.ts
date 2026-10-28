@@ -160,7 +160,7 @@ export async function askForEdlImport({ type, fps, fileDuration, defaultPath }: 
   if (type === 'youtube') return askForYouTubeInput({ fileDuration });
 
   let filters;
-  // eslint-disable-next-line unicorn/prefer-switch
+  // eslint-disable-next-line unicorn-js/prefer-switch
   if (type === 'csv' || type === 'csv-frames') filters = [{ name: i18n.t('CSV files'), extensions: ['csv'] }];
   else if (type === 'xmeml') filters = [{ name: i18n.t('XML files'), extensions: ['xml'] }];
   else if (type === 'fcpxml') filters = [{ name: i18n.t('FCPXML files'), extensions: ['fcpxml'] }];
@@ -193,7 +193,7 @@ export async function exportEdlFile({ type, cutSegments, customOutDir, filePath,
 
   let filters: { name: string, extensions: string[] }[] | undefined;
   let ext: string | undefined;
-  // eslint-disable-next-line unicorn/prefer-switch
+  // eslint-disable-next-line unicorn-js/prefer-switch
   if (type === 'csv') {
     ext = 'csv';
     filters = [{ name: i18n.t('CSV files'), extensions: [ext, 'txt'] }];
@@ -219,7 +219,7 @@ export async function exportEdlFile({ type, cutSegments, customOutDir, filePath,
   const { canceled, filePath: savePath } = await dialog.showSaveDialog({ defaultPath, title: i18n.t('Export project'), ...(filters != null ? { filters } : {}) });
   if (canceled || !savePath) return;
   console.log('Saving', type, savePath);
-  // eslint-disable-next-line unicorn/prefer-switch
+  // eslint-disable-next-line unicorn-js/prefer-switch
   if (type === 'csv') await saveCsv(savePath, cutSegments);
   else if (type === 'tsv-human') await saveTsv(savePath, cutSegments);
   else if (type === 'csv-human') await saveCsvHuman(savePath, cutSegments);

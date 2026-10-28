@@ -312,7 +312,7 @@ export function useDialog() {
         let parseableValue = value.trim();
         if (!parseableValue) return undefined;
         let sign = 1;
-        if (parseableValue[0] === '-') {
+        if (parseableValue.startsWith('-')) {
           sign = -1;
           parseableValue = parseableValue.slice(1);
         }

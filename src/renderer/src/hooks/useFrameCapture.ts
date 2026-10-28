@@ -53,7 +53,7 @@ export default ({ appendFfmpegCommandLog, formatTimecode, treatInputFileModified
     if (!outputTimestamps) {
       const numDigits = getNumDigits(estimatedMaxNumFiles);
       const outPathTemplate = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: getSuffix(`%0${numDigits}d`) });
-      const firstFileOutPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: getSuffix(`${'1'.padStart(numDigits, '0')}`) }); // mimic ffmpeg output
+      const firstFileOutPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: getSuffix('1'.padStart(numDigits, '0')) }); // mimic ffmpeg output
 
       const args = await ffmpeg.captureFrames({ from: fromTime, to: toTime, videoPath: filePath, outPathTemplate, captureFormat, quality, filter, onProgress });
       appendFfmpegCommandLog(args);

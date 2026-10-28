@@ -84,7 +84,7 @@ export async function readFrames({ filePath, from, to, streamIndex }: {
   const createdAt = new Date();
   const packetsFiltered: Frame[] = (JSON.parse(new TextDecoder().decode(stdout)).packets as { flags: string, pts_time: string }[])
     .map((p) => ({
-      keyframe: p.flags[0] === 'K',
+      keyframe: p.flags.startsWith('K'),
       time: parseFloat(p.pts_time),
       createdAt,
     }))
@@ -165,7 +165,7 @@ export function getSafeCutTime(frames: Frame[], cutTime: number, nextMode: boole
 
   const findReverseIndex = <T>(arr: T[], cb: (value: T, i: number, obj: T[]) => unknown) => {
     // eslint-disable-next-line unicorn/no-array-callback-reference
-    const ret = [...arr].reverse().findIndex(cb);
+    const ret = arr.toReversed().findIndex(cb);
     if (ret === -1) return -1;
     return arr.length - 1 - ret;
   };
@@ -578,6 +578,7 @@ export async function createChaptersFromSegments({ paths, defaultChapterNames, u
 
     let timeAt = 0;
 
+    // eslint-disable-next-line array-callback-return -- false positive in oxlint (it doesn't see the returns inside try/finally)
     return filesMeta.flatMap((meta, i) => {
       const duration = parseFfprobeDuration(meta.format.duration) ?? 0;
 

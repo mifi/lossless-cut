@@ -83,7 +83,7 @@ function getMatroskaFlags(outFormat: string | undefined) {
 const getChaptersInputArgs = (ffmetadataPath: string | undefined) => (ffmetadataPath ? ['-f', 'ffmetadata', '-i', ffmetadataPath] : []);
 
 async function tryDeleteFiles(paths: string[]) {
-  return pMap(paths, (path) => unlinkWithRetry(path).catch((err) => console.error('Failed to delete', path, err)), { concurrency: 5 });
+  return pMap(paths, (path) => unlinkWithRetry(path).catch((err: unknown) => console.error('Failed to delete', path, err)), { concurrency: 5 });
 }
 
 export async function maybeMkDeepOutDir({ outputDir, fileOutPath }: { outputDir: string, fileOutPath: string }) {

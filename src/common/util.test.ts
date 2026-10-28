@@ -1,4 +1,4 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
+// eslint-disable-next-line import-js/no-extraneous-dependencies
 import { describe, expect, test } from 'vitest';
 
 import { getFixChannelLayoutFilter, hasCustomChannelLayout, truncateFileName } from './util.js';

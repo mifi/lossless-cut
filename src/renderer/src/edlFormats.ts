@@ -402,7 +402,7 @@ export function parseDvAnalyzerSummaryTxt(txt: string) {
   let headerFound = false;
 
   const times: { time: number, name: string, tags: Record<string, string> }[] = [];
-  // eslint-disable-next-line no-restricted-syntax
+  // eslint-disable-next-line eslint-js/no-restricted-syntax
   for (const line of lines) {
     if (headerFound) {
       const match = line.match(/^(\d{2}):(\d{2}):(\d{2}).(\d{3})\s+(\S+)\s+-\s+(\S+)\s+(\S+\s+\S+)\s+-\s+(\S+\s+\S+)/);
@@ -447,7 +447,7 @@ export function parseSrt(text: string) {
     lines = [];
   };
 
-  // eslint-disable-next-line no-restricted-syntax
+  // eslint-disable-next-line eslint-js/no-restricted-syntax
   for (const lineRaw of text.trim().split(/\r?\n/)) {
     const line = lineRaw.trim();
     if (line === '') {
@@ -510,9 +510,9 @@ export function parseDjiGps1(lines: string[]) {
 }
 
 export function parseDjiGps2(lines: string[]) {
-  const xml = new XMLParser().parse(lines.join('\n'));
-  invariant(typeof xml.font === 'string');
-  const line: string = xml.font.split('\n')[2];
+  const { font } = new XMLParser().parse(lines.join('\n')) as { font: unknown };
+  invariant(typeof font === 'string');
+  const line = font.split('\n')[2];
   invariant(line != null);
   const records: Record<string, string> = {};
   const pairsMatch = line.match(/([^\s:[]+\s*:\s*[^\s\]]+)+/g);

@@ -667,7 +667,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
         return [index];
       }
       return [];
-    }).reverse() // reverse, so that if we are on multiple, we select the last first. That way, auto play selected segments won't go on repeat on the same segment
+    }).toReversed() // reverse, so that if we are on multiple, we select the last first. That way, auto play selected segments won't go on repeat on the same segment
   ), [cutSegments]);
 
   const focusSegmentAtCursor = useCallback(() => {
