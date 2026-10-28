@@ -24,7 +24,14 @@
     "jsx-a11y/interactive-supports-focus": "off",
     "jsx-a11y/control-has-associated-label": "off",
     "react-js/no-unused-prop-types": "off",
-    "eslint-js/func-call-spacing": "off"
+    "eslint-js/func-call-spacing": "off",
+    // TODO remove the type assertions (58), then use the shared config's assertionStyle: never
+    "@typescript-eslint/consistent-type-assertions": [
+      "error",
+      {
+        "assertionStyle": "as"
+      }
+    ]
   },
   "overrides": [
     {
