@@ -1,4 +1,4 @@
-import type { FormEventHandler } from 'react';
+import type { SubmitEventHandler } from 'react';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -68,7 +68,7 @@ export default ({ detectedFps, timecodeFormat, showGenericDialog }: {
 
       const { onOpenChange } = useGenericDialogContext();
 
-      const handleSubmit = useCallback<FormEventHandler<HTMLFormElement>>(async (e) => {
+      const handleSubmit = useCallback<SubmitEventHandler<HTMLFormElement>>(async (e) => {
         e.preventDefault();
 
         let relDirection: number | undefined;

@@ -1,4 +1,4 @@
-import type { MutableRefObject, FormEvent } from 'react';
+import type { RefObject, SubmitEvent } from 'react';
 import { useCallback, useRef, useMemo, useState, useEffect } from 'react';
 import { useStateWithHistory } from 'react-use/lib/useStateWithHistory';
 import i18n from 'i18next';
@@ -44,7 +44,7 @@ const offsetSegments = (segments: DefiniteSegmentBase[], offset: number) => segm
 
 function useSegments({ filePath, workingRef, setWorking, setProgress, videoStream, fileDuration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode, appendFfmpegCommandLog, fileDurationNonZero, mainFileMeta, seekAbs, activeVideoStreamIndex, activeAudioStreamIndexes, handleError, showGenericDialog, simpleMode, ffmpegHwaccel }: {
   filePath?: string | undefined,
-  workingRef: MutableRefObject<boolean>,
+  workingRef: RefObject<boolean>,
   setWorking: (w: { text: string, abortController?: AbortController } | undefined) => void,
   setProgress: (a: number | undefined) => void,
   videoStream: FFprobeStream | undefined,
@@ -256,7 +256,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
 
       const handleChange = (key: string, value: string) => setParameters((existing) => ({ ...existing, [key]: value }));
 
-      const handleSubmit = useCallback((e: FormEvent<HTMLFormElement>) => {
+      const handleSubmit = useCallback((e: SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
         resolve(parameters);
         onOpenChange(false);

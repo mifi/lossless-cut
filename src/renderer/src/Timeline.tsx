@@ -1,4 +1,4 @@
-import type { MutableRefObject, CSSProperties, WheelEventHandler, MouseEventHandler } from 'react';
+import type { RefObject, CSSProperties, WheelEventHandler, MouseEventHandler } from 'react';
 import { memo, useRef, useMemo, useCallback, useEffect } from 'react';
 import { motion, useMotionValue, useSpring } from 'motion/react';
 import debounce from 'lodash/debounce';
@@ -149,7 +149,7 @@ function Timeline({
   playing: boolean,
   isFileOpened: boolean,
   onWheel: WheelEventHandler,
-  commandedTimeRef: MutableRefObject<number>,
+  commandedTimeRef: RefObject<number>,
   goToTimecode: () => void,
   darkMode: boolean,
   setCutTime: UseSegments['setCutTime'],

@@ -128,6 +128,8 @@ function FileNameTemplateEditor(opts: {
     if (input != null) {
       input.focus();
       input.select();
+      // TODO execCommand is deprecated, but it's the only way to insert text while keeping the undo history
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       if (document.execCommand('insertText', false, defaultTemplate)) {
         debouncedSetTemplate.flush(); // save right away
         return;
@@ -160,6 +162,8 @@ function FileNameTemplateEditor(opts: {
     // insert through the input so that native undo works
     input!.focus();
     input!.setSelectionRange(startPos, endPos);
+    // TODO see above
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     if (document.execCommand('insertText', false, formatVariable(toInsert))) return;
 
     const newValue = `${text.slice(0, startPos)}${formatVariable(toInsert)}${text.slice(endPos)}`;

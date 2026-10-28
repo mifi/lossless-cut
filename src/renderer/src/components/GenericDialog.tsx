@@ -1,4 +1,4 @@
-import type { FormEventHandler, MouseEventHandler, ReactNode } from 'react';
+import type { SubmitEventHandler, MouseEventHandler, ReactNode } from 'react';
 import React, { useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import invariant from 'tiny-invariant';
@@ -323,7 +323,7 @@ export function useDialog() {
         return duration * sign;
       }, []);
 
-      const handleSubmit = useCallback<FormEventHandler<HTMLFormElement>>((e) => {
+      const handleSubmit = useCallback<SubmitEventHandler<HTMLFormElement>>((e) => {
         e.preventDefault();
         try {
           const start = parseValue(startValue);
@@ -382,7 +382,7 @@ export function useDialog() {
       const [fpsStr, setFps] = useState('20');
       const [nStr, setN] = useState('1');
 
-      const handleSubmit = useCallback<FormEventHandler<HTMLFormElement>>((e) => {
+      const handleSubmit = useCallback<SubmitEventHandler<HTMLFormElement>>((e) => {
         e.preventDefault();
         try {
           const n = Number(nStr);
