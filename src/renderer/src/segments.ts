@@ -124,6 +124,7 @@ export function combineOverlappingSegments<T extends SegmentBase>(existingSegmen
 
   const combinedSegments: T[] = [];
 
+  // eslint-disable-next-line oxc/no-accumulating-spread -- TODO fix (new rule in @mifi/lint-config)
   for (let i = 1; i < sortedSegments.length; i += 1) {
     const nextSegment = sortedSegments[i]!;
 

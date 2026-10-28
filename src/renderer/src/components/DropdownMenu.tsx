@@ -13,5 +13,4 @@ export const Arrow = withClass(DropdownMenu.Arrow, styles['DropdownMenuArrow']!)
 
 export const Separator = withClass(DropdownMenu.Separator, styles['DropdownMenuSeparator']!);
 
-// eslint-disable-next-line react/jsx-props-no-spreading
 export const Portal = (props: DropdownMenu.DropdownMenuPortalProps) => <DropdownMenu.Portal container={document.getElementById('app-root')!} {...props} />;

@@ -62,7 +62,6 @@ export default function WhatsNew() {
                       components={{
                         // eslint-disable-next-line react/no-unstable-nested-components
                         code(props) {
-                          // eslint-disable-next-line react/jsx-props-no-spreading
                           return <code className="highlighted" {...props} />;
                         },
                       }}

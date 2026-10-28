@@ -11,6 +11,7 @@ export default function useWhatChanged(props: Record<string, unknown>) {
     const changed = Object.entries(props).reduce((a, [key, prop]) => {
       if (prev.current[key] === prop) return a;
       return {
+        // eslint-disable-next-line oxc/no-accumulating-spread -- TODO fix (new rule in @mifi/lint-config)
         ...a,
         [key]: {
           prev: prev.current[key],

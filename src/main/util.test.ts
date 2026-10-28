@@ -30,6 +30,7 @@ describe('parseCliKeyboardActionArgs', () => {
   });
 
   test('throws on invalid JSON5', () => {
+    // eslint-disable-next-line vitest/require-to-throw-message -- TODO fix (new rule in @mifi/lint-config)
     expect(() => parseCliKeyboardActionArgs('goToTimecodeDirect', ['{time:'], cwd)).toThrow();
   });
 });

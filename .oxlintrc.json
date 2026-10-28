@@ -67,6 +67,8 @@
     "typescript/no-unnecessary-boolean-literal-compare": "off", // (7)
     "@eslint-react/use-state": "off", // (87)
     "@eslint-react/no-forward-ref": "off", // (7)
+    "vitest/prefer-snapshot-hint": "off", // (11)
+    "oxc/no-map-spread": "off", // (8)
     // TODO remove the type assertions (58), then use the shared config's assertionStyle: never
     "@typescript-eslint/consistent-type-assertions": [
       "error",

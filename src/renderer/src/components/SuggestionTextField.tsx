@@ -20,7 +20,6 @@ export default function SuggestionTextField({ ref, suggestions, onValueChange, d
   useImperativeHandle(ref, () => inputRef.current!, []);
 
   return (
-    // eslint-disable-next-line react/jsx-props-no-spreading
     <TextField.Root {...props} ref={inputRef} disabled={disabled} onChange={(e) => onValueChange(e.target.value)}>
       {suggestions.length > 0 && (
         <TextField.Slot side="right">

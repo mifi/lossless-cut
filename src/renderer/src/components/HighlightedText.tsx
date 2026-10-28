@@ -8,7 +8,6 @@ export const highlightedTextStyle: CSSProperties = { textDecorationColor: primar
 
 // eslint-disable-next-line react/display-name
 const HighlightedText = forwardRef<HTMLButtonElement, HTMLAttributes<HTMLButtonElement>>(({ children, style, ...props }, ref) => (
-  // eslint-disable-next-line react/jsx-props-no-spreading
   <button ref={ref} type="button" {...props} className={styles['button']} style={{ ...highlightedTextStyle, ...style }}>{children}</button>
 ));
 

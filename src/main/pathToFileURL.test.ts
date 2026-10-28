@@ -4,6 +4,7 @@ import { test, expect, describe } from 'vitest';
 import { pathToFileURL } from 'node:url';
 
 
+// eslint-disable-next-line vitest/no-conditional-tests -- TODO fix (new rule in @mifi/lint-config)
 if (process.platform === 'win32') {
   describe('file uri windows only', () => {
     test('converts path to file url', () => {
