@@ -38,7 +38,8 @@
       "rules": {
         "no-console": "off",
         "import-js/no-extraneous-dependencies": "off",
-        "unicorn/prefer-global-this": "off"
+        "unicorn/prefer-global-this": "off",
+        "import/extensions": "off"
       }
     },
     {

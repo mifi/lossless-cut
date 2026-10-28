@@ -1,6 +1,6 @@
 // eslint-disable-next-line import-js/no-extraneous-dependencies
 import { describe, expect, test } from 'vitest';
-import { getFfmpegJpegQuality, parseBlackDetectLine, parseSilenceDetectLine } from './ffmpegUtil';
+import { getFfmpegJpegQuality, parseBlackDetectLine, parseSilenceDetectLine } from './ffmpegUtil.ts';
 
 describe('getFfmpegJpegQuality', () => {
   test('quality 1 -> best (2)', () => {

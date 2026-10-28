@@ -2,7 +2,7 @@
 import { describe, expect, test } from 'vitest';
 import { join, resolve, sep } from 'node:path';
 
-import { parseCliKeyboardActionArgs, parseSettingsJson, resolveCliFileArgs } from './util';
+import { parseCliKeyboardActionArgs, parseSettingsJson, resolveCliFileArgs } from './util.ts';
 
 // build platform-native absolute paths so the test also passes on Windows
 const cwd = resolve('/home/user/videos');
