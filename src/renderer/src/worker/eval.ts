@@ -15,7 +15,7 @@ export type ResponseMessageData = { id: number } & ({
   error: string,
 } | {
   data: unknown,
-})
+});
 
 // https://v3.vitejs.dev/guide/features.html#web-workers
 // todo terminate() and recreate in case of error?

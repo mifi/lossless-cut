@@ -91,7 +91,7 @@ Object.defineProperty(Array.prototype, 'join', {
   writable: false,
   configurable: false,
   enumerable: false,
-  // eslint-disable-next-line eslint-js/wrap-iife, func-names
+  // eslint-disable-next-line @stylistic/wrap-iife, func-names
   value: function (old) {
     // eslint-disable-next-line func-names
     return function (arg?: unknown[]) {
@@ -125,7 +125,7 @@ Object.defineProperty(Array.prototype, 'join', {
 myGlobal.fetch = undefined;
 
 
-// eslint-disable-next-line eslint-js/wrap-iife, func-names, unicorn-js/prefer-block-statement-over-iife -- TODO fix (new rule in @mifi/lint-config)
+// eslint-disable-next-line @stylistic/wrap-iife, func-names, unicorn-js/prefer-block-statement-over-iife -- TODO fix (new rule in @mifi/lint-config)
 (function () {
   onmessage = (event: MessageEvent<RequestMessageData>) => {
     // eslint-disable-next-line strict, lines-around-directive

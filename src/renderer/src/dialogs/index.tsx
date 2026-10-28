@@ -590,7 +590,7 @@ export async function checkAppPath() {
     const forceCheckMs = false;
     const forceCheckTitle = false;
     // this code is purposefully obfuscated to try to detect the most basic cloned app submissions to the MS Store
-    // eslint-disable-next-line no-useless-concat, one-var, eslint-js/one-var-declaration-per-line
+    // eslint-disable-next-line no-useless-concat, one-var, @stylistic/one-var-declaration-per-line
     const mf = 'mi' + 'fi.no', ap = 'Los' + 'slessC' + 'ut';
     let payload: string | undefined;
     if (isWindowsStoreBuild || (isDev && forceCheckMs)) {

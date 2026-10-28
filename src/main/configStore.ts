@@ -297,7 +297,7 @@ export async function init({ customConfigDir }: { customConfigDir: string | unde
         assert(keysOrig.length > 0 && keysOrig.every((k) => k.length > 0), 'Invalid keys');
 
         const map: Record<string, string> = {
-          /* eslint-disable eslint-js/quote-props */
+          /* eslint-disable @stylistic/quote-props */
           'esc': 'Escape',
           '1': 'Digit1',
           '2': 'Digit2',
@@ -397,7 +397,7 @@ export async function init({ customConfigDir }: { customConfigDir: string | unde
           'shift': 'ShiftLeft',
           'alt': 'AltLeft',
           'meta': 'MetaLeft',
-          /* eslint-enable eslint-js/quote-props */
+          /* eslint-enable @stylistic/quote-props */
         };
 
         const newKeys = keysOrig.flatMap((k) => {

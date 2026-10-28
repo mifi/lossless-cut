@@ -18,7 +18,7 @@ export type UserSettingsContextType = Omit<UserSettingsRoot, 'settings'> & UserS
   toggleSafeOutputFileName: () => void,
   effectiveExportMode: ExportMode,
   ensureWritableOutDirWithFilePath: ({ outDir }: { outDir: string | undefined }) => Promise<string | undefined>,
-}
+};
 
 export interface SegColorsContextType {
   getSegColor: (seg: SegmentColorIndex | undefined) => ColorInstance,

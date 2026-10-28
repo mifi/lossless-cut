@@ -107,7 +107,7 @@ export type AppEvent = {
 } | {
   eventName: 'export-start',
   path: string,
-}
+};
 
 const appEventEmitter = mitt<{ appEvent: AppEvent }>();
 

@@ -138,7 +138,7 @@ export default ({ appendFfmpegCommandLog, formatTimecode, treatInputFileModified
     filePath: string,
     time: number,
     quality: number,
- }) => ffmpeg.captureFrameToClipboard({ timestamp: time, videoPath: filePath, quality }), []);
+  }) => ffmpeg.captureFrameToClipboard({ timestamp: time, videoPath: filePath, quality }), []);
 
   return {
     captureFramesRange,

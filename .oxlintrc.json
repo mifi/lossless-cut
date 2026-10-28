@@ -23,7 +23,7 @@
     "jsx-a11y/click-events-have-key-events": "off",
     "jsx-a11y/interactive-supports-focus": "off",
     "jsx-a11y/control-has-associated-label": "off",
-    "eslint-js/func-call-spacing": "off",
+    "@stylistic/function-call-spacing": "off",
     // TODO stage 2 rules from @mifi/lint-config with many findings here (count in parentheses), turned off until fixed
     "unicorn-js/consistent-boolean-name": "off", // (95)
     "unicorn/prefer-number-coercion": "off", // (95)

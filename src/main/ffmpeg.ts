@@ -434,7 +434,8 @@ export async function silenceDetect({ streamId, filterOptions, ...rest }: {
   boundingMode: boolean,
   onProgress: (p: number) => void,
   onSegmentDetected: (p: DetectedSegment) => void,
-  from: number, to: number,
+  from: number,
+  to: number,
   ffmpegHwaccel: FfmpegHwAccel,
 }) {
   return detectIntervals({
