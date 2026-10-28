@@ -33,5 +33,9 @@
   {
     "version": "3.70.1",
     "highlightsMd": "- (Windows) Fix FFmpeg missing from the x64 build\n"
+  },
+  {
+    "version": "3.70.2",
+    "highlightsMd": "- (Windows) Fix detecting silent and black scenes, which found nothing in 3.70.0 and 3.70.1\n- Fix extracting attachments showing an error even though they were extracted, and a warning about unprocessable streams when exporting files with attachments\n- Help links now open the documentation on losslesscut.app\n"
   }
 ]
