@@ -167,7 +167,7 @@ async function mas(version: string) {
     return;
   }
   const inFlight = versions.find((v) => ['WAITING_FOR_REVIEW', 'WAITING_FOR_EXPORT_COMPLIANCE', 'IN_REVIEW', 'ACCEPTED', 'PENDING_DEVELOPER_RELEASE', 'PENDING_APPLE_RELEASE', 'PROCESSING_FOR_DISTRIBUTION'].includes(String(v.attributes['appVersionState'])));
-  assert(editable || !inFlight, `App Store version ${inFlight?.attributes['versionString']} is ${inFlight?.attributes['appVersionState']}; release it (or remove it from review) before creating a new version`);
+  if (!editable && inFlight) blocker(`App Store version ${inFlight.attributes['versionString']} is ${inFlight.attributes['appVersionState']}; release it (or remove it from review) before creating a new version`);
   const [major, minor] = String(versions[0]!.attributes['versionString']).split('.').map(Number);
   const versionString = editable ? String(editable.attributes['versionString']) : `${major}.${minor! + 1}`;
 
