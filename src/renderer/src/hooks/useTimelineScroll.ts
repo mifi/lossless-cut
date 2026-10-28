@@ -25,10 +25,10 @@ function useIsCtrlHeldRef() {
   useEffect(() => {
     const onEvent = (e: KeyboardEvent | PointerEvent) => { isCtrlHeldRef.current = e.ctrlKey; };
     const onBlur = () => { isCtrlHeldRef.current = undefined; };
-    window.addEventListener('keydown', onEvent, true);
-    window.addEventListener('keyup', onEvent, true);
-    window.addEventListener('pointermove', onEvent, true);
-    window.addEventListener('pointerdown', onEvent, true);
+    window.addEventListener('keydown', onEvent, { capture: true });
+    window.addEventListener('keyup', onEvent, { capture: true });
+    window.addEventListener('pointermove', onEvent, { capture: true });
+    window.addEventListener('pointerdown', onEvent, { capture: true });
     window.addEventListener('blur', onBlur);
     return () => {
       window.removeEventListener('keydown', onEvent, true);

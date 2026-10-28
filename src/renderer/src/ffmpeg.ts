@@ -143,6 +143,7 @@ export async function findKeyframeNearTime({ filePath, streamIndex, time, mode }
 
 // todo this is not in use
 // https://stackoverflow.com/questions/14005110/how-to-split-a-video-using-ffmpeg-so-that-each-chunk-starts-with-a-key-frame
+// eslint-disable-next-line unicorn-js/prefer-https -- TODO fix (new rule in @mifi/lint-config)
 // http://kicherer.org/joomla/index.php/de/blog/42-avcut-frame-accurate-video-cutting-with-only-small-quality-loss
 export function getSafeCutTime(frames: Frame[], cutTime: number, nextMode: boolean) {
   const sigma = 0.01;
@@ -163,8 +164,9 @@ export function getSafeCutTime(frames: Frame[], cutTime: number, nextMode: boole
     return time;
   }
 
+  // eslint-disable-next-line unicorn-js/no-unnecessary-parameters -- TODO fix (new rule in @mifi/lint-config)
   const findReverseIndex = <T>(arr: T[], cb: (value: T, i: number, obj: T[]) => unknown) => {
-    // eslint-disable-next-line unicorn/no-array-callback-reference
+    // eslint-disable-next-line unicorn/no-array-callback-reference, unicorn-js/prefer-array-last-methods -- TODO fix (new rule in @mifi/lint-config)
     const ret = arr.toReversed().findIndex(cb);
     if (ret === -1) return -1;
     return arr.length - 1 - ret;
@@ -192,9 +194,11 @@ export function getSafeCutTime(frames: Frame[], cutTime: number, nextMode: boole
   return frames[index - 1]!.time;
 }
 
+// eslint-disable-next-line unicorn-js/consistent-compound-words -- TODO fix (new rule in @mifi/lint-config)
 export function findNearestKeyFrameTime({ frames, time, direction }: { frames: Frame[], time: number, direction: number }) {
   const keyframes = frames.filter((f) => f.keyframe && (direction > 0 ? f.time >= time : f.time <= time));
   if (keyframes.length === 0) return undefined;
+  // eslint-disable-next-line unicorn-js/consistent-compound-words -- TODO fix (new rule in @mifi/lint-config)
   const nearestKeyFrame = sortBy(keyframes, (keyframe) => (direction > 0 ? keyframe.time - time : time - keyframe.time))[0];
   if (!nearestKeyFrame) return undefined;
   return nearestKeyFrame.time;
@@ -426,6 +430,7 @@ export async function renderThumbnails({ filePath, from, duration, onThumbnail, 
   signal: AbortSignal,
 }) {
   const numThumbs = 10;
+  // eslint-disable-next-line unicorn-js/no-array-from-fill -- TODO fix (new rule in @mifi/lint-config)
   const thumbTimes = Array.from({ length: numThumbs }).fill(undefined).map((_unused, i) => (from + ((duration * i) / numThumbs)));
   // console.log(thumbTimes);
 
@@ -439,6 +444,7 @@ export async function extractWaveform({ filePath, outPath }: { filePath: string,
   const numSegs = 10;
   const duration = 60 * 60;
   const maxLen = 0.1;
+  // eslint-disable-next-line unicorn-js/no-array-from-fill -- TODO fix (new rule in @mifi/lint-config)
   const segments = Array.from({ length: numSegs }).fill(undefined).map((_unused, i) => [i * (duration / numSegs), Math.min(duration / numSegs, maxLen)] as const);
 
   // https://superuser.com/questions/681885/how-can-i-remove-multiple-segments-from-a-video-using-ffmpeg
@@ -522,6 +528,7 @@ function parseTimecode(str: string, frameRate?: number | undefined) {
 export function getTimecodeFromStreams(streams: FFprobeStream[]) {
   console.log('Trying to load timecode');
   let foundTimecode: number | undefined;
+  // eslint-disable-next-line unicorn-js/no-unused-builtin-method-return -- TODO fix (new rule in @mifi/lint-config)
   streams.find((stream) => {
     try {
       if (stream.tags && stream.tags['timecode']) {

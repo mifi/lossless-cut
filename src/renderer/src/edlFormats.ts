@@ -266,6 +266,7 @@ const xmlList = <T>(value: XmlList<T>): T[] => (value == null ? [] : [value].fla
 
 // https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/FinalCutPro_XML/VersionsoftheInterchangeFormat/VersionsoftheInterchangeFormat.html
 export function parseXmeml(xmlStr: string) {
+  // eslint-disable-next-line unicorn-js/prefer-single-object-destructuring -- TODO fix (new rule in @mifi/lint-config)
   const xml = new XMLParser().parse(xmlStr);
 
   // TODO maybe support media.audio also?
@@ -293,9 +294,7 @@ export function parseXmeml(xmlStr: string) {
 }
 
 export function parseFcpXml(xmlStr: string) {
-  const xml = new XMLParser({ ignoreAttributes: false }).parse(xmlStr);
-
-  const { fcpxml } = xml;
+  const { fcpxml } = new XMLParser({ ignoreAttributes: false }).parse(xmlStr);
   if (!fcpxml) throw new Error('Root element <fcpxml> not found in file');
 
   // e.g. "1001/30000s" or "10s"
@@ -427,6 +426,7 @@ export function parseDvAnalyzerSummaryTxt(txt: string) {
   return edl;
 }
 
+// eslint-disable-next-line unicorn-js/prefer-https -- TODO fix (new rule in @mifi/lint-config)
 // http://www.textfiles.com/uploads/kds-srt.txt
 export function parseSrt(text: string) {
   const ret: { start: number, end: number, lines: string[], index: number | undefined }[] = [];

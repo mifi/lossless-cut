@@ -113,6 +113,7 @@ it('formatYouTube 2', () => {
 });
 
 // https://kodi.wiki/view/Edit_decision_list
+// eslint-disable-next-line unicorn-js/prefer-https -- TODO fix (new rule in @mifi/lint-config)
 // http://www.mplayerhq.hu/DOCS/HTML/en/edl.html
 it('parseMplayerEdl', async () => {
   // TODO support more durations (frames and timestamps):

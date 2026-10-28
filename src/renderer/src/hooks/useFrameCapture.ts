@@ -127,6 +127,7 @@ export default ({ appendFfmpegCommandLog, formatTimecode, treatInputFileModified
     const timecode = formatTimecode({ seconds: time, fileNameFriendly: true });
 
     const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `${timecode}.${ext}` });
+    // eslint-disable-next-line unicorn-js/no-unsafe-buffer-conversion -- TODO fix (new rule in @mifi/lint-config)
     await writeFile(outPath, new Uint8Array(dataUri.buffer));
 
     await transferTimestamps({ inPath: filePath, outPath, cutFrom: time, cutTo: time, duration: isDurationValid(fileDuration) ? fileDuration : undefined, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart });

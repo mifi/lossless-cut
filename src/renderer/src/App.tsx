@@ -1588,8 +1588,7 @@ function App() {
     // Open .llc AND media referenced within
     if (isLlcProject) {
       console.log('Loading LLC project', path);
-      const project = await loadLlcProject(path);
-      const { mediaFileName } = project;
+      const { mediaFileName } = await loadLlcProject(path);
 
       console.log({ mediaFileName });
       if (!mediaFileName) return;
@@ -2093,9 +2092,9 @@ function App() {
       selectSegmentsAtCursor,
       increaseRotation,
       goToTimecode: () => goToTimecode(),
-      seekBackwards: () => seekRelAccelerated(-1 * keyboardNormalSeekSpeed),
-      seekBackwards2: () => seekRelAccelerated(-1 * keyboardSeekSpeed2),
-      seekBackwards3: () => seekRelAccelerated(-1 * keyboardSeekSpeed3),
+      seekBackwards: () => seekRelAccelerated(-keyboardNormalSeekSpeed),
+      seekBackwards2: () => seekRelAccelerated(-keyboardSeekSpeed2),
+      seekBackwards3: () => seekRelAccelerated(-keyboardSeekSpeed3),
       seekForwards: () => seekRelAccelerated(keyboardNormalSeekSpeed),
       seekForwards2: () => seekRelAccelerated(keyboardSeekSpeed2),
       seekForwards3: () => seekRelAccelerated(keyboardSeekSpeed3),

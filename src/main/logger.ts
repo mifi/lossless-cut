@@ -12,6 +12,7 @@ import type { TransformableInfo } from 'logform';
 // https://github.com/winstonjs/winston/issues/1427
 const combineMessageAndSplat = () => ({
   transform(info: TransformableInfo) {
+    // eslint-disable-next-line unicorn-js/no-unreadable-object-destructuring -- TODO fix (new rule in @mifi/lint-config)
     const { [Symbol.for('splat')]: args = [], message } = info;
     // @ts-expect-error incorrect type
     // eslint-disable-next-line no-param-reassign

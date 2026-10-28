@@ -37,17 +37,8 @@ function Alert({ text }: { text: string }) {
   );
 }
 
+// eslint-disable-next-line unicorn-js/prefer-smaller-scope -- TODO fix (new rule in @mifi/lint-config)
 type ProblemValue = string | number | undefined;
-
-type Problem = {
-  index: number,
-} & ({
-  type: 'extraneous',
-} | {
-  type: 'parameter_mismatch',
-  key: string,
-  values: [ProblemValue, ProblemValue],
-});
 
 function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate: storedMergedFileTemplate, generateMergedFileNames, onConcat, alwaysConcatMultipleFiles, setAlwaysConcatMultipleFiles, fileFormat, setFileFormat, detectedFileFormat, setDetectedFileFormat, onOutputFormatUserChange }: {
   isShown: boolean,
@@ -134,6 +125,15 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate: storedMerged
   }, [allFilesMeta, paths]);
 
   const problemsByFile = useMemo(() => {
+    type Problem = {
+      index: number,
+    } & ({
+      type: 'extraneous',
+    } | {
+      type: 'parameter_mismatch',
+      key: string,
+      values: [ProblemValue, ProblemValue],
+    });
     if (!matchingFilesMeta) return {};
     const allFilesMetaExceptFirstFile = matchingFilesMeta.slice(1);
     const [, firstFileMeta] = matchingFilesMeta[0]!;

@@ -817,6 +817,7 @@ function StreamsSelector({
     if (fileParams != null) resetParamsDraft(fileParams, streamId);
   })), [setParamsByFile]);
 
+  // eslint-disable-next-line unicorn-js/prefer-iterator-helpers, unicorn-js/prefer-iterator-to-array -- TODO fix (new rule in @mifi/lint-config)
   const haveEdits = useMemo(() => [...paramsByFile.values()].some((fileParams) => hasFileEdits(fileParams) || [...fileParams.paramsByStream.values()].some((streamParams) => hasStreamEdits(streamParams))), [paramsByFile]);
 
   const onResetAllClick = useCallback(async () => {

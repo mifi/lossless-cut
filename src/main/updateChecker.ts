@@ -9,7 +9,6 @@ import logger from './logger.js';
 const { app } = electron;
 
 
-// eslint-disable-next-line import/prefer-default-export
 export async function checkNewVersion() {
   try {
     // Redirects to GitHub's "latest release" API (see websiteUrls.ts), which returns the latest published full release

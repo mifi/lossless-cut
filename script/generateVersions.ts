@@ -5,6 +5,7 @@ const versionsDir = new URL('../versions/', import.meta.url);
 
 const versions: { version: string, highlightsMd?: string | undefined }[] = [];
 
+// eslint-disable-next-line unicorn-js/no-unreadable-for-of-expression -- TODO fix (new rule in @mifi/lint-config)
 for (const file of await readdir(versionsDir, { withFileTypes: true })) {
   if (file.isFile() && file.name.endsWith('.md')) {
     const version = file.name.replace(/.md$/, '');

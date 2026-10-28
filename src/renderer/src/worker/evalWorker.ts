@@ -96,13 +96,14 @@ Object.defineProperty(Array.prototype, 'join', {
     // eslint-disable-next-line func-names
     return function (arg?: unknown[]) {
       // @ts-expect-error dunno how to fix
+      // eslint-disable-next-line unicorn-js/no-this-outside-of-class -- TODO fix (new rule in @mifi/lint-config)
       if (this.length > 500 || (arg && arg.length > 500)) {
         // eslint-disable-next-line no-throw-literal, @typescript-eslint/only-throw-error
         throw 'Exception: too many items';
       }
 
       // @ts-expect-error dunno how to fix
-      // eslint-disable-next-line unicorn/prefer-reflect-apply, prefer-rest-params
+      // eslint-disable-next-line unicorn/prefer-reflect-apply, prefer-rest-params, unicorn-js/no-this-outside-of-class -- TODO fix (new rule in @mifi/lint-config)
       return old.apply(this, arguments);
     };
   }(Array.prototype.join),
@@ -124,7 +125,7 @@ Object.defineProperty(Array.prototype, 'join', {
 myGlobal.fetch = undefined;
 
 
-// eslint-disable-next-line eslint-js/wrap-iife, func-names
+// eslint-disable-next-line eslint-js/wrap-iife, func-names, unicorn-js/prefer-block-statement-over-iife -- TODO fix (new rule in @mifi/lint-config)
 (function () {
   onmessage = (event: MessageEvent<RequestMessageData>) => {
     // eslint-disable-next-line strict, lines-around-directive

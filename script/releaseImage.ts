@@ -5,6 +5,7 @@ import { dirname } from 'node:path';
 import { parseArgs } from 'node:util';
 import sharp from 'sharp';
 
+// eslint-disable-next-line unicorn-js/no-unreadable-object-destructuring -- TODO fix (new rule in @mifi/lint-config)
 const { values: { bg, position, caption, square, out }, positionals: [version, ...highlights] } = parseArgs({
   allowPositionals: true,
   options: { bg: { type: 'string' }, position: { type: 'string' }, caption: { type: 'string' }, square: { type: 'boolean' }, out: { type: 'string' } },

@@ -72,5 +72,5 @@ test('getCopyableMetadata', () => {
     filename: 'font.ttf',
   })).toEqual({ title: 'a', language: 'eng' });
   expect(getCopyableMetadata({ handler_name: 'English Commentary' })).toEqual({ handler_name: 'English Commentary' });
-  expect(getCopyableMetadata({ handler_name: '\u0010DJI.Subtitle' })).toEqual({});
+  expect(getCopyableMetadata({ handler_name: '\u{10}DJI.Subtitle' })).toEqual({});
 });

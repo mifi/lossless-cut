@@ -33,6 +33,7 @@ await Promise.all(Object.entries(appLinkTargets).map(async ([name, target]) => {
 }));
 
 if (problems.length > 0) {
+  // eslint-disable-next-line unicorn-js/require-array-sort-compare -- TODO fix (new rule in @mifi/lint-config)
   console.error(`The app links to website pages that don't exist (see src/common/websiteUrls.ts):\n${problems.toSorted().join('\n')}`);
   process.exitCode = 1;
 } else {

@@ -14,6 +14,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }> {
     this.state = { error: undefined };
   }
 
+  // eslint-disable-next-line unicorn-js/consistent-class-member-order -- TODO fix (new rule in @mifi/lint-config)
   static getDerivedStateFromError(error: unknown) {
     return { error };
   }

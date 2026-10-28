@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/prefer-default-export
 export function parseFfmpegProgressLine({ line, customMatcher, duration: durationIn }: {
   line: string,
   customMatcher?: ((a: string) => void) | undefined,

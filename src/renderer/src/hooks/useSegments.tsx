@@ -37,9 +37,6 @@ import mainApi from '../mainApi';
 const remote = window.require('@electron/remote');
 const { ffmpeg: { blackDetect, silenceDetect } } = remote.require('./index.js');
 
-
-type ParameterDialogParameters = Record<string, string>;
-
 const offsetSegments = (segments: DefiniteSegmentBase[], offset: number) => segments.map((s) => ({ start: s.start + offset, end: s.end + offset }));
 
 function useSegments({ filePath, workingRef, setWorking, setProgress, videoStream, fileDuration, getRelevantTime, maxLabelLength, checkFileOpened, invertCutSegments, segmentsToChaptersOnly, timecodePlaceholder, parseTimecode, appendFfmpegCommandLog, fileDurationNonZero, mainFileMeta, seekAbs, activeVideoStreamIndex, activeAudioStreamIndexes, handleError, showGenericDialog, simpleMode, ffmpegHwaccel }: {
@@ -67,6 +64,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
   simpleMode: boolean,
   ffmpegHwaccel: FfmpegHwAccel,
 }) {
+  type ParameterDialogParameters = Record<string, string>;
   const { t } = useTranslation();
 
   // Segment related state
@@ -106,7 +104,6 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
       ...newParams,
     },
   })), []);
-
 
   const clearSegColorCounter = useCallback(() => {
     // eslint-disable-next-line no-param-reassign
@@ -453,6 +450,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     const cutSegmentsNew = [...cutSegments];
     const existing = cutSegments[index];
     invariant(existing != null);
+    // eslint-disable-next-line unicorn-js/no-confusing-array-splice -- TODO fix (new rule in @mifi/lint-config)
     cutSegmentsNew.splice(index, 1, { ...existing, ...newProps });
     safeSetCutSegments(cutSegmentsNew, fileDuration);
   }, [cutSegments, safeSetCutSegments, fileDuration]);
@@ -460,6 +458,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
   const setCutTime = useCallback((type: 'start' | 'end' | 'move', time: number | undefined) => {
     if (!isDurationValid(fileDuration) || currentCutSeg == null) return;
 
+    // eslint-disable-next-line unicorn-js/no-unnecessary-parameters -- TODO fix (new rule in @mifi/lint-config)
     const clampStart = (start: number) => Math.min(Math.max(start, 0), fileDuration);
     const clampEnd = (end?: number | undefined) => (end != null ? Math.min(Math.max(end, 0), fileDuration) : undefined);
 
@@ -470,12 +469,14 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
       }
       updateSegAtIndex(currentSegIndexSafe, { start: clampStart(time) });
     }
+    // eslint-disable-next-line unicorn-js/prefer-else-if -- TODO fix (new rule in @mifi/lint-config)
     if (type === 'end') {
       if (time != null && time <= currentCutSeg.start) {
         throw new UserFacingError(i18n.t('Segment start time must precede end time'));
       }
       updateSegAtIndex(currentSegIndexSafe, { end: clampEnd(time) });
     }
+    // eslint-disable-next-line unicorn-js/prefer-else-if -- TODO fix (new rule in @mifi/lint-config)
     if (type === 'move') {
       invariant(time != null);
       updateSegAtIndex(currentSegIndexSafe, {

@@ -4,7 +4,6 @@
 //   resolve to 127.0.0.1 so that their page becomes same-origin with us.
 // - Checking `Origin` prevents CSRF. Browsers always send `Origin` on cross origin requests (and on
 //   all POSTs), while non-browser clients like curl never send it.
-// eslint-disable-next-line import/prefer-default-export
 export function isRequestAllowed({ host, origin, port }: {
   host: string | undefined,
   origin: string | undefined,

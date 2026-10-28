@@ -40,9 +40,9 @@ function escapeCliArg(arg: string) {
   // todo change String(arg) => arg when ts no-implicit-any is turned on
   if (isWindows) {
     // https://github.com/mifi/lossless-cut/issues/2151
-    return /[\s"&<>^|]/.test(arg) ? `"${String(arg).replaceAll('"', '""')}"` : arg;
+    return /[\s"&<>^|]/.test(arg) ? `"${arg.replaceAll('"', '""')}"` : arg;
   }
-  return /[^\w-]/.test(arg) ? `'${String(arg).replaceAll("'", '\'"\'"\'')}'` : arg;
+  return /[^\w-]/.test(arg) ? `'${arg.replaceAll("'", '\'"\'"\'')}'` : arg;
 }
 
 export type FfCommand = 'ffmpeg' | 'ffprobe';
@@ -293,6 +293,7 @@ export function mapTimesToSegments(times: number[], includeLast: boolean) {
     if (start != null) {
       if (end != null) {
         segments.push({ start, end });
+      // eslint-disable-next-line unicorn-js/no-duplicate-if-branches -- TODO fix (new rule in @mifi/lint-config)
       } else if (includeLast) {
         segments.push({ start, end }); // end undefined is allowed (means until end of video)
       }

@@ -186,6 +186,7 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
     <>
       <table style={{ marginBottom: '1em', width: '100%' }}>
         <tbody>
+          {/* eslint-disable-next-line unicorn-js/prefer-object-iterable-methods -- TODO fix (new rule in @mifi/lint-config) */}
           {Object.keys(effectiveTags).map((tag) => {
             const editingThis = tag === editingTag;
             const thisTagCustom = customTags[tag] != null;

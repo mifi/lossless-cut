@@ -33,6 +33,7 @@ import type { Frame } from './ffmpeg';
 import mainApi from './mainApi';
 
 
+// eslint-disable-next-line unicorn-js/no-array-from-fill -- TODO fix (new rule in @mifi/lint-config)
 const zoomOptions = Array.from({ length: 13 }).fill(undefined).map((_unused, z) => 2 ** z);
 
 const leftRightWidth = 100;

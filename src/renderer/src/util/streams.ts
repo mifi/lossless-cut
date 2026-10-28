@@ -350,7 +350,7 @@ export function getKeyframeCutSeekCompensation({ formatName, streams, cutFrom }:
 export const getAudioStreams = <T extends Pick<FFprobeStream, 'codec_type'>>(streams: T[]) => streams.filter((stream) => stream.codec_type === 'audio');
 export const getRealVideoStreams = <T extends Pick<FFprobeStream, 'codec_type' | 'disposition'>>(streams: T[]) => streams.filter((stream) => stream.codec_type === 'video' && !isStreamThumbnail(stream));
 export const getSubtitleStreams = <T extends Pick<FFprobeStream, 'codec_type'>>(streams: T[]) => streams.filter((stream) => stream.codec_type === 'subtitle');
-export const isGpsStream = (stream: Pick<FileStream, 'guessedType' | 'codec_type' | 'tags'>) => stream.codec_type === 'subtitle' && (stream.tags?.['handler_name'] === '\u0010DJI.Subtitle' || stream.guessedType === 'dji-gps-srt');
+export const isGpsStream = (stream: Pick<FileStream, 'guessedType' | 'codec_type' | 'tags'>) => stream.codec_type === 'subtitle' && (stream.tags?.handler_name === '\u{10}DJI.Subtitle' || stream.guessedType === 'dji-gps-srt');
 
 // videoTracks/audioTracks seems to be 1-indexed, while ffmpeg is 0-indexes
 const getHtml5TrackId = (ffmpegTrackIndex: number) => String(ffmpegTrackIndex + 1);

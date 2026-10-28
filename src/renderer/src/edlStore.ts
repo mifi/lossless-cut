@@ -141,6 +141,7 @@ export async function readEdlFile({ type, path, fps }: {
     if (type === 'csv-frames') return loadCsv(path, getFrameValParser(fps));
     if (type === 'edl') return loadEdl(path, fps);
   }
+  // eslint-disable-next-line unicorn-js/prefer-else-if -- TODO fix (new rule in @mifi/lint-config)
   if (type === 'cutlist') return loadCutlistSeconds(path);
   if (type === 'xmeml') return loadXmeml(path);
   if (type === 'fcpxml') return loadFcpXml(path);
@@ -203,6 +204,7 @@ export async function exportEdlFile({ type, cutSegments, customOutDir, filePath,
   } else if (type === 'csv-human') {
     ext = 'csv';
     filters = [{ name: i18n.t('TXT files'), extensions: [ext, 'txt'] }];
+  // eslint-disable-next-line unicorn-js/no-duplicate-if-branches -- TODO fix (new rule in @mifi/lint-config)
   } else if (type === 'csv-frames') {
     ext = 'csv';
     filters = [{ name: i18n.t('TXT files'), extensions: [ext, 'txt'] }];

@@ -16,5 +16,6 @@ const apiProxy = new Proxy(
 
 // todo use contextBridge instead once we get rid of @electron/remote
 // @ts-expect-error we don't need to type this
+// eslint-disable-next-line unicorn-js/no-global-object-property-assignment -- TODO fix (new rule in @mifi/lint-config)
 window.electron = apiProxy;
 // contextBridge.exposeInMainWorld('electron', apiProxy);
