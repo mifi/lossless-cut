@@ -3,7 +3,8 @@
 import assert from 'node:assert';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { Arch, type AfterPackContext } from 'electron-builder';
+import { Arch } from 'electron-builder';
+import type { AfterPackContext } from 'electron-builder';
 import { execa } from 'execa';
 
 export default async function afterPack({ appOutDir, arch, electronPlatformName, packager }: AfterPackContext) {

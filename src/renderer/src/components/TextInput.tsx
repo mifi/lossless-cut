@@ -1,4 +1,5 @@
-import { forwardRef, type CSSProperties, type InputHTMLAttributes } from 'react';
+import { forwardRef } from 'react';
+import type { CSSProperties, InputHTMLAttributes } from 'react';
 
 
 type Props = InputHTMLAttributes<HTMLInputElement> & { style?: CSSProperties };

@@ -259,7 +259,7 @@ it('parses csv with frames', () => {
     cutSegments: parsed,
     getFrameCount: (sec) => getFrameCountRaw(fps, sec),
   });
-  expect(formatted).toEqual(`${['Start', 'End', 'Name'].join(',')}\n${csvFramesStr}`);
+  expect(formatted).toBe(`${['Start', 'End', 'Name'].join(',')}\n${csvFramesStr}`);
 });
 
 const csvTimestampStr = `\

@@ -109,7 +109,7 @@ export default ({ filePath, relevantTime, fileDuration, waveformEnabled, audioSt
 
         // could be problematic if we spawn ffmpeg processes too often, so throttle it
         // eslint-disable-next-line @eslint-react/web-api-no-leaked-timeout -- TODO fix (new rule in @mifi/lint-config)
-        await new Promise((r) => setTimeout(r, 100));
+        await new Promise((resolve) => { setTimeout(resolve, 100); });
       }
     })();
 

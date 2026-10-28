@@ -140,7 +140,7 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate: storedMerged
     const problems: Record<string, Problem[]> = {};
 
     function addProblem(path: string, error: Problem) {
-      if (!problems[path]) problems[path] = [];
+      problems[path] ??= [];
       problems[path]!.push(error);
     }
 

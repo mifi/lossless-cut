@@ -200,7 +200,7 @@ test('getEffectiveAvoidNegativeTs, leaves other values alone', () => {
 
   expect(getEffectiveAvoidNegativeTs({ avoidNegativeTs: 'auto', allFilesMeta, copyFileStreams })).toBe('auto');
   expect(getEffectiveAvoidNegativeTs({ avoidNegativeTs: 'disabled', allFilesMeta, copyFileStreams })).toBe('disabled');
-  expect(getEffectiveAvoidNegativeTs({ avoidNegativeTs: undefined, allFilesMeta, copyFileStreams })).toBe(undefined);
+  expect(getEffectiveAvoidNegativeTs({ avoidNegativeTs: undefined, allFilesMeta, copyFileStreams })).toBeUndefined();
 });
 
 // see `streams1`: 0 is cover art, 1 and 4 are audio, 2 and 3 are video, 7 is subtitle

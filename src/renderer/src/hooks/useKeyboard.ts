@@ -108,7 +108,7 @@ export default ({ keyBindings, keyUpActions, getKeyboardAction, closeExportConfi
   useEffect(() => {
     const keyBindingsByKeyCode = keyBindings.reduce<Record<string, KeyBinding[]>>((acc, kb) => {
       kb.keys.split('+').forEach((key) => {
-        if (!acc[key]) acc[key] = [];
+        acc[key] ??= [];
         acc[key].push(kb);
       });
       return acc;

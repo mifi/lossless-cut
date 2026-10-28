@@ -104,7 +104,7 @@ async function run() {
     if (!wantRetry) return; // success
     console.log('Retrying soon');
     // eslint-disable-next-line no-await-in-loop
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => { setTimeout(resolve, 1000); });
   }
 
   console.log('gave up');

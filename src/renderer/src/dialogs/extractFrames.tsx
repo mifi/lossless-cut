@@ -45,6 +45,7 @@ export async function askExtractFramesAsImages({ segmentsNumFrames, plural, fps 
   // eslint-disable-next-line unicorn-js/prefer-else-if -- TODO fix (new rule in @mifi/lint-config)
   if (captureChoice === 'selectNthSec' || captureChoice === 'selectNthFrame') {
     let nthFrame: number;
+    // eslint-disable-next-line oxc/branches-sharing-code -- TODO fix (new rule in @mifi/lint-config)
     if (captureChoice === 'selectNthFrame') {
       const { value } = await getSwal().Swal.fire({
         text: i18n.t('Capture exactly one image every nth frame'),
@@ -56,7 +57,6 @@ export async function askExtractFramesAsImages({ segmentsNumFrames, plural, fps 
       });
       if (value == null) return undefined;
       const intervalFrames = parseInt(value, 10);
-      // eslint-disable-next-line unicorn-js/prefer-hoisting-branch-code -- TODO fix (new rule in @mifi/lint-config)
       if (Number.isNaN(intervalFrames) || intervalFrames < 1) return undefined;
       nthFrame = intervalFrames;
     } else {

@@ -1,7 +1,9 @@
+import type * as Electron from 'electron';
+
 import type { RemoteRpcApi } from '../main/index.ts';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const { ipcRenderer } = require('electron') as typeof import('electron');
+const { ipcRenderer } = require('electron') as typeof Electron;
 
 const apiProxy = new Proxy(
   {} as RemoteRpcApi,

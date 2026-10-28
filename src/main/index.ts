@@ -3,7 +3,8 @@ process.traceProcessWarnings = true;
 
 /* eslint-disable import/first */
 // eslint-disable-next-line import-js/no-extraneous-dependencies
-import electron, { BrowserWindow, type BrowserWindowConstructorOptions, nativeTheme, shell, app, ipcMain, Notification, type NotificationConstructorOptions } from 'electron';
+import electron, { BrowserWindow, nativeTheme, shell, app, ipcMain, Notification } from 'electron';
+import type { BrowserWindowConstructorOptions, NotificationConstructorOptions } from 'electron';
 import i18n from 'i18next';
 // eslint-disable-next-line import-js/no-extraneous-dependencies
 import debounce from 'lodash/debounce.js';
@@ -95,7 +96,7 @@ async function sendApiAction(action: string, args?: unknown[]) {
     const id = apiActionRequestsId;
     apiActionRequestsId += 1;
     mainWindow!.webContents.send('apiAction', { id, action, args } satisfies ApiActionRequest);
-    await new Promise<void>((resolve) => apiActionRequests.set(id, resolve));
+    await new Promise<void>((resolve) => { apiActionRequests.set(id, resolve); });
   } catch (err) {
     logger.error('sendApiAction', err);
   }

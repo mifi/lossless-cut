@@ -4,10 +4,8 @@ export function parseFfmpegProgressLine({ line, customMatcher, duration: duratio
   duration: number | undefined,
 }) {
   let match = line.match(/frame=\s*\S+\s+fps=\s*\S+\s+q=\s*\S+\s+(?:size|Lsize)=\s*\S+\s+time=\s*(\S+)\s+/);
-  if (!match) {
-    // Audio only looks like this: "size=  233422kB time=01:45:50.68 bitrate= 301.1kbits/s speed= 353x    "
-    match = line.match(/(?:size|Lsize)=\s*\S+\s+time=\s*(\S+)\s+/);
-  }
+  // Audio only looks like this: "size=  233422kB time=01:45:50.68 bitrate= 301.1kbits/s speed= 353x    "
+  match ??= line.match(/(?:size|Lsize)=\s*\S+\s+time=\s*(\S+)\s+/);
   if (!match) {
     customMatcher?.(line);
     return undefined;

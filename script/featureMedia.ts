@@ -15,7 +15,8 @@ import { execa } from 'execa';
 import clipSources from './featureMedia/clips.ts';
 import musicTracks, { defaultMusic } from './featureMedia/music.ts';
 import scenarios from './featureMedia/scenarios.ts';
-import { renderSocialVideo, type Caption, type Rect, type Zoom } from './featureMedia/socialVideo.ts';
+import { renderSocialVideo } from './featureMedia/socialVideo.ts';
+import type { Caption, Rect, Zoom } from './featureMedia/socialVideo.ts';
 
 // eslint-disable-next-line unicorn-js/no-unreadable-object-destructuring -- TODO fix (new rule in @mifi/lint-config)
 const { values: { clips = 'dist/feature-media-clips', music: musicArg = defaultMusic, scale: scaleArg = '1' }, positionals: [scenarioName] } = parseArgs({ allowPositionals: true, options: { clips: { type: 'string' }, music: { type: 'string' }, scale: { type: 'string' } } });
