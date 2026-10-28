@@ -9,24 +9,24 @@ const cwd = resolve('/home/user/videos');
 
 describe('resolveCliFileArgs', () => {
   test('resolves relative file args against the given cwd (#1571)', () => {
-    expect(resolveCliFileArgs(['video.mp4', 'clips/a.mkv'], cwd)).toEqual([join(cwd, 'video.mp4'), join(cwd, 'clips', 'a.mkv')]);
+    expect(resolveCliFileArgs(['video.mp4', 'clips/a.mkv'], cwd)).toStrictEqual([join(cwd, 'video.mp4'), join(cwd, 'clips', 'a.mkv')]);
   });
 
   test('leaves absolute file args untouched (no normalization, e.g. through symlinks)', () => {
     const absolute = [resolve('/media/link'), '..', 'a.mp4'].join(sep);
-    expect(resolveCliFileArgs([absolute], cwd)).toEqual([absolute]);
+    expect(resolveCliFileArgs([absolute], cwd)).toStrictEqual([absolute]);
   });
 });
 
 describe('parseCliKeyboardActionArgs', () => {
   test('resolves openFiles paths against the given cwd', () => {
-    expect(parseCliKeyboardActionArgs('openFiles', ['["video.mp4"]'], cwd)).toEqual([[join(cwd, 'video.mp4')]]);
+    expect(parseCliKeyboardActionArgs('openFiles', ['["video.mp4"]'], cwd)).toStrictEqual([[join(cwd, 'video.mp4')]]);
   });
 
   test('parses JSON and JSON5, leaving other actions and malformed openFiles args untouched', () => {
-    expect(parseCliKeyboardActionArgs('goToTimecodeDirect', ['{"time": "12.23"}'], cwd)).toEqual([{ time: '12.23' }]);
-    expect(parseCliKeyboardActionArgs('goToTimecodeDirect', ['{time: "12.23"}'], cwd)).toEqual([{ time: '12.23' }]);
-    expect(parseCliKeyboardActionArgs('openFiles', ['"video.mp4"'], cwd)).toEqual(['video.mp4']);
+    expect(parseCliKeyboardActionArgs('goToTimecodeDirect', ['{"time": "12.23"}'], cwd)).toStrictEqual([{ time: '12.23' }]);
+    expect(parseCliKeyboardActionArgs('goToTimecodeDirect', ['{time: "12.23"}'], cwd)).toStrictEqual([{ time: '12.23' }]);
+    expect(parseCliKeyboardActionArgs('openFiles', ['"video.mp4"'], cwd)).toStrictEqual(['video.mp4']);
   });
 
   test('throws on invalid JSON5', () => {

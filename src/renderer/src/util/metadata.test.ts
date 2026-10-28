@@ -37,10 +37,10 @@ test('needsHvc1Tag', () => {
 });
 
 test('getNonNativeMovMetadataKeys', () => {
-  expect(getNonNativeMovMetadataKeys({ metadata: { title: 'a', custom: 'b', deleted: '' }, outFormat: 'mov', isStream: true })).toEqual(['custom']);
-  expect(getNonNativeMovMetadataKeys({ metadata: { title: 'a' }, outFormat: 'mp4', isStream: true })).toEqual(['title']);
-  expect(getNonNativeMovMetadataKeys({ metadata: { title: 'a', lyrics: 'b', custom: 'c' }, outFormat: 'mp4', isStream: false })).toEqual(['custom']);
-  expect(getNonNativeMovMetadataKeys({ metadata: undefined, outFormat: 'mp4', isStream: true })).toEqual([]);
+  expect(getNonNativeMovMetadataKeys({ metadata: { title: 'a', custom: 'b', deleted: '' }, outFormat: 'mov', isStream: true })).toStrictEqual(['custom']);
+  expect(getNonNativeMovMetadataKeys({ metadata: { title: 'a' }, outFormat: 'mp4', isStream: true })).toStrictEqual(['title']);
+  expect(getNonNativeMovMetadataKeys({ metadata: { title: 'a', lyrics: 'b', custom: 'c' }, outFormat: 'mp4', isStream: false })).toStrictEqual(['custom']);
+  expect(getNonNativeMovMetadataKeys({ metadata: undefined, outFormat: 'mp4', isStream: true })).toStrictEqual([]);
 });
 
 test('isValidCreationTime', () => {
@@ -53,8 +53,8 @@ test('isValidCreationTime', () => {
 });
 
 test('getEffectiveMetadata', () => {
-  expect(getEffectiveMetadata({ title: 'a', language: 'eng', comment: 'c' }, { title: 'b', comment: '' })).toEqual({ title: 'b', language: 'eng' });
-  expect(getEffectiveMetadata(undefined, undefined)).toEqual({});
+  expect(getEffectiveMetadata({ title: 'a', language: 'eng', comment: 'c' }, { title: 'b', comment: '' })).toStrictEqual({ title: 'b', language: 'eng' });
+  expect(getEffectiveMetadata(undefined, undefined)).toStrictEqual({});
 });
 
 test('getCopyableMetadata', () => {
@@ -70,7 +70,7 @@ test('getCopyableMetadata', () => {
     iTunSMPB: ' 00000000 00000840',
     creation_time: '2024-01-01T00:00:00.000000Z',
     filename: 'font.ttf',
-  })).toEqual({ title: 'a', language: 'eng' });
-  expect(getCopyableMetadata({ handler_name: 'English Commentary' })).toEqual({ handler_name: 'English Commentary' });
-  expect(getCopyableMetadata({ handler_name: '\u{10}DJI.Subtitle' })).toEqual({});
+  })).toStrictEqual({ title: 'a', language: 'eng' });
+  expect(getCopyableMetadata({ handler_name: 'English Commentary' })).toStrictEqual({ handler_name: 'English Commentary' });
+  expect(getCopyableMetadata({ handler_name: '\u{10}DJI.Subtitle' })).toStrictEqual({});
 });

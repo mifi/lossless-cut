@@ -29,8 +29,6 @@
     // TODO stage 2 rules from @mifi/lint-config with many findings here (count in parentheses), turned off until fixed
     "unicorn-js/consistent-boolean-name": "off", // (95)
     "react/exhaustive-effect-dependencies": "off", // (81)
-    "typescript/strict-void-return": "off", // (144)
-    "vitest/prefer-strict-equal": "off", // (75)
     "typescript/promise-function-async": "off", // (50)
     "react/only-export-components": "off", // (48)
     "no-implicit-coercion": "off", // (25)
