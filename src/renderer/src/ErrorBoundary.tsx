@@ -36,7 +36,6 @@ class ErrorBoundary extends Component<{ children: ReactNode }> {
       );
     }
 
-    // eslint-disable-next-line react-js/destructuring-assignment
     return this.props.children;
   }
 }

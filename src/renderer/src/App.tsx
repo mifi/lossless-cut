@@ -249,6 +249,7 @@ function App() {
     }
   }, [detectedFileFormat, outFormatLocked, setFileFormat, setOutFormatLocked]);
 
+  // eslint-disable-next-line @eslint-react/naming-convention-ref-name -- TODO fix (new rule in @mifi/lint-config)
   const previousPlaybackVolume = useRef(playbackVolume);
   const toggleMuted = useCallback(() => {
     setPlaybackVolume((volume) => {
@@ -2533,9 +2534,9 @@ function App() {
   return (
     <Theme appearance={darkMode ? 'dark' : 'light'} accentColor="cyan">
       <MotionConfig reducedMotion={reducedMotion}>
-        <AppContext.Provider value={appContext}>
-          <SegColorsContext.Provider value={segColorsContext}>
-            <UserSettingsContext.Provider value={userSettingsContext}>
+        <AppContext value={appContext}>
+          <SegColorsContext value={segColorsContext}>
+            <UserSettingsContext value={userSettingsContext}>
               <div className={rootClass} style={rootStyle} id="app-root">
                 <TopMenu
                   filePath={filePath}
@@ -2877,9 +2878,9 @@ function App() {
               </div>
 
               <SwalContainer darkMode={darkMode} style={baseColorStyle} />
-            </UserSettingsContext.Provider>
-          </SegColorsContext.Provider>
-        </AppContext.Provider>
+            </UserSettingsContext>
+          </SegColorsContext>
+        </AppContext>
       </MotionConfig>
     </Theme>
   );

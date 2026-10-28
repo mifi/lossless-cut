@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { use } from 'react';
 import type { ColorInstance } from 'color';
 import invariant from 'tiny-invariant';
 
@@ -43,13 +43,13 @@ export const SegColorsContext = React.createContext<SegColorsContextType | undef
 export const AppContext = React.createContext<AppContextType | undefined>(undefined);
 
 export function useAppContext() {
-  const context = useContext(AppContext);
+  const context = use(AppContext);
   invariant(context != null);
   return context;
 }
 
 export const useSegColors = () => {
-  const context = useContext(SegColorsContext);
+  const context = use(SegColorsContext);
   invariant(context != null);
   return context;
 };

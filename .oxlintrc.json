@@ -23,7 +23,6 @@
     "jsx-a11y/click-events-have-key-events": "off",
     "jsx-a11y/interactive-supports-focus": "off",
     "jsx-a11y/control-has-associated-label": "off",
-    "react-js/no-unused-prop-types": "off",
     "eslint-js/func-call-spacing": "off",
     // TODO stage 2 rules from @mifi/lint-config with many findings here (count in parentheses), turned off until fixed
     "unicorn-js/consistent-boolean-name": "off", // (95)
@@ -66,6 +65,8 @@
     "typescript/require-await": "off", // (19)
     "typescript/no-misused-promises": "off", // (121)
     "typescript/no-unnecessary-boolean-literal-compare": "off", // (7)
+    "@eslint-react/use-state": "off", // (87)
+    "@eslint-react/no-forward-ref": "off", // (7)
     // TODO remove the type assertions (58), then use the shared config's assertionStyle: never
     "@typescript-eslint/consistent-type-assertions": [
       "error",
@@ -107,7 +108,8 @@
       "files": [
         "script/**",
         "website/**",
-        "electron.vite.config.ts"
+        "electron.vite.config.ts",
+        "vitest.config.ts"
       ],
       "rules": {
         "import-js/no-extraneous-dependencies": [

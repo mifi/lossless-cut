@@ -1,5 +1,5 @@
 import type { SubmitEventHandler, MouseEventHandler, ReactNode } from 'react';
-import React, { useCallback, useContext, useMemo, useRef, useState } from 'react';
+import React, { use, useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import invariant from 'tiny-invariant';
 import { FaCheckCircle, FaInfoCircle } from 'react-icons/fa';
@@ -30,7 +30,7 @@ interface GenericDialogContextValue {
 const GenericDialogContext = React.createContext<GenericDialogContextValue | undefined>(undefined);
 
 export function useGenericDialogContext() {
-  const context = useContext(GenericDialogContext);
+  const context = use(GenericDialogContext);
   invariant(context);
   return context;
 }
@@ -48,9 +48,9 @@ export default function GenericDialog({ dialog, onOpenChange }: {
         <Dialog.Portal>
           <Dialog.Overlay />
 
-          <GenericDialogContext.Provider value={context}>
+          <GenericDialogContext value={context}>
             {dialog != null && !dialog.isAlert && dialog.render()}
-          </GenericDialogContext.Provider>
+          </GenericDialogContext>
         </Dialog.Portal>
       </Dialog.Root>
 
@@ -59,9 +59,9 @@ export default function GenericDialog({ dialog, onOpenChange }: {
         <AlertDialog.Portal>
           <AlertDialog.Overlay />
 
-          <GenericDialogContext.Provider value={context}>
+          <GenericDialogContext value={context}>
             {dialog != null && dialog.isAlert && dialog.render()}
-          </GenericDialogContext.Provider>
+          </GenericDialogContext>
         </AlertDialog.Portal>
       </AlertDialog.Root>
     </>

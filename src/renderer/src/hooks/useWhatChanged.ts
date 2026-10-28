@@ -3,6 +3,7 @@ import React from 'react';
 // https://stackoverflow.com/questions/64997362/how-do-i-see-what-props-have-changed-in-react
 export default function useWhatChanged(props: Record<string, unknown>) {
   // cache the last set of props
+  // eslint-disable-next-line @eslint-react/naming-convention-ref-name -- TODO fix (new rule in @mifi/lint-config)
   const prev = React.useRef(props);
 
   React.useEffect(() => {

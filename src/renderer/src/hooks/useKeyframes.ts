@@ -28,6 +28,7 @@ function useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream, 
 }) {
   const { t } = useTranslation();
 
+  // eslint-disable-next-line @eslint-react/naming-convention-ref-name -- TODO fix (new rule in @mifi/lint-config)
   const readingKeyframesPromise = useRef<Promise<unknown>>(undefined);
   const [neighbouringKeyFramesMap, setNeighbouringKeyFrames] = useState<Record<string, Frame>>({});
 

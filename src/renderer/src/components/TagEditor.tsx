@@ -37,6 +37,7 @@ export const cancelTagEditOnEscape = (editingTag: string | undefined, setEditing
   setEditingTag(undefined);
 };
 
+// eslint-disable-next-line @eslint-react/no-unstable-default-props -- TODO fix (new rule in @mifi/lint-config)
 function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editingTag, setEditingTag, onTagsChange, onTagReset, addTagTitle, tagInfo, keySuggestions, canDeleteExisting, onApplyToAll, applyToAllTitle, copyFromSources = [] }: {
   existingTags?: SegmentTags,
   customTags?: SegmentTags | undefined,

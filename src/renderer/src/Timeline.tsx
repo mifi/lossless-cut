@@ -161,6 +161,7 @@ function Timeline({
 
   const timelineScrollerRef = useRef<HTMLDivElement>(null);
   const timelineScrollerSkipEventRef = useRef<boolean>(false);
+  // eslint-disable-next-line @eslint-react/naming-convention-ref-name -- TODO fix (new rule in @mifi/lint-config)
   const timelineScrollerSkipEventDebounce = useRef<() => void>(undefined);
   const timelineWrapperRef = useRef<HTMLDivElement>(null);
 
