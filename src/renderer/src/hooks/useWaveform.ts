@@ -50,6 +50,7 @@ export default ({ filePath, relevantTime, fileDuration, waveformEnabled, audioSt
         return;
       }
 
+      // eslint-disable-next-line no-unmodified-loop-condition -- set by the effect cleanup
       while (!aborted) {
         const times = [
           waveformStartTimeRef.current,

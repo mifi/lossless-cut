@@ -70,6 +70,7 @@ export default async function safeishEval(code: string, context: Record<string, 
     worker.addEventListener('messageerror', onMessageerror);
     worker.addEventListener('error', onError);
 
+    // eslint-disable-next-line unicorn/require-post-message-target-origin -- Worker.postMessage has no targetOrigin
     worker.postMessage({ id, code, context: JSON.stringify(context) } satisfies RequestMessageData);
   });
 }

@@ -24,8 +24,14 @@
     "jsx-a11y/interactive-supports-focus": "off",
     "jsx-a11y/control-has-associated-label": "off",
     "@stylistic/function-call-spacing": "off",
+    // Express 5 forwards rejected promises to the error handler
+    "oxc/no-async-endpoint-handlers": "off",
     // TODO stage 2 rules from @mifi/lint-config with many findings here (count in parentheses), turned off until fixed
     "unicorn-js/consistent-boolean-name": "off", // (95)
+    "react/exhaustive-effect-dependencies": "off", // (81)
+    "jsx-a11y/prefer-tag-over-role": "off", // (60)
+    "react/hooks": "off", // (32)
+    "react/memo-dependencies": "off", // (20)
     "unicorn/prefer-number-coercion": "off", // (95)
     "unicorn-js/prefer-minimal-ternary": "off", // (19)
     "unicorn-js/prefer-simple-condition-first": "off", // (17)

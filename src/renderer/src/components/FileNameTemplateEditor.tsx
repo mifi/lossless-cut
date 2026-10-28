@@ -60,7 +60,7 @@ function FileNameTemplateEditor(opts: {
   }, [haveImportantMessage]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    // eslint-disable-next-line react-hooks/set-state-in-effect, react/no-deriving-state-in-effects -- TODO fix (new rule in @mifi/lint-config)
     setText(templateIn);
   }, [templateIn]);
 
