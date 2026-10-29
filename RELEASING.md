@@ -16,20 +16,22 @@ The branches `apple-store` and `ms-store` point to the version that's currently 
 - `git checkout master`
 - `git merge apple-store ms-store` (in case there's an unmerged store hotfix)
 - **Prepare release notes**: `yarn release-notes` lists the `Changelog:` lines from commits since the last tag (see [AGENTS.md](./AGENTS.md#commits)). Older commits don't have them, so also go through `node script/getCommits.ts`.
-- Create a new file `versions/x.y.z.md` (shown in the app's What's New dialog) and write the most important highlights from the release notes, but **remove github issue #references**
+- Create a new file `versions/x.y.z.md` (shown in the app's What's New dialog) and write the most important highlights from the release notes, but **remove github issue #references**. The dialog shows the same text on every platform, store builds too, so leave out niche platform-specific items (keep them in the GitHub release notes); an important one gets a prefix like `(Windows)`.
 - `node script/generateVersions.ts && git add versions/*.md src/renderer/src/versions.json && git commit -m 'Update change log'`
 - *If Store-only hotfix release*
   - `git checkout apple-store` (or `ms-store`), commit the fix there
   - `npm version patch`
 - *If normal GitHub-first release*
-  - `npm version minor && git --no-pager show`
+  - `npm version minor && git --no-pager show` (`patch` for a release with only fixes; dropping support for an OS version or architecture is always `minor`)
 - `git push --follow-tags`
+- The maintainer does the version bump, tag and push locally, because release tags are GPG-signed. An agent can prepare and commit the release notes, and check the build afterwards.
 - Wait for build and draft in GitHub Actions. After a tag build, the `check-release-assets` job fails if an asset is missing or more than 10% smaller than in the latest release (e.g. a build without ffmpeg); check it before publishing
 
 ## Release built version
 
 - Optionally, install the Mac App Store build from TestFlight (it shows up in App Store Connect after processing) and check that it starts and can open and export a file. This catches problems that only happen in the sandboxed MAS build.
-- Open draft in GitHub and add the prepared release notes
+- Open draft in GitHub and add the prepared release notes. For a patch release, end them with `See [x.y.0](https://github.com/mifi/lossless-cut/releases/tag/vx.y.0) for the full list of changes.`
+  - Agents can't create, edit or publish GitHub releases from a Claude Code session (the API refuses it), so the maintainer pastes the notes and publishes.
 - *If GitHub release*
   - Release the draft
 - *If Store-only hotfix release*
@@ -61,7 +63,8 @@ What the script does:
 - **Mac App Store**: App Store versions have their own numbering (1.x, e.g. 1.14), separate from the GitHub/build version (`package.json`, e.g. 3.70.1), which is the build attached to it. The script takes the build version, and creates the next App Store version (1.14 → 1.15) or reuses the editable one. It waits for the build to finish processing and attaches it, sets en-US "What's New", the privacy policy URL (from `src/common/websiteUrls.ts`), manual release, 7-day phased release, and submits for review.
 - **Microsoft Store**: creates a submission, replaces the packages with both `.appx` files from the GitHub release (renamed without `-DONT-USE-THIS-FILE`), sets en-US "What's new", gradual rollout at 0%, "Don't publish until I select Publish now", and submits for certification. Don't edit a submission in Partner Center that the script created, or the API can no longer change it.
 - If the version is already submitted or released, it says so and does nothing.
-- It stops before changing anything when a store isn't ready for a new version: Mac App Store while another version is in review or waiting to be released, Microsoft Store while another submission is pending or the previous gradual rollout hasn't finished (finalize it with `msstore-rollout 100`, or halt it).
+- It stops before changing anything when a store isn't ready for a new version: Mac App Store while another version is in review or waiting to be released, Microsoft Store while another submission is pending or the previous gradual rollout hasn't finished (finalize it with `msstore-rollout 100`, or halt it). A dry run goes on and prints `BLOCKED` where a real run would stop.
+- When such a waiting version or submission is an older build: if it doesn't have a regression on that platform, release it (and move the store branch), and the next store release can come later; otherwise remove it. Mac App Store: in App Store Connect, release it, or remove it from review (then it's rejected, and the script reuses that version number for the new build). In 3.70.2's case, a version waiting for release only offered "Release This Version". Microsoft Store: delete the submission in Partner Center (cancel the certification first if it's still in certification). Releasing an older Microsoft Store submission starts its gradual rollout, which blocks the next one until the rollout finishes (or `msstore-rollout 100`). The script copies the last *published* submission, so edits in a deleted one are lost, except what the script sets (packages, en-US "What's new", rollout, publish option).
 - Description, keywords and screenshots are not touched; update them by hand if needed.
 
 If it fails, use the manual steps below.
@@ -128,7 +131,7 @@ This fails if the branch has a hotfix that isn't in the tag. Merge the branch in
 
 *Written for agents, who draft the text for the user to review.*
 
-The stores lag behind GitHub releases, so their "What's new" text must cover every version since the one currently live in that store. The `apple-store` and `ms-store` branches point to it (`git describe --tags origin/apple-store`); if unsure whether they're up to date, ask the user (Mac App Store: App Store Connect; Microsoft Store: Partner Center → the product's current submission → Packages), then combine `versions/*.md` after it up to the version being released. Mac App Store versions have their own numbering (1.x); the GitHub version is that of the build attached to it.
+The stores lag behind GitHub releases, so their "What's new" text must cover every version since the one currently live in that store. Before drafting, check what's in each store, because the store branches can lag behind: a version can be approved and waiting to be released (Mac App Store: "Pending Developer Release"), or certified and waiting for "Publish now" (Microsoft Store: a pending submission). The script's dry run shows this (`Latest App Store versions`, `Pending submission`). The `apple-store` and `ms-store` branches point to the live version (`git describe --tags origin/apple-store`); if unsure whether they're up to date, ask the user (Mac App Store: App Store Connect; Microsoft Store: Partner Center → the product's current submission → Packages), then combine `versions/*.md` after it up to the version being released. Mac App Store versions have their own numbering (1.x); the GitHub version is that of the build attached to it.
 
 - Write for customers: lead with the most impactful new features and visible fixes. Leave out internals (dependency/FFmpeg upgrades, security fixes, refactors) and niche power-user details; they're covered by a final "Many other improvements and fixes". The longer since the last store release, the more of the interesting changes can be included.
 - Plain text, no Markdown, code formatting, issue references or links. Use plain-language feature names instead of internal action/variable names.
