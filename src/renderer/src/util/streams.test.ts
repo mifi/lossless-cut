@@ -74,7 +74,7 @@ test('getMapStreamsArgs, flac re-encode sets frame size', () => {
     copyFileStreams: [{ path, streamIds: [0, 1] }],
     outFormat: 'flac',
     needFlac: true,
-  })).toEqual([
+  })).toStrictEqual([
     '-map', '0:0', '-c:0', 'copy',
     '-map', '0:1', '-c:1', 'flac', '-frame_size:1', '4608',
   ]);
