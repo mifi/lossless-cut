@@ -5,8 +5,8 @@ import type { AllFilesMeta, BsfAspectRatioParams, BsfCropParams, ChromiumHTMLAud
 import type { FileStream } from '../ffmpeg';
 
 
-// Since ffmpeg 9, the CLI forces fixed-frame-size encoders like FLAC to use the input's frame size (e.g. 1024 for AAC),
-// which makes FLAC files much bigger. 4608 is FLAC's standard block size, and compresses best also at low sample rates.
+// Since ffmpeg 9, the CLI sets the frame size of encoders like FLAC from the first decoded frame (e.g. 1024 for AAC),
+// which makes FLAC files much bigger. 4608 is FLAC's standard block size, and gives the same sizes as ffmpeg 8.
 export const flacFrameSize = '4608';
 export const flacEncodeArgs = ['-acodec', 'flac', '-frame_size', flacFrameSize];
 
