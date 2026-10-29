@@ -17,7 +17,7 @@ import type { LossyMode } from '../../../main';
 import { UserFacingError } from '../../errors';
 import mainApi from '../mainApi';
 import { formatFfmpegNumber, getFixChannelLayoutFilter, getHwaccelArgs, hasCustomChannelLayout } from '../../../common/util';
-import { join, resolve, dirname } from '../util/path';
+import { join, resolve, dirname, extname } from '../util/path';
 
 const { writeFile, mkdir, access, constants: { W_OK } } = window.require('node:fs/promises');
 
@@ -1100,9 +1100,12 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     console.log('Extracting', streams.length, 'attachment streams');
 
     let streamArgs: string[] = [];
-    const outPaths = await pMap(streams, async ({ index, codec_name: codec, codec_type: type }) => {
-      const ext = codec || 'bin';
-      const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `stream-${index}-${type}-${codec}.${ext}` });
+    const outPaths = await pMap(streams, async ({ index, codec_name: codec, codec_type: type, tags }) => {
+      // Attachments like XML files have no codec_name, so take the extension from the attachment's file name
+      // (it comes from the file, so only accept a plain extension, e.g. not `tt:f` on Windows)
+      const nameExt = extname(tags?.['filename'] ?? '').slice(1).toLowerCase();
+      const ext = codec || (/^[\da-z]{1,10}$/.test(nameExt) ? nameExt : 'bin');
+      const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `stream-${index}-${type}${codec ? `-${codec}` : ''}.${ext}` });
       invariant(outPath != null);
       if (!enableOverwriteOutput && await mainApi.pathExists(outPath)) throw new RefuseOverwriteError();
 

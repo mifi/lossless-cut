@@ -499,17 +499,17 @@ export async function captureFrames({ from, to, videoPath, outPathTemplate, qual
   return args;
 }
 
-function getCaptureFrameArgs({ timestamp, videoPath, quality }: {
+function getCaptureFrameArgs({ timestamp, videoPath, quality, captureFormat }: {
   timestamp: number,
   videoPath: string,
   quality: number,
+  captureFormat: CaptureFormat,
 }) {
-  const ffmpegQuality = getFfmpegJpegQuality(quality);
   return [
     '-ss', String(timestamp),
     '-i', videoPath,
     '-frames:v', '1',
-    '-q:v', String(ffmpegQuality),
+    ...getQualityOpts({ captureFormat, quality }),
   ];
 }
 
@@ -519,7 +519,7 @@ export async function captureFrameToClipboard({ timestamp, videoPath, quality }:
   quality: number,
 }) {
   const args = [
-    ...getCaptureFrameArgs({ timestamp, videoPath, quality }),
+    ...getCaptureFrameArgs({ timestamp, videoPath, quality, captureFormat: 'jpeg' }),
     '-c:v', 'mjpeg',
     '-f', 'image2',
     '-',
@@ -530,14 +530,15 @@ export async function captureFrameToClipboard({ timestamp, videoPath, quality }:
   await clipboard.write([new ClipboardItem({ 'image/png': new Blob([png], { type: 'image/png' }) })]);
 }
 
-export async function captureFrameToFile({ timestamp, videoPath, outPath, quality }: {
+export async function captureFrameToFile({ timestamp, videoPath, outPath, quality, captureFormat }: {
   timestamp: number,
   videoPath: string,
   outPath: string,
   quality: number,
+  captureFormat: CaptureFormat,
 }) {
   const args = [
-    ...getCaptureFrameArgs({ timestamp, videoPath, quality }),
+    ...getCaptureFrameArgs({ timestamp, videoPath, quality, captureFormat }),
     '-y', outPath,
   ];
   await runFfmpegProcess(args);
