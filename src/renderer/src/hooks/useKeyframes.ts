@@ -4,6 +4,7 @@ import useDebounceOld from 'react-use/lib/useDebounce'; // Want to phase out thi
 import { useTranslation } from 'react-i18next';
 
 import type { Frame } from '../ffmpeg';
+// eslint-disable-next-line unicorn-js/consistent-compound-words -- TODO fix (new rule in @mifi/lint-config)
 import { readFramesAroundTime, findNearestKeyFrameTime as ffmpegFindNearestKeyFrameTime, readFrames } from '../ffmpeg';
 import type { FFprobeStream } from '../../../common/ffprobe';
 import { getFrameCountRaw } from '../edlFormats';
@@ -27,6 +28,7 @@ function useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream, 
 }) {
   const { t } = useTranslation();
 
+  // eslint-disable-next-line @eslint-react/naming-convention-ref-name -- TODO fix (new rule in @mifi/lint-config)
   const readingKeyframesPromise = useRef<Promise<unknown>>(undefined);
   const [neighbouringKeyFramesMap, setNeighbouringKeyFrames] = useState<Record<string, Frame>>({});
 
@@ -42,6 +44,7 @@ function useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream, 
     return map;
   }, [detectedFps, neighbouringKeyFrames]);
 
+  // eslint-disable-next-line unicorn-js/consistent-compound-words -- TODO fix (new rule in @mifi/lint-config)
   const findNearestKeyFrameTime = useCallback(({ time, direction }: { time: number, direction: number }) => ffmpegFindNearestKeyFrameTime({ frames: neighbouringKeyFrames, time, direction }), [neighbouringKeyFrames]);
 
   // eslint-disable-next-line react-hooks/set-state-in-effect

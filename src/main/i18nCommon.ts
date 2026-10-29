@@ -1,11 +1,13 @@
 // intentionally disabled because I don't know the quality of the languages, so better to default to english
 // const LanguageDetector = window.require('i18next-electron-language-detector');
-// eslint-disable-next-line import/no-extraneous-dependencies
+// eslint-disable-next-line import-js/no-extraneous-dependencies
 import { app } from 'electron';
 import { join } from 'node:path';
 import type { InitOptions } from 'i18next';
 
+// eslint-disable-next-line import/extensions -- another TS project, so tsc can't rewrite a .ts extension (TS2878)
 import type { SupportedLanguage } from '../common/i18n';
+// eslint-disable-next-line import/extensions -- see above
 import { mapLang } from '../common/i18n';
 
 

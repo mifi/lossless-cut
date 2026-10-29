@@ -1,6 +1,6 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
+// eslint-disable-next-line import-js/no-extraneous-dependencies
 import { describe, expect, test } from 'vitest';
-import { parseFfmpegProgressLine } from './progress';
+import { parseFfmpegProgressLine } from './progress.ts';
 
 describe('parseFfmpegProgressLine', () => {
   test('parse video', () => {

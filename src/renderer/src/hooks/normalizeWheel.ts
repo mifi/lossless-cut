@@ -101,7 +101,7 @@ const PAGE_HEIGHT = 800;
  *
  * The 'wheel' event is more standard:
  *
- * http://www.w3.org/TR/DOM-Level-3-Events/#events-wheelevents
+ * https://www.w3.org/TR/DOM-Level-3-Events/#events-wheelevents
  *
  * The basics is that it includes a unit, deltaMode (pixels, lines, pages), and
  * deltaX, deltaY and deltaZ.  Some browsers provide other values to maintain
@@ -119,11 +119,12 @@ const PAGE_HEIGHT = 800;
  *         Firefox v4/Win7  |     undefined    |       3
  *
  */
-type LegacyWheelEvent = WheelEvent<Element> & { axis?: number, HORIZONTAL_AXIS?: number };
+// eslint-disable-next-line unicorn-js/prefer-smaller-scope -- TODO fix (new rule in @mifi/lint-config)
+type LegacyWheelEvent = WheelEvent & { axis?: number, HORIZONTAL_AXIS?: number };
 
-export default function normalizeWheel(/* object */ event: WheelEvent<Element>) /* object */ {
+export default function normalizeWheel(/* object */ event: WheelEvent) /* object */ {
   let sX = 0; let sY = 0; // spinX, spinY
-  let pX = 0; let pY = 0; // pixelX, pixelY
+  let pX: number; let pY: number; // pixelX, pixelY
 
   // Legacy
   if ('detail' in event) { sY = event.detail; }

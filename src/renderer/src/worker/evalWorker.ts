@@ -59,7 +59,7 @@ Object.getOwnPropertyNames(myGlobal).forEach(function (prop) {
     Object.defineProperty(myGlobal, prop, {
       // eslint-disable-next-line func-names, object-shorthand
       get: function () {
-        // eslint-disable-next-line no-throw-literal
+        // eslint-disable-next-line no-throw-literal, @typescript-eslint/only-throw-error
         throw `Security Exception: cannot access ${prop}`;
       },
       configurable: false,
@@ -77,7 +77,7 @@ Object.getOwnPropertyNames(myGlobal.__proto__).forEach(function (prop) {
     Object.defineProperty(myGlobal.__proto__, prop, {
       // eslint-disable-next-line func-names, object-shorthand
       get: function () {
-        // eslint-disable-next-line no-throw-literal
+        // eslint-disable-next-line no-throw-literal, @typescript-eslint/only-throw-error
         throw `Security Exception: cannot access ${prop}`;
       },
       configurable: false,
@@ -91,18 +91,19 @@ Object.defineProperty(Array.prototype, 'join', {
   writable: false,
   configurable: false,
   enumerable: false,
-  // eslint-disable-next-line wrap-iife, func-names
+  // eslint-disable-next-line @stylistic/wrap-iife, func-names
   value: function (old) {
     // eslint-disable-next-line func-names
     return function (arg?: unknown[]) {
       // @ts-expect-error dunno how to fix
+      // eslint-disable-next-line unicorn-js/no-this-outside-of-class -- TODO fix (new rule in @mifi/lint-config)
       if (this.length > 500 || (arg && arg.length > 500)) {
-        // eslint-disable-next-line no-throw-literal
+        // eslint-disable-next-line no-throw-literal, @typescript-eslint/only-throw-error
         throw 'Exception: too many items';
       }
 
       // @ts-expect-error dunno how to fix
-      // eslint-disable-next-line unicorn/prefer-reflect-apply, prefer-rest-params
+      // eslint-disable-next-line unicorn/prefer-reflect-apply, prefer-rest-params, unicorn-js/no-this-outside-of-class -- TODO fix (new rule in @mifi/lint-config)
       return old.apply(this, arguments);
     };
   }(Array.prototype.join),
@@ -124,7 +125,7 @@ Object.defineProperty(Array.prototype, 'join', {
 myGlobal.fetch = undefined;
 
 
-// eslint-disable-next-line wrap-iife, func-names
+// eslint-disable-next-line @stylistic/wrap-iife, func-names, unicorn-js/prefer-block-statement-over-iife -- TODO fix (new rule in @mifi/lint-config)
 (function () {
   onmessage = (event: MessageEvent<RequestMessageData>) => {
     // eslint-disable-next-line strict, lines-around-directive
@@ -135,7 +136,7 @@ myGlobal.fetch = undefined;
 
     try {
       // https://stackoverflow.com/questions/8403108/calling-eval-in-particular-context
-      // eslint-disable-next-line unicorn/new-for-builtins, no-new-func
+      // eslint-disable-next-line unicorn/new-for-builtins, no-new-func, @typescript-eslint/no-implied-eval
       const result = Function(`\nwith (this) { return (${code}); }`).call(context);
       postMessage({ id, data: result } satisfies ResponseMessageData);
     } catch (e) {

@@ -28,7 +28,7 @@ export function getDocUrl(docPath: string) {
 
 // Titles are shown without the emojis that some docs headings have (but keep symbols like ™).
 const stripEmoji = (text: string) => text
-  .replaceAll(/(\p{Emoji_Presentation}|\p{Extended_Pictographic}\uFE0F)(\uFE0F|\u200D\p{Extended_Pictographic}\uFE0F?)*/gu, '')
+  .replaceAll(/(\p{Emoji_Presentation}|\p{Extended_Pictographic}\u{FE0F})(\u{FE0F}|\u{200D}\p{Extended_Pictographic}\u{FE0F}?)*/gu, '')
   .replaceAll(/\s+/g, ' ')
   .trim();
 

@@ -106,13 +106,13 @@ export default ({ keyBindings, keyUpActions, getKeyboardAction, closeExportConfi
   }, [onKeyUp2]);
 
   useEffect(() => {
-    const keyBindingsByKeyCode = keyBindings.reduce((acc, kb) => {
+    const keyBindingsByKeyCode = keyBindings.reduce<Record<string, KeyBinding[]>>((acc, kb) => {
       kb.keys.split('+').forEach((key) => {
-        if (!acc[key]) acc[key] = [];
+        acc[key] ??= [];
         acc[key].push(kb);
       });
       return acc;
-    }, {} as Record<string, KeyBinding[]>);
+    }, {});
 
     function onKeyDown(params: KeyEventParams) {
       if (onKeyDownRef.current == null) return true;
@@ -148,9 +148,13 @@ export default ({ keyBindings, keyUpActions, getKeyboardAction, closeExportConfi
       // only use first one, if multiple matches (shouldn't happen anyway)
       const matchingKeyBinding = (keyBindingsByKeyCode[e.code] ?? []).find((kb) => {
         const kbKeys = new Set(kb.keys.split('+'));
+        // eslint-disable-next-line unicorn-js/no-chained-comparison -- false positive: this compares a boolean on purpose
         if ((controlModifiers.intersection(kbKeys).size > 0) !== ctrl) return false;
+        // eslint-disable-next-line unicorn-js/no-chained-comparison -- false positive: this compares a boolean on purpose
         if ((shiftModifiers.intersection(kbKeys).size > 0) !== shift) return false;
+        // eslint-disable-next-line unicorn-js/no-chained-comparison -- false positive: this compares a boolean on purpose
         if ((altModifiers.intersection(kbKeys).size > 0) !== alt) return false;
+        // eslint-disable-next-line unicorn-js/no-chained-comparison -- false positive: this compares a boolean on purpose
         if ((metaModifiers.intersection(kbKeys).size > 0) !== meta) return false;
         return true;
       });

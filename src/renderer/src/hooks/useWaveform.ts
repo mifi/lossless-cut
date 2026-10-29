@@ -51,6 +51,7 @@ export default ({ filePath, relevantTime, fileDuration, waveformEnabled, audioSt
         return;
       }
 
+      // eslint-disable-next-line no-unmodified-loop-condition -- set by the effect cleanup
       while (!aborted) {
         const times = [
           waveformStartTimeRef.current,
@@ -108,7 +109,8 @@ export default ({ filePath, relevantTime, fileDuration, waveformEnabled, audioSt
         }
 
         // could be problematic if we spawn ffmpeg processes too often, so throttle it
-        await new Promise((r) => setTimeout(r, 100));
+        // eslint-disable-next-line @eslint-react/web-api-no-leaked-timeout -- TODO fix (new rule in @mifi/lint-config)
+        await new Promise((resolve) => { setTimeout(resolve, 100); });
       }
     })();
 

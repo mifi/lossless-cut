@@ -124,6 +124,7 @@ export function combineOverlappingSegments<T extends SegmentBase>(existingSegmen
 
   const combinedSegments: T[] = [];
 
+  // eslint-disable-next-line oxc/no-accumulating-spread -- TODO fix (new rule in @mifi/lint-config)
   for (let i = 1; i < sortedSegments.length; i += 1) {
     const nextSegment = sortedSegments[i]!;
 
@@ -155,7 +156,7 @@ export function hasAnySegmentOverlap(sortedSegments: { start: number, end: numbe
   return overlappingGroups.length > 0;
 }
 
-// eslint-disable-next-line space-before-function-paren
+// eslint-disable-next-line @stylistic/space-before-function-paren
 export function invertSegments(
   sortedSegmentsIn: ({ start: number, end?: number | undefined, segId?: string | undefined, name?: string | undefined })[],
   includeFirstSegment: boolean,

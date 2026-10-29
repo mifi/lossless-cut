@@ -1,4 +1,4 @@
-import type { CSSProperties, ClipboardEvent, Dispatch, FormEvent, KeyboardEvent, SetStateAction } from 'react';
+import type { CSSProperties, ClipboardEvent, Dispatch, SubmitEvent, KeyboardEvent, SetStateAction } from 'react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
@@ -33,7 +33,7 @@ import type { Frame } from './ffmpeg';
 import mainApi from './mainApi';
 
 
-const zoomOptions = Array.from({ length: 13 }).fill(undefined).map((_unused, z) => 2 ** z);
+const zoomOptions = Array.from({ length: 13 }, (_unused, z) => 2 ** z);
 
 const leftRightWidth = 100;
 
@@ -149,7 +149,7 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
     return true;
   }, [isEmptyEndTime, parseTimecode, setTime]);
 
-  const handleSubmit = useCallback((e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = useCallback((e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {

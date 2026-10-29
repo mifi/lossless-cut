@@ -26,7 +26,7 @@ const ps = execa(losslessCutExePath, losslessCutArgs, { forceKillAfterDelay: 100
 console.log('Started', losslessCutExePath);
 
 // eslint-disable-next-line unicorn/prefer-top-level-await
-ps.catch((err) => console.error(err));
+ps.catch((err: unknown) => console.error(err));
 
 const client = ky.extend({ baseUrl: `http://127.0.0.1:${port}` });
 

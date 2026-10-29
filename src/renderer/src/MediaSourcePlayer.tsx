@@ -106,7 +106,7 @@ async function startPlayback({ path, slaveVideo, masterVideo, videoStreamIndex, 
   // eslint-disable-next-line no-param-reassign
   slaveVideo.src = objectUrl;
 
-  await new Promise((resolve) => mediaSource.addEventListener('sourceopen', resolve, { once: true }));
+  await new Promise((resolve) => { mediaSource.addEventListener('sourceopen', resolve, { once: true }); });
   // console.log(mediaSource.readyState); // open
 
   const sourceBuffer = mediaSource.addSourceBuffer(mimeCodec);

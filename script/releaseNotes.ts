@@ -7,6 +7,7 @@ const from = process.argv[2] ?? (await execa('git', ['describe', '--tags', '--ab
 // Match anywhere in the message, not just git's trailer block (which is only the last paragraph)
 const { stdout } = await execa('git', ['log', '--reverse', '--format=%B', `${from}..HEAD`]);
 // without duplicates (e.g. the same line in several commits of a pull request)
+// eslint-disable-next-line unicorn-js/prefer-iterator-to-array -- TODO fix (new rule in @mifi/lint-config)
 const notes = [...new Set([...stdout.matchAll(/^changelog\s*:\s*(.+)$/gim)].map(([, note]) => note!.trim()))];
 
 console.log(`Changes since ${from}:\n`);

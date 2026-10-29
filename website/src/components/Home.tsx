@@ -7,9 +7,13 @@ import { Combine, Film, Layers, ListOrdered, RefreshCw, ScanSearch, Scissors, Sq
 import type { IconNode as ReactIconNode } from 'lucide-react';
 import { CodeXml, Icon, Languages, Monitor, Pause, Play, Star } from 'lucide-react';
 
+// eslint-disable-next-line import-js/no-relative-packages -- the website uses assets from the app repo
 import macAppStoreBadge from '../../../mac-app-store-badge.svg?url';
+// eslint-disable-next-line import-js/no-relative-packages -- the website uses assets from the app repo
 import msStoreBadge from '../../../ms-store-badge.svg?url';
+// eslint-disable-next-line import-js/no-relative-packages -- the website uses assets from the app repo
 import snapStoreBadge from '../../../snap-store-black.svg?url';
+// eslint-disable-next-line import-js/no-relative-packages -- the website uses assets from the app repo
 import logo from '../../../src/renderer/src/icon.svg?url';
 
 import type { Video } from '../images.ts';
@@ -329,7 +333,6 @@ export default function Home({ stars, release }: { stars: number, release: Relea
           <div className="social-links">
             {socialLinks.map(({ label, href, icon }) => (
               // rel=me: see links.ts
-              // eslint-disable-next-line react/no-invalid-html-attribute
               <a key={label} href={href} rel={label === 'Mastodon' ? 'me' : undefined} title={label} aria-label={label}>
                 <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="currentColor">
                   {socialIconPaths[icon].map((d) => <path key={d} d={d} />)}
@@ -338,6 +341,7 @@ export default function Home({ stars, release }: { stars: number, release: Relea
             ))}
           </div>
 
+          {/* eslint-disable-next-line react-hooks/purity -- the year doesn't need to be stable between renders */}
           <div className="footer-secondary" style={{ marginTop: '20px' }}>{new Date().getFullYear()} © Mikael Finstad</div>
         </footer>
       </div>

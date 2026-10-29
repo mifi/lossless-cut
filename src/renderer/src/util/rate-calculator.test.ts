@@ -1,4 +1,3 @@
-// eslint-disable-line unicorn/filename-case
 import { describe, it, expect } from 'vitest';
 
 import { adjustRate, DEFAULT_PLAYBACK_RATE } from './rate-calculator';
@@ -23,7 +22,7 @@ describe('speeding up', () => {
     expect(adjustRate(1 / DEFAULT_PLAYBACK_RATE + 0.01, 1)).toBe(1);
   });
 
-  it('sets rate to 1 if passing 1 ', () => {
+  it('sets rate to 1 if passing 1', () => {
     expect(adjustRate(0.5, 1, 2)).toBe(1);
   });
 

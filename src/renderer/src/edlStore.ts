@@ -141,6 +141,7 @@ export async function readEdlFile({ type, path, fps }: {
     if (type === 'csv-frames') return loadCsv(path, getFrameValParser(fps));
     if (type === 'edl') return loadEdl(path, fps);
   }
+  // eslint-disable-next-line unicorn-js/prefer-else-if -- TODO fix (new rule in @mifi/lint-config)
   if (type === 'cutlist') return loadCutlistSeconds(path);
   if (type === 'xmeml') return loadXmeml(path);
   if (type === 'fcpxml') return loadFcpXml(path);
@@ -160,7 +161,7 @@ export async function askForEdlImport({ type, fps, fileDuration, defaultPath }: 
   if (type === 'youtube') return askForYouTubeInput({ fileDuration });
 
   let filters;
-  // eslint-disable-next-line unicorn/prefer-switch
+  // eslint-disable-next-line unicorn-js/prefer-switch
   if (type === 'csv' || type === 'csv-frames') filters = [{ name: i18n.t('CSV files'), extensions: ['csv'] }];
   else if (type === 'xmeml') filters = [{ name: i18n.t('XML files'), extensions: ['xml'] }];
   else if (type === 'fcpxml') filters = [{ name: i18n.t('FCPXML files'), extensions: ['fcpxml'] }];
@@ -193,25 +194,29 @@ export async function exportEdlFile({ type, cutSegments, customOutDir, filePath,
 
   let filters: { name: string, extensions: string[] }[] | undefined;
   let ext: string | undefined;
-  // eslint-disable-next-line unicorn/prefer-switch
-  if (type === 'csv') {
-    ext = 'csv';
-    filters = [{ name: i18n.t('CSV files'), extensions: [ext, 'txt'] }];
-  } else if (type === 'tsv-human') {
-    ext = 'tsv';
-    filters = [{ name: i18n.t('TXT files'), extensions: [ext, 'txt'] }];
-  } else if (type === 'csv-human') {
-    ext = 'csv';
-    filters = [{ name: i18n.t('TXT files'), extensions: [ext, 'txt'] }];
-  } else if (type === 'csv-frames') {
-    ext = 'csv';
-    filters = [{ name: i18n.t('TXT files'), extensions: [ext, 'txt'] }];
-  } else if (type === 'srt') {
-    ext = 'srt';
-    filters = [{ name: i18n.t('Subtitles (SRT)'), extensions: [ext, 'txt'] }];
-  } else if (type === 'llc') {
-    ext = 'llc';
-    filters = [{ name: i18n.t('LosslessCut project'), extensions: [ext, 'llc'] }];
+  switch (type) {
+    case 'csv':
+    case 'csv-human':
+    case 'csv-frames': {
+      ext = 'csv';
+      filters = [{ name: i18n.t('CSV files'), extensions: [ext, 'txt'] }];
+      break;
+    }
+    case 'tsv-human': {
+      ext = 'tsv';
+      filters = [{ name: i18n.t('TXT files'), extensions: [ext, 'txt'] }];
+      break;
+    }
+    case 'srt': {
+      ext = 'srt';
+      filters = [{ name: i18n.t('Subtitles (SRT)'), extensions: [ext, 'txt'] }];
+      break;
+    }
+    case 'llc': {
+      ext = 'llc';
+      filters = [{ name: i18n.t('LosslessCut project'), extensions: [ext, 'llc'] }];
+      break;
+    }
   }
 
   const defaultPath = getOutPath({ filePath, customOutDir, fileName: `${basename(filePath)}.${ext}` });
@@ -219,7 +224,7 @@ export async function exportEdlFile({ type, cutSegments, customOutDir, filePath,
   const { canceled, filePath: savePath } = await dialog.showSaveDialog({ defaultPath, title: i18n.t('Export project'), ...(filters != null ? { filters } : {}) });
   if (canceled || !savePath) return;
   console.log('Saving', type, savePath);
-  // eslint-disable-next-line unicorn/prefer-switch
+  // eslint-disable-next-line unicorn-js/prefer-switch
   if (type === 'csv') await saveCsv(savePath, cutSegments);
   else if (type === 'tsv-human') await saveTsv(savePath, cutSegments);
   else if (type === 'csv-human') await saveCsvHuman(savePath, cutSegments);

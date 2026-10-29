@@ -28,7 +28,7 @@ const { configStore } = remote.require('./index.js');
 async function getLastDialogDir() {
   const dir = configStore.get('lastDialogDir');
   // A missing folder would end up in the file name box on Windows
-  if (dir == null || !(await stat(dir).then((stats) => stats.isDirectory(), () => false))) return undefined;
+  if (dir == null || !(await stat(dir).then((stats) => stats.isDirectory()).catch(() => false))) return undefined;
   return dir;
 }
 
@@ -571,7 +571,7 @@ export async function promptDownloadMediaUrl(outPath: string) {
 export async function deleteFiles({ paths, deleteIfTrashFails, signal }: { paths: string[], deleteIfTrashFails?: boolean | undefined, signal: AbortSignal }) {
   const failedToTrashFiles: string[] = [];
 
-  // eslint-disable-next-line no-restricted-syntax
+  // eslint-disable-next-line eslint-js/no-restricted-syntax
   for (const path of paths) {
     try {
       if (testFailFsOperation) throw new Error('test trash failure');
@@ -612,7 +612,7 @@ export async function checkAppPath() {
     const forceCheckMs = false;
     const forceCheckTitle = false;
     // this code is purposefully obfuscated to try to detect the most basic cloned app submissions to the MS Store
-    // eslint-disable-next-line no-useless-concat, one-var, one-var-declaration-per-line
+    // eslint-disable-next-line no-useless-concat, one-var, @stylistic/one-var-declaration-per-line
     const mf = 'mi' + 'fi.no', ap = 'Los' + 'slessC' + 'ut';
     let payload: string | undefined;
     if (isWindowsStoreBuild || (isDev && forceCheckMs)) {

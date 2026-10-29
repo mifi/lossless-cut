@@ -52,7 +52,7 @@ test('getMapStreamsArgs', () => {
     allFilesMeta,
     copyFileStreams: [{ path, streamIds: streams1.map((stream) => stream.index) }],
     outFormat,
-  })).toEqual([
+  })).toStrictEqual([
     '-map', '0:0', '-c:0', 'copy',
     '-map', '0:1', '-c:1', 'copy',
     '-map', '0:2', '-c:2', 'copy',
@@ -75,7 +75,7 @@ test('getMapStreamsArgs, subtitles to matroska', () => {
     allFilesMeta: { [path]: { streams } },
     copyFileStreams: [{ path, streamIds: streams.map((stream) => stream.index) }],
     outFormat,
-  })).toEqual([
+  })).toStrictEqual([
     '-map', '0:0', '-c:0', 'srt',
   ]);
 });
@@ -88,7 +88,7 @@ test('getMapStreamsArgs, disposition', () => {
     copyFileStreams: [{ path, streamIds: [0] }],
     outFormat,
     manuallyCopyDisposition: true,
-  })).toEqual([
+  })).toStrictEqual([
     '-map', '0:0',
     '-c:0', 'copy',
     '-disposition:0', 'attached_pic',
@@ -112,7 +112,7 @@ test('getMapStreamsArgs, smart cut', () => {
       }
       return undefined;
     },
-  })).toEqual([
+  })).toStrictEqual([
     '-map', '0:1',
     '-c:0', 'copy',
     '-map', '0:2',
@@ -131,8 +131,8 @@ test('getMapStreamsArgs, smart cut', () => {
 
 test('getStreamIdsToCopy, includeAllStreams false', () => {
   const { streamIdsToCopy, excludedStreamIds } = getStreamIdsToCopy({ streams: streams1, includeAllStreams: false });
-  expect(streamIdsToCopy).toEqual([2, 1, 7]);
-  expect(excludedStreamIds).toEqual([0, 3, 4, 5, 6]);
+  expect(streamIdsToCopy).toStrictEqual([2, 1, 7]);
+  expect(excludedStreamIds).toStrictEqual([0, 3, 4, 5, 6]);
 });
 
 test('srt output', () => {
@@ -140,7 +140,7 @@ test('srt output', () => {
     allFilesMeta: { [path]: { streams: [{ index: 0, codec_type: 'subtitle', codec_tag: '0x67337874', codec_name: 'mov_text', time_base: '', disposition: makeDisposition() }] } },
     copyFileStreams: [{ path, streamIds: [0] }],
     outFormat: 'srt',
-  })).toEqual([
+  })).toStrictEqual([
     '-map', '0:0', '-c:0', 'srt',
   ]);
 });
@@ -150,7 +150,7 @@ test('webvtt output', () => {
     allFilesMeta: { [path]: { streams: [{ index: 0, codec_type: 'subtitle', codec_tag: '0x67337874', codec_name: 'mov_text', time_base: '', disposition: makeDisposition() }] } },
     copyFileStreams: [{ path, streamIds: [0] }],
     outFormat: 'webvtt',
-  })).toEqual([
+  })).toStrictEqual([
     '-map', '0:0', '-c:0', 'webvtt',
   ]);
 });
@@ -160,7 +160,7 @@ test('ass output', () => {
     allFilesMeta: { [path]: { streams: [{ index: 0, codec_type: 'subtitle', codec_tag: '0x67337874', codec_name: 'mov_text', time_base: '', disposition: makeDisposition() }] } },
     copyFileStreams: [{ path, streamIds: [0] }],
     outFormat: 'ass',
-  })).toEqual([
+  })).toStrictEqual([
     '-map', '0:0', '-c:0', 'ass',
   ]);
 });
@@ -200,7 +200,7 @@ test('getEffectiveAvoidNegativeTs, leaves other values alone', () => {
 
   expect(getEffectiveAvoidNegativeTs({ avoidNegativeTs: 'auto', allFilesMeta, copyFileStreams })).toBe('auto');
   expect(getEffectiveAvoidNegativeTs({ avoidNegativeTs: 'disabled', allFilesMeta, copyFileStreams })).toBe('disabled');
-  expect(getEffectiveAvoidNegativeTs({ avoidNegativeTs: undefined, allFilesMeta, copyFileStreams })).toBe(undefined);
+  expect(getEffectiveAvoidNegativeTs({ avoidNegativeTs: undefined, allFilesMeta, copyFileStreams })).toBeUndefined();
 });
 
 // see `streams1`: 0 is cover art, 1 and 4 are audio, 2 and 3 are video, 7 is subtitle

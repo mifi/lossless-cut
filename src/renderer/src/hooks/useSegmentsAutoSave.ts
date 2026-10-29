@@ -32,6 +32,7 @@ export default ({ autoSaveProjectFile, storeProjectInWorkingDir, filePath, custo
   // NOTE: Could lose a save if user closes too fast, but not a big issue I think
   const [debouncedSaveOperation] = useDebounce(currentSaveOperation, isDev ? 2000 : 500);
 
+  // eslint-disable-next-line @eslint-react/naming-convention-ref-name -- TODO fix (new rule in @mifi/lint-config)
   const lastSaveOperation = useRef<typeof debouncedSaveOperation>(undefined);
 
   useEffect(() => {

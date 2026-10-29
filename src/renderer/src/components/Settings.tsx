@@ -25,14 +25,11 @@ import Truncated from './Truncated';
 import { dangerColor } from '../colors';
 import OutDirSelector from './OutDirSelector.js';
 
-// eslint-disable-next-line react/jsx-props-no-spreading
 const Button = ({ style, ...props }: ButtonProps) => <ButtonRaw style={{ padding: '.5em .9em', ...style }} {...props} />;
 
-// eslint-disable-next-line react/jsx-props-no-spreading
 const Select = ({ style, ...props }: SelectProps) => <SelectRaw style={{ padding: '.5em 1.9em .5em .9em', maxWidth: '15em', ...style }} {...props} />;
 
 
-// eslint-disable-next-line react/jsx-props-no-spreading
 const KeyCell = (props: TdHTMLAttributes<HTMLTableCellElement>) => <td {...props} />;
 
 const Header = ({ title }: { title: string }) => (

@@ -4,7 +4,6 @@ import logger from './logger.js';
 import { createMediaSourceProcess } from './ffmpeg.js';
 
 
-// eslint-disable-next-line import/prefer-default-export
 export function createMediaSourceStream(params: Parameters<typeof createMediaSourceProcess>[0]) {
   const abortController = new AbortController();
 

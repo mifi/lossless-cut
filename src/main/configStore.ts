@@ -1,5 +1,5 @@
 import Store from 'electron-store';
-// eslint-disable-next-line import/no-extraneous-dependencies
+// eslint-disable-next-line import-js/no-extraneous-dependencies
 import electron from 'electron';
 import { join, dirname } from 'node:path';
 import assert from 'node:assert';
@@ -212,7 +212,7 @@ export function onDidChange<T extends keyof Config>(key: T, callback: (val: Conf
   return store.onDidChange(key, (val) => callback(val as Config[T]));
 }
 
-export function reset<T extends keyof Config>(key: T) {
+export function reset(key: keyof Config) {
   set(key, defaults[key]);
 }
 
@@ -226,7 +226,7 @@ async function tryCreateStore({ customStoragePath }: { customStoragePath: string
       return;
     } catch (err) {
       // eslint-disable-next-line no-await-in-loop
-      await new Promise((r) => setTimeout(r, 2000));
+      await new Promise((resolve) => { setTimeout(resolve, 2000); });
       logger.error('Failed to create config store, retrying', err);
     }
   }
@@ -298,7 +298,7 @@ export async function init({ customConfigDir }: { customConfigDir: string | unde
         assert(keysOrig.length > 0 && keysOrig.every((k) => k.length > 0), 'Invalid keys');
 
         const map: Record<string, string> = {
-          /* eslint-disable quote-props */
+          /* eslint-disable @stylistic/quote-props */
           'esc': 'Escape',
           '1': 'Digit1',
           '2': 'Digit2',
@@ -398,7 +398,7 @@ export async function init({ customConfigDir }: { customConfigDir: string | unde
           'shift': 'ShiftLeft',
           'alt': 'AltLeft',
           'meta': 'MetaLeft',
-          /* eslint-enable quote-props */
+          /* eslint-enable @stylistic/quote-props */
         };
 
         const newKeys = keysOrig.flatMap((k) => {

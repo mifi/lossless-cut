@@ -12,7 +12,7 @@ export function parseLevel(videoStream: FFprobeStream) {
 
     let level = (levelNumeric / 10).toFixed(1); // https://stackoverflow.com/questions/42619191/what-does-level-mean-in-ffprobe-output
     if (parseFloat(level) >= 0) {
-      if (level.slice(-2) === '.0') level = level.slice(0, -2); // slice off .0
+      if (level.endsWith('.0')) level = level.slice(0, -2); // slice off .0
       const validLevels = ['1', '1b', '1.1', '1.2', '1.3', '2', '2.1', '2.2', '3', '3.1', '3.2', '4', '4.1', '4.2', '5', '5.1', '5.2', '6', '6.1', '6.2']; // https://en.wikipedia.org/wiki/Advanced_Video_Coding#Levels
       if (validLevels.includes(level)) return level;
     }
@@ -20,7 +20,7 @@ export function parseLevel(videoStream: FFprobeStream) {
     // Note that on MacOS we don't use x265, but videotoolbox
     let level = (levelNumeric / 30).toFixed(1); // https://stackoverflow.com/questions/69983131/whats-the-difference-between-ffprobe-level-and-h-264-level
     if (parseFloat(level) >= 0) {
-      if (level.slice(-2) === '.0') level = level.slice(0, -2); // slice off .0
+      if (level.endsWith('.0')) level = level.slice(0, -2); // slice off .0
       const validLevels = ['1', '2', '2.1', '3', '3.1', '4', '4.1', '5', '5.1', '5.2', '6', '6.1', '6.2']; // https://en.wikipedia.org/wiki/High_Efficiency_Video_Coding_tiers_and_levels
       if (validLevels.includes(level)) return level;
     }

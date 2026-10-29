@@ -184,8 +184,8 @@ export function filenamify(name: string) {
   return name.replaceAll(/[^\p{L}\p{N} ._-]/gu, '_');
 }
 
-// eslint-disable-next-line space-before-function-paren
-export function withBlur<T extends { target?: { blur?: () => unknown } | object }>(cb: (a: T) => void) {
+// eslint-disable-next-line @stylistic/space-before-function-paren
+export function withBlur<T extends { target?: object | { blur?: () => unknown } }>(cb: (a: T) => void) {
   return (e: T) => {
     cb(e);
     if (e.target && 'blur' in e.target) e.target?.blur?.();
@@ -322,6 +322,7 @@ export const isMuxNotSupported = (err: InvariantExecaError) => (
 export function shuffleArray<T>(arrayIn: T[]) {
   const array = [...arrayIn];
   let currentIndex = array.length;
+  // eslint-disable-next-line unicorn-js/prefer-smaller-scope -- TODO fix (new rule in @mifi/lint-config)
   let randomIndex: number;
 
   // While there remain elements to shuffle...
@@ -432,7 +433,7 @@ export const shiftModifiers = new Set(['ShiftLeft', 'ShiftRight']);
 export const controlModifiers = new Set(['ControlLeft', 'ControlRight']);
 export const altModifiers = new Set(['AltLeft', 'AltRight']);
 export const metaModifiers = new Set(['MetaLeft', 'MetaRight']);
-export const allModifiers = new Set([...shiftModifiers, ...controlModifiers, ...altModifiers, ...metaModifiers]);
+export const allModifiers = shiftModifiers.union(controlModifiers).union(altModifiers).union(metaModifiers);
 
 
 export function getMetaKeyName() {

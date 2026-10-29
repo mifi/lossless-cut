@@ -15,8 +15,10 @@ import { execa } from 'execa';
 import clipSources from './featureMedia/clips.ts';
 import musicTracks, { defaultMusic } from './featureMedia/music.ts';
 import scenarios from './featureMedia/scenarios.ts';
-import { renderSocialVideo, type Caption, type Rect, type Zoom } from './featureMedia/socialVideo.ts';
+import { renderSocialVideo } from './featureMedia/socialVideo.ts';
+import type { Caption, Rect, Zoom } from './featureMedia/socialVideo.ts';
 
+// eslint-disable-next-line unicorn-js/no-unreadable-object-destructuring -- TODO fix (new rule in @mifi/lint-config)
 const { values: { clips = 'dist/feature-media-clips', music: musicArg = defaultMusic, scale: scaleArg = '1' }, positionals: [scenarioName] } = parseArgs({ allowPositionals: true, options: { clips: { type: 'string' }, music: { type: 'string' }, scale: { type: 'string' } } });
 const scenario = scenarioName != null ? scenarios[scenarioName] : undefined;
 assert(scenario != null, `Usage: node script/featureMedia.ts <scenario> [--clips dir] [--music track from music.ts, audio file or none] [--scale 2]. Scenarios: ${Object.keys(scenarios).join(', ')}`);
@@ -27,6 +29,7 @@ assert(process.platform === 'linux' && display != null, 'Run under Xvfb on Linux
 const width = 1024;
 const height = 640;
 const scale = Number(scaleArg);
+// eslint-disable-next-line unicorn-js/prefer-number-is-safe-integer -- TODO fix (new rule in @mifi/lint-config)
 assert(Number.isInteger(scale) && scale > 0, `--scale must be a whole number, got ${scaleArg}`);
 const screenWidth = width * scale;
 const screenHeight = height * scale;
@@ -45,6 +48,7 @@ const outDir = 'dist/feature-media';
 await mkdir(outDir, { recursive: true });
 await mkdir(clips, { recursive: true });
 
+// eslint-disable-next-line unicorn-js/prefer-then-catch -- TODO fix (new rule in @mifi/lint-config)
 const exists = async (path: string) => access(path).then(() => true, () => false);
 
 // Writes to a temp file first, so an interrupted download isn't used next time
@@ -122,6 +126,7 @@ const rawVideo = join(configDir, 'raw.mkv');
 try {
   // Wait for the HTTP API
   for (let i = 0; ; i += 1) {
+    // eslint-disable-next-line unicorn-js/prefer-then-catch -- TODO fix (new rule in @mifi/lint-config)
     if (await fetch(`http://127.0.0.1:${port}/`).then(() => true, () => false)) break;
     assert(i < 60 && app.exitCode == null, `LosslessCut did not start, see ${appLog}`);
     await timers.setTimeout(500);

@@ -9,7 +9,7 @@ export default function CloseButton({ type = 'button', ...props }: DetailedHTMLP
   const { t } = useTranslation();
 
   return (
-    // eslint-disable-next-line react/jsx-props-no-spreading, react/button-has-type
+    // eslint-disable-next-line react/button-has-type
     <button type={type} className={styles['close-button']} title={t('Close')} aria-label={t('Close')} {...props}>
       <FaTimes />
     </button>

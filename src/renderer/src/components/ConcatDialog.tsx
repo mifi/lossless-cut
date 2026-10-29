@@ -37,17 +37,8 @@ function Alert({ text }: { text: string }) {
   );
 }
 
+// eslint-disable-next-line unicorn-js/prefer-smaller-scope -- TODO fix (new rule in @mifi/lint-config)
 type ProblemValue = string | number | undefined;
-
-type Problem = {
-  index: number,
-} & ({
-  type: 'extraneous',
-} | {
-  type: 'parameter_mismatch',
-  key: string,
-  values: [ProblemValue, ProblemValue],
-});
 
 function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate: storedMergedFileTemplate, generateMergedFileNames, onConcat, alwaysConcatMultipleFiles, setAlwaysConcatMultipleFiles, fileFormat, setFileFormat, detectedFileFormat, setDetectedFileFormat, onOutputFormatUserChange }: {
   isShown: boolean,
@@ -134,13 +125,22 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate: storedMerged
   }, [allFilesMeta, paths]);
 
   const problemsByFile = useMemo(() => {
+    type Problem = {
+      index: number,
+    } & ({
+      type: 'extraneous',
+    } | {
+      type: 'parameter_mismatch',
+      key: string,
+      values: [ProblemValue, ProblemValue],
+    });
     if (!matchingFilesMeta) return {};
     const allFilesMetaExceptFirstFile = matchingFilesMeta.slice(1);
     const [, firstFileMeta] = matchingFilesMeta[0]!;
     const problems: Record<string, Problem[]> = {};
 
     function addProblem(path: string, error: Problem) {
-      if (!problems[path]) problems[path] = [];
+      problems[path] ??= [];
       problems[path]!.push(error);
     }
 
@@ -209,7 +209,7 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate: storedMerged
       }
       setAllFilesMeta((existing) => ({ ...existing, ...Object.fromEntries(newMetaEntries) }));
       setUniqueSuffix(Date.now());
-    })().catch((err) => {
+    })().catch((err: unknown) => {
       if (err instanceof Error && err.name === 'AbortError') return;
       console.error(err);
     });

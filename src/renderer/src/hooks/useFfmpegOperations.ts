@@ -11,7 +11,8 @@ import { needsSmartCut, getCodecParams } from '../smartcut';
 import { getGuaranteedSegments, isDurationValid } from '../segments';
 import type { FFprobeStream } from '../../../common/ffprobe';
 import type { AvoidNegativeTs, FfmpegHwAccel, Html5ifyMode, PreserveMetadata } from '../../../common/types';
-import { deleteDispositionValue, type AllFilesMeta, type Chapter, type CopyfileStreams, type LiteFFprobeStream, type ParamsByFile, type SegmentToExport } from '../types';
+import { deleteDispositionValue } from '../types';
+import type { AllFilesMeta, Chapter, CopyfileStreams, LiteFFprobeStream, ParamsByFile, SegmentToExport } from '../types';
 import type { LossyMode } from '../../../main';
 import { UserFacingError } from '../../errors';
 import mainApi from '../mainApi';
@@ -83,7 +84,7 @@ function getMatroskaFlags(outFormat: string | undefined) {
 const getChaptersInputArgs = (ffmetadataPath: string | undefined) => (ffmetadataPath ? ['-f', 'ffmetadata', '-i', ffmetadataPath] : []);
 
 async function tryDeleteFiles(paths: string[]) {
-  return pMap(paths, (path) => unlinkWithRetry(path).catch((err) => console.error('Failed to delete', path, err)), { concurrency: 5 });
+  return pMap(paths, (path) => unlinkWithRetry(path).catch((err: unknown) => console.error('Failed to delete', path, err)), { concurrency: 5 });
 }
 
 export async function maybeMkDeepOutDir({ outputDir, fileOutPath }: { outputDir: string, fileOutPath: string }) {
@@ -658,7 +659,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
         streamIds: streamsToCopyFromMainFile.filter((stream) => stream.index === videoStream.index || stream.codec_type !== 'video').map((stream) => stream.index),
       }];
 
-      // eslint-disable-next-line no-shadow
+      // eslint-disable-next-line no-shadow, unicorn-js/no-unnecessary-parameters -- TODO fix (new rule in @mifi/lint-config)
       async function cutEncodeSmartPartWrapper({ cutFrom, cutTo, outPath }: { cutFrom: number, cutTo: number, outPath: string }) {
         if (await shouldSkipExistingFile(outPath)) return;
         invariant(videoCodec != null);
@@ -840,6 +841,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     // h264/aac_at: No licensing when using HW encoder (Video/Audio Toolbox on Mac)
     // https://github.com/mifi/lossless-cut/issues/372#issuecomment-810766512
 
+    // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check -- TODO fix (new rule in @mifi/lint-config)
     switch (video) {
       case 'hq': {
         // eslint-disable-next-line unicorn/prefer-ternary
@@ -878,6 +880,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       }
     }
 
+    // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check -- TODO fix (new rule in @mifi/lint-config)
     switch (audio) {
       case 'hq': {
         // eslint-disable-next-line unicorn/prefer-ternary

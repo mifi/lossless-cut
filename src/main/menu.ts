@@ -1,5 +1,5 @@
 import type { BrowserWindow, MenuItem, MenuItemConstructorOptions } from 'electron';
-// eslint-disable-next-line import/no-extraneous-dependencies
+// eslint-disable-next-line import-js/no-extraneous-dependencies
 import electron from 'electron';
 import { t } from 'i18next';
 

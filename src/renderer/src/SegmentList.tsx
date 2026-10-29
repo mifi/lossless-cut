@@ -250,9 +250,7 @@ const Segment = memo(({
       className="segment-list-entry"
     >
       <div
-        // eslint-disable-next-line react/jsx-props-no-spreading
         {...sortable.attributes}
-        // eslint-disable-next-line react/jsx-props-no-spreading
         {...sortable.listeners}
         role="button"
         tabIndex={-1}
