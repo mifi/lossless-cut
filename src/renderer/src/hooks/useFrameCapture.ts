@@ -106,7 +106,7 @@ export default ({ appendFfmpegCommandLog, formatTimecode, treatInputFileModified
     const timecode = formatTimecode({ seconds: time, fileNameFriendly: true });
     const nameSuffix = `${timecode}.${captureFormat}`;
     const outPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix });
-    const args = await ffmpeg.captureFrameToFile({ timestamp: time, videoPath: filePath, outPath, quality });
+    const args = await ffmpeg.captureFrameToFile({ timestamp: time, videoPath: filePath, outPath, quality, captureFormat });
     appendFfmpegCommandLog(args);
 
     await transferTimestamps({ inPath: filePath, outPath, cutFrom: time, cutTo: time, duration: isDurationValid(fileDuration) ? fileDuration : undefined, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart });
