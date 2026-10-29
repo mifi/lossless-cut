@@ -8,6 +8,7 @@
     "dist",
     "out",
     "main-ts-dist",
+    "preload-ts-dist",
     "common-ts-dist",
     "website/dist",
     "website/.wrangler",

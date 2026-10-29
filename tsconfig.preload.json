@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.main.json",
+  "compilerOptions": {
+    "outDir": "preload-ts-dist",
+    "tsBuildInfoFile": "preload-ts-dist/tsconfig.tsbuildinfo",
+
+    // the preload script runs in the renderer's window, with access to Node.js
+    "lib": ["ES2024", "DOM"],
+    "types": ["node"],
+    // bundled by electron-vite, so nothing needs rewriting (and the import of src/main types would otherwise be TS2878)
+    "rewriteRelativeImportExtensions": false,
+  },
+  "references": [
+    { "path": "./tsconfig.main.json" },
+  ],
+  "include": [
+    "src/preload/**/*",
+  ],
+}

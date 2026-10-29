@@ -18,6 +18,7 @@ node_modules
 /ffmpeg
 /app*.log
 /main-ts-dist
+/preload-ts-dist
 /common-ts-dist
 
 tsconfig.*.tsbuildinfo

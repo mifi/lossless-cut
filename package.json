@@ -9,7 +9,7 @@
   "homepage": "./",
   "type": "module",
   "scripts": {
-    "clean": "rimraf dist out common-ts-dist main-ts-dist build-resources icon-build",
+    "clean": "rimraf dist out common-ts-dist main-ts-dist preload-ts-dist build-resources icon-build",
     "start": "electron-vite preview",
     "dev": "electron-vite dev -w",
     "download-ffmpeg-darwin-x64": "node script/downloadFfmpeg.ts darwin-x64",

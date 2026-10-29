@@ -31,10 +31,10 @@ function useIsCtrlHeldRef() {
     window.addEventListener('pointerdown', onEvent, { capture: true });
     window.addEventListener('blur', onBlur);
     return () => {
-      window.removeEventListener('keydown', onEvent, true);
-      window.removeEventListener('keyup', onEvent, true);
-      window.removeEventListener('pointermove', onEvent, true);
-      window.removeEventListener('pointerdown', onEvent, true);
+      window.removeEventListener('keydown', onEvent, { capture: true });
+      window.removeEventListener('keyup', onEvent, { capture: true });
+      window.removeEventListener('pointermove', onEvent, { capture: true });
+      window.removeEventListener('pointerdown', onEvent, { capture: true });
       window.removeEventListener('blur', onBlur);
     };
   }, []);

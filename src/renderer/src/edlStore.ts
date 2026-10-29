@@ -201,11 +201,7 @@ export async function exportEdlFile({ type, cutSegments, customOutDir, filePath,
   } else if (type === 'tsv-human') {
     ext = 'tsv';
     filters = [{ name: i18n.t('TXT files'), extensions: [ext, 'txt'] }];
-  } else if (type === 'csv-human') {
-    ext = 'csv';
-    filters = [{ name: i18n.t('TXT files'), extensions: [ext, 'txt'] }];
-  // eslint-disable-next-line unicorn-js/no-duplicate-if-branches -- TODO fix (new rule in @mifi/lint-config)
-  } else if (type === 'csv-frames') {
+  } else if (type === 'csv-human' || type === 'csv-frames') {
     ext = 'csv';
     filters = [{ name: i18n.t('TXT files'), extensions: [ext, 'txt'] }];
   } else if (type === 'srt') {

@@ -164,15 +164,7 @@ export function getSafeCutTime(frames: Frame[], cutTime: number, nextMode: boole
     return time;
   }
 
-  // eslint-disable-next-line unicorn-js/no-unnecessary-parameters -- TODO fix (new rule in @mifi/lint-config)
-  const findReverseIndex = <T>(arr: T[], cb: (value: T, i: number, obj: T[]) => unknown) => {
-    // eslint-disable-next-line unicorn/no-array-callback-reference, unicorn-js/prefer-array-last-methods -- TODO fix (new rule in @mifi/lint-config)
-    const ret = arr.toReversed().findIndex(cb);
-    if (ret === -1) return -1;
-    return arr.length - 1 - ret;
-  };
-
-  index = findReverseIndex(frames, (f) => f.time <= cutTime + sigma);
+  index = frames.findLastIndex((f) => f.time <= cutTime + sigma);
   if (index === -1) throw new UserFacingError(i18n.t('Failed to find any prev frame'));
   if (index === 0) throw new UserFacingError(i18n.t('We are on the first frame'));
 
@@ -186,7 +178,7 @@ export function getSafeCutTime(frames: Frame[], cutTime: number, nextMode: boole
   }
 
   // We are not on a frame before keyframe, look for preceding keyframe instead
-  index = findReverseIndex(frames, (f) => f.keyframe && f.time <= cutTime + sigma);
+  index = frames.findLastIndex((f) => f.keyframe && f.time <= cutTime + sigma);
   if (index === -1) throw new UserFacingError(i18n.t('Failed to find any prev keyframe'));
   if (index === 0) throw new UserFacingError(i18n.t('We are on the first keyframe'));
 
@@ -430,8 +422,7 @@ export async function renderThumbnails({ filePath, from, duration, onThumbnail, 
   signal: AbortSignal,
 }) {
   const numThumbs = 10;
-  // eslint-disable-next-line unicorn-js/no-array-from-fill -- TODO fix (new rule in @mifi/lint-config)
-  const thumbTimes = Array.from({ length: numThumbs }).fill(undefined).map((_unused, i) => (from + ((duration * i) / numThumbs)));
+  const thumbTimes = Array.from({ length: numThumbs }, (_unused, i) => (from + ((duration * i) / numThumbs)));
   // console.log(thumbTimes);
 
   await pMap(thumbTimes, async (time) => {
@@ -444,8 +435,7 @@ export async function extractWaveform({ filePath, outPath }: { filePath: string,
   const numSegs = 10;
   const duration = 60 * 60;
   const maxLen = 0.1;
-  // eslint-disable-next-line unicorn-js/no-array-from-fill -- TODO fix (new rule in @mifi/lint-config)
-  const segments = Array.from({ length: numSegs }).fill(undefined).map((_unused, i) => [i * (duration / numSegs), Math.min(duration / numSegs, maxLen)] as const);
+  const segments = Array.from({ length: numSegs }, (_unused, i) => [i * (duration / numSegs), Math.min(duration / numSegs, maxLen)] as const);
 
   // https://superuser.com/questions/681885/how-can-i-remove-multiple-segments-from-a-video-using-ffmpeg
   let filter = segments.map(([from, len], i) => `[0:a]atrim=start=${from}:end=${from + len},asetpts=PTS-STARTPTS[a${i}]`).join(';');

@@ -37,7 +37,6 @@ export function setCustomFfPath(path: string | undefined) {
 }
 
 function escapeCliArg(arg: string) {
-  // todo change String(arg) => arg when ts no-implicit-any is turned on
   if (isWindows) {
     // https://github.com/mifi/lossless-cut/issues/2151
     return /[\s"&<>^|]/.test(arg) ? `"${arg.replaceAll('"', '""')}"` : arg;
@@ -290,14 +289,8 @@ export function mapTimesToSegments(times: number[], includeLast: boolean) {
   for (let i = 0; i < times.length; i += 1) {
     const start = times[i];
     const end = times[i + 1];
-    if (start != null) {
-      if (end != null) {
-        segments.push({ start, end });
-      // eslint-disable-next-line unicorn-js/no-duplicate-if-branches -- TODO fix (new rule in @mifi/lint-config)
-      } else if (includeLast) {
-        segments.push({ start, end }); // end undefined is allowed (means until end of video)
-      }
-    }
+    // end undefined is allowed for the last segment (means until end of video)
+    if (start != null && (end != null || includeLast)) segments.push({ start, end });
   }
   return segments;
 }
