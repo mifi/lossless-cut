@@ -9,17 +9,17 @@ Overview, in order:
 4. [Release in Stores](#release-in-stores), some time after the GitHub release, once no serious regressions have been reported, with [store release notes](#store-release-notes).
 5. [After releasing existing GitHub version in Stores](#after-releasing-existing-github-version-in-stores): move the store branch.
 
-The branches `apple-store` and `ms-store` point to the version that's currently live in the Mac App Store and the Microsoft Store. They're for store-only hotfixes: a fix on top of the version that's in a store, without releasing everything that's on `master`.
+The branches `stores/apple` and `stores/microsoft` point to the version that's currently live in the Mac App Store and the Microsoft Store. They're for store-only hotfixes: a fix on top of the version that's in a store, without releasing everything that's on `master`.
 
 ## Prepare and build new version
 
 - `git checkout master`
-- `git merge apple-store ms-store` (in case there's an unmerged store hotfix)
+- `git merge origin/stores/apple origin/stores/microsoft` (in case there's an unmerged store hotfix)
 - **Prepare release notes**: `yarn release-notes` lists the `Changelog:` lines from commits since the last tag (see [AGENTS.md](./AGENTS.md#commits)). Older commits don't have them, so also go through `node script/getCommits.ts`.
 - Create a new file `versions/x.y.z.md` (shown in the app's What's New dialog) and write the most important highlights from the release notes, but **remove github issue #references**. The dialog shows the same text on every platform, store builds too, so leave out niche platform-specific items (keep them in the GitHub release notes); an important one gets a prefix like `(Windows)`.
 - `node script/generateVersions.ts && git add versions/*.md src/renderer/src/versions.json && git commit -m 'Update change log'`
 - *If Store-only hotfix release*
-  - `git checkout apple-store` (or `ms-store`), commit the fix there
+  - `git checkout stores/apple` (or `stores/microsoft`), commit the fix there
   - `npm version patch`
 - *If normal GitHub-first release*
   - `npm version minor && git --no-pager show` (`patch` for a release with only fixes; dropping support for an OS version or architecture is always `minor`)
@@ -41,7 +41,7 @@ The branches `apple-store` and `ms-store` point to the version that's currently 
 
 - *If Store-only hotfix release*
   - `git checkout master`
-  - `git merge apple-store` (or `ms-store`)
+  - `git merge stores/apple` (or `stores/microsoft`)
 - Bump [snap version](https://snapcraft.io/losslesscut/releases)
 - Post the announcement to Discord, X, Bluesky, Mastodon and Instagram (see [Release announcement](#release-announcement))
 
@@ -121,8 +121,8 @@ Tag builds already upload the build to App Store Connect (`(MacOS) Upload to Mac
 Move the store's branch to the tag of the version that was just released there:
 
 ```bash
-git push origin vX.Y.Z^{commit}:apple-store  # Mac App Store
-git push origin vX.Y.Z^{commit}:ms-store     # Microsoft Store
+git push origin vX.Y.Z^{commit}:refs/heads/stores/apple      # Mac App Store
+git push origin vX.Y.Z^{commit}:refs/heads/stores/microsoft  # Microsoft Store
 ```
 
 This fails if the branch has a hotfix that isn't in the tag. Merge the branch into `master` first, see [After releasing in GitHub](#after-releasing-in-github).
@@ -131,7 +131,7 @@ This fails if the branch has a hotfix that isn't in the tag. Merge the branch in
 
 *Written for agents, who draft the text for the user to review.*
 
-The stores lag behind GitHub releases, so their "What's new" text must cover every version since the one currently live in that store. Before drafting, check what's in each store, because the store branches can lag behind: a version can be approved and waiting to be released (Mac App Store: "Pending Developer Release"), or certified and waiting for "Publish now" (Microsoft Store: a pending submission). The script's dry run shows this (`Latest App Store versions`, `Pending submission`). The `apple-store` and `ms-store` branches point to the live version (`git describe --tags origin/apple-store`); if unsure whether they're up to date, ask the user (Mac App Store: App Store Connect; Microsoft Store: Partner Center → the product's current submission → Packages), then combine `versions/*.md` after it up to the version being released. Mac App Store versions have their own numbering (1.x); the GitHub version is that of the build attached to it.
+The stores lag behind GitHub releases, so their "What's new" text must cover every version since the one currently live in that store. Before drafting, check what's in each store, because the store branches can lag behind: a version can be approved and waiting to be released (Mac App Store: "Pending Developer Release"), or certified and waiting for "Publish now" (Microsoft Store: a pending submission). The script's dry run shows this (`Latest App Store versions`, `Pending submission`). The `stores/apple` and `stores/microsoft` branches point to the live version (`git describe --tags origin/stores/apple`); if unsure whether they're up to date, ask the user (Mac App Store: App Store Connect; Microsoft Store: Partner Center → the product's current submission → Packages), then combine `versions/*.md` after it up to the version being released. Mac App Store versions have their own numbering (1.x); the GitHub version is that of the build attached to it.
 
 - Write for customers: lead with the most impactful new features and visible fixes. Leave out internals (dependency/FFmpeg upgrades, security fixes, refactors) and niche power-user details; they're covered by a final "Many other improvements and fixes". The longer since the last store release, the more of the interesting changes can be included.
 - Plain text, no Markdown, code formatting, issue references or links. Use plain-language feature names instead of internal action/variable names.
