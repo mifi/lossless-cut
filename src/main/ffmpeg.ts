@@ -27,6 +27,8 @@ const runningFfmpegs = new Set<{
 }>();
 // setInterval(() => console.log(runningFfmpegs.size), 1000);
 
+// Only the bundled FFmpeg version (see script/downloadFfmpeg.ts) is supported, also when using a custom FFmpeg path.
+// Don't add code for compatibility with older versions. Older versions are not blocked, but may not work correctly.
 let customFfPath: string | undefined;
 
 // Note that this does not work on MAS because of sandbox restrictions

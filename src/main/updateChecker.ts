@@ -1,32 +1,30 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import electron from 'electron';
 import semver from 'semver';
-import { Octokit } from '@octokit/core';
 
+import { getAppLinkUrl } from '../common/websiteUrls.js';
 import logger from './logger.js';
 
 
 const { app } = electron;
 
-const octokit = new Octokit();
-
 
 // eslint-disable-next-line import/prefer-default-export
 export async function checkNewVersion() {
   try {
-    // From API: https://developer.github.com/v3/repos/releases/#get-the-latest-release
-    // View the latest published full release for the repository.
-    // Draft releases and prereleases are not returned by this endpoint.
-
-    const { data } = await octokit.request('GET /repos/{owner}/{repo}/releases/latest', {
-      owner: 'mifi',
-      repo: 'lossless-cut',
+    // Redirects to GitHub's "latest release" API (see websiteUrls.ts), which returns the latest published full release
+    // (not drafts or prereleases): https://docs.github.com/en/rest/releases/releases#get-the-latest-release
+    // Only `tag_name` is used, so if it's ever moved off GitHub, the new endpoint only needs to return that.
+    const response = await fetch(getAppLinkUrl('latest-release'), {
       headers: {
+        accept: 'application/vnd.github+json',
         'X-GitHub-Api-Version': '2022-11-28',
       },
     });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const { tag_name: tagName } = await response.json() as { tag_name: string };
 
-    const newestVersion = data.tag_name.replace(/^v?/, '');
+    const newestVersion = tagName.replace(/^v?/, '');
 
     const currentVersion = app.getVersion();
     // const currentVersion = '3.17.2';

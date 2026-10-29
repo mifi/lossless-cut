@@ -42,11 +42,11 @@ Master language is English and i18n keys are the English strings.
 Because the Weblate PR with translation updates is not merged immediately, your changes made in Weblate will not appear automatically in the nightly build. If you want test new weblate translations you made in the app, you need to:
 1. Download the translation for your language from Weblate: **Files -> Download translation**
 2. Rename the downloaded `.json` file to: `translation.json`
-3. Create a [folder structure](https://github.com/mifi/lossless-cut/tree/master/src/main/locales) somewhere on your computer that looks like this:
+3. Create a [folder structure](https://github.com/mifi/lossless-cut/tree/master/locales) somewhere on your computer that looks like this:
 ```
 translations/locales/localeCode
 ```
-You can find a list of the available [`localeCode`s here](https://github.com/mifi/lossless-cut/tree/master/src/main/locales). In our example we will use `nb_NO` (Norwegian 🇳🇴) with this path:
+You can find a list of the available [`localeCode`s here](https://github.com/mifi/lossless-cut/tree/master/locales). In our example we will use `nb_NO` (Norwegian 🇳🇴) with this path:
 ```
 /Users/mifi/Desktop/translations/locales/nb_NO
 ```

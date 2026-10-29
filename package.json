@@ -1,9 +1,10 @@
 {
   "name": "lossless-cut",
   "productName": "LosslessCut",
+  "desktopName": "losslesscut.desktop",
   "description": "The swiss army knife of lossless video/audio editing",
   "copyright": "Copyright © 2026 ${author}",
-  "version": "3.69.0",
+  "version": "3.70.2",
   "main": "./out/main/index.js",
   "homepage": "./",
   "type": "module",
@@ -14,6 +15,7 @@
     "download-ffmpeg-darwin-x64": "node script/downloadFfmpeg.ts darwin-x64",
     "download-ffmpeg-darwin-arm64": "node script/downloadFfmpeg.ts darwin-arm64",
     "download-ffmpeg-linux-x64": "node script/downloadFfmpeg.ts linux-x64",
+    "download-ffmpeg-linux-arm64": "node script/downloadFfmpeg.ts linux-arm64",
     "download-ffmpeg-win32-x64": "node script/downloadFfmpeg.ts win32-x64",
     "download-ffmpeg-win32-arm64": "node script/downloadFfmpeg.ts win32-arm64",
     "build": "yarn generate-icon && electron-vite build",
@@ -90,7 +92,7 @@
     "csv-parse": "^7.0.2",
     "csv-stringify": "^6.7.0",
     "data-uri-to-buffer": "^8.0.0",
-    "electron": "^42.10.0",
+    "electron": "^42.11.15",
     "electron-builder": "26.16.1",
     "electron-vite": "^5.0.0",
     "eslint": "^8.57.1",
@@ -134,13 +136,12 @@
     "typescript": "~6.0.3",
     "use-debounce": "^10.1.1",
     "use-trace-update": "^1.3.3",
-    "vite": "7.3.5",
+    "vite": "7.3.7",
     "vitest": "^4.1.11",
     "yargs": "^18.0.0"
   },
   "dependencies": {
     "@electron/remote": "^2.1.3",
-    "@octokit/core": "7.0.6",
     "cue-parser": "^0.3.0",
     "electron-devtools-installer": "^4.0.0",
     "electron-store": "5.1.1",
@@ -181,6 +182,7 @@
       "onlyLoadAppFromAsar": true
     },
     "appId": "no.mifi.losslesscut",
+    "afterPack": "./script/afterPack.ts",
     "artifactName": "${productName}-${os}-${arch}.${ext}",
     "extraResources": [
       {
@@ -321,6 +323,7 @@
         }
       ],
       "extendInfo": {
+        "ITSAppUsesNonExemptEncryption": false,
         "UTExportedTypeDeclarations": [
           {
             "UTTypeIdentifier": "no.mifi.losslesscut.project",
@@ -351,22 +354,8 @@
     },
     "win": {
       "target": [
-        {
-          "arch": "x64",
-          "target": "7z"
-        },
-        {
-          "arch": "x64",
-          "target": "appx"
-        },
-        {
-          "arch": "arm64",
-          "target": "7z"
-        },
-        {
-          "arch": "arm64",
-          "target": "appx"
-        }
+        "7z",
+        "appx"
       ],
       "extraResources": [
         {

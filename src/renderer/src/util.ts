@@ -13,8 +13,8 @@ import { appName } from '../../main/common';
 import type { EnableImportChapters, Html5ifyMode } from '../../common/types';
 import { UserFacingError } from '../errors';
 import type { FFprobeFormat } from '../../common/ffprobe';
+import { dirname, parse as parsePath, join, extname, isAbsolute, resolve, basename } from './util/path';
 
-const { dirname, parse: parsePath, join, extname, isAbsolute, resolve, basename } = window.require('node:path');
 const { stat, lstat, readdir, utimes, unlink, open, access, constants: { R_OK, W_OK } } = window.require('node:fs/promises');
 const remote = window.require('@electron/remote');
 const { app } = remote;

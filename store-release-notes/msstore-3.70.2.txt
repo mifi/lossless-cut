@@ -1,0 +1,19 @@
+- Lossless cropping and aspect ratio change, without re-encoding
+- Theme setting: follow Windows, or always dark or light
+- Metadata editor: copy metadata from another track or file, apply a value to all tracks of the same type, and suggestions for common tags, language codes and keys
+- Edited tracks and files are highlighted, and changes can be reset per track, per file or all at once
+- Shift the timing of each file's tracks
+- New tool to keep only the keyframes of a video
+- Hardware acceleration setting for some operations
+- Keyboard shortcuts are shown in button tooltips
+- A warning when cutting with too few keyframes near a cut point
+- New output folder selector
+- Choose whether to import chapters when opening a file: always, never or ask
+- Chapters are kept when merging files that already have them
+- Escape now leaves a text field, so keyboard shortcuts work again
+- Fixed keyframe cuts in MKV and WebM files sometimes starting at the previous keyframe
+- Fixed wrong duration when cutting files with cover art
+- Fixed extracting attachments showing an error even though they were extracted
+- Norwegian Bokmål language
+- Changed: scrolling up now always zooms in
+- Many other improvements and fixes

@@ -23,6 +23,7 @@ Run one of the below commands:
 yarn download-ffmpeg-darwin-x64
 yarn download-ffmpeg-darwin-arm64
 yarn download-ffmpeg-linux-x64
+yarn download-ffmpeg-linux-arm64
 yarn download-ffmpeg-win32-x64
 yarn download-ffmpeg-win32-arm64
 ```
@@ -84,56 +85,7 @@ Windows store version is built as a Desktop Bridge app (with `runFullTrust` capa
 
 ## Releasing
 
-Before releasing, consider [Maintainence chores](#maintainence-chores) first.
-
-### Prepare and build new version
-
-- `git checkout master`
-- `git merge stores` (in case there's an old unmerged stores hotfix)
-- **Manually prepare release notes** from commit history (use `node script/getCommits.ts` to assist)
-- Create a new file `versions/x.y.z.md` and write the most important highlights from the release notes, but **remove github issue #references**
-- `node script/generateVersions.ts && git add versions/*.md src/renderer/src/versions.json && git commit -m 'Update change log'`
-- *If Store-only hotfix release*
-  - `git checkout stores`
-  - `npm version patch`
-- *If normal GitHub-first release*
-  - `npm version minor && git --no-pager show`
-- `git push --follow-tags`
-- Wait for build and draft in Github actions
-
-### Release built version
-
-- Open draft in github and add the prepared release notes
-- *If GitHub release*
-  - Release the draft
-- *If Store-only hotfix release*
-  - Remove all other artifacts and release the draft as **pre-release**
-
-#### After releasing in GitHub
-
-- *If Stores-only hotfix release*
-  - `git checkout master`
-  - `git merge stores`
-- Bump [snap version](https://snapcraft.io/losslesscut/releases)
-- Copy paste release notes and post to discord & twitter and re-tweet
-
-### After releasing existing GitHub version in Stores
-
-- `git checkout stores`
-- Find the tag just released in the Stores
-- Merge this tag (from `master`) into `stores`: `git merge vX.Y.Z`
-- `git push`
-- `git checkout master`
-
-### More info
-
-For per-platform build/signing setup, see [this article](https://mifi.no/blog/automated-electron-build-with-release-to-mac-app-store-microsoft-store-snapcraft/).
-
-### Yearly Apple certificate renewal
-
-Apple sends an email when certificates are about to expire. Follow the "Certificate creation/renewal" section of [the article above](https://mifi.no/blog/automated-electron-build-with-release-to-mac-app-store-microsoft-store-snapcraft/). LosslessCut specifics:
-
-- The Development provisioning profile is kept in the project root as `LosslessCut_Dev.provisionprofile` (gitignored) — replace it with the newly downloaded one, for use with `yarn pack-mas-dev`.
+See [RELEASING.md](./RELEASING.md).
 
 ## Minimum OS version
 
@@ -158,7 +110,7 @@ Links:
 - https://bignerdranch.com/blog/requiring-a-minimum-version-of-os-x-for-your-application/
 - [#1386](https://github.com/mifi/lossless-cut/issues/1386)
 
-## Maintainence chores
+## Maintenance chores
 
 ### Upgrade FFmpeg
 
@@ -174,6 +126,8 @@ Use the newest stable release branch that all platforms can get (BtbN may lag be
 
 - `electron` and upgrade [electron.vite.config.ts](./electron.vite.config.ts) `target`s.
 - `@electron/remote`
+
+For every Electron or other dependency upgrade (especially major versions), go through its changelog / breaking changes (for Electron: [breaking changes](https://github.com/electron/electron/blob/main/docs/breaking-changes.md) and the [release notes](https://releases.electronjs.org/)) and check the APIs and behaviours LosslessCut relies on, like we do for [FFmpeg](#upgrade-ffmpeg).
 
 ### Keep dependencies up to date
 
@@ -211,13 +165,9 @@ Find the [latest PR](https://github.com/mifi/lossless-cut/pulls) from Weblate an
 
 **Warning:** Do not squash and merge (see [here why](docs/translation.md#weblate))!
 
-### Regenerate licenses file
+### Licenses file
 
-```bash
-yarn generate-licenses
-#cp licenses.txt losslesscut.mifi.no/public/
-```
-Then deploy.
+`licenses.txt` (the licenses of the app's dependencies, linked from the app's Help menu) is generated and uploaded to each GitHub release by the release build (`.github/workflows/build.yml`). To look at it locally: `yarn generate-licenses`.
 
 ### Dependabot
 

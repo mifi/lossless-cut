@@ -1,0 +1,54 @@
+# Runs script/storeRelease.ts, see RELEASING.md → "Release in Stores"
+name: Store release
+
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        type: choice
+        description: Command
+        options: [mas, msstore, msstore-rollout]
+      version:
+        type: string
+        description: Version (e.g. 3.71.0), or for msstore-rollout a percentage or "next"
+        required: true
+      submit:
+        type: boolean
+        description: Apply and submit (otherwise a dry run)
+        default: false
+  schedule:
+    # Increase the Microsoft Store gradual rollout one step each day (does nothing when no rollout is in progress)
+    - cron: '0 8 * * *'
+
+concurrency: store-release
+
+permissions:
+  contents: read
+
+jobs:
+  store-release:
+    if: github.repository == 'mifi/lossless-cut'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: 'yarn'
+
+      - run: yarn install --immutable --network-timeout 1000000
+
+      - name: Run
+        env:
+          ASC_KEY: ${{ secrets.api_key }}
+          ASC_KEY_ID: ${{ secrets.api_key_id }}
+          ASC_ISSUER_ID: ${{ secrets.api_key_issuer_id }}
+          MSSTORE_TENANT_ID: ${{ secrets.MSSTORE_TENANT_ID }}
+          MSSTORE_CLIENT_ID: ${{ secrets.MSSTORE_CLIENT_ID }}
+          MSSTORE_CLIENT_SECRET: ${{ secrets.MSSTORE_CLIENT_SECRET }}
+          COMMAND: ${{ github.event_name == 'schedule' && 'msstore-rollout' || inputs.command }}
+          VERSION: ${{ github.event_name == 'schedule' && 'next' || inputs.version }}
+          SUBMIT: ${{ (github.event_name == 'schedule' || inputs.submit) && '--submit' || '' }}
+        run: node script/storeRelease.ts "$COMMAND" "$VERSION" $SUBMIT
