@@ -8,7 +8,7 @@ import invariant from 'tiny-invariant';
 import z from 'zod';
 
 import { pcmAudioCodecs, isMov } from './util/streams';
-import { isExecaError } from './util';
+import { decodeText, isExecaError, safeCreateBlob } from './util';
 import { isDurationValid } from './segments';
 import type { FFprobeChapter, FFprobeFormat, FFprobeProbeResult, FFprobeStream } from '../../common/ffprobe';
 import { parseSrt, parseSrtToSegments } from './edlFormats';
@@ -31,23 +31,14 @@ export class RefuseOverwriteError extends Error {
   }
 }
 
-export function safeCreateBlob(array: Uint8Array, options?: BlobPropertyBag) {
-  // if we don't do this when creating a Blob, we get:
-  // "Failed to construct 'Blob': The provided ArrayBufferView value must not be resizable."
-  // maybe when moving away from @electron/remote, it's not needed anymore?
-  // https://stackoverflow.com/a/25255750/6519037
-  const cloned = new Uint8Array(array);
-  return new Blob([cloned], options);
-}
-
 export function logStdoutStderr({ stdout, stderr }: { stdout: Uint8Array, stderr: Uint8Array }) {
   if (stdout.length > 0) {
     console.log('%cSTDOUT:', 'color: green; font-weight: bold');
-    console.log(new TextDecoder().decode(stdout));
+    console.log(decodeText(stdout));
   }
   if (stderr.length > 0) {
     console.log('%cSTDERR:', 'color: blue; font-weight: bold');
-    console.log(new TextDecoder().decode(stderr));
+    console.log(decodeText(stderr));
   }
 }
 
@@ -82,7 +73,7 @@ export async function readFrames({ filePath, from, to, streamIndex }: {
   const intervalsArgs = from != null && to != null ? ['-read_intervals', `${from}%${to}`] : [];
   const { stdout } = await runFfprobe(['-v', 'error', ...intervalsArgs, '-show_packets', '-select_streams', String(streamIndex), '-show_entries', 'packet=pts_time,flags', '-of', 'json', filePath], { logCli: false });
   const createdAt = new Date();
-  const packetsFiltered: Frame[] = (JSON.parse(new TextDecoder().decode(stdout)).packets as { flags: string, pts_time: string }[])
+  const packetsFiltered: Frame[] = (JSON.parse(decodeText(stdout)).packets as { flags: string, pts_time: string }[])
     .map((p) => ({
       keyframe: p.flags[0] === 'K',
       time: parseFloat(p.pts_time),
@@ -336,7 +327,7 @@ export async function readFileFfprobeMeta(filePath: string) {
     let decoded: string | undefined;
     try {
       // https://github.com/mifi/lossless-cut/issues/1342
-      decoded = new TextDecoder().decode(stdout);
+      decoded = decodeText(stdout);
       parsedJson = JSON.parse(decoded);
     } catch {
       console.log('ffprobe stdout:', decoded ?? stdout);
@@ -390,7 +381,7 @@ export async function extractSubtitleTrack(filePath: string, streamId: number) {
   ];
 
   const { stdout } = await runFfmpeg(args);
-  return new TextDecoder().decode(stdout);
+  return decodeText(stdout);
 }
 
 export async function extractSubtitleTrackToSegments(filePath: string, streamId: number) {
@@ -556,9 +547,9 @@ export async function runFfmpegStartupCheck() {
 
   // will throw if exit code != 0
   const { stderr: ffmpegStderr } = await runFfmpeg(['-f', 'lavfi', '-i', 'nullsrc=s=256x256:d=1', '-f', 'null', '-']);
-  console.log('FFmpeg startup check output:', new TextDecoder().decode(ffmpegStderr));
+  console.log('FFmpeg startup check output:', decodeText(ffmpegStderr));
   const { stdout: ffprobeStout } = await runFfprobe(['-v', '0', '-of', 'json', '-show_program_version']);
-  return ffprobeVersionSchema.parse(JSON.parse(new TextDecoder().decode(ffprobeStout)));
+  return ffprobeVersionSchema.parse(JSON.parse(decodeText(ffprobeStout)));
 }
 
 // https://superuser.com/questions/543589/information-about-ffmpeg-command-line-options
