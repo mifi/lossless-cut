@@ -1,0 +1,161 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "extends": [
+    "./node_modules/@mifi/lint-config/oxlintrc.json"
+  ],
+  "ignorePatterns": [
+    ".yarn",
+    "dist",
+    "out",
+    "main-ts-dist",
+    "preload-ts-dist",
+    "common-ts-dist",
+    "website/dist",
+    "website/.wrangler",
+    "website/.astro",
+    "**/*.astro"
+  ],
+  "settings": {
+    "react": {
+      "version": "19"
+    }
+  },
+  "rules": {
+    "jsx-a11y/click-events-have-key-events": "off",
+    "jsx-a11y/interactive-supports-focus": "off",
+    "jsx-a11y/control-has-associated-label": "off",
+    "@stylistic/function-call-spacing": "off",
+    // Express 5 forwards rejected promises to the error handler
+    "oxc/no-async-endpoint-handlers": "off",
+    // TODO stage 2 rules from @mifi/lint-config with many findings here (count in parentheses), turned off until fixed
+    "unicorn-js/consistent-boolean-name": "off", // (95)
+    "react/exhaustive-effect-dependencies": "off", // (81)
+    "typescript/promise-function-async": "off", // (50)
+    "react/only-export-components": "off", // (48)
+    "no-implicit-coercion": "off", // (25)
+    "unicorn/consistent-function-scoping": "off", // (23)
+    "promise/prefer-await-to-then": "off", // (13)
+    "vitest/prefer-expect-resolves": "off", // (7)
+    "jsx-a11y/prefer-tag-over-role": "off", // (60)
+    "react/hooks": "off", // (32)
+    "react/memo-dependencies": "off", // (20)
+    "unicorn/prefer-number-coercion": "off", // (95)
+    "unicorn-js/prefer-minimal-ternary": "off", // (19)
+    "unicorn-js/prefer-simple-condition-first": "off", // (17)
+    "unicorn-js/no-asterisk-prefix-in-documentation-comments": "off", // (152)
+    "unicorn-js/prefer-combined-guards": "off", // (19)
+    "unicorn-js/prefer-early-return": "off", // (26)
+    "unicorn-js/no-negated-array-predicate": "off", // (7)
+    "unicorn-js/single-line-block-comment-style": "off", // (37)
+    "unicorn/max-nested-calls": "off", // (22)
+    "unicorn-js/no-declarations-before-early-exit": "off", // (15)
+    "unicorn/consistent-assert": "off", // (56)
+    "unicorn-js/no-top-level-assignment-in-function": "off", // (25)
+    "unicorn-js/prefer-continue": "off", // (6)
+    "unicorn-js/prefer-split-limit": "off", // (7)
+    "unicorn-js/no-unnecessary-array-flat-map": "off", // (20)
+    "unicorn-js/consistent-conditional-object-spread": "off", // (6)
+    "unicorn-js/prefer-await": "off", // (14)
+    "unicorn-js/no-computed-property-existence-check": "off", // (15)
+    "unicorn-js/no-useless-concat": "off", // (11)
+    "typescript/prefer-nullish-coalescing": "off", // (33)
+    "typescript/strict-boolean-expressions": "off", // (275)
+    "typescript/no-unsafe-assignment": "off", // (69)
+    "typescript/no-confusing-void-expression": "off", // (396)
+    "typescript/no-unnecessary-condition": "off", // (97)
+    "typescript/no-unsafe-member-access": "off", // (54)
+    "typescript/no-unsafe-return": "off", // (11)
+    "typescript/restrict-template-expressions": "off", // (18)
+    "typescript/no-unsafe-argument": "off", // (33)
+    "typescript/unbound-method": "off", // (8)
+    "typescript/no-duplicate-type-constituents": "off", // (11)
+    "typescript/no-floating-promises": "off", // (116)
+    "typescript/no-unnecessary-type-assertion": "off", // (7)
+    "typescript/no-unnecessary-type-conversion": "off", // (9)
+    "typescript/prefer-optional-chain": "off", // (17)
+    "typescript/no-redundant-type-constituents": "off", // (8)
+    "typescript/prefer-regexp-exec": "off", // (20)
+    "typescript/require-await": "off", // (19)
+    "typescript/no-misused-promises": "off", // (121)
+    "typescript/no-unnecessary-boolean-literal-compare": "off", // (7)
+    "@eslint-react/use-state": "off", // (87)
+    "@eslint-react/no-forward-ref": "off", // (7)
+    "vitest/prefer-snapshot-hint": "off", // (11)
+    "oxc/no-map-spread": "off", // (8)
+    // TODO remove the type assertions (58), then use the shared config's assertionStyle: never
+    "@typescript-eslint/consistent-type-assertions": [
+      "error",
+      {
+        "assertionStyle": "as"
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "src/renderer/**"
+      ],
+      "env": {
+        "node": false,
+        "browser": true
+      },
+      "rules": {
+        "no-console": "off",
+        "import-js/no-extraneous-dependencies": "off",
+        "unicorn/prefer-global-this": "off",
+        "import/extensions": "off"
+      }
+    },
+    {
+      "files": [
+        "src/preload/**"
+      ],
+      "env": {
+        "browser": true
+      },
+      "rules": {
+        "no-console": "off",
+        "import-js/no-extraneous-dependencies": "off",
+        "unicorn/prefer-global-this": "off"
+      }
+    },
+    {
+      "files": [
+        "script/**",
+        "website/**",
+        "electron.vite.config.ts",
+        "vitest.config.ts"
+      ],
+      "rules": {
+        "import-js/no-extraneous-dependencies": [
+          "error",
+          {
+            "devDependencies": true,
+            "optionalDependencies": false
+          }
+        ],
+        "no-console": "off"
+      }
+    },
+    {
+      "files": [
+        "src/renderer/src/util/rate-calculator.ts",
+        "src/renderer/src/util/rate-calculator.test.ts",
+        "src/main/pathToFileURL.test.ts"
+      ],
+      "rules": {
+        "unicorn/filename-case": "off"
+      }
+    },
+    {
+      "files": [
+        "src/renderer/src/App.tsx"
+      ],
+      "rules": {
+        "react-hooks/refs": "off",
+        "react-hooks/immutability": "off",
+        "react-hooks/preserve-manual-memoization": "off"
+      }
+    }
+  ]
+}

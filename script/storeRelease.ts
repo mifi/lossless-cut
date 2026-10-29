@@ -402,6 +402,7 @@ async function msstoreRollout(percentArg: string) {
 
 const version = String(args['version']);
 assert(store === 'msstore-rollout' || /^\d+\.\d+\.\d+$/.test(version), `Invalid version ${version}`);
+// eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check -- TODO fix (new rule in @mifi/lint-config)
 switch (store) {
   case 'mas': { await mas(version); break; }
   case 'msstore': { await msstore(version); break; }

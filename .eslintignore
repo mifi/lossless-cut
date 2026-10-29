@@ -1,7 +1,0 @@
-/dist
-/out
-/main-ts-dist
-/common-ts-dist
-/website/dist
-/website/.wrangler
-/website/.astro

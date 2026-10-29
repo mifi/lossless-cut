@@ -1,4 +1,4 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
+// eslint-disable-next-line import-js/no-extraneous-dependencies
 import { defineConfig } from 'i18next-cli';
 
 import configBase from './i18next.config.base.js';

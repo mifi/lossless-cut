@@ -7,6 +7,7 @@ import ky from 'ky';
 import pMap from 'p-map';
 
 import { formatDuration } from '../util/duration';
+import { dirname } from '../util/path';
 import { parseRatio } from '../../../common/util';
 import { parseYouTube } from '../edlFormats';
 import { appPath, isMasBuild, isStoreBuild, isWindows, isWindowsStoreBuild, testFailFsOperation, trashFile, unlinkWithRetry } from '../util';
@@ -17,18 +18,39 @@ import getSwal from '../swal';
 import isDev from '../isDev';
 import mainApi from '../mainApi';
 
-const { lstat } = window.require('node:fs/promises');
-const { dialog } = window.require('@electron/remote');
+const { lstat, stat } = window.require('node:fs/promises');
+const remote = window.require('@electron/remote');
+const { dialog } = remote;
+const { configStore } = remote.require('./index.js');
 
+
+// Without a defaultPath, Electron (since v43) opens dialogs in Downloads, and the OS no longer remembers the last used folder, so we remember it ourselves
+async function getLastDialogDir() {
+  const dir = configStore.get('lastDialogDir');
+  // A missing folder would end up in the file name box on Windows
+  if (dir == null || !(await stat(dir).then((stats) => stats.isDirectory()).catch(() => false))) return undefined;
+  return dir;
+}
 
 // https://github.com/mifi/lossless-cut/issues/1495
 export const showOpenDialog = async ({
   filters = isWindows ? [{ name: i18n.t('All Files'), extensions: ['*'] }] : undefined,
   title,
+  defaultPath,
   ...props
-}: Omit<Parameters<typeof dialog.showOpenDialog>[0], 'title'> & { title: string }) => (
-  dialog.showOpenDialog({ ...props, title, ...(filters != null ? { filters } : {}) })
-);
+}: Omit<Parameters<typeof dialog.showOpenDialog>[0], 'title'> & { title: string }) => {
+  const effectiveDefaultPath = defaultPath || await getLastDialogDir();
+  const result = await dialog.showOpenDialog({ ...props, title, ...(effectiveDefaultPath != null && { defaultPath: effectiveDefaultPath }), ...(filters != null ? { filters } : {}) });
+  const [firstPath] = result.filePaths;
+  if (!result.canceled && firstPath != null) {
+    try {
+      configStore.set('lastDialogDir', dirname(firstPath));
+    } catch (err) {
+      console.error('Failed to save last dialog folder', err);
+    }
+  }
+  return result;
+};
 
 export async function askForYouTubeInput({ fileDuration }: { fileDuration?: number | undefined }) {
   const example = i18n.t('YouTube video description\n00:00 Intro\n00:01 Chapter 2\n00:00:02.123 Chapter 3');
@@ -549,7 +571,7 @@ export async function promptDownloadMediaUrl(outPath: string) {
 export async function deleteFiles({ paths, deleteIfTrashFails, signal }: { paths: string[], deleteIfTrashFails?: boolean | undefined, signal: AbortSignal }) {
   const failedToTrashFiles: string[] = [];
 
-  // eslint-disable-next-line no-restricted-syntax
+  // eslint-disable-next-line eslint-js/no-restricted-syntax
   for (const path of paths) {
     try {
       if (testFailFsOperation) throw new Error('test trash failure');
@@ -590,7 +612,7 @@ export async function checkAppPath() {
     const forceCheckMs = false;
     const forceCheckTitle = false;
     // this code is purposefully obfuscated to try to detect the most basic cloned app submissions to the MS Store
-    // eslint-disable-next-line no-useless-concat, one-var, one-var-declaration-per-line
+    // eslint-disable-next-line no-useless-concat, one-var, @stylistic/one-var-declaration-per-line
     const mf = 'mi' + 'fi.no', ap = 'Los' + 'slessC' + 'ut';
     let payload: string | undefined;
     if (isWindowsStoreBuild || (isDev && forceCheckMs)) {

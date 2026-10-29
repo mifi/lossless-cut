@@ -287,7 +287,7 @@ export type FFprobeStreamTags = {
 
   // https://github.com/mifi/lossless-cut/issues/1530
   title?: string,
-} & Record<string, string>
+} & Record<string, string>;
 
 /**
  * An FFprobe response stream object
@@ -682,7 +682,7 @@ export type FFprobeFormatTags = {
    * The song's publisher (only present in audio files)
    */
   PUBLISHER?: string
-} & Record<string, string>
+} & Record<string, string>;
 
 /**
  * An FFprobe response format object

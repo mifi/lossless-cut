@@ -15,7 +15,6 @@ export default function Kbd({ code, ...props }: { code: string } & HTMLAttribute
   }
 
   return (
-    // eslint-disable-next-line react/jsx-props-no-spreading
     <kbd {...props}>{keyName}</kbd>
   );
 }

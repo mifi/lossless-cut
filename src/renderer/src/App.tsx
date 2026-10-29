@@ -134,7 +134,7 @@ const { hasDisabledNetworking, pathToFileURL, lossyMode, isLinux } = window.requ
 
 const hevcPlaybackSupportedPromise = doesPlayerSupportHevcPlayback();
 // eslint-disable-next-line unicorn/prefer-top-level-await
-hevcPlaybackSupportedPromise.catch((err) => console.error(err));
+hevcPlaybackSupportedPromise.catch((err: unknown) => console.error(err));
 
 function emitEvent(appEvent: AppEvent) {
   ipcRenderer.send('appEvent', appEvent satisfies AppEvent);
@@ -249,6 +249,7 @@ function App() {
     }
   }, [detectedFileFormat, outFormatLocked, setFileFormat, setOutFormatLocked]);
 
+  // eslint-disable-next-line @eslint-react/naming-convention-ref-name -- TODO fix (new rule in @mifi/lint-config)
   const previousPlaybackVolume = useRef(playbackVolume);
   const toggleMuted = useCallback(() => {
     setPlaybackVolume((volume) => {
@@ -551,7 +552,7 @@ function App() {
   const toggleWaveformMode = useCallback(() => {
     if (forceBigWaveform) return;
 
-    // eslint-disable-next-line unicorn/prefer-switch
+    // eslint-disable-next-line unicorn-js/prefer-switch
     if (waveformModePreference === 'waveform') {
       setWaveformMode('big-waveform');
     } else if (waveformModePreference === 'big-waveform') {
@@ -1356,7 +1357,7 @@ function App() {
         setProgress(totalProgress / segments.length);
       };
 
-      // eslint-disable-next-line no-restricted-syntax
+      // eslint-disable-next-line eslint-js/no-restricted-syntax
       for (const [index, segment] of segments.entries()) {
         const { start, end } = segment;
         invariant(filePath != null);
@@ -1588,8 +1589,7 @@ function App() {
     // Open .llc AND media referenced within
     if (isLlcProject) {
       console.log('Loading LLC project', path);
-      const project = await loadLlcProject(path);
-      const { mediaFileName } = project;
+      const { mediaFileName } = await loadLlcProject(path);
 
       console.log({ mediaFileName });
       if (!mediaFileName) return;
@@ -2093,9 +2093,9 @@ function App() {
       selectSegmentsAtCursor,
       increaseRotation,
       goToTimecode: () => goToTimecode(),
-      seekBackwards: () => seekRelAccelerated(-1 * keyboardNormalSeekSpeed),
-      seekBackwards2: () => seekRelAccelerated(-1 * keyboardSeekSpeed2),
-      seekBackwards3: () => seekRelAccelerated(-1 * keyboardSeekSpeed3),
+      seekBackwards: () => seekRelAccelerated(-keyboardNormalSeekSpeed),
+      seekBackwards2: () => seekRelAccelerated(-keyboardSeekSpeed2),
+      seekBackwards3: () => seekRelAccelerated(-keyboardSeekSpeed3),
       seekForwards: () => seekRelAccelerated(keyboardNormalSeekSpeed),
       seekForwards2: () => seekRelAccelerated(keyboardSeekSpeed2),
       seekForwards3: () => seekRelAccelerated(keyboardSeekSpeed3),
@@ -2534,9 +2534,9 @@ function App() {
   return (
     <Theme appearance={darkMode ? 'dark' : 'light'} accentColor="cyan">
       <MotionConfig reducedMotion={reducedMotion}>
-        <AppContext.Provider value={appContext}>
-          <SegColorsContext.Provider value={segColorsContext}>
-            <UserSettingsContext.Provider value={userSettingsContext}>
+        <AppContext value={appContext}>
+          <SegColorsContext value={segColorsContext}>
+            <UserSettingsContext value={userSettingsContext}>
               <div className={rootClass} style={rootStyle} id="app-root">
                 <TopMenu
                   filePath={filePath}
@@ -2878,9 +2878,9 @@ function App() {
               </div>
 
               <SwalContainer darkMode={darkMode} style={baseColorStyle} />
-            </UserSettingsContext.Provider>
-          </SegColorsContext.Provider>
-        </AppContext.Provider>
+            </UserSettingsContext>
+          </SegColorsContext>
+        </AppContext>
       </MotionConfig>
     </Theme>
   );

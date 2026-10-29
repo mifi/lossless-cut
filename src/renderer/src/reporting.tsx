@@ -12,7 +12,6 @@ const { platform, arch } = remote.require('./index.js');
 
 
 // This cannot be a radix dialog, because it needs to be called even if the React tree is broken.
-// eslint-disable-next-line import/prefer-default-export
 export function openSendReportDialog({ err, message, state }: {
   err?: unknown | undefined,
   message?: string,
@@ -37,6 +36,7 @@ export function openSendReportDialog({ err, message, state }: {
 
   const errorText = (() => {
     if (err == null) return 'No error occurred.';
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string -- err can be anything
     return err instanceof Error ? err.stack : String(err);
   })();
 

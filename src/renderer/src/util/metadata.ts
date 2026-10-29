@@ -93,7 +93,7 @@ export function getLanguageSuggestions(uiLanguage: string): Suggestion[] {
   }
   return languages
     .map(([value, bcp47]) => ({ value, label: `${displayNames?.of(bcp47) ?? value} (${value})` }))
-    .sort((a, b) => a.label.localeCompare(b.label));
+    .toSorted((a, b) => a.label.localeCompare(b.label));
 }
 
 export const isValidLanguageCode = (code: string) => /^[a-z]{3}$/.test(code);

@@ -106,5 +106,5 @@ it.each([24, 25, 30, 60, 24000 / 1001, 30000 / 1001, 48000 / 1001, 60000 / 1001]
     const roundTripped = formatDuration({ seconds: parseDuration(formatted, fps), fps });
     if (roundTripped !== formatted) mismatches.push(`${formatted} -> ${roundTripped}`);
   }
-  expect(mismatches).toEqual([]);
+  expect(mismatches).toStrictEqual([]);
 });

@@ -1,4 +1,4 @@
-import type { MutableRefObject, CSSProperties, WheelEventHandler, MouseEventHandler } from 'react';
+import type { RefObject, CSSProperties, WheelEventHandler, MouseEventHandler } from 'react';
 import { memo, useRef, useMemo, useCallback, useEffect } from 'react';
 import { motion, useMotionValue, useSpring } from 'motion/react';
 import debounce from 'lodash/debounce';
@@ -149,7 +149,7 @@ function Timeline({
   playing: boolean,
   isFileOpened: boolean,
   onWheel: WheelEventHandler,
-  commandedTimeRef: MutableRefObject<number>,
+  commandedTimeRef: RefObject<number>,
   goToTimecode: () => void,
   darkMode: boolean,
   setCutTime: UseSegments['setCutTime'],
@@ -161,6 +161,7 @@ function Timeline({
 
   const timelineScrollerRef = useRef<HTMLDivElement>(null);
   const timelineScrollerSkipEventRef = useRef<boolean>(false);
+  // eslint-disable-next-line @eslint-react/naming-convention-ref-name -- TODO fix (new rule in @mifi/lint-config)
   const timelineScrollerSkipEventDebounce = useRef<() => void>(undefined);
   const timelineWrapperRef = useRef<HTMLDivElement>(null);
 
@@ -319,7 +320,7 @@ function Timeline({
       const mouseDragTimelinePos = getMouseTimelinePos(e2);
       seekAbs(mouseDragTimelinePos);
       try {
-        // eslint-disable-next-line unicorn/prefer-switch
+        // eslint-disable-next-line unicorn-js/prefer-switch
         if (resizingSegmentRef.current?.operation === 'start') {
           setCutTime('start', mouseDragTimelinePos);
         } else if (resizingSegmentRef?.current?.operation === 'end') {

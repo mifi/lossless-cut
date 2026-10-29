@@ -36,6 +36,7 @@ export default function useDirectoryAccess({ setCustomOutDir }: { setCustomOutDi
     // If we are MAS, we need to loop try to make the user confirm the dialog with the same path as the defaultPath.
     for (;;) {
       // First check if we already have access, if so, we are done
+      // eslint-disable-next-line unicorn-js/prefer-while-loop-condition -- TODO fix (new rule in @mifi/lint-config)
       if (await checkDirWriteAccess(inputFileDir) && !simulateMasPermissionError) break;
 
       // If we are not MAS, but we don't have access, then we can't do anything

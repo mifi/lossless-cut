@@ -18,11 +18,13 @@ import { getStreamFps } from './ffmpeg';
 import { getActiveDisposition, attachedPicDisposition, isGpsStream, isMov, hasFileEdits, hasStreamEdits } from './util/streams';
 import { fileMetadataKeys, getCodecTagSuggestions, getCopyableMetadata, getEffectiveMetadata, getLanguageSuggestions, getNonNativeMovMetadataKeys, isValidCodecTag, isValidCreationTime, isValidLanguageCode, needsHvc1Tag, streamMetadataKeys } from './util/metadata';
 import useUserSettings from './hooks/useUserSettings';
-import TagEditor, { cancelTagEditOnEscape, type TagInfo } from './components/TagEditor';
+import TagEditor, { cancelTagEditOnEscape } from './components/TagEditor';
+import type { TagInfo } from './components/TagEditor';
 import SuggestionTextField from './components/SuggestionTextField';
 import Warning from './components/Warning';
 import type { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../common/ffprobe';
-import { contentDispositionOptionsSchema, deleteDispositionValue, dispositionOptions, type ContentDispositionOptions, type FileParams, type FilesMeta, type FormatTimecode, type ParamsByFile, type StreamParams } from './types';
+import { contentDispositionOptionsSchema, deleteDispositionValue, dispositionOptions } from './types';
+import type { ContentDispositionOptions, FileParams, FilesMeta, FormatTimecode, ParamsByFile, StreamParams } from './types';
 import Button, { DialogButton } from './components/Button';
 import styles from './StreamsSelector.module.css';
 import Json5Dialog from './components/Json5Dialog';
@@ -349,7 +351,7 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
   const setStreamMetadata = useCallback((streamId: number, keyValues: Record<string, string>) => {
     updateStreamParams(editingFile, streamId, (params) => {
       // eslint-disable-next-line no-param-reassign
-      if (params.metadata == null) params.metadata = {};
+      params.metadata ??= {};
       const { metadata } = params;
       Object.entries(keyValues).forEach(([tag, value]) => {
         metadata[tag] = tag === 'language' ? value.toLowerCase() : value;
@@ -521,7 +523,8 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
   stream: FileStream,
   onToggle: (a: number) => void,
   toggleCopyStreamIds: (filter: (a: FFprobeStream) => boolean) => void,
-  copyStream: boolean, fileDuration: number | undefined,
+  copyStream: boolean,
+  fileDuration: number | undefined,
   setEditingStream: (a: EditingStream) => void,
   onExtractStreamPress?: () => void,
   paramsByFile: ParamsByFile,
@@ -541,7 +544,7 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
 
   let Icon: typeof FaBan;
   let codecTypeHuman;
-  // eslint-disable-next-line unicorn/prefer-switch
+  // eslint-disable-next-line unicorn-js/prefer-switch
   if (stream.codec_type === 'audio') {
     Icon = copyStream ? FaVolumeUp : FaVolumeMute;
     codecTypeHuman = t('audio');
@@ -601,7 +604,7 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
       </td>
       <td style={{ maxWidth: '3em', overflow: 'hidden' }} title={stream.codec_name}>{stream.codec_name} {codecTag}</td>
       <td>
-        {duration != null && !Number.isNaN(duration) && `${formatTimecode({ seconds: duration, shorten: true })}`}
+        {duration != null && !Number.isNaN(duration) && formatTimecode({ seconds: duration, shorten: true })}
         {stream.nb_frames != null ? <span> {stream.nb_frames}f</span> : null}
       </td>
       <td>{!Number.isNaN(bitrate) && (stream.codec_type === 'audio' ? `${Math.round(bitrate / 1000)} kbps` : prettyBytes(bitrate, { bits: true }))}</td>
@@ -817,6 +820,7 @@ function StreamsSelector({
     if (fileParams != null) resetParamsDraft(fileParams, streamId);
   })), [setParamsByFile]);
 
+  // eslint-disable-next-line unicorn-js/prefer-iterator-helpers, unicorn-js/prefer-iterator-to-array -- TODO fix (new rule in @mifi/lint-config)
   const haveEdits = useMemo(() => [...paramsByFile.values()].some((fileParams) => hasFileEdits(fileParams) || [...fileParams.paramsByStream.values()].some((streamParams) => hasStreamEdits(streamParams))), [paramsByFile]);
 
   const onResetAllClick = useCallback(async () => {

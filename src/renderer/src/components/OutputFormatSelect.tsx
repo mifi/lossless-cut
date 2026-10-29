@@ -34,7 +34,6 @@ function OutputFormatSelect({ style, disabled, detectedFileFormat, fileFormat, o
   const otherFormats = useMemo(() => (Object.keys(allOutFormats) as (keyof typeof allOutFormats)[]).filter((format) => !commonFormatsAndDetectedFormat.has(format)), [commonFormatsAndDetectedFormat]);
 
   return (
-    // eslint-disable-next-line react/jsx-props-no-spreading
     <Select style={style} disabled={disabled} value={fileFormat || ''} title={t('Output container format:')} onChange={withBlur((e) => onOutputFormatUserChange(e.target.value))}>
       <option key="disabled1" value="" disabled>{t('Output container format:')}</option>
 

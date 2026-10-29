@@ -6,8 +6,8 @@ import type { Options as ExecaOptions, ResultPromise } from 'execa';
 import { execa } from 'execa';
 import assert from 'node:assert';
 import type { Readable } from 'node:stream';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { app, clipboard, nativeImage } from 'electron';
+// eslint-disable-next-line import-js/no-extraneous-dependencies
+import { app, clipboard, ClipboardItem, nativeImage } from 'electron';
 
 import { platform, arch, isWindows, isLinux } from './util.js';
 import type { AudioStreamInfo, CaptureFormat, FfmpegHwAccel } from '../common/types.js';
@@ -37,12 +37,11 @@ export function setCustomFfPath(path: string | undefined) {
 }
 
 function escapeCliArg(arg: string) {
-  // todo change String(arg) => arg when ts no-implicit-any is turned on
   if (isWindows) {
     // https://github.com/mifi/lossless-cut/issues/2151
-    return /[\s"&<>^|]/.test(arg) ? `"${String(arg).replaceAll('"', '""')}"` : arg;
+    return /[\s"&<>^|]/.test(arg) ? `"${arg.replaceAll('"', '""')}"` : arg;
   }
-  return /[^\w-]/.test(arg) ? `'${String(arg).replaceAll("'", '\'"\'"\'')}'` : arg;
+  return /[^\w-]/.test(arg) ? `'${arg.replaceAll("'", '\'"\'"\'')}'` : arg;
 }
 
 export type FfCommand = 'ffmpeg' | 'ffprobe';
@@ -290,13 +289,8 @@ export function mapTimesToSegments(times: number[], includeLast: boolean) {
   for (let i = 0; i < times.length; i += 1) {
     const start = times[i];
     const end = times[i + 1];
-    if (start != null) {
-      if (end != null) {
-        segments.push({ start, end });
-      } else if (includeLast) {
-        segments.push({ start, end }); // end undefined is allowed (means until end of video)
-      }
-    }
+    // end undefined is allowed for the last segment (means until end of video)
+    if (start != null && (end != null || includeLast)) segments.push({ start, end });
   }
   return segments;
 }
@@ -433,7 +427,8 @@ export async function silenceDetect({ streamId, filterOptions, ...rest }: {
   boundingMode: boolean,
   onProgress: (p: number) => void,
   onSegmentDetected: (p: DetectedSegment) => void,
-  from: number, to: number,
+  from: number,
+  to: number,
   ffmpegHwaccel: FfmpegHwAccel,
 }) {
   return detectIntervals({
@@ -531,7 +526,8 @@ export async function captureFrameToClipboard({ timestamp, videoPath, quality }:
   ];
   const { stdout } = await runFfmpegProcess(args);
 
-  clipboard.writeImage(nativeImage.createFromBuffer(Buffer.from(stdout)));
+  const png = nativeImage.createFromBuffer(Buffer.from(stdout)).toPNG();
+  await clipboard.write([new ClipboardItem({ 'image/png': new Blob([png], { type: 'image/png' }) })]);
 }
 
 export async function captureFrameToFile({ timestamp, videoPath, outPath, quality }: {

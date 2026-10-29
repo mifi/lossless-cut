@@ -3,7 +3,6 @@ import i18n from 'i18next';
 import getSwal from '../swal';
 
 
-// eslint-disable-next-line import/prefer-default-export
 export async function askExtractFramesAsImages({ segmentsNumFrames, plural, fps }: { segmentsNumFrames: number, plural: boolean, fps: number }) {
   const { value: captureChoice } = await getSwal().Swal.fire<string>({
     text: i18n.t(plural ? 'Extract frames of the selected segments as images' : 'Extract frames of the current segment as images'),
@@ -43,8 +42,10 @@ export async function askExtractFramesAsImages({ segmentsNumFrames, plural, fps 
     estimatedMaxNumFiles = Math.round(segmentsNumFrames / intervalFrames);
   }
 
+  // eslint-disable-next-line unicorn-js/prefer-else-if -- TODO fix (new rule in @mifi/lint-config)
   if (captureChoice === 'selectNthSec' || captureChoice === 'selectNthFrame') {
     let nthFrame: number;
+    // eslint-disable-next-line oxc/branches-sharing-code -- TODO fix (new rule in @mifi/lint-config)
     if (captureChoice === 'selectNthFrame') {
       const { value } = await getSwal().Swal.fire({
         text: i18n.t('Capture exactly one image every nth frame'),
@@ -76,6 +77,7 @@ export async function askExtractFramesAsImages({ segmentsNumFrames, plural, fps 
     filter = `select=not(mod(n\\,${nthFrame}))`;
     estimatedMaxNumFiles = Math.round(segmentsNumFrames / nthFrame);
   }
+  // eslint-disable-next-line unicorn-js/prefer-else-if -- TODO fix (new rule in @mifi/lint-config)
   if (captureChoice === 'selectScene') {
     const { value } = await getSwal().Swal.fire({
       text: i18n.t('Capture frames that differ the most from the previous frame'),

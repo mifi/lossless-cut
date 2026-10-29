@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import type { FormEventHandler, ReactNode } from 'react';
+import type { SubmitEventHandler, ReactNode } from 'react';
 import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
 
 import * as AlertDialog from './AlertDialog';
@@ -28,7 +28,7 @@ const ExpressionDialog = forwardRef<HTMLDivElement, Props>(({ onSubmit, examples
 
   const { onOpenChange } = useGenericDialogContext();
 
-  const handleSubmit = useCallback<FormEventHandler<HTMLFormElement>>(async (e) => {
+  const handleSubmit = useCallback<SubmitEventHandler<HTMLFormElement>>(async (e) => {
     e.preventDefault();
     const resp = await onSubmit(value);
     setError(resp?.error);

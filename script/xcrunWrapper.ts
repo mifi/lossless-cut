@@ -76,7 +76,7 @@ async function runAttempt() {
     if (err instanceof Error && 'exitCode' in err && err.exitCode === 1 && 'stdout' in err && err.stdout && typeof err.stdout === 'string') {
       const errorJson = JSON.parse(err.stdout) as unknown;
       if (!(errorJson != null && typeof errorJson === 'object' && 'product-errors' in errorJson && Array.isArray(errorJson['product-errors']))) {
-        throw new TypeError('Invalid JSON');
+        throw new TypeError('Invalid JSON', { cause: err });
       }
       const productErrors = errorJson['product-errors'];
       // Unable to authenticate
@@ -104,7 +104,7 @@ async function run() {
     if (!wantRetry) return; // success
     console.log('Retrying soon');
     // eslint-disable-next-line no-await-in-loop
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => { setTimeout(resolve, 1000); });
   }
 
   console.log('gave up');

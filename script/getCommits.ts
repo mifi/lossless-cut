@@ -8,8 +8,8 @@ const tag = ps1.stdout.trim();
 assert(tag, 'Tag not found');
 
 // Use record separator (RS) and field separator (FS) to split commits and fields reliably
-const RS = '\u001E';
-const FS = '\u001F';
+const RS = '\u{1E}';
+const FS = '\u{1F}';
 const format = `%H${FS}%cI${FS}%an <%ae>${FS}%B${RS}`;
 
 const args = tag ? ['log', `${tag}..HEAD`, `--pretty=format:${format}`] : ['log', `--pretty=format:${format}`];

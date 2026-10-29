@@ -2,10 +2,11 @@ process.traceDeprecation = true;
 process.traceProcessWarnings = true;
 
 /* eslint-disable import/first */
-// eslint-disable-next-line import/no-extraneous-dependencies
-import electron, { BrowserWindow, type BrowserWindowConstructorOptions, nativeTheme, shell, app, ipcMain, Notification, type NotificationConstructorOptions } from 'electron';
+// eslint-disable-next-line import-js/no-extraneous-dependencies
+import electron, { BrowserWindow, nativeTheme, shell, app, ipcMain, Notification } from 'electron';
+import type { BrowserWindowConstructorOptions, NotificationConstructorOptions } from 'electron';
 import i18n from 'i18next';
-// eslint-disable-next-line import/no-extraneous-dependencies
+// eslint-disable-next-line import-js/no-extraneous-dependencies
 import debounce from 'lodash/debounce.js';
 import yargsParser from 'yargs-parser';
 import JSON5 from 'json5';
@@ -19,7 +20,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import electronUnhandled from 'electron-unhandled';
 import { fileTypeFromFile } from 'file-type';
 import type { Asyncify } from 'type-fest';
-// eslint-disable-next-line import/no-extraneous-dependencies
+// eslint-disable-next-line import-js/no-extraneous-dependencies
 import { downloadChromeExtension } from 'electron-devtools-installer/dist/downloadChromeExtension.js';
 import mitt from 'mitt';
 
@@ -95,7 +96,7 @@ async function sendApiAction(action: string, args?: unknown[]) {
     const id = apiActionRequestsId;
     apiActionRequestsId += 1;
     mainWindow!.webContents.send('apiAction', { id, action, args } satisfies ApiActionRequest);
-    await new Promise<void>((resolve) => apiActionRequests.set(id, resolve));
+    await new Promise<void>((resolve) => { apiActionRequests.set(id, resolve); });
   } catch (err) {
     logger.error('sendApiAction', err);
   }
@@ -107,7 +108,7 @@ export type AppEvent = {
 } | {
   eventName: 'export-start',
   path: string,
-}
+};
 
 const appEventEmitter = mitt<{ appEvent: AppEvent }>();
 
@@ -424,7 +425,7 @@ async function init() {
 
 
     if (isDev) {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires,global-require,import/no-extraneous-dependencies
+      // eslint-disable-next-line @typescript-eslint/no-var-requires,global-require,import-js/no-extraneous-dependencies
       installReactDevTools()
         .then((extension) => logger.info('Added Extension', extension.name))
         .catch((err: unknown) => logger.error('Failed to add extension', err));

@@ -201,7 +201,6 @@ jobs:
           ACTIONS_RESULTS_URL: ${{ env.ACTIONS_RESULTS_URL }}
         run: |
           yarn upload-artifacts dist/LosslessCut-linux-arm64.tar.bz2
-          yarn upload-artifacts dist/LosslessCut-linux-armv7l.tar.bz2
           yarn upload-artifacts dist/LosslessCut-linux-x64.tar.bz2
           yarn upload-artifacts dist/LosslessCut-linux-x86_64.AppImage
           yarn upload-artifacts --name screenshot-linux.jpeg screenshot.jpeg

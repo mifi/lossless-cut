@@ -266,6 +266,7 @@ const xmlList = <T>(value: XmlList<T>): T[] => (value == null ? [] : [value].fla
 
 // https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/FinalCutPro_XML/VersionsoftheInterchangeFormat/VersionsoftheInterchangeFormat.html
 export function parseXmeml(xmlStr: string) {
+  // eslint-disable-next-line unicorn-js/prefer-single-object-destructuring -- TODO fix (new rule in @mifi/lint-config)
   const xml = new XMLParser().parse(xmlStr);
 
   // TODO maybe support media.audio also?
@@ -293,9 +294,7 @@ export function parseXmeml(xmlStr: string) {
 }
 
 export function parseFcpXml(xmlStr: string) {
-  const xml = new XMLParser({ ignoreAttributes: false }).parse(xmlStr);
-
-  const { fcpxml } = xml;
+  const { fcpxml } = new XMLParser({ ignoreAttributes: false }).parse(xmlStr);
   if (!fcpxml) throw new Error('Root element <fcpxml> not found in file');
 
   // e.g. "1001/30000s" or "10s"
@@ -402,7 +401,7 @@ export function parseDvAnalyzerSummaryTxt(txt: string) {
   let headerFound = false;
 
   const times: { time: number, name: string, tags: Record<string, string> }[] = [];
-  // eslint-disable-next-line no-restricted-syntax
+  // eslint-disable-next-line eslint-js/no-restricted-syntax
   for (const line of lines) {
     if (headerFound) {
       const match = line.match(/^(\d{2}):(\d{2}):(\d{2}).(\d{3})\s+(\S+)\s+-\s+(\S+)\s+(\S+\s+\S+)\s+-\s+(\S+\s+\S+)/);
@@ -427,6 +426,7 @@ export function parseDvAnalyzerSummaryTxt(txt: string) {
   return edl;
 }
 
+// eslint-disable-next-line unicorn-js/prefer-https -- TODO fix (new rule in @mifi/lint-config)
 // http://www.textfiles.com/uploads/kds-srt.txt
 export function parseSrt(text: string) {
   const ret: { start: number, end: number, lines: string[], index: number | undefined }[] = [];
@@ -447,7 +447,7 @@ export function parseSrt(text: string) {
     lines = [];
   };
 
-  // eslint-disable-next-line no-restricted-syntax
+  // eslint-disable-next-line eslint-js/no-restricted-syntax
   for (const lineRaw of text.trim().split(/\r?\n/)) {
     const line = lineRaw.trim();
     if (line === '') {
@@ -510,9 +510,9 @@ export function parseDjiGps1(lines: string[]) {
 }
 
 export function parseDjiGps2(lines: string[]) {
-  const xml = new XMLParser().parse(lines.join('\n'));
-  invariant(typeof xml.font === 'string');
-  const line: string = xml.font.split('\n')[2];
+  const { font } = new XMLParser().parse(lines.join('\n')) as { font: unknown };
+  invariant(typeof font === 'string');
+  const line = font.split('\n')[2];
   invariant(line != null);
   const records: Record<string, string> = {};
   const pairsMatch = line.match(/([^\s:[]+\s*:\s*[^\s\]]+)+/g);

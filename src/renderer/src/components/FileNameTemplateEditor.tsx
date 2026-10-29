@@ -60,7 +60,7 @@ function FileNameTemplateEditor(opts: {
   }, [haveImportantMessage]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    // eslint-disable-next-line react-hooks/set-state-in-effect, react/no-deriving-state-in-effects -- TODO fix (new rule in @mifi/lint-config)
     setText(templateIn);
   }, [templateIn]);
 
@@ -128,6 +128,8 @@ function FileNameTemplateEditor(opts: {
     if (input != null) {
       input.focus();
       input.select();
+      // TODO execCommand is deprecated, but it's the only way to insert text while keeping the undo history
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       if (document.execCommand('insertText', false, defaultTemplate)) {
         debouncedSetTemplate.flush(); // save right away
         return;
@@ -160,9 +162,11 @@ function FileNameTemplateEditor(opts: {
     // insert through the input so that native undo works
     input!.focus();
     input!.setSelectionRange(startPos, endPos);
+    // TODO see above
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     if (document.execCommand('insertText', false, formatVariable(toInsert))) return;
 
-    const newValue = `${text.slice(0, startPos)}${`${formatVariable(toInsert)}${text.slice(endPos)}`}`;
+    const newValue = `${text.slice(0, startPos)}${formatVariable(toInsert)}${text.slice(endPos)}`;
     setText(newValue);
     debouncedSetTemplate(newValue);
   }, [debouncedSetTemplate, text]);
@@ -261,6 +265,7 @@ function FileNameTemplateEditor(opts: {
               {hasTextNumericPaddedValue && (
                 <div style={{ marginBottom: '.3em' }}>
                   <Select value={outputFileNameMinZeroPadding} onChange={(e) => setOutputFileNameMinZeroPadding(parseInt(e.target.value, 10))} style={{ marginRight: '.5em', fontSize: '1em' }}>
+                    {/* eslint-disable-next-line unicorn-js/prefer-array-from-map -- TODO fix (new rule in @mifi/lint-config) */}
                     {Array.from({ length: 10 }).map((_v, i) => i + 1).map((v) => <option key={v} value={v}>{v}</option>)}
                   </Select>
                   {t('Minimum numeric padded length')}

@@ -10,8 +10,7 @@ export const keyMap = {
 // Trackpad pinch deltas are much smaller than mouse wheel deltas
 const pinchSensitivityFactor = 5;
 
-export type WheelAction =
-  | { type: 'none' }
+export type WheelAction = { type: 'none' }
   | { type: 'zoom', amount: number }
   | { type: 'frameSeek', direction: number }
   | { type: 'keyframeSeek', direction: number }

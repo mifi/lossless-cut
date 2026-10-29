@@ -109,6 +109,7 @@ function getTemplateProblems({ fileNames, filePath, outputDir, safeOutputFileNam
       error = i18n.t('At least one resulting file name has no length');
       break;
     }
+    // eslint-disable-next-line @typescript-eslint/no-misused-spread -- we want code points
     const matchingInvalidChars = new Set([...fileName].filter((char) => invalidChars.has(char)));
     if (matchingInvalidChars.size > 0) {
       error = i18n.t('At least one resulting file name contains invalid character(s): {{invalidChars}}', { invalidChars: `"${[...matchingInvalidChars].map((char) => formatInvalidChar(char)).join('", "')}"` });
@@ -216,7 +217,7 @@ async function interpolateOutFileName(template: string, {
     [segTagsVariable]: tags && {
       // allow both original case and uppercase
       ...tags,
-      ...Object.fromEntries(Object.entries(tags).map(([key, value]) => [`${key.toLocaleUpperCase('en-US')}`, value])),
+      ...Object.fromEntries(Object.entries(tags).map(([key, value]) => [key.toLocaleUpperCase('en-US'), value])),
     },
     FILE_EXPORT_COUNT: currentFileExportCount != null ? currentFileExportCount + 1 : undefined,
     EXPORT_COUNT: exportCount != null ? exportCount + 1 : undefined,
