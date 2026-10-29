@@ -7,7 +7,7 @@ import { execa } from 'execa';
 import assert from 'node:assert';
 import type { Readable } from 'node:stream';
 // eslint-disable-next-line import-js/no-extraneous-dependencies
-import { app, clipboard, nativeImage } from 'electron';
+import { app, clipboard, ClipboardItem, nativeImage } from 'electron';
 
 import { platform, arch, isWindows, isLinux } from './util.js';
 import type { AudioStreamInfo, CaptureFormat, FfmpegHwAccel } from '../common/types.js';
@@ -526,7 +526,8 @@ export async function captureFrameToClipboard({ timestamp, videoPath, quality }:
   ];
   const { stdout } = await runFfmpegProcess(args);
 
-  clipboard.writeImage(nativeImage.createFromBuffer(Buffer.from(stdout)));
+  const png = nativeImage.createFromBuffer(Buffer.from(stdout)).toPNG();
+  await clipboard.write([new ClipboardItem({ 'image/png': new Blob([png], { type: 'image/png' }) })]);
 }
 
 export async function captureFrameToFile({ timestamp, videoPath, outPath, quality }: {
