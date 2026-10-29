@@ -9443,7 +9443,7 @@ __metadata:
     winston: "npm:^3.19.0"
     yargs: "npm:^18.0.0"
     yargs-parser: "npm:^22.0.0"
-    zod: "npm:^4.4.3"
+    zod: "npm:^4.6.6"
   languageName: unknown
   linkType: soft
 
@@ -13670,10 +13670,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^3.25.0 || ^4.0.0, zod@npm:^4.4.3":
+"zod@npm:^3.25.0 || ^4.0.0":
   version: 4.4.3
   resolution: "zod@npm:4.4.3"
   checksum: 10/804b9a42aa8f35f2b3c5a8dff906291cb749115f83ee2afe3576d70b5b5c53c965365c7f4967690647a9c54af9838ff232a85ff9577a0a36c44b68bc6cdefe36
+  languageName: node
+  linkType: hard
+
+"zod@npm:^4.6.6":
+  version: 4.6.6
+  resolution: "zod@npm:4.6.6"
+  checksum: 10/ce628fb33400b531f48b63ad1bd9b5ab95ec3ac60d4e8025892d90af9ca5d03b168aaaf74071928345ad1b1bcd735a7d5cf33230ece7de885240bb0f2b7bb492
   languageName: node
   linkType: hard
 
