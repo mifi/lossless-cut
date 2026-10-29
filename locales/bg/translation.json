@@ -46,12 +46,14 @@
   "Adjusting the output FPS and cutting at the same time will cause incorrect cuts. Consider instead doing it in two separate steps.": "Едновременното регулиране на изходните FPS(кадри/сек) и рязане ще доведе до неправилни срезове. Вместо това, помислете дали да не го направите на две отделни стъпки.",
   "Advanced options": "Разширени опции",
   "Advanced settings are currently not visible.": "Разширените настройки в момента не са видими.",
-  "Advanced view disabled. You will now see only the most essential buttons and functions": "\"Разширеният изглед е деактивиран. Вече ще виждате само най-важните бутони и функции.",
+  "Advanced view disabled. You will now see only the most essential buttons and functions": "Разширеният изглед е деактивиран. Вече ще виждате само най-важните бутони и функции.",
   "Advanced view has been enabled. You will now also see non-essential buttons and functions": "Разширеният изглед е активиран. Вече ще виждате и несъществени бутони и функции.",
-  "Align segment times to keyframes": "Изравняване на времената на сегментите с ключовите кадри",
+  "Align segment times to keyframes": "Изравняване времената на сегментите с ключовите кадри",
   "Aligning segments to keyframes": "Изравняване на сегментите с ключови кадри",
   "All code changes": "Всички промени в кода",
   "All Files": "Всички файлове",
   "All other formats:": "Всички други формати:",
-  "All release notes": "Всички бележки за изданието"
+  "All release notes": "Всички бележки за изданието",
+  "All segments match this expression.": "Всички сегменти съвпадат с този израз.",
+  "All streams have been extracted as separate files": "Всички потоци са извлечени като отделни файлове"
 }
