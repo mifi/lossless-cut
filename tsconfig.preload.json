@@ -1,17 +1,27 @@
 {
-  "extends": "./tsconfig.main.json",
+  "extends": ["@tsconfig/strictest"],
   "compilerOptions": {
+    "composite": true,
+
+    "emitDeclarationOnly": true,
     "outDir": "preload-ts-dist",
     "tsBuildInfoFile": "preload-ts-dist/tsconfig.tsbuildinfo",
 
     // the preload script runs in the renderer's window, with access to Node.js
     "lib": ["ES2024", "DOM"],
     "types": ["node"],
-    // bundled by electron-vite, so nothing needs rewriting (and the import of src/main types would otherwise be TS2878)
-    "rewriteRelativeImportExtensions": false,
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+
+    // bundled by electron-vite
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
   },
   "references": [
     { "path": "./tsconfig.main.json" },
+    { "path": "./tsconfig.common.json" },
   ],
   "include": [
     "src/preload/**/*",

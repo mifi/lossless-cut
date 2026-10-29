@@ -12,5 +12,6 @@
   ],
   "include": [
     "src/renderer/**/*",
+    "src/preload/window.d.ts",
   ],
 }

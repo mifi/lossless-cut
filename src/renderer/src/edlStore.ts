@@ -194,22 +194,29 @@ export async function exportEdlFile({ type, cutSegments, customOutDir, filePath,
 
   let filters: { name: string, extensions: string[] }[] | undefined;
   let ext: string | undefined;
-  // eslint-disable-next-line unicorn-js/prefer-switch
-  if (type === 'csv') {
-    ext = 'csv';
-    filters = [{ name: i18n.t('CSV files'), extensions: [ext, 'txt'] }];
-  } else if (type === 'tsv-human') {
-    ext = 'tsv';
-    filters = [{ name: i18n.t('TXT files'), extensions: [ext, 'txt'] }];
-  } else if (type === 'csv-human' || type === 'csv-frames') {
-    ext = 'csv';
-    filters = [{ name: i18n.t('TXT files'), extensions: [ext, 'txt'] }];
-  } else if (type === 'srt') {
-    ext = 'srt';
-    filters = [{ name: i18n.t('Subtitles (SRT)'), extensions: [ext, 'txt'] }];
-  } else if (type === 'llc') {
-    ext = 'llc';
-    filters = [{ name: i18n.t('LosslessCut project'), extensions: [ext, 'llc'] }];
+  switch (type) {
+    case 'csv':
+    case 'csv-human':
+    case 'csv-frames': {
+      ext = 'csv';
+      filters = [{ name: i18n.t('CSV files'), extensions: [ext, 'txt'] }];
+      break;
+    }
+    case 'tsv-human': {
+      ext = 'tsv';
+      filters = [{ name: i18n.t('TXT files'), extensions: [ext, 'txt'] }];
+      break;
+    }
+    case 'srt': {
+      ext = 'srt';
+      filters = [{ name: i18n.t('Subtitles (SRT)'), extensions: [ext, 'txt'] }];
+      break;
+    }
+    case 'llc': {
+      ext = 'llc';
+      filters = [{ name: i18n.t('LosslessCut project'), extensions: [ext, 'llc'] }];
+      break;
+    }
   }
 
   const defaultPath = getOutPath({ filePath, customOutDir, fileName: `${basename(filePath)}.${ext}` });

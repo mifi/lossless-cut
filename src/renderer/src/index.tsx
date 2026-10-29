@@ -29,7 +29,7 @@ import App from './App';
 import ErrorBoundary from './ErrorBoundary';
 import './i18n';
 
-import type { RemoteApiLegacy, RemoteRpcApi } from '../../main';
+import type { RemoteApiLegacy } from '../../main';
 
 import './main.css';
 import './swal2.scss';
@@ -57,7 +57,6 @@ declare global {
       never
     );
     /* eslint-enable @stylistic/operator-linebreak, @stylistic/indent */
-    electron: RemoteRpcApi;
   }
   interface Navigator {
     keyboard: {
