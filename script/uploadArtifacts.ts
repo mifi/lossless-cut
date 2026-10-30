@@ -11,7 +11,7 @@ const args = yargs(hideBin(process.argv))
   })
   .parseSync();
 
-assert(args._.length > 0, 'Please provide one or more files');
+assert.ok(args._.length > 0, 'Please provide one or more files');
 
 const client = new DefaultArtifactClient();
 

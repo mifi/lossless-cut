@@ -75,7 +75,7 @@ export default function useHtml5ify({ filePath, hasVideo, hasAudio, workingRef, 
         const { t } = useTranslation();
 
         const [option, setOption] = useState(initialOption != null && inputOptions[initialOption] ? initialOption : Object.keys(inputOptions)[0]! as Html5ifyMode);
-        const [remember, setRemember] = useState(!!initialOption);
+        const [remember, setRemember] = useState(Boolean(initialOption));
 
         const onOptionChange = useCallback<ChangeEventHandler<HTMLInputElement>>((e) => setOption(e.currentTarget.value as Html5ifyMode), []);
 
@@ -108,7 +108,6 @@ export default function useHtml5ify({ filePath, hasVideo, hasAudio, workingRef, 
                     checked={option === value}
                     onChange={onOptionChange}
                   />
-                  {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
                   <label htmlFor={id} style={{ marginLeft: '.5em' }}>{label}</label>
                 </div>
               );

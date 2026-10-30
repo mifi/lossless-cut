@@ -79,8 +79,8 @@ export async function checkFfExists(cmd: FfCommand) {
 
 const getFfprobePath = () => getFfPath('ffprobe');
 /**
- * ⚠️ Do not use directly when running ffmpeg, because we need to add certain options before running, like `LD_LIBRARY_PATH` on linux
- */
+⚠️ Do not use directly when running ffmpeg, because we need to add certain options before running, like `LD_LIBRARY_PATH` on linux
+*/
 export const getFfmpegPath = () => getFfPath('ffmpeg');
 
 export function abortFfmpegs() {
@@ -96,8 +96,7 @@ function handleProgress(
   onProgress: (a: number) => void,
   customMatcher?: (a: string) => void,
 ) {
-  if (!onProgress) return;
-  if (process.stderr == null) return;
+  if (!onProgress || (process.stderr == null)) return;
   onProgress(0);
 
   const rl = readline.createInterface({ input: process.stderr });
@@ -176,7 +175,7 @@ export async function runFfmpegConcat({ ffmpegArgs, concatTxt, totalDuration, on
 
   handleProgress(process, totalDuration, onProgress);
 
-  assert(process.stdin != null);
+  assert.ok(process.stdin != null);
   stringToStream(concatTxt).pipe(process.stdin);
 
   return process;
@@ -188,7 +187,7 @@ export async function runFfmpegWithProgress({ ffmpegArgs, duration, onProgress }
   onProgress: (a: number) => void,
 }) {
   const process = runFfmpegProcess(ffmpegArgs);
-  assert(process.stderr != null);
+  assert.ok(process.stderr != null);
   handleProgress(process, duration, onProgress);
   return process;
 }
@@ -262,8 +261,8 @@ export async function renderWaveformPng({ filePath, start, duration, resample, c
   try {
     ps1 = runFfmpegProcess(args1, { buffer: false, ...(timeout != null && { timeout }) }, { logCli: false });
     ps2 = runFfmpegProcess(args2, timeout != null ? { timeout } : undefined, { logCli: false });
-    assert(ps1.stdout != null);
-    assert(ps2.stdin != null);
+    assert.ok(ps1.stdout != null);
+    assert.ok(ps2.stdin != null);
     ps1.stdout.pipe(ps2.stdin);
 
     const { stdout } = await ps2;
@@ -323,14 +322,13 @@ export async function detectSceneChanges({ filePath, streamId, minChange, onProg
 
   handleProgress(process, to - from, onProgress);
 
-  assert(process.stdout != null);
+  assert.ok(process.stdout != null);
   const rl = readline.createInterface({ input: process.stdout });
 
   let lastTime: number | undefined;
 
   rl.on('line', (line) => {
-    // eslint-disable-next-line unicorn/better-regex
-    const match = line.match(/^frame:\d+\s+pts:\d+\s+pts_time:([\d.]+)/);
+    const match = /^frame:\d+\s+pts:\d+\s+pts_time:([\d.]+)/.exec(line);
     if (!match) return;
     const time = parseFloat(match[1]!);
     if (!Number.isNaN(time)) {

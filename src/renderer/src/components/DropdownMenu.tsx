@@ -13,4 +13,4 @@ export const Arrow = withClass(DropdownMenu.Arrow, styles['DropdownMenuArrow']!)
 
 export const Separator = withClass(DropdownMenu.Separator, styles['DropdownMenuSeparator']!);
 
-export const Portal = (props: DropdownMenu.DropdownMenuPortalProps) => <DropdownMenu.Portal container={document.getElementById('app-root')!} {...props} />;
+export const Portal = (props: DropdownMenu.DropdownMenuPortalProps) => <DropdownMenu.Portal container={document.getElementById('app-root')} {...props} />;

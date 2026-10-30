@@ -118,13 +118,13 @@ export const isAspectRatioActive = (aspectRatio: BsfAspectRatioParams | undefine
 // Disposition doesn't count: it's shown and changed in the track row, and is also set automatically (e.g. for captured cover art)
 export const hasStreamEdits = (params: StreamParams | undefined) => params != null && (
   Object.keys(params.metadata).length > 0
-  || !!params.bsfH264Mp4toannexb || !!params.bsfHevcMp4toannexb || !!params.bsfHevcAudInsert
+  || Boolean(params.bsfH264Mp4toannexb) || Boolean(params.bsfHevcMp4toannexb) || Boolean(params.bsfHevcAudInsert)
   || params.tag != null
   || isCropActive(params.crop)
   || isAspectRatioActive(params.aspectRatio)
 );
 
-export const hasFileEdits = (params: FileParams | undefined) => params != null && (Object.keys(params.metadata).length > 0 || !!params.offset);
+export const hasFileEdits = (params: FileParams | undefined) => params != null && (Object.keys(params.metadata).length > 0 || Boolean(params.offset));
 
 type GetVideoArgsFn = (a: { streamIndex: number, outputIndex: number }) => string[] | undefined;
 
@@ -282,10 +282,12 @@ export function shouldCopyStreamByDefault(stream: FFprobeStream) {
 export const attachedPicDisposition = 'attached_pic';
 
 export function isStreamThumbnail(stream: Pick<FFprobeStream, 'codec_type' | 'disposition'>) {
-  return stream && stream.codec_type === 'video' && stream.disposition?.[attachedPicDisposition] === 1;
+  return stream?.codec_type === 'video' && stream.disposition?.[attachedPicDisposition] === 1;
 }
 
-/** Resolves every stream that is going to be copied to the output. Unknown streams resolve to `undefined`. */
+/**
+Resolves every stream that is going to be copied to the output. Unknown streams resolve to `undefined`.
+*/
 const getCopiedStreams = ({ allFilesMeta, copyFileStreams }: {
   allFilesMeta: AllFilesStreamMeta,
   copyFileStreams: CopyfileStreams,
@@ -299,15 +301,15 @@ function isCopyingThumbnailStream({ allFilesMeta, copyFileStreams }: {
 }
 
 /**
- * Whether every stream being copied is audio (cover art is allowed, as it is a single keyframe anyway).
- *
- * Used to decide whether it is safe to pass `-copyinkf` to ffmpeg. When cutting with `-ss` *after* `-i`
- * (keyframe cut mode off), ffmpeg's stream copy discards packets until it sees one flagged as a keyframe.
- * Audio packets are normally all keyframes, but some audio-only MP4/M4A files carry a sync sample table
- * (`stss`) that only flags a packet every few seconds. The cut then starts seconds late (and with `-ss`
- * before `-i`, seconds early). `-copyinkf` makes ffmpeg keep the leading non-keyframe packets, which is
- * harmless for audio, but would produce broken frames for video, so we only do it for audio-only exports.
- */
+Whether every stream being copied is audio (cover art is allowed, as it is a single keyframe anyway).
+
+Used to decide whether it is safe to pass `-copyinkf` to ffmpeg. When cutting with `-ss` *after* `-i`
+(keyframe cut mode off), ffmpeg's stream copy discards packets until it sees one flagged as a keyframe.
+Audio packets are normally all keyframes, but some audio-only MP4/M4A files carry a sync sample table
+(`stss`) that only flags a packet every few seconds. The cut then starts seconds late (and with `-ss`
+before `-i`, seconds early). `-copyinkf` makes ffmpeg keep the leading non-keyframe packets, which is
+harmless for audio, but would produce broken frames for video, so we only do it for audio-only exports.
+*/
 export function isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams }: {
   allFilesMeta: AllFilesStreamMeta,
   copyFileStreams: CopyfileStreams,
@@ -317,16 +319,16 @@ export function isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams }: {
 }
 
 /**
- * An attached_pic (cover art) packet has no position on the timeline - the demuxer emits it at
- * pts 0. When seeking before the input (`-ss` before `-i`), ffmpeg applies the seek offset to it
- * anyway, dragging it to -(cut from), and it reaches the muxer first. `make_zero` and
- * `make_non_negative` then derive their file-wide correction from that packet and shift every
- * other stream back by +(cut from), undoing the rebase to zero that the audio/video already got.
- * The mov muxer records that as an empty edit, so the muxed duration ends up being the segment's
- * end time in the source instead of its length (ffprobe hides this, but e.g. VLC reports it).
- * `auto` doesn't use the attached pic as its reference, so it cuts correctly and keeps the cover art.
- * See https://github.com/mifi/lossless-cut/issues/3009
- */
+An attached_pic (cover art) packet has no position on the timeline - the demuxer emits it at
+pts 0. When seeking before the input (`-ss` before `-i`), ffmpeg applies the seek offset to it
+anyway, dragging it to -(cut from), and it reaches the muxer first. `make_zero` and
+`make_non_negative` then derive their file-wide correction from that packet and shift every
+other stream back by +(cut from), undoing the rebase to zero that the audio/video already got.
+The mov muxer records that as an empty edit, so the muxed duration ends up being the segment's
+end time in the source instead of its length (ffprobe hides this, but e.g. VLC reports it).
+`auto` doesn't use the attached pic as its reference, so it cuts correctly and keeps the cover art.
+See https://github.com/mifi/lossless-cut/issues/3009
+*/
 export function getEffectiveAvoidNegativeTs({ avoidNegativeTs, allFilesMeta, copyFileStreams }: {
   avoidNegativeTs: AvoidNegativeTs | undefined,
   allFilesMeta: AllFilesStreamMeta,
@@ -338,18 +340,19 @@ export function getEffectiveAvoidNegativeTs({ avoidNegativeTs, allFilesMeta, cop
 }
 
 /**
- * For input formats without AVFMT_SEEK_TO_PTS (e.g. Matroska/WebM), when any stream has B-frames, ffmpeg seeks
- * 3/23s earlier than the input `-ss` (`dts_heuristic` in fftools/ffmpeg_demux.c). With `-ss` before `-i`, a keyframe cut
- * starting on (or up to ~0.13s after) a keyframe then starts from the *previous* keyframe. Returns how much to add to the
- * input `-ss` (and pass as `-itsoffset`) to undo that. See https://github.com/mifi/lossless-cut/issues/1216
- */
+For input formats without AVFMT_SEEK_TO_PTS (e.g. Matroska/WebM), when any stream has B-frames, ffmpeg seeks
+3/23s earlier than the input `-ss` (`dts_heuristic` in fftools/ffmpeg_demux.c). With `-ss` before `-i`, a keyframe cut
+starting on (or up to ~0.13s after) a keyframe then starts from the *previous* keyframe. Returns how much to add to the
+input `-ss` (and pass as `-itsoffset`) to undo that. See https://github.com/mifi/lossless-cut/issues/1216
+*/
 export function getKeyframeCutSeekCompensation({ formatName, streams, cutFrom }: {
   formatName: string | undefined,
   streams: Pick<FFprobeStream, 'has_b_frames'>[],
   cutFrom: number,
 }) {
-  if (cutFrom <= 0 || !(formatName ?? '').split(',').some((f) => isMatroska(f))) return 0;
-  if (!streams.some((stream) => (stream.has_b_frames ?? 0) > 0)) return 0;
+  const isMatroskaFormat = (formatName ?? '').split(',').some((f) => isMatroska(f));
+  const hasBFrames = streams.some((stream) => (stream.has_b_frames ?? 0) > 0);
+  if (cutFrom <= 0 || !isMatroskaFormat || !hasBFrames) return 0;
   return 3 / 23 + 0.001;
 }
 
@@ -500,7 +503,7 @@ export function isAudioDefinitelyNotSupported(streams: FFprobeStream[]) {
 }
 
 export function getVideoTimebase(videoStream: Pick<FFprobeStream, 'time_base'>) {
-  const timebaseMatch = videoStream.time_base && videoStream.time_base.split('/');
+  const timebaseMatch = videoStream.time_base?.split('/');
   if (timebaseMatch) {
     const timebaseParsed = parseInt(timebaseMatch[1]!, 10);
     if (!Number.isNaN(timebaseParsed)) return timebaseParsed;

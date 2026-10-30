@@ -49,7 +49,6 @@ export default function useDirectoryAccess({ setCustomOutDir }: { setCustomOutDi
       // We are now MAS, so we need to try to encourage the user to allow access to the dir
       // If the user keeps choosing the wrong dir, we will keep asking
       // Normally Apple grants access to the dir of the file that was selected in a file open dialog or drag-droppen, but maybe the user opened a file from the batch list, for example.
-      // eslint-disable-next-line no-await-in-loop
       const userSelectedDir = await askForInputDir(inputFileDir);
 
       // allow user to cancel:

@@ -1,21 +1,21 @@
 import clamp from 'lodash/clamp';
 
 /**
- * @constant {number}
- * @default
- * The default playback rate multiplier is used to adjust the current playback
- * rate when no additional modifiers are applied. This is set to ∛2 so that striking
- * the fast forward key (`l`) three times speeds playback up to twice the speed.
- */
+@constant {number}
+@default
+The default playback rate multiplier is used to adjust the current playback
+rate when no additional modifiers are applied. This is set to ∛2 so that striking
+the fast forward key (`l`) three times speeds playback up to twice the speed.
+*/
 export const DEFAULT_PLAYBACK_RATE = (2 ** (1 / 3));
 
 /**
- * Adjusts the current playback rate up or down
- * @param {number} playbackRate current playback rate
- * @param {number} direction positive for forward, negative for reverse
- * @param {number} [multiplier] rate multiplier, defaults to {@link DEFAULT_PLAYBACK_RATE}
- * @returns a new playback rate
- */
+Adjusts the current playback rate up or down
+@param {number} playbackRate current playback rate
+@param {number} direction positive for forward, negative for reverse
+@param {number} [multiplier] rate multiplier, defaults to {@link DEFAULT_PLAYBACK_RATE}
+@returns a new playback rate
+*/
 export function adjustRate(playbackRate: number, direction: number, multiplier?: number) {
   const m = multiplier || DEFAULT_PLAYBACK_RATE;
   const factor = direction > 0 ? m : (1 / m);

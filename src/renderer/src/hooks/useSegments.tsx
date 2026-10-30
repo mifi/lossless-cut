@@ -106,7 +106,6 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
   })), []);
 
   const clearSegColorCounter = useCallback(() => {
-    // eslint-disable-next-line no-param-reassign
     setSegColorCounter(0);
   }, [setSegColorCounter]);
 
@@ -119,7 +118,6 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     }
 
     // delete "initial" after modifying segments
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const map = (newSegments: StateSegment[]) => newSegments.flatMap(({ start, end, initial: _ignored, ...rest }) => {
       const startClamped = clampValue(start) ?? 0;
       const endClamped = clampValue(end);
@@ -185,8 +183,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     errorText: string,
     fn: (onSegmentDetected: (seg: SegmentBase) => void) => Promise<{ ffmpegArgs: string[] }>,
   }) => {
-    if (!filePath) return;
-    if (workingRef.current) return;
+    if (!filePath || workingRef.current) return;
     try {
       setWorking({ text: workingText });
       setProgress(0);
@@ -391,7 +388,6 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     // also exclude initial segment (will cause problems later on)
     const sortedSegments = sortSegments(filterNonMarkers(cutSegments).filter((seg) => !seg.initial));
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return invertSegments(sortedSegments, true, true, fileDuration).map(({ segId, end, name: _ignored, ...rest }) => {
       // in order to please TS:
       invariant(segId != null && end != null);
@@ -429,7 +425,6 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
       errorToast(i18n.t('Make sure you have no overlapping segments.'));
       return;
     }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const newInverseCutSegments = inverseSegmentsAndMarkers.map(({ name: _ignored, ...segment }) => createIndexedSegment({ segment, incrementCount: true }));
     safeSetCutSegments((existing) => ([...existing, ...newInverseCutSegments]));
   }, [createIndexedSegment, fileDuration, selectedSegments, safeSetCutSegments]);

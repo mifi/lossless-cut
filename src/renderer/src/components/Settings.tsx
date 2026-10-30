@@ -168,7 +168,7 @@ function Settings({
             <td>
               <Button disabled={!autoSaveProjectFile} onClick={toggleStoreProjectInWorkingDir}>
                 {storeProjectInWorkingDir ? <FaFolder style={{ verticalAlign: 'middle', fontSize: '1.1em', marginRight: '.3em' }} /> : <FaFile style={{ verticalAlign: 'middle', fontSize: '1.1em', marginRight: '.3em' }} />}
-                {storeProjectInWorkingDir ? t('Store in working directory') : t('Store next to media file')}
+                {t(storeProjectInWorkingDir ? 'Store in working directory' : 'Store next to media file')}
               </Button>
             </td>
           </Row>
@@ -185,7 +185,7 @@ function Settings({
             <td>
               <Truncated maxWidth="15em">{customFfPath}</Truncated>
               <Button onClick={changeCustomFfPath}>
-                <FaCogs style={{ verticalAlign: 'middle', marginRight: '.4em' }} />{customFfPath ? t('Using external ffmpeg') : t('Using built-in ffmpeg')}
+                <FaCogs style={{ verticalAlign: 'middle', marginRight: '.4em' }} />{t(customFfPath ? 'Using external ffmpeg' : 'Using built-in ffmpeg')}
               </Button>
               {customFfPath && (
                 <Button onClick={clearCustomFfPath} title={t('Clear')}>
@@ -230,7 +230,7 @@ function Settings({
           </KeyCell>
           <td>
             <Button onClick={() => setInvertCutSegments((v) => !v)}>
-              <FaYinYang style={{ verticalAlign: 'middle', marginRight: '.3em', color: invertCutSegments ? dangerColor : undefined }} /> {invertCutSegments ? t('Remove') : t('Keep')}
+              <FaYinYang style={{ verticalAlign: 'middle', marginRight: '.3em', color: invertCutSegments ? dangerColor : undefined }} /> {t(invertCutSegments ? 'Remove' : 'Keep')}
             </Button>
           </td>
         </Row>
@@ -247,7 +247,7 @@ function Settings({
             <OutDirSelector>
               <Button>
                 {customOutDir ? <FaFolder style={{ marginRight: '.3em', verticalAlign: 'middle' }} /> : <FaFile style={{ marginRight: '.3em', verticalAlign: 'middle' }} />}
-                {customOutDir ? t('Custom working directory') : t('Same directory as input file')}...
+                {t(customOutDir ? 'Custom working directory' : 'Same directory as input file')}...
               </Button>
             </OutDirSelector>
           </td>
@@ -341,7 +341,7 @@ function Settings({
             </KeyCell>
             <td>
               <Button onClick={() => setCaptureFrameMethod((existing) => (existing === 'ffmpeg' ? 'videotag' : 'ffmpeg'))}>
-                {captureFrameMethod === 'ffmpeg' ? t('FFmpeg') : t('HTML video tag')}
+                {t(captureFrameMethod === 'ffmpeg' ? 'FFmpeg' : 'HTML video tag')}
               </Button>
             </td>
           </Row>
@@ -364,7 +364,7 @@ function Settings({
             <td>
               <Button onClick={() => setCaptureFrameFileNameFormat((existing) => (existing === 'timestamp' ? 'index' : 'timestamp'))}>
                 {captureFrameFileNameFormat === 'timestamp' ? <FaClock style={{ verticalAlign: 'middle', marginRight: '.3em' }} /> : <FaHashtag style={{ verticalAlign: 'middle', marginRight: '.3em' }} />}
-                {captureFrameFileNameFormat === 'timestamp' ? t('Frame timestamp') : t('Frame number')}
+                {t(captureFrameFileNameFormat === 'timestamp' ? 'Frame timestamp' : 'Frame number')}
               </Button>
             </td>
           </Row>

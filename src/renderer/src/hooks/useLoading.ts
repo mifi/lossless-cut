@@ -14,10 +14,10 @@ export default function useLoading() {
   const [working, setWorkingState] = useState<WorkingState | undefined>();
 
   // Store "working" in a ref so we can avoid race conditions
-  const workingRef = useRef(!!working);
+  const workingRef = useRef(Boolean(working));
 
   const setWorking = useCallback((valOrBool?: WorkingState | true | undefined) => {
-    workingRef.current = !!valOrBool;
+    workingRef.current = Boolean(valOrBool);
     const val = valOrBool === true ? { text: t('Loading') } : valOrBool;
     setWorkingState(val);
   }, [t]);

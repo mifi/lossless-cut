@@ -181,12 +181,12 @@ function Timeline({
     // https://github.com/mifi/lossless-cut/issues/676
     const pos = calculateTimelinePos(relevantTime, fileDurationNonZero);
     // eslint-disable-next-line react-hooks/refs
-    if (pos != null && timelineScrollerRef.current) return pos * zoom * timelineScrollerRef.current!.offsetWidth;
+    if (pos != null && timelineScrollerRef.current) return pos * zoom * timelineScrollerRef.current.offsetWidth;
     return undefined;
   }, [fileDurationNonZero, relevantTime, zoom]);
 
   const calcZoomWindowStartTime = useCallback(() => (timelineScrollerRef.current
-    ? (timelineScrollerRef.current.scrollLeft / (timelineScrollerRef.current!.offsetWidth * zoom)) * fileDurationNonZero
+    ? (timelineScrollerRef.current.scrollLeft / (timelineScrollerRef.current.offsetWidth * zoom)) * fileDurationNonZero
     : 0), [fileDurationNonZero, zoom]);
 
   // const zoomWindowStartTime = calcZoomWindowStartTime(duration, zoom);
@@ -368,7 +368,7 @@ function Timeline({
   }, [onGenerateOverviewWaveformClick]);
 
   return (
-    // eslint-disable-next-line jsx-a11y/no-static-element-interactions,jsx-a11y/mouse-events-have-key-events
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <div
       className="no-user-select"
       style={{ position: 'relative', borderTop: '1px solid var(--gray-7)', borderBottom: '1px solid var(--gray-7)' }}

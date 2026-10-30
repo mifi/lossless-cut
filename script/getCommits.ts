@@ -5,7 +5,7 @@ import { DateTime } from 'luxon';
 // Find the most recent tag that starts with `v` (if any)
 const ps1 = await execa('git', ['describe', '--tags', '--abbrev=0', '--match', 'v*']);
 const tag = ps1.stdout.trim();
-assert(tag, 'Tag not found');
+assert.ok(tag, 'Tag not found');
 
 // Use record separator (RS) and field separator (FS) to split commits and fields reliably
 const RS = '\u{1E}';
@@ -14,7 +14,7 @@ const format = `%H${FS}%cI${FS}%an <%ae>${FS}%B${RS}`;
 
 const args = tag ? ['log', `${tag}..HEAD`, `--pretty=format:${format}`] : ['log', `--pretty=format:${format}`];
 const ps2 = await execa('git', args);
-assert(ps2.stdout);
+assert.ok(ps2.stdout);
 
 const commits = ps2.stdout
   .split(RS)
@@ -22,7 +22,7 @@ const commits = ps2.stdout
   .filter(Boolean)
   .map((s) => {
     const [hash, date, author, ...bodyParts] = s.split(FS);
-    assert(date);
+    assert.ok(date);
     const body = bodyParts.join(FS).trim();
     return { hash: hash?.trim(), date: date?.trim(), author: author?.trim(), message: body };
   });

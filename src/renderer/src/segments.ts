@@ -156,7 +156,6 @@ export function hasAnySegmentOverlap(sortedSegments: { start: number, end: numbe
   return overlappingGroups.length > 0;
 }
 
-// eslint-disable-next-line @stylistic/space-before-function-paren
 export function invertSegments(
   sortedSegmentsIn: ({ start: number, end?: number | undefined, segId?: string | undefined, name?: string | undefined })[],
   includeFirstSegment: boolean,
@@ -165,9 +164,7 @@ export function invertSegments(
 ) {
   const sortedSegments = sortedSegmentsIn.map((seg) => ({ ...seg, end: seg.end ?? seg.start }));
 
-  if (sortedSegments.length === 0) return [];
-
-  if (hasAnySegmentOverlap(sortedSegments)) return [];
+  if ((sortedSegments.length === 0) || hasAnySegmentOverlap(sortedSegments)) return [];
 
   const ret: { start: number, end?: number | undefined, segId?: string | undefined, name?: string | undefined }[] = [];
 
@@ -177,7 +174,7 @@ export function invertSegments(
       ret.push({
         start: 0,
         end: firstSeg.start,
-        ...(firstSeg.segId != null ? { segId: `start-${firstSeg.segId}` } : {}),
+        ...(firstSeg.segId != null && { segId: `start-${firstSeg.segId}` }),
       });
     }
   }
@@ -212,7 +209,6 @@ export function invertSegments(
 
 // because chapters need to be contiguous in formats like MP4, we insert "gap" segments in-between, so that end times will be correct
 export function convertSegmentsToChaptersWithGaps(sortedSegments: (DefiniteSegmentBase & { name?: string | undefined })[]) {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const invertedSegmentsWithoutName = invertSegments(sortedSegments, true, false).map(({ end, name: _ignored, ...seg }) => {
     invariant(end != null); // to please typescript
     return { ...seg, end };

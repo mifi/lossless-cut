@@ -136,7 +136,7 @@ it('parseMplayerEdl', async () => {
 
   const str = await readFixture('mplayer.edl');
 
-  expect(await parseMplayerEdl(str)).toStrictEqual([
+  await expect(parseMplayerEdl(str)).resolves.toStrictEqual([
     { start: 0,
       end: 5.3,
       name: 'Cut',
@@ -171,7 +171,7 @@ it('parseMplayerEdl', async () => {
 it('parseMplayerEdl, starting at 0', async () => {
   const str2 = '  0   1.1    0\n';
 
-  expect(await parseMplayerEdl(str2)).toStrictEqual([{
+  await expect(parseMplayerEdl(str2)).resolves.toStrictEqual([{
     start: 1.1,
     end: undefined,
     name: 'Cut',

@@ -1,3 +1,4 @@
+/* eslint-disable unicorn-js/single-line-block-comment-style, unicorn-js/no-asterisk-prefix-in-documentation-comments -- these doc comments are published as is in docs/generated/types.md */
 // ⚠️ These types are a the contract with the user, through the documentation.
 // ⚠️ JSDoc comments get converted to user documentation.
 // ‼️ DO NOT change these types without considering the user impact!

@@ -55,9 +55,7 @@ const InvertCutModeButton = memo(({ invertCutSegments, setInvertCutSegments }: {
     setInvertCutSegments((v) => {
       const newVal = !v;
       getSwal().toast.fire({
-        title: newVal
-          ? t('When you export, selected segments on the timeline will be REMOVED - the surrounding areas will be KEPT')
-          : t('When you export, selected segments on the timeline will be KEPT - the surrounding areas will be REMOVED.'),
+        title: t(newVal ? 'When you export, selected segments on the timeline will be REMOVED - the surrounding areas will be KEPT' : 'When you export, selected segments on the timeline will be KEPT - the surrounding areas will be REMOVED.'),
       });
       return newVal;
     });
@@ -71,7 +69,7 @@ const InvertCutModeButton = memo(({ invertCutSegments, setInvertCutSegments }: {
       >
         <FaYinYang
           role="button"
-          title={invertCutSegments ? t('Discard selected segments') : t('Keep selected segments')}
+          title={t(invertCutSegments ? 'Discard selected segments' : 'Keep selected segments')}
           style={{ display: 'block', fontSize: '1.5em', color: invertCutSegments ? dangerColor : undefined }}
           onClick={onYinYangClick}
         />
@@ -267,7 +265,7 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
         disabled={disabled}
         style={style}
         type="text"
-        title={isStart ? t('Manually input current segment\'s start time') : t('Manually input current segment\'s end time')}
+        title={t(isStart ? 'Manually input current segment\'s start time' : 'Manually input current segment\'s end time')}
         onChange={(e) => handleCutTimeInput(e.target.value)}
         onPaste={handleCutTimePaste}
         onBlur={handleInputBlur}
@@ -391,7 +389,7 @@ function BottomBar({
   }, [playStyle, selectedSegments]);
 
   const keyframeStyle = useMemo(() => ({
-    color: currentFrame != null && currentFrame.keyframe ? primaryTextColor : undefined,
+    color: currentFrame?.keyframe ? primaryTextColor : undefined,
   }), [currentFrame]);
 
   const { invertCutSegments, setInvertCutSegments, simpleMode, toggleSimpleMode, exportConfirmEnabled } = useUserSettings();
@@ -428,7 +426,7 @@ function BottomBar({
       <div
         style={segButtonStyle}
         role="button"
-        title={`${direction > 0 ? t('Select next segment') : t('Select previous segment')} (${newIndex + 1})`}
+        title={`${t(direction > 0 ? 'Select next segment' : 'Select previous segment')} (${newIndex + 1})`}
         onClick={() => seg && setCurrentSegIndex(newIndex)}
       >
         {text}

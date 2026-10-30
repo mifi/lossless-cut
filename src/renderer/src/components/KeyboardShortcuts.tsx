@@ -40,8 +40,7 @@ const renderKeys = (keys: string[]) => keys.map((key, i) => (
 function fixKeys(keys: string[]) {
   const uniqed = uniq(keys);
   const nonModifierKeys = keys.filter((key) => !allModifiers.has(key));
-  if (nonModifierKeys.length === 0) return []; // only modifiers is invalid
-  if (nonModifierKeys.length > 1) return []; // can only have one non-modifier
+  if (nonModifierKeys.length !== 1) return []; // only modifiers is invalid, and there can only be one non-modifier
   return orderBy(uniqed, [(key) => !shiftModifiers.has(key), (key) => !controlModifiers.has(key), (key) => !altModifiers.has(key), (key) => !metaModifiers.has(key), (key) => key]);
 }
 
@@ -96,7 +95,7 @@ const CreateBinding = memo(({
   if (action == null) return null;
 
   return (
-    <Dialog.Root open={isShown} onOpenChange={(v) => v === false && setCreatingBinding(undefined)}>
+    <Dialog.Root open={isShown} onOpenChange={(v) => !v && setCreatingBinding(undefined)}>
       <Dialog.Portal>
         <Dialog.Overlay />
         <Dialog.Content style={{ width: '40em' }} aria-describedby={undefined}>
@@ -812,13 +811,13 @@ const KeyboardShortcuts = memo(({
   }, []);
 
   const searchQueryTrimmed = searchQuery.toLowerCase().trim();
-  const isSearching = !!searchQueryTrimmed;
+  const isSearching = Boolean(searchQueryTrimmed);
 
   const actionEntries = useMemo(() => (Object.entries(actionsMap) as unknown as [keyof typeof actionsMap, typeof actionsMap[keyof typeof actionsMap]][]).filter(([key, { name, category }]) => (
     !isSearching
     || key.toLocaleLowerCase().includes(searchQueryTrimmed)
     || name.toLowerCase().includes(searchQueryTrimmed)
-    || (category != null && category.toLowerCase().includes(searchQueryTrimmed))
+    || category?.toLowerCase().includes(searchQueryTrimmed)
   )), [actionsMap, isSearching, searchQueryTrimmed]);
 
   const categoriesWithActions = useMemo(() => Object.entries(groupBy(actionEntries, ([, { category }]) => category)), [actionEntries]);
@@ -833,8 +832,10 @@ const KeyboardShortcuts = memo(({
 
   const onResetClick = useCallback(async () => {
     // Double confirmation!
-    if (!(await confirmDialog({ description: t('Are you sure you want to reset all keyboard bindings?') }))) return;
-    if (!(await confirmDialog({ description: t('Are you sure you want to reset all keyboard bindings?') }))) return;
+    if (
+      !(await confirmDialog({ description: t('Are you sure you want to reset all keyboard bindings?') }))
+      || !(await confirmDialog({ description: t('Are you sure you want to reset all keyboard bindings?') }))
+    ) return;
 
     resetKeyBindings();
   }, [confirmDialog, resetKeyBindings, t]);
@@ -945,7 +946,7 @@ function KeyboardShortcutsDialog({
 
 
   return (
-    <Dialog.Root open={isShown} onOpenChange={(v) => v === false && onHide()}>
+    <Dialog.Root open={isShown} onOpenChange={(v) => !v && onHide()}>
       <Dialog.Portal>
         <Dialog.Overlay />
         <Dialog.Content style={{ width: '40em' }} aria-describedby={undefined}>

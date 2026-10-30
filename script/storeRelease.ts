@@ -47,11 +47,11 @@ const args = yargs(hideBin(process.argv))
 
 const [store] = args._.map(String);
 const write = args.submit || args.prepare;
-assert(!args.prepare || store === 'mas', '--prepare is only supported for mas');
+assert.ok(!args.prepare || store === 'mas', '--prepare is only supported for mas');
 
 function requireEnv(name: string) {
   const value = process.env[name];
-  assert(value, `Missing environment variable ${name}`);
+  assert.ok(value, `Missing environment variable ${name}`);
   return value;
 }
 
@@ -59,7 +59,7 @@ const log = (...rest: unknown[]) => console.log(...rest);
 const plan = (msg: string) => log(write ? `→ ${msg}` : `[dry run] would: ${msg}`);
 // stops a real run, but lets a dry run go on to show the rest of its plan
 const blocker = (msg: string) => {
-  assert(!write, msg);
+  assert.ok(!write, msg);
   log(`[dry run] BLOCKED, --submit would stop here: ${msg}`);
 };
 
@@ -68,7 +68,7 @@ async function fetchJson(url: string, init: RequestInit & { hint?: string } = {}
   const response = await fetch(url, rest);
   const text = await response.text();
   if (!response.ok) {
-    throw new Error(`${rest.method ?? 'GET'} ${url.split('?')[0]}: HTTP ${response.status}\n${text}${hint && response.status === 403 ? `\n${hint}` : ''}`);
+    throw new Error(`${rest.method ?? 'GET'} ${url.split('?', 1)[0]}: HTTP ${response.status}\n${text}${hint && response.status === 403 ? `\n${hint}` : ''}`);
   }
   return text ? JSON.parse(text) : undefined;
 }
@@ -80,8 +80,8 @@ async function readNotes(version: string, maxLength: number) {
     return '';
   }
   const notes = (await readFile(path, 'utf8')).trim();
-  assert(notes.length > 0, `${path} is empty`);
-  assert(notes.length <= maxLength, `${path} is ${notes.length} characters, the max is ${maxLength}`);
+  assert.ok(notes.length > 0, `${path} is empty`);
+  assert.ok(notes.length <= maxLength, `${path} is ${notes.length} characters, the max is ${maxLength}`);
   log(`What's New (${path}, ${notes.length}/${maxLength} characters):\n\n${notes}\n`);
   return notes;
 }
@@ -137,7 +137,6 @@ async function masPrivacyPolicy() {
       log(`${locale} privacy policy URL is already up to date`);
     } else {
       plan(`set the ${locale} privacy policy URL to ${privacyPolicyUrl} (currently: ${JSON.stringify(current ?? null)})`);
-      // eslint-disable-next-line no-await-in-loop
       if (write) await asc('PATCH', `/v1/appInfoLocalizations/${localization.id}`, { type: 'appInfoLocalizations', id: localization.id, attributes: { privacyPolicyUrl } });
     }
   }
@@ -173,12 +172,10 @@ async function mas(version: string) {
 
   if (write) {
     for (let i = 0; build?.attributes['processingState'] !== 'VALID'; i += 1) {
-      assert(build == null || build.attributes['processingState'] === 'PROCESSING', `Build ${version} is ${build?.attributes['processingState']}`);
-      assert(i < 60, `Build ${version} didn't finish processing in time`);
+      assert.ok(build == null || build.attributes['processingState'] === 'PROCESSING', `Build ${version} is ${build?.attributes['processingState']}`);
+      assert.ok(i < 60, `Build ${version} didn't finish processing in time`);
       log('Waiting for the build to be uploaded/processed…');
-      // eslint-disable-next-line no-await-in-loop
       await sleep(60_000);
-      // eslint-disable-next-line no-await-in-loop
       build = await findMasBuild(version);
     }
   }
@@ -207,7 +204,7 @@ async function mas(version: string) {
 
   const localizations = (await asc<AscResource[]>('GET', `/v1/appStoreVersions/${versionId}/appStoreVersionLocalizations`))!;
   const enUs = localizations.find((l) => l.attributes['locale'] === 'en-US');
-  assert(enUs, 'No en-US localization');
+  assert.ok(enUs, 'No en-US localization');
   const otherLocales = localizations.filter((l) => l !== enUs).map((l) => l.attributes['locale']);
   if (otherLocales.length > 0) log(`Note: only en-US What's New is set, other locales: ${otherLocales.join(', ')}`);
   if (enUs.attributes['whatsNew'] === notes) {
@@ -284,7 +281,7 @@ function logMsSubmission(label: string, submission: { id: string, friendlyName: 
 async function getMsApp() {
   const app = await ms('GET', '');
   log(`App: ${app.primaryName} (${app.id})`);
-  assert(app.lastPublishedApplicationSubmission, 'No published submission');
+  assert.ok(app.lastPublishedApplicationSubmission, 'No published submission');
   const published = await ms('GET', `/submissions/${app.lastPublishedApplicationSubmission.id}`);
   const { packageRollout } = published.packageDeliveryOptions;
   logMsSubmission('Last published', published, `, rollout ${packageRollout.isPackageRollout ? `${packageRollout.packageRolloutPercentage}% ${packageRollout.packageRolloutStatus}` : 'off'}`);
@@ -319,9 +316,8 @@ async function msstore(version: string) {
     fileName: `LosslessCut-win-${arch}.appx`,
   }));
   for (const { url } of packages) {
-    // eslint-disable-next-line no-await-in-loop
     const response = await fetch(url, { method: 'HEAD' });
-    assert(response.ok, `${url}: HTTP ${response.status}`);
+    assert.ok(response.ok, `${url}: HTTP ${response.status}`);
     log(`${url} (${(Number(response.headers.get('content-length')) / 1e6).toFixed(0)} MB)`);
   }
 
@@ -333,10 +329,8 @@ async function msstore(version: string) {
   try {
     for (const { url, fileName } of packages) {
       log(`Downloading ${fileName}…`);
-      // eslint-disable-next-line no-await-in-loop
       const response = await fetch(url);
-      assert(response.ok, `${url}: HTTP ${response.status}`);
-      // eslint-disable-next-line no-await-in-loop
+      assert.ok(response.ok, `${url}: HTTP ${response.status}`);
       await writeFile(join(dir, fileName), Buffer.from(await response.arrayBuffer()));
     }
     const zipPath = join(dir, 'upload.zip');
@@ -345,7 +339,7 @@ async function msstore(version: string) {
 
     const submission = await ms('POST', '/submissions');
     log(`Created submission ${submission.id}`);
-    assert(submission.listings['en-us'], `No en-us listing, found: ${Object.keys(submission.listings).join(', ')}`);
+    assert.ok(submission.listings['en-us'], `No en-us listing, found: ${Object.keys(submission.listings).join(', ')}`);
     submission.listings['en-us'].baseListing.releaseNotes = notes;
     submission.applicationPackages = [
       // like Partner Center does when uploading new packages for the same architectures
@@ -363,20 +357,18 @@ async function msstore(version: string) {
       headers: { 'x-ms-blob-type': 'BlockBlob', 'x-ms-version': '2021-12-02' },
       body: await openAsBlob(zipPath),
     });
-    assert(upload.ok, `Upload failed: HTTP ${upload.status} ${await upload.text()}`);
+    assert.ok(upload.ok, `Upload failed: HTTP ${upload.status} ${await upload.text()}`);
 
     await ms('POST', `/submissions/${submission.id}/commit`);
     let status: { status: string, statusDetails: unknown };
     for (let i = 0; ; i += 1) {
-      assert(i < 60, 'Commit didn\'t finish in time, check the submission in Partner Center');
-      // eslint-disable-next-line no-await-in-loop
+      assert.ok(i < 60, 'Commit didn\'t finish in time, check the submission in Partner Center');
       await sleep(10_000);
-      // eslint-disable-next-line no-await-in-loop
       status = await ms('GET', `/submissions/${submission.id}/status`);
       log(status.status);
       if (!['PendingCommit', 'CommitStarted'].includes(status.status)) break;
     }
-    assert(status.status !== 'CommitFailed', `Commit failed: ${JSON.stringify(status.statusDetails, null, 2)}`);
+    assert.ok(status.status !== 'CommitFailed', `Commit failed: ${JSON.stringify(status.statusDetails, null, 2)}`);
     log(`Submitted for certification: https://partner.microsoft.com/en-us/dashboard/products/${msStoreAppId}/submissions/${submission.id}`);
   } finally {
     await rm(dir, { recursive: true, force: true });
@@ -387,12 +379,12 @@ async function msstoreRollout(percentArg: string) {
   const { published } = await getMsApp();
   const { packageRolloutStatus, packageRolloutPercentage } = published.packageDeliveryOptions.packageRollout;
   if (packageRolloutStatus !== 'PackageRolloutInProgress') {
-    assert(percentArg === 'next', 'The last published submission has no gradual rollout in progress (did you click "Publish now"?)');
+    assert.ok(percentArg === 'next', 'The last published submission has no gradual rollout in progress (did you click "Publish now"?)');
     log('No rollout in progress, nothing to do');
     return;
   }
   const percent = percentArg === 'next' ? (msStoreRolloutSteps.find((step) => step > packageRolloutPercentage) ?? 100) : Number(percentArg);
-  assert(percent > 0 && percent <= 100, 'Percent must be in (0, 100]');
+  assert.ok(percent > 0 && percent <= 100, 'Percent must be in (0, 100]');
   const action = percent === 100 ? 'finalizepackagerollout' : `updatepackagerolloutpercentage?percentage=${percent}`;
   plan(percent === 100 ? 'finalize the rollout (100%)' : `set rollout to ${percent}%`);
   if (!args.submit) return;
@@ -401,7 +393,7 @@ async function msstoreRollout(percentArg: string) {
 
 
 const version = String(args['version']);
-assert(store === 'msstore-rollout' || /^\d+\.\d+\.\d+$/.test(version), `Invalid version ${version}`);
+assert.ok(store === 'msstore-rollout' || /^\d+\.\d+\.\d+$/.test(version), `Invalid version ${version}`);
 // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check -- TODO fix (new rule in @mifi/lint-config)
 switch (store) {
   case 'mas': { await mas(version); break; }
