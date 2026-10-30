@@ -231,8 +231,7 @@ function ExportConfirm({
       generic.push({ text: t('You are in simple mode, meaning some functionality has been simplified or hidden.') });
     }
 
-    // eslint-disable-next-line unicorn-js/prefer-includes-over-repeated-comparisons -- TODO fix (new rule in @mifi/lint-config)
-    if ((effectiveExportMode === 'separate' || effectiveExportMode === 'merge' || effectiveExportMode === 'merge+separate') && !areWeCutting) {
+    if (['separate', 'merge', 'merge+separate'].includes(effectiveExportMode) && !areWeCutting) {
       generic.push({ text: t('Exporting whole file without cutting, because there are no segments to export.') });
     }
 

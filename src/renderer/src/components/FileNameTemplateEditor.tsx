@@ -265,8 +265,7 @@ function FileNameTemplateEditor(opts: {
               {hasTextNumericPaddedValue && (
                 <div style={{ marginBottom: '.3em' }}>
                   <Select value={outputFileNameMinZeroPadding} onChange={(e) => setOutputFileNameMinZeroPadding(parseInt(e.target.value, 10))} style={{ marginRight: '.5em', fontSize: '1em' }}>
-                    {/* eslint-disable-next-line unicorn-js/prefer-array-from-map -- TODO fix (new rule in @mifi/lint-config) */}
-                    {Array.from({ length: 10 }).map((_v, i) => i + 1).map((v) => <option key={v} value={v}>{v}</option>)}
+                    {Array.from({ length: 10 }, (_v, i) => i + 1).map((v) => <option key={v} value={v}>{v}</option>)}
                   </Select>
                   {t('Minimum numeric padded length')}
                 </div>

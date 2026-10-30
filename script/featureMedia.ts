@@ -48,8 +48,7 @@ const outDir = 'dist/feature-media';
 await mkdir(outDir, { recursive: true });
 await mkdir(clips, { recursive: true });
 
-// eslint-disable-next-line unicorn-js/prefer-then-catch -- TODO fix (new rule in @mifi/lint-config)
-const exists = async (path: string) => access(path).then(() => true, () => false);
+const exists = async (path: string) => access(path).then(() => true).catch(() => false);
 
 // Writes to a temp file first, so an interrupted download isn't used next time
 async function writeVia(path: string, write: (partPath: string) => Promise<unknown>) {
@@ -125,8 +124,7 @@ const rawVideo = join(configDir, 'raw.mkv');
 try {
   // Wait for the HTTP API
   for (let i = 0; ; i += 1) {
-    // eslint-disable-next-line unicorn-js/prefer-then-catch -- TODO fix (new rule in @mifi/lint-config)
-    if (await fetch(`http://127.0.0.1:${port}/`).then(() => true, () => false)) break;
+    if (await fetch(`http://127.0.0.1:${port}/`).then(() => true).catch(() => false)) break;
     assert.ok(i < 60 && app.exitCode == null, `LosslessCut did not start, see ${appLog}`);
     await timers.setTimeout(500);
   }
