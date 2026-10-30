@@ -8,6 +8,7 @@ import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir,
 import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, getDuration, createChaptersFromSegments, readFileFfprobeMeta, getExperimentalArgs, getVideoTimescaleArgs, logStdoutStderr, runFfmpegConcat, RefuseOverwriteError, runFfmpeg } from '../ffmpeg';
 import { flacEncodeArgs, getEffectiveAvoidNegativeTs, getKeyframeCutSeekCompensation, getMapStreamsArgs, getStreamIdsToCopy, isCopyingOnlyAudioStreams, isCropActive, isAspectRatioActive } from '../util/streams';
 import { needsSmartCut, getCodecParams } from '../smartcut';
+import getFullEncodeArgs from '../fullEncode';
 import { getGuaranteedSegments, isDurationValid } from '../segments';
 import type { FFprobeStream } from '../../../common/ffprobe';
 import type { AvoidNegativeTs, FfmpegHwAccel, Html5ifyMode, PreserveMetadata } from '../../../common/types';
@@ -95,12 +96,13 @@ export async function maybeMkDeepOutDir({ outputDir, fileOutPath }: { outputDir:
 }
 
 
-function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, isEncoding, lossyMode, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, cutToAdjustmentFrames, appendLastCommandsLog, encCustomBitrate, appendFfmpegCommandLog, ffmpegHwaccel }: {
+function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, isEncoding, fullEncode, lossyMode, enableOverwriteOutput, outputPlaybackRate, cutFromAdjustmentFrames, cutToAdjustmentFrames, appendLastCommandsLog, encCustomBitrate, appendFfmpegCommandLog, ffmpegHwaccel }: {
   filePath: string | undefined,
   treatInputFileModifiedTimeAsStart: boolean,
   treatOutputFileModifiedTimeAsStart: boolean | null | undefined,
   enableOverwriteOutput: boolean,
   isEncoding: boolean,
+  fullEncode: boolean,
   lossyMode: LossyMode | undefined,
   outputPlaybackRate: number,
   cutFromAdjustmentFrames: number,
@@ -629,6 +631,41 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
       await maybeMkDeepOutDir({ outputDir, fileOutPath: finalOutPath });
 
+      if (fullEncode) {
+        if (copyFileStreams.some((input) => input.path !== filePath && input.streamIds.length > 0)) {
+          throw new UserFacingError(i18n.t('Full re-encoding supports tracks from the main file only. Disable external tracks or switch off full re-encoding.'));
+        }
+        if (outputPlaybackRate !== 1 || paramsByFile.get(filePath)?.offset) {
+          throw new UserFacingError(i18n.t('For full re-encoding, set the output speed to 1 and the main file time offset to 0.'));
+        }
+        const streamIds = copyFileStreams.find((input) => input.path === filePath)?.streamIds ?? [];
+        const streams = allFilesMeta[filePath]!.streams.filter((stream) => streamIds.includes(stream.index));
+        if (!streams.some((s) => s.codec_type === 'audio' || (s.codec_type === 'video' && !s.disposition?.attached_pic))) {
+          throw new UserFacingError(i18n.t('Select at least one video or audio track for full re-encoding'));
+        }
+        const frameDuration = getFrameDuration(detectedFps);
+        const cutFrom = Math.max(0, desiredCutFrom + cutFromAdjustmentFrames * frameDuration);
+        const cutEnd = Math.min(fileDuration ?? Infinity, cutTo + cutToAdjustmentFrames * frameDuration);
+        if (cutEnd <= cutFrom) throw new UserFacingError(i18n.t('Start time must be before end time'));
+        const ffmpegArgs = getFullEncodeArgs({
+          filePath,
+          outPath: finalOutPath,
+          cutFrom,
+          cutTo: cutEnd,
+          streams,
+          rotation,
+          preserveMetadata,
+          preserveChapters,
+          chaptersPath,
+          metadata: paramsByFile.get(filePath)?.metadata ?? {},
+        });
+        appendFfmpegCommandLog(ffmpegArgs);
+        const result = await runFfmpegWithProgress({ ffmpegArgs, duration: cutEnd - cutFrom, onProgress: (p) => onSingleProgress(i, p) });
+        logStdoutStderr(result);
+        await transferTimestamps({ inPath: filePath, outPath: finalOutPath, cutFrom, cutTo: cutEnd, duration: fileDuration, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart });
+        return { path: finalOutPath, created: true };
+      }
+
       if (!isEncoding) {
         // simple lossless cut
         invariant(outFormat != null);
@@ -745,7 +782,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     } finally {
       if (chaptersPath) await tryDeleteFiles([chaptersPath]);
     }
-  }, [shouldSkipExistingFile, isEncoding, filePath, lossyMode, losslessCutSingle, cutEncodeSmartPart, encCustomBitrate, concatFiles, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
+  }, [appendFfmpegCommandLog, cutFromAdjustmentFrames, cutToAdjustmentFrames, fullEncode, outputPlaybackRate, shouldSkipExistingFile, isEncoding, filePath, lossyMode, losslessCutSingle, cutEncodeSmartPart, encCustomBitrate, concatFiles, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart]);
 
   const concatCutSegments = useCallback(async ({ customOutDir, outFormat, segmentPaths, ffmpegExperimental, onProgress, preserveMovData, movFastStart, chapterNames, preserveMetadataOnMerge, mergedOutFilePath }: {
     customOutDir: string | undefined,

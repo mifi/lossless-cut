@@ -16,6 +16,7 @@ Here's everything it can do, and what people use it for. Which functions are ava
 - Play or loop the current segment, or all selected segments in order
 - [Smart cut](https://github.com/mifi/lossless-cut/issues/126) (experimental), to allow cutting between keyframes. It doesn't work for all files.
 - Choose between keyframe cut and normal cut, and fine-tune other export options
+- Optional **Full re-encode (H.264/AAC MP4)** in Export options for frame-accurate cuts without keyframe restrictions. Re-encodes each complete segment using CRF 18, the fast preset, and AAC 192 kbit/s; slower, with some quality loss. Remembers the selection, sets MP4 automatically, and bypasses Smart cut. Includes selected video and audio tracks from the main file at normal output speed.
 - Extremely fast removal of all non-keyframes, "Decimate video" (for example for a timelapse)
 - Speed up or slow down a video or audio file ([by changing the FPS](https://github.com/mifi/lossless-cut/issues/1712)). Do this as a separate step, not while cutting.
 - Lossless crop and aspect ratio change of H.264/H.265 video (not all players respect it)
@@ -81,7 +82,8 @@ Lossless cuts can only start at a keyframe, so a cut starts at the keyframe befo
 
 ## Workflow
 
-- Open many files as a batch list, and go through them one at a time (there's no batch export, but see [Batch processing](batch.md))
+- Open many media files or `.llc` projects as a batch list, and go through them one at a time. Each project opens its referenced media and saved segments
+- **Export all projects in batch** from Export options: process the selected cuts in each saved `.llc` entry with the current export settings, including full H.264/AAC re-encoding or per-project merging. Uses default tracks for each video, skips ordinary media entries and projects with no selected cuts, writes separate numbered project folders, and reports failures without interrupting the remaining projects. Supports progress and cancellation without switching the active editor. For other automation, see [Batch processing](batch.md)
 - Convert a whole batch of files to a supported format
 - Keyboard shortcut workflow, with customizable shortcuts
 - See the FFmpeg commands that were run, so you can change and re-run them on the command line
