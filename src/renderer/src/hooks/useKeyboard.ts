@@ -22,6 +22,9 @@ See also https://github.com/mifi/lossless-cut/issues/2515
 
 interface KeyEventParams { e: KeyboardEvent, action: KeyboardAction | undefined }
 
+// whether a key binding's modifiers (e.g. both ControlLeft and ControlRight) match whether that modifier is pressed
+const modifierMatches = (modifiers: Set<string>, bindingKeys: Set<string>, pressed: boolean) => modifiers.isDisjointFrom(bindingKeys) !== pressed;
+
 export default ({ keyBindings, keyUpActions, getKeyboardAction, closeExportConfirm, exportConfirmOpen }: {
   keyBindings: KeyBinding[],
   keyUpActions: Record<string, () => void>,
@@ -148,11 +151,7 @@ export default ({ keyBindings, keyUpActions, getKeyboardAction, closeExportConfi
       // only use first one, if multiple matches (shouldn't happen anyway)
       const matchingKeyBinding = (keyBindingsByKeyCode[e.code] ?? []).find((kb) => {
         const kbKeys = new Set(kb.keys.split('+'));
-        const modifierMatches = (modifiers: Set<string>, pressed: boolean) => {
-          const inBinding = !modifiers.isDisjointFrom(kbKeys);
-          return inBinding === pressed;
-        };
-        return modifierMatches(controlModifiers, ctrl) && modifierMatches(shiftModifiers, shift) && modifierMatches(altModifiers, alt) && modifierMatches(metaModifiers, meta);
+        return modifierMatches(controlModifiers, kbKeys, ctrl) && modifierMatches(shiftModifiers, kbKeys, shift) && modifierMatches(altModifiers, kbKeys, alt) && modifierMatches(metaModifiers, kbKeys, meta);
       });
 
       if (ev === 'keyup') onKeyUp({ e, action: matchingKeyBinding?.action });

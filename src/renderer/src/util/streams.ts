@@ -350,7 +350,9 @@ export function getKeyframeCutSeekCompensation({ formatName, streams, cutFrom }:
   streams: Pick<FFprobeStream, 'has_b_frames'>[],
   cutFrom: number,
 }) {
-  if (cutFrom <= 0 || (formatName ?? '').split(',').every((f) => !isMatroska(f)) || streams.every((stream) => !((stream.has_b_frames ?? 0) > 0))) return 0;
+  const isMatroskaFormat = (formatName ?? '').split(',').some((f) => isMatroska(f));
+  const hasBFrames = streams.some((stream) => (stream.has_b_frames ?? 0) > 0);
+  if (cutFrom <= 0 || !isMatroskaFormat || !hasBFrames) return 0;
   return 3 / 23 + 0.001;
 }
 

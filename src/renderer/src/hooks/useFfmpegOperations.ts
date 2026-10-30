@@ -378,67 +378,66 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       for (const [fileId, { paramsByStream }] of paramsByFile.entries()) {
         for (const [streamId, streamParams] of paramsByStream.entries()) {
           const outputIndex = mapInputStreamIndexToOutputIndex(fileId, streamId);
-          // eslint-disable-next-line unicorn-js/prefer-continue -- dedenting this long block would make a large diff
-          if (outputIndex != null) {
-            const { disposition } = streamParams;
-            if (disposition != null) {
-              // "0" means delete the disposition for this stream
-              const dispositionArg = disposition === deleteDispositionValue ? '0' : disposition;
-              ret.push(`-disposition:${outputIndex}`, String(dispositionArg));
+          if (outputIndex == null) continue;
+
+          const { disposition } = streamParams;
+          if (disposition != null) {
+            // "0" means delete the disposition for this stream
+            const dispositionArg = disposition === deleteDispositionValue ? '0' : disposition;
+            ret.push(`-disposition:${outputIndex}`, String(dispositionArg));
+          }
+
+          const bitstreamFilters: string[] = [];
+          if (streamParams.bsfH264Mp4toannexb) bitstreamFilters.push('h264_mp4toannexb');
+          if (streamParams.bsfHevcMp4toannexb) bitstreamFilters.push('hevc_mp4toannexb');
+          if (streamParams.bsfHevcAudInsert) bitstreamFilters.push('hevc_metadata=aud=insert');
+
+          const getFileStreams = () => allFilesMeta[fileId]?.streams;
+          const getStream = () => getFileStreams()?.find((s) => s.index === streamId);
+
+          // Lossless crop via codec bitstream metadata (#643)
+          if (isCropActive(streamParams.crop)) {
+            const { left, right, top, bottom } = streamParams.crop;
+            // Look up codec_name from allFilesMeta to determine the correct bitstream filter
+            const streamInfo = getStream();
+            const codecName = streamInfo?.codec_name;
+
+            const cropParams = `crop_left=${left}:crop_right=${right}:crop_top=${top}:crop_bottom=${bottom}`;
+            if (codecName === 'h264') {
+              bitstreamFilters.push(`h264_metadata=${cropParams}`);
+            } else if (codecName === 'hevc') {
+              bitstreamFilters.push(`hevc_metadata=${cropParams}`);
             }
+          }
 
-            const bitstreamFilters: string[] = [];
-            if (streamParams.bsfH264Mp4toannexb) bitstreamFilters.push('h264_mp4toannexb');
-            if (streamParams.bsfHevcMp4toannexb) bitstreamFilters.push('hevc_mp4toannexb');
-            if (streamParams.bsfHevcAudInsert) bitstreamFilters.push('hevc_metadata=aud=insert');
+          // Lossless aspect ratio (SAR) via codec bitstream metadata (#643)
+          if (isAspectRatioActive(streamParams.aspectRatio)) {
+            const { num, den } = streamParams.aspectRatio;
+            const streamInfo = getStream();
+            const codecName = streamInfo?.codec_name;
 
-            const getFileStreams = () => allFilesMeta[fileId]?.streams;
-            const getStream = () => getFileStreams()?.find((s) => s.index === streamId);
-
-            // Lossless crop via codec bitstream metadata (#643)
-            if (isCropActive(streamParams.crop)) {
-              const { left, right, top, bottom } = streamParams.crop;
-              // Look up codec_name from allFilesMeta to determine the correct bitstream filter
-              const streamInfo = getStream();
-              const codecName = streamInfo?.codec_name;
-
-              const cropParams = `crop_left=${left}:crop_right=${right}:crop_top=${top}:crop_bottom=${bottom}`;
-              if (codecName === 'h264') {
-                bitstreamFilters.push(`h264_metadata=${cropParams}`);
-              } else if (codecName === 'hevc') {
-                bitstreamFilters.push(`hevc_metadata=${cropParams}`);
-              }
+            if (codecName === 'h264') {
+              bitstreamFilters.push(`h264_metadata=sample_aspect_ratio=${num}/${den}`);
+            } else if (codecName === 'hevc') {
+              bitstreamFilters.push(`hevc_metadata=sample_aspect_ratio=${num}/${den}`);
+            } else {
+              // For non-H264/HEVC codecs, use container-level -aspect flag
+              ret.push('-aspect', `${num}:${den}`);
             }
+          }
 
-            // Lossless aspect ratio (SAR) via codec bitstream metadata (#643)
-            if (isAspectRatioActive(streamParams.aspectRatio)) {
-              const { num, den } = streamParams.aspectRatio;
-              const streamInfo = getStream();
-              const codecName = streamInfo?.codec_name;
+          if (bitstreamFilters.length > 0) {
+            ret.push(`-bsf:${outputIndex}`, bitstreamFilters.join(','));
+          }
 
-              if (codecName === 'h264') {
-                bitstreamFilters.push(`h264_metadata=sample_aspect_ratio=${num}/${den}`);
-              } else if (codecName === 'hevc') {
-                bitstreamFilters.push(`hevc_metadata=sample_aspect_ratio=${num}/${den}`);
-              } else {
-                // For non-H264/HEVC codecs, use container-level -aspect flag
-                ret.push('-aspect', `${num}:${den}`);
-              }
-            }
+          if (streamParams.tag != null) {
+            ret.push(`-tag:${outputIndex}`, streamParams.tag);
+          }
 
-            if (bitstreamFilters.length > 0) {
-              ret.push(`-bsf:${outputIndex}`, bitstreamFilters.join(','));
-            }
-
-            if (streamParams.tag != null) {
-              ret.push(`-tag:${outputIndex}`, streamParams.tag);
-            }
-
-            // custom stream metadata
-            if (streamParams.metadata != null) {
-              for (const [tag, value] of Object.entries(streamParams.metadata)) {
-                ret.push(`-metadata:s:${outputIndex}`, `${tag}=${value}`);
-              }
+          // custom stream metadata
+          if (streamParams.metadata != null) {
+            for (const [tag, value] of Object.entries(streamParams.metadata)) {
+              ret.push(`-metadata:s:${outputIndex}`, `${tag}=${value}`);
             }
           }
         }
