@@ -96,12 +96,16 @@ export async function renderSocialVideo({ ffmpeg, rawVideo, videoStart, duration
   ffmpeg: string,
   rawVideo: string,
   videoStart: number,
-  /** Of the video after videoStart */
+  /**
+  Of the video after videoStart
+  */
   duration: number,
   captions: Caption[],
   zooms: Zoom[],
   description: string,
-  /** An audio file, or undefined for no music */
+  /**
+  An audio file, or undefined for no music
+  */
   music: string | undefined,
   windowWidth: number,
   windowHeight: number,

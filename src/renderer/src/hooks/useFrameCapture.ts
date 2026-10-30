@@ -75,7 +75,7 @@ export default ({ appendFfmpegCommandLog, formatTimecode, treatInputFileModified
     const matches = files.flatMap((fileName) => {
       const escapedRegexp = escapeRegExp(getSuffixedFileName(filePath, tmpSuffix));
       const regexp = `^${escapedRegexp}(\\d+)`;
-      const match = fileName.match(new RegExp(regexp));
+      const match = new RegExp(regexp).exec(fileName);
       if (!match) return [];
       const frameNum = parseInt(match[1]!, 10);
       if (Number.isNaN(frameNum) || frameNum < 0) return [];

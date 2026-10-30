@@ -221,7 +221,7 @@ async function tryCreateStore({ customStoragePath }: { customStoragePath: string
     try {
       store = new Store({
         defaults,
-        ...(customStoragePath != null ? { cwd: customStoragePath } : {}),
+        ...(customStoragePath != null && { cwd: customStoragePath }),
       });
       return;
     } catch (err) {
@@ -295,7 +295,7 @@ export async function init({ customConfigDir }: { customConfigDir: string | unde
 
     const newBindings = keyBindings.map(({ keys: keysOrig, keysStr, action }) => {
       try {
-        assert(keysOrig.length > 0 && keysOrig.every((k) => k.length > 0), 'Invalid keys');
+        assert.ok(keysOrig.length > 0 && keysOrig.every((k) => k.length > 0), 'Invalid keys');
 
         const map: Record<string, string> = {
           /* eslint-disable @stylistic/quote-props */
@@ -410,7 +410,7 @@ export async function init({ customConfigDir }: { customConfigDir: string | unde
           return [k];
         }).map((k) => {
           const mapped = map[k.toLowerCase()];
-          assert(mapped != null, `Unknown key: ${k}`);
+          assert.ok(mapped != null, `Unknown key: ${k}`);
           return mapped;
         });
 

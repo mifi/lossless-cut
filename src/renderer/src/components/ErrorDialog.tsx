@@ -12,8 +12,8 @@ export interface GenericError {
 }
 
 /**
- * We need to be able to show errors from anywhere in the app, also while dialogs are open. Also originating from keyboard actions
- */
+We need to be able to show errors from anywhere in the app, also while dialogs are open. Also originating from keyboard actions
+*/
 export default function ErrorDialog({ error, onOpenChange }: {
   error: GenericError | undefined,
   onOpenChange: (open: boolean) => void,

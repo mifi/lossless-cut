@@ -15,7 +15,7 @@ export const Title = withClass(AlertDialog.Title, styles['AlertDialogTitle']!);
 
 export const Description = withClass(AlertDialog.Description, styles['AlertDialogDescription']!);
 
-export const Portal = (props: AlertDialog.AlertDialogPortalProps) => <AlertDialog.Portal container={document.getElementById('app-root')!} {...props} />;
+export const Portal = (props: AlertDialog.AlertDialogPortalProps) => <AlertDialog.Portal container={document.getElementById('app-root')} {...props} />;
 
 export function CancelButton() {
   const { t } = useTranslation();

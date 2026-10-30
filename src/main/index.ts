@@ -205,7 +205,7 @@ function createWindow() {
   mainWindow.on('close', (e) => {
     if (!askBeforeClose) return;
 
-    assert(mainWindow);
+    assert.ok(mainWindow);
     const choice = electron.dialog.showMessageBoxSync(mainWindow, {
       type: 'question',
       buttons: ['Yes', 'No'],
@@ -240,7 +240,7 @@ async function openExternal(url: string) {
 }
 
 function updateMenu() {
-  assert(mainWindow);
+  assert.ok(mainWindow);
   menu({ app, mainWindow, newVersion, isStoreBuild, openExternal });
 }
 
@@ -521,7 +521,7 @@ app.addListener('remote-require', (event: { returnValue: RemoteApiLegacy }, _web
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ipcMain.handle('__electron_rpc__', async (_event, method: keyof RemoteApi, args: any[]) => {
   const fn = remoteApi[method];
-  assert(fn, `Unknown API method: ${method}`);
+  assert.ok(fn, `Unknown API method: ${method}`);
   // @ts-expect-error don't know how to type
   return fn(...args);
 });

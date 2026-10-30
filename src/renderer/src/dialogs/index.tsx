@@ -40,7 +40,7 @@ export const showOpenDialog = async ({
   ...props
 }: Omit<Parameters<typeof dialog.showOpenDialog>[0], 'title'> & { title: string }) => {
   const effectiveDefaultPath = defaultPath || await getLastDialogDir();
-  const result = await dialog.showOpenDialog({ ...props, title, ...(effectiveDefaultPath != null && { defaultPath: effectiveDefaultPath }), ...(filters != null ? { filters } : {}) });
+  const result = await dialog.showOpenDialog({ ...props, title, ...(effectiveDefaultPath != null && { defaultPath: effectiveDefaultPath }), ...(filters != null && { filters }) });
   const [firstPath] = result.filePaths;
   if (!result.canceled && firstPath != null) {
     try {
@@ -265,7 +265,7 @@ export async function askForSegmentDuration({ totalDuration, inputPlaceholder, p
 async function askForSegmentsRandomDurationRange() {
   function parse(str: string) {
     // eslint-disable-next-line unicorn/better-regex
-    const match = str.replaceAll(/\s/g, '').match(/^duration([\d.]+)to([\d.]+),gap([-\d.]+)to([-\d.]+)$/i);
+    const match = /^duration([\d.]+)to([\d.]+),gap([-\d.]+)to([-\d.]+)$/i.exec(str.replaceAll(/\s/g, ''));
     if (!match) return undefined;
     const values = match.slice(1);
     const parsed = values.map((val) => parseFloat(val));
@@ -350,7 +350,7 @@ export interface CleanupChoicesType {
 export type CleanupChoice = keyof CleanupChoicesType;
 
 function parseBytesHuman(str: string) {
-  const match = str.replaceAll(/\s/g, '').match(/^(\d+)([gkmt]?)b$/i);
+  const match = /^(\d+)([gkmt]?)b$/i.exec(str.replaceAll(/\s/g, ''));
   if (!match) return undefined;
   const size = parseInt(match[1]!, 10);
   const unit = match[2]!.toLowerCase();
@@ -617,7 +617,7 @@ export async function checkAppPath() {
     let payload: string | undefined;
     if (isWindowsStoreBuild || (isDev && forceCheckMs)) {
       const appPathOrMock = isDev ? String.raw`C:\Program Files\WindowsApps\37672NoveltyStudio.MediaConverter_9.0.6.0_x64__vjhnv588cyf84` : appPath;
-      const pathMatch = appPathOrMock.replaceAll('\\', '/').match(/Windows ?Apps\/([^/]+)/); // find the first component after WindowsApps
+      const pathMatch = /Windows ?Apps\/([^/]+)/.exec(appPathOrMock.replaceAll('\\', '/')); // find the first component after WindowsApps
       // example pathMatch: 37672NoveltyStudio.MediaConverter_9.0.6.0_x64__vjhnv588cyf84
       if (!pathMatch) {
         console.warn('Unknown path match', appPathOrMock);

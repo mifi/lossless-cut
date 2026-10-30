@@ -15,14 +15,14 @@ const windowsLinuxRelease = '9.0-2'; // https://github.com/mifi/ffmpeg-builds/re
 const target = process.argv[2];
 const btbnTargets: Record<string, string> = { 'linux-x64': 'linux64', 'linux-arm64': 'linuxarm64', 'win32-x64': 'win64', 'win32-arm64': 'winarm64' };
 const macArchs: Record<string, string> = { 'darwin-x64': 'X64', 'darwin-arm64': 'ARM64' };
-assert(target != null && (Object.hasOwn(btbnTargets, target) || Object.hasOwn(macArchs, target)), `Usage: downloadFfmpeg.ts ${[...Object.keys(macArchs), ...Object.keys(btbnTargets)].join('|')}`);
+assert.ok(target != null && (Object.hasOwn(btbnTargets, target) || Object.hasOwn(macArchs, target)), `Usage: downloadFfmpeg.ts ${[...Object.keys(macArchs), ...Object.keys(btbnTargets)].join('|')}`);
 
 const dir = join('ffmpeg', target);
 
 async function download(url: string, path: string) {
   console.log('Downloading', url);
   const response = await fetch(url);
-  assert(response.ok && response.body != null, `Failed to download ${url}: ${response.status}`);
+  assert.ok(response.ok && response.body != null, `Failed to download ${url}: ${response.status}`);
   await pipeline(Readable.fromWeb(response.body), createWriteStream(path));
 }
 
@@ -41,7 +41,7 @@ if (macArch != null) {
 } else {
   // the electron-builder config bundles everything in `lib`
   binDir = join(dir, 'lib');
-  const branch = windowsLinuxRelease.split('-')[0];
+  const branch = windowsLinuxRelease.split('-', 1)[0];
   const isWindows = target.startsWith('win32');
   const name = `ffmpeg-n${branch}-latest-${btbnTargets[target]}-gpl-shared-${branch}`;
   const archiveName = `${name}${isWindows ? '.zip' : '.tar.xz'}`;
@@ -67,7 +67,7 @@ if (macArch != null) {
 if (target === `${process.platform}-${process.arch}`) {
   for (const name of ['ffmpeg', 'ffprobe']) {
     const { stdout } = await execa(join(binDir, process.platform === 'win32' ? `${name}.exe` : name), ['-hide_banner', '-version']);
-    console.log(stdout.split('\n')[0]);
+    console.log(stdout.split('\n', 1)[0]);
   }
 }
 console.log('Done', binDir);

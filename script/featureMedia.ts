@@ -21,16 +21,16 @@ import type { Caption, Rect, Zoom } from './featureMedia/socialVideo.ts';
 // eslint-disable-next-line unicorn-js/no-unreadable-object-destructuring -- TODO fix (new rule in @mifi/lint-config)
 const { values: { clips = 'dist/feature-media-clips', music: musicArg = defaultMusic, scale: scaleArg = '1' }, positionals: [scenarioName] } = parseArgs({ allowPositionals: true, options: { clips: { type: 'string' }, music: { type: 'string' }, scale: { type: 'string' } } });
 const scenario = scenarioName != null ? scenarios[scenarioName] : undefined;
-assert(scenario != null, `Usage: node script/featureMedia.ts <scenario> [--clips dir] [--music track from music.ts, audio file or none] [--scale 2]. Scenarios: ${Object.keys(scenarios).join(', ')}`);
+assert.ok(scenario != null, `Usage: node script/featureMedia.ts <scenario> [--clips dir] [--music track from music.ts, audio file or none] [--scale 2]. Scenarios: ${Object.keys(scenarios).join(', ')}`);
 const display = process.env['DISPLAY'];
-assert(process.platform === 'linux' && display != null, 'Run under Xvfb on Linux, see the top of this file');
+assert.ok(process.platform === 'linux' && display != null, 'Run under Xvfb on Linux, see the top of this file');
 
 // The window size, in the coordinates scenarios use. With --scale 2 the app is drawn at twice the pixels (like on a HiDPI screen), e.g. for sharp screenshots
 const width = 1024;
 const height = 640;
 const scale = Number(scaleArg);
 // eslint-disable-next-line unicorn-js/prefer-number-is-safe-integer -- TODO fix (new rule in @mifi/lint-config)
-assert(Number.isInteger(scale) && scale > 0, `--scale must be a whole number, got ${scaleArg}`);
+assert.ok(Number.isInteger(scale) && scale > 0, `--scale must be a whole number, got ${scaleArg}`);
 const screenWidth = width * scale;
 const screenHeight = height * scale;
 const port = 8099;
@@ -41,7 +41,7 @@ await new Promise<void>((resolvePromise, reject) => {
 });
 // Scenarios click at fixed positions, so the screen must be the size of the window
 const { stdout: screenSize } = await execa('xdotool', ['getdisplaygeometry']);
-assert(screenSize === `${screenWidth} ${screenHeight}`, `The screen is ${screenSize}, run Xvfb with -screen 0 ${screenWidth}x${screenHeight}x24`);
+assert.ok(screenSize === `${screenWidth} ${screenHeight}`, `The screen is ${screenSize}, run Xvfb with -screen 0 ${screenWidth}x${screenHeight}x24`);
 const ffmpeg = 'ffmpeg/linux-x64/lib/ffmpeg';
 const ffprobe = 'ffmpeg/linux-x64/lib/ffprobe';
 const outDir = 'dist/feature-media';
@@ -59,7 +59,7 @@ async function writeVia(path: string, write: (partPath: string) => Promise<unkno
 
 async function download(url: string, path: string) {
   const response = await fetch(url);
-  assert(response.ok && response.body != null, `Failed to download ${url}: ${response.status}`);
+  assert.ok(response.ok && response.body != null, `Failed to download ${url}: ${response.status}`);
   await writeVia(path, async (partPath) => pipeline(Readable.fromWeb(response.body!), createWriteStream(partPath)));
 }
 
@@ -79,7 +79,7 @@ if (musicTrack != null) {
     await ffmpegDownload(['-i', musicTrack.url, '-c', 'copy', '-f', 'mp3'], music);
   }
 }
-assert(music == null || await exists(music), `--music must be one of ${Object.keys(musicTracks).join(', ')}, an audio file or none, got ${musicArg}`);
+assert.ok(music == null || await exists(music), `--music must be one of ${Object.keys(musicTracks).join(', ')}, an audio file or none, got ${musicArg}`);
 
 // Get the clips, from the folder or else make them from their sources (see clips.ts) or download them
 const clipsUrl = process.env['FEATURE_MEDIA_CLIPS_URL'] ?? 'https://static.mifi.no/losslesscut';
@@ -117,7 +117,7 @@ async function post(path: string, body?: unknown) {
     // Actions wait until they're done (e.g. a scene detection), but don't hang forever on one that opens a dialog
     signal: AbortSignal.timeout(60_000),
   });
-  assert(response.ok, `${path} failed: ${response.status} ${await response.text()}`);
+  assert.ok(response.ok, `${path} failed: ${response.status} ${await response.text()}`);
 }
 
 const grab = ['-f', 'x11grab', '-draw_mouse', '0', '-framerate', '30', '-video_size', `${screenWidth}x${screenHeight}`, '-i', `${display}+0,0`];
@@ -128,7 +128,7 @@ try {
   for (let i = 0; ; i += 1) {
     // eslint-disable-next-line unicorn-js/prefer-then-catch -- TODO fix (new rule in @mifi/lint-config)
     if (await fetch(`http://127.0.0.1:${port}/`).then(() => true, () => false)) break;
-    assert(i < 60 && app.exitCode == null, `LosslessCut did not start, see ${appLog}`);
+    assert.ok(i < 60 && app.exitCode == null, `LosslessCut did not start, see ${appLog}`);
     await timers.setTimeout(500);
   }
   await timers.setTimeout(3000);
@@ -199,7 +199,7 @@ try {
     recorder.kill('SIGINT');
   }
   const { exitCode } = await recorder;
-  assert(exitCode === 0 || exitCode === 255, `Recording failed with exit code ${exitCode}`);
+  assert.ok(exitCode === 0 || exitCode === 255, `Recording failed with exit code ${exitCode}`);
   // Not needed for the encoding below
   app.kill();
   // A high quality master (web versions are made from it elsewhere), with the index at the start for streaming

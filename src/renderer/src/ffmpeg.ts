@@ -209,10 +209,10 @@ export function tryMapChaptersToEdl(chapters: FFprobeChapter[]) {
 }
 
 /**
- * Some of the detected input formats are not the same as the muxer name used for encoding.
- * Therefore we have to map between detected input format and encode format
- * See also ffmpeg -formats
- */
+Some of the detected input formats are not the same as the muxer name used for encoding.
+Therefore we have to map between detected input format and encode format
+See also ffmpeg -formats
+*/
 function mapInputToOutputFormat(requestedFormat: string | undefined) {
   // see file aac raw adts.aac
   if (requestedFormat === 'aac') return 'adts';
@@ -463,7 +463,7 @@ export function isProblematicAvc1(outFormat: string | undefined, streams: FFprob
 }
 
 function parseFfprobeFps(stream: FFprobeStream) {
-  const match = typeof stream.avg_frame_rate === 'string' && stream.avg_frame_rate.match(/^(\d+)\/(\d+)$/);
+  const match = typeof stream.avg_frame_rate === 'string' && /^(\d+)\/(\d+)$/.exec(stream.avg_frame_rate);
   if (!match) return undefined;
   const num = parseInt(match[1]!, 10);
   const den = parseInt(match[2]!, 10);

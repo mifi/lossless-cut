@@ -177,7 +177,7 @@ export function invertSegments(
       ret.push({
         start: 0,
         end: firstSeg.start,
-        ...(firstSeg.segId != null ? { segId: `start-${firstSeg.segId}` } : {}),
+        ...(firstSeg.segId != null && { segId: `start-${firstSeg.segId}` }),
       });
     }
   }

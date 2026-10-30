@@ -538,7 +538,7 @@ function App() {
 
   const allFilesMeta = useMemo(() => ({
     ...externalFilesMeta,
-    ...(filePath && mainFileMeta != null ? { [filePath]: mainFileMeta.ffprobeMeta } : {}),
+    ...(filePath && mainFileMeta != null && { [filePath]: mainFileMeta.ffprobeMeta }),
   }), [externalFilesMeta, filePath, mainFileMeta]);
 
   // total number of streams for ALL files
@@ -1989,7 +1989,7 @@ function App() {
       const { canceled, filePaths } = await showOpenDialog({
         properties: ['openFile'],
         title: t('Include more tracks from other file'),
-        ...(filePath != null ? { defaultPath: dirname(filePath) } : {}),
+        ...(filePath != null && { defaultPath: dirname(filePath) }),
       });
       const [firstFilePath] = filePaths;
       if (canceled || firstFilePath == null) return;

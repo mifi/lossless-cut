@@ -5,30 +5,44 @@
 // https://losslesscut.app/docs/file-name-template
 
 /**
- * Properties of a source file made available to the user in the export file name template.
- * All times are expressed in milliseconds since the POSIX Epoch.
- */
+Properties of a source file made available to the user in the export file name template.
+All times are expressed in milliseconds since the POSIX Epoch.
+*/
 export interface SourceFile {
-  /** The file's name without the file system path. */
+  /**
+  The file's name without the file system path.
+  */
   name: string,
-  /** The full filesystem path of the file. */
+  /**
+  The full filesystem path of the file.
+  */
   path: string,
-  /** File size in bytes. */
+  /**
+  File size in bytes.
+  */
   size?: number | bigint | undefined, // File size in bytes
-  /** The last time this file was accessed. */
+  /**
+  The last time this file was accessed.
+  */
   atime?: number | undefined,
-  /** The last time this file was modified. */
+  /**
+  The last time this file was modified.
+  */
   mtime?: number | undefined,
-  /** The last time the file status was changed. */
+  /**
+  The last time the file status was changed.
+  */
   ctime?: number | undefined,
-  /** The creation time of this file. */
+  /**
+  The creation time of this file.
+  */
   birthtime?: number | undefined,
 }
 
 /**
- * The global context made available to the user in the export file name template.
- * See docs/file-name-template.md documentation for details.
- */
+The global context made available to the user in the export file name template.
+See docs/file-name-template.md documentation for details.
+*/
 export interface FileNameTemplateContext {
   FILENAME: string;
   FILES: SourceFile[];
@@ -51,19 +65,31 @@ export interface FileNameTemplateContext {
 }
 
 /**
- * See https://losslesscut.app/docs/expressions
- */
+See https://losslesscut.app/docs/expressions
+*/
 export interface Segment {
-  /** Index of the segment in the segment list, starting with 0 */
+  /**
+  Index of the segment in the segment list, starting with 0
+  */
   index: number,
-  /** Name of the segment */
+  /**
+  Name of the segment
+  */
   label: string,
-  /** Segment start time in seconds */
+  /**
+  Segment start time in seconds
+  */
   start: number,
-  /** Segment end time in seconds, or undefined for markers */
+  /**
+  Segment end time in seconds, or undefined for markers
+  */
   end?: number | undefined,
-  /** Duration in seconds (effectively `end` minus `start` or 0 for markers) */
+  /**
+  Duration in seconds (effectively `end` minus `start` or 0 for markers)
+  */
   duration: number,
-  /** Tags associated with this segment */
+  /**
+  Tags associated with this segment
+  */
   tags: Record<string, string>,
 }

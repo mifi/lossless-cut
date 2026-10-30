@@ -21,7 +21,9 @@ const descriptionOverrides: Record<string, string> = {
   'faq.md': 'Answers to common questions about LosslessCut: free vs app store versions, safety, supported operating systems, updating, and features it doesn\'t have.',
 };
 
-/** Site URL of a doc, by its path relative to docs/: `cli.md` -> `/docs/cli`, `index.md` -> `/docs` */
+/**
+Site URL of a doc, by its path relative to docs/: `cli.md` -> `/docs/cli`, `index.md` -> `/docs`
+*/
 export function getDocUrl(docPath: string) {
   return `/docs/${docPath.replace(/\.md$/, '').replace(/(^|\/)index$/, '')}`.replace(/\/$/, '');
 }
@@ -39,13 +41,19 @@ function summarize(text: string, maxLength = 160) {
   return `${collapsed.slice(0, lastSpace > 0 ? lastSpace : maxLength - 1)}…`;
 }
 
-/** Path of a doc file relative to docs/, e.g. `cli.md`. */
+/**
+Path of a doc file relative to docs/, e.g. `cli.md`.
+*/
 export const getDocPath = (filePath: string) => path.relative(docsDir, filePath).split(path.sep).join('/');
 
-/** The heading that a doc's title is taken from: its first `# heading`. */
+/**
+The heading that a doc's title is taken from: its first `# heading`.
+*/
 export const findTitleHeading = (tree: Root) => tree.children.find((node): node is Heading => node.type === 'heading' && node.depth === 1);
 
-/** Frontmatter for a doc: title from its first heading, description from its first paragraph. */
+/**
+Frontmatter for a doc: title from its first heading, description from its first paragraph.
+*/
 function getFrontmatter(docPath: string, markdown: string) {
   // the frontmatter, if any, is parsed by the loader
   const tree = fromMarkdown(markdown.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, ''));
@@ -59,7 +67,9 @@ function getFrontmatter(docPath: string, markdown: string) {
   };
 }
 
-/** Like Starlight's docsLoader, but for ../docs, and generates the frontmatter that Starlight needs. */
+/**
+Like Starlight's docsLoader, but for ../docs, and generates the frontmatter that Starlight needs.
+*/
 export function repoDocsLoader(): Loader {
   const globLoader = glob({
     base: docsDir,

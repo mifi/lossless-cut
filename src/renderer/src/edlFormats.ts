@@ -24,7 +24,7 @@ export function getFrameCountRaw(detectedFps: number | undefined, sec: number) {
 }
 
 function parseTime(str: string) {
-  const timeMatch = str.match(/^\D*(?:(?:(\d+):)?(\d{1,2}):)?(\d+)(?:\.(\d{1,3}))?:?/);
+  const timeMatch = /^\D*(?:(?:(\d+):)?(\d{1,2}):)?(\d+)(?:\.(\d{1,3}))?:?/.exec(str);
   if (!timeMatch) return undefined;
 
   const rest = str.slice(timeMatch[0].length);
@@ -170,7 +170,7 @@ export async function parseCutlist(clStr: string) {
 
 export async function parseMplayerEdl(text: string) {
   const allRows = text.split('\n').flatMap((line) => {
-    const match = line.match(/^\s*(\S+)\s+(\S+)\s+([0-3])\s*$/);
+    const match = /^\s*(\S+)\s+(\S+)\s+([0-3])\s*$/.exec(line);
     if (!match) return [];
     const start = parseFloat(match[1]!);
     const end = parseFloat(match[2]!);
@@ -203,7 +203,7 @@ export async function parseEdlCmx3600(text: string, fps: number) {
   const cmx = parseCmx3600(text);
 
   const parseTimecode = (t: string) => {
-    const match = t.match(/^(\d+)[:;](\d+)[:;](\d+)[:;](\d+)$/);
+    const match = /^(\d+)[:;](\d+)[:;](\d+)[:;](\d+)$/.exec(t);
     invariant(match, `Invalid EDL line: ${t}`);
     const hours = parseInt(match[1]!, 10);
     const minutes = parseInt(match[2]!, 10);
@@ -254,7 +254,7 @@ export function parsePbf(buf: Buffer) {
   const text = buf.toString('utf16le');
 
   return text.split('\n').flatMap((line) => {
-    const match = line.match(/^\d+=(\d+)\*([^*]+)*([^*]+)?/);
+    const match = /^\d+=(\d+)\*([^*]+)*([^*]+)?/.exec(line);
     if (match) return [{ start: parseInt(match[1]!, 10) / 1000, name: match[2] }];
     return [];
   });
@@ -300,9 +300,9 @@ export function parseFcpXml(xmlStr: string) {
   // e.g. "1001/30000s" or "10s"
   function getTime(str: string | undefined) {
     if (str == null) throw new Error('Missing attribute');
-    const match = str.match(/^(\d+)\/(\d+)s$/);
+    const match = /^(\d+)\/(\d+)s$/.exec(str);
     if (match) return parseInt(match[1]!, 10) / parseInt(match[2]!, 10);
-    const secMatch = str.match(/^(\d+(?:\.\d+)?)s$/);
+    const secMatch = /^(\d+(?:\.\d+)?)s$/.exec(str);
     if (secMatch) return parseFloat(secMatch[1]!);
     throw new Error('Invalid attribute');
   }
@@ -325,7 +325,7 @@ export function parseYouTube(str: string) {
 
     const { time, rest } = timeParsed;
 
-    const nameMatch = rest.match(/^[\s-]+([^\n]*)$/);
+    const nameMatch = /^[\s-]+([^\n]*)$/.exec(rest);
     if (!nameMatch) return undefined;
 
     const [, name] = nameMatch;
@@ -404,7 +404,7 @@ export function parseDvAnalyzerSummaryTxt(txt: string) {
   // eslint-disable-next-line eslint-js/no-restricted-syntax
   for (const line of lines) {
     if (headerFound) {
-      const match = line.match(/^(\d{2}):(\d{2}):(\d{2}).(\d{3})\s+(\S+)\s+-\s+(\S+)\s+(\S+\s+\S+)\s+-\s+(\S+\s+\S+)/);
+      const match = /^(\d{2}):(\d{2}):(\d{2}).(\d{3})\s+(\S+)\s+-\s+(\S+)\s+(\S+\s+\S+)\s+-\s+(\S+\s+\S+)/.exec(line);
       if (!match) break;
       const h = parseInt(match[1]!, 10);
       const m = parseInt(match[2]!, 10);
@@ -453,7 +453,7 @@ export function parseSrt(text: string) {
     if (line === '') {
       flush();
     } else if (subtitleIndexAt != null && subtitleIndexAt > 0) {
-      const match = line.match(/^(\d+:\d+:\d+[,.]\d+\s+)-->(\s+\d+:\d+:\d+[,.]\d+)$/);
+      const match = /^(\d+:\d+:\d+[,.]\d+\s+)-->(\s+\d+:\d+:\d+[,.]\d+)$/.exec(line);
       if (match) {
         const fixComma = (v: string | undefined) => v!.replaceAll(',', '.');
         start = parseTime(fixComma(match[1]))?.time;
@@ -491,7 +491,7 @@ export function parseDjiGps1(lines: string[]) {
   const firstLine = lines[0];
   if (firstLine == null) return undefined;
 
-  const gpsMatch = firstLine.match(/^\s*([^,]+),\s*SS\s+([^,]+),\s*ISO\s+([^,]+),\s*EV\s+([^,]+)(?:,\s*DZOOM\s+([^,]+))?,\s*GPS\s+\(([^,]+),\s*([^,]+),\s*([^,]+)\),\s*D\s+([^m]+)m,\s*H\s+([^m]+)m,\s*H\.S\s+([^m]+)m\/s,\s*V\.S\s+([^m]+)m\/s\s*$/);
+  const gpsMatch = /^\s*([^,]+),\s*SS\s+([^,]+),\s*ISO\s+([^,]+),\s*EV\s+([^,]+)(?:,\s*DZOOM\s+([^,]+))?,\s*GPS\s+\(([^,]+),\s*([^,]+),\s*([^,]+)\),\s*D\s+([^m]+)m,\s*H\s+([^m]+)m,\s*H\.S\s+([^m]+)m\/s,\s*V\.S\s+([^m]+)m\/s\s*$/.exec(firstLine);
   if (!gpsMatch) return undefined;
   return {
     f: gpsMatch[1]!,
@@ -512,7 +512,7 @@ export function parseDjiGps1(lines: string[]) {
 export function parseDjiGps2(lines: string[]) {
   const { font } = new XMLParser().parse(lines.join('\n')) as { font: unknown };
   invariant(typeof font === 'string');
-  const line = font.split('\n')[2];
+  const line = font.split('\n', 3)[2];
   invariant(line != null);
   const records: Record<string, string> = {};
   const pairsMatch = line.match(/([^\s:[]+\s*:\s*[^\s\]]+)+/g);

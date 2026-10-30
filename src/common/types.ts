@@ -16,9 +16,9 @@ export const ffmpegHwAccelSchema = z.enum(['none', 'auto', 'vdpau', 'dxva2', 'd3
 export type FfmpegHwAccel = z.infer<typeof ffmpegHwAccelSchema>;
 
 /**
- * The parts of an audio stream's ffprobe data needed to decide whether its channel layout
- * has to be fixed up before ffmpeg can resample or downmix it. See `getFixChannelLayoutFilter`.
- */
+The parts of an audio stream's ffprobe data needed to decide whether its channel layout
+has to be fixed up before ffmpeg can resample or downmix it. See `getFixChannelLayoutFilter`.
+*/
 export interface AudioChannelInfo {
   channels?: number | undefined,
   channelLayout?: string | undefined,
@@ -82,11 +82,17 @@ export const configSchema = z.object({
   autoLoadTimecode: z.boolean(),
   segmentsToChapters: z.boolean(),
   simpleMode: z.boolean(),
-  /** todo: rename to cutFileTemplate */
+  /**
+  todo: rename to cutFileTemplate
+  */
   outSegTemplate: z.string().or(z.undefined()),
-  /** todo: rename to cutMergedFileTemplate */
+  /**
+  todo: rename to cutMergedFileTemplate
+  */
   mergedFileTemplate: z.string().or(z.undefined()),
-  /** todo: rename to mergedFileTemplate */
+  /**
+  todo: rename to mergedFileTemplate
+  */
   mergedFilesTemplate: z.string().or(z.undefined()),
   keyboardSeekAccFactor: z.number(),
   keyboardNormalSeekSpeed: z.number(),

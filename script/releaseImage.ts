@@ -11,7 +11,7 @@ const { values: { bg, position, caption, square, out }, positionals: [version, .
   options: { bg: { type: 'string' }, position: { type: 'string' }, caption: { type: 'string' }, square: { type: 'boolean' }, out: { type: 'string' } },
 });
 const usage = 'Usage: node script/releaseImage.ts <version> [--bg photo.jpg] [--position top|bottom|left|right|center] [--caption "photo caption"] [--square] [--out file.png] [up to 3 "highlights"]';
-assert(version != null && highlights.length <= 3, usage);
+assert.ok(version != null && highlights.length <= 3, usage);
 
 // 16:9 for X/Bluesky/Mastodon/Discord, or square for Instagram
 const width = square ? 1080 : 1600;
