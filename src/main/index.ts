@@ -279,7 +279,6 @@ function parseCliArgs(rawArgv = process.argv) {
 const argv = parseCliArgs();
 
 const lossyModeSchema = z.object({ videoEncoder: z.union([z.literal('libx264'), z.literal('libx265'), z.literal('libsvtav1')]) });
-// eslint-disable-next-line prefer-destructuring
 const lossyMode = argv['lossyMode'] ? lossyModeSchema.parse(JSON5.parse(argv['lossyMode'])) : undefined;
 
 export type LossyMode = z.infer<typeof lossyModeSchema>;

@@ -213,7 +213,6 @@ try {
     .filter(({ start, end }) => end > start);
   const zooms: Zoom[] = zoomEvents.map(({ time, rect }) => ({ time: time - socialStart, rect }));
   for (const format of ['landscape', 'vertical'] as const) {
-    // eslint-disable-next-line no-await-in-loop
     await renderSocialVideo({ ffmpeg, rawVideo, videoStart: socialStart, duration, captions, zooms, description: scenario.description, music, windowWidth: width, windowHeight: height, format, tmpDir: configDir, outPath: join(outDir, `${scenarioName}-${format}.mp4`) });
   }
   console.log('Wrote', videoPath, 'the social media versions and screenshots in', outDir);

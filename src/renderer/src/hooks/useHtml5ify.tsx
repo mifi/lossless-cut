@@ -108,7 +108,6 @@ export default function useHtml5ify({ filePath, hasVideo, hasAudio, workingRef, 
                     checked={option === value}
                     onChange={onOptionChange}
                   />
-                  {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
                   <label htmlFor={id} style={{ marginLeft: '.5em' }}>{label}</label>
                 </div>
               );

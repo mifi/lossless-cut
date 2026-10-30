@@ -139,7 +139,6 @@ export async function renderSocialVideo({ ffmpeg, rawVideo, videoStart, duration
   let last = 'v0';
   for (const [i, { start, end, text }] of captions.entries()) {
     const path = join(tmpDir, `${format}-caption-${i}.png`);
-    // eslint-disable-next-line no-await-in-loop
     const { width: captionWidth, height: captionHeight } = await renderCaption(text, captionSize, width - 120, path);
     const length = end - start;
     const input = 3 + i;

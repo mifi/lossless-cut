@@ -328,7 +328,6 @@ export async function detectSceneChanges({ filePath, streamId, minChange, onProg
   let lastTime: number | undefined;
 
   rl.on('line', (line) => {
-    // eslint-disable-next-line unicorn/better-regex
     const match = /^frame:\d+\s+pts:\d+\s+pts_time:([\d.]+)/.exec(line);
     if (!match) return;
     const time = parseFloat(match[1]!);

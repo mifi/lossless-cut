@@ -182,7 +182,6 @@ export function filenamify(name: string) {
   return name.replaceAll(/[^\p{L}\p{N} ._-]/gu, '_');
 }
 
-// eslint-disable-next-line @stylistic/space-before-function-paren
 export function withBlur<T extends { target?: object | { blur?: () => unknown } }>(cb: (a: T) => void) {
   return (e: T) => {
     cb(e);
@@ -340,7 +339,6 @@ export function shuffleArray<T>(arrayIn: T[]) {
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#escaping
 export function escapeRegExp(str: string) {
-  // eslint-disable-next-line unicorn/better-regex
   return str.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`); // $& means the whole matched string
 }
 

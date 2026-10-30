@@ -137,7 +137,6 @@ async function masPrivacyPolicy() {
       log(`${locale} privacy policy URL is already up to date`);
     } else {
       plan(`set the ${locale} privacy policy URL to ${privacyPolicyUrl} (currently: ${JSON.stringify(current ?? null)})`);
-      // eslint-disable-next-line no-await-in-loop
       if (write) await asc('PATCH', `/v1/appInfoLocalizations/${localization.id}`, { type: 'appInfoLocalizations', id: localization.id, attributes: { privacyPolicyUrl } });
     }
   }
@@ -176,9 +175,7 @@ async function mas(version: string) {
       assert.ok(build == null || build.attributes['processingState'] === 'PROCESSING', `Build ${version} is ${build?.attributes['processingState']}`);
       assert.ok(i < 60, `Build ${version} didn't finish processing in time`);
       log('Waiting for the build to be uploaded/processed…');
-      // eslint-disable-next-line no-await-in-loop
       await sleep(60_000);
-      // eslint-disable-next-line no-await-in-loop
       build = await findMasBuild(version);
     }
   }
@@ -319,7 +316,6 @@ async function msstore(version: string) {
     fileName: `LosslessCut-win-${arch}.appx`,
   }));
   for (const { url } of packages) {
-    // eslint-disable-next-line no-await-in-loop
     const response = await fetch(url, { method: 'HEAD' });
     assert.ok(response.ok, `${url}: HTTP ${response.status}`);
     log(`${url} (${(Number(response.headers.get('content-length')) / 1e6).toFixed(0)} MB)`);
@@ -333,10 +329,8 @@ async function msstore(version: string) {
   try {
     for (const { url, fileName } of packages) {
       log(`Downloading ${fileName}…`);
-      // eslint-disable-next-line no-await-in-loop
       const response = await fetch(url);
       assert.ok(response.ok, `${url}: HTTP ${response.status}`);
-      // eslint-disable-next-line no-await-in-loop
       await writeFile(join(dir, fileName), Buffer.from(await response.arrayBuffer()));
     }
     const zipPath = join(dir, 'upload.zip');
@@ -369,9 +363,7 @@ async function msstore(version: string) {
     let status: { status: string, statusDetails: unknown };
     for (let i = 0; ; i += 1) {
       assert.ok(i < 60, 'Commit didn\'t finish in time, check the submission in Partner Center');
-      // eslint-disable-next-line no-await-in-loop
       await sleep(10_000);
-      // eslint-disable-next-line no-await-in-loop
       status = await ms('GET', `/submissions/${submission.id}/status`);
       log(status.status);
       if (!['PendingCommit', 'CommitStarted'].includes(status.status)) break;

@@ -55,7 +55,6 @@ export const isExactTimecodeMatch = (str: string, parseTimecode: ParseTimecode, 
 
 // See also parseYoutube
 export function parseDuration(str: string, fps?: number) {
-  // eslint-disable-next-line unicorn/better-regex
   const match = durationRegex.exec(str.replaceAll(/\s/g, ''));
 
   if (!match) return undefined;

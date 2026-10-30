@@ -59,7 +59,6 @@ export function createMediaSourceStream(params: Parameters<typeof createMediaSou
         return;
       }
 
-      // eslint-disable-next-line no-shadow
       let cleanup: () => void;
 
       const onClose = () => {

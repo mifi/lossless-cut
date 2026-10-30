@@ -264,7 +264,6 @@ export async function askForSegmentDuration({ totalDuration, inputPlaceholder, p
 // https://github.com/mifi/lossless-cut/issues/1153
 async function askForSegmentsRandomDurationRange() {
   function parse(str: string) {
-    // eslint-disable-next-line unicorn/better-regex
     const match = /^duration([\d.]+)to([\d.]+),gap([-\d.]+)to([-\d.]+)$/i.exec(str.replaceAll(/\s/g, ''));
     if (!match) return undefined;
     const values = match.slice(1);
@@ -571,11 +570,9 @@ export async function promptDownloadMediaUrl(outPath: string) {
 export async function deleteFiles({ paths, deleteIfTrashFails, signal }: { paths: string[], deleteIfTrashFails?: boolean | undefined, signal: AbortSignal }) {
   const failedToTrashFiles: string[] = [];
 
-  // eslint-disable-next-line eslint-js/no-restricted-syntax
   for (const path of paths) {
     try {
       if (testFailFsOperation) throw new Error('test trash failure');
-      // eslint-disable-next-line no-await-in-loop
       await trashFile(path);
       signal.throwIfAborted();
     } catch (err) {

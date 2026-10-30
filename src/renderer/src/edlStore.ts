@@ -104,7 +104,6 @@ export async function loadLlcProject(path: string) {
       return llcProjectV2Schema.parse(json);
     } catch (err) {
       if (err instanceof ZodError) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { cutSegments, version: _ignored, ...restProject } = llcProjectV1Schema.parse(json);
         console.log('Converting v1 project to v2');
         return {

@@ -225,7 +225,6 @@ async function tryCreateStore({ customStoragePath }: { customStoragePath: string
       });
       return;
     } catch (err) {
-      // eslint-disable-next-line no-await-in-loop
       await new Promise((resolve) => { setTimeout(resolve, 2000); });
       logger.error('Failed to create config store, retrying', err);
     }

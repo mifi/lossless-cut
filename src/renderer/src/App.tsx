@@ -552,7 +552,6 @@ function App() {
   const toggleWaveformMode = useCallback(() => {
     if (forceBigWaveform) return;
 
-    // eslint-disable-next-line unicorn-js/prefer-switch
     if (waveformModePreference === 'waveform') {
       setWaveformMode('big-waveform');
     } else if (waveformModePreference === 'big-waveform') {
@@ -849,7 +848,6 @@ function App() {
   }, []);
 
   const commonSettings = useMemo(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { keyBindings: _keyBindings, ...rest } = allUserSettings.settings;
     return { ...rest, ffmpegVersion: ffmpegInfo?.program_version.version };
   }, [allUserSettings.settings, ffmpegInfo?.program_version.version]);
@@ -1357,11 +1355,9 @@ function App() {
         setProgress(totalProgress / segments.length);
       };
 
-      // eslint-disable-next-line eslint-js/no-restricted-syntax
       for (const [index, segment] of segments.entries()) {
         const { start, end } = segment;
         invariant(filePath != null);
-        // eslint-disable-next-line no-await-in-loop
         lastOutPath = await captureFramesRange({ customOutDir, filePath, fps: detectedFps, fromTime: start, toTime: end, estimatedMaxNumFiles: captureFramesResponse.estimatedMaxNumFiles, captureFormat, quality: captureFrameQuality, filter: captureFramesResponse.filter, outputTimestamps: captureFrameFileNameFormat === 'timestamp', onProgress: (segmentProgress) => handleSegmentProgress(index, segmentProgress) });
       }
       if (!hideAllNotifications && lastOutPath != null) {

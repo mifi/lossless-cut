@@ -508,7 +508,6 @@ function SegmentList({
 
   const onTagReset = useCallback((tag: string) => setEditingSegmentTags((tags) => {
     invariant(tags != null);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { [tag]: _deleted, ...rest } = tags;
     return rest;
   }), [setEditingSegmentTags]);

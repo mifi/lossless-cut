@@ -251,7 +251,6 @@ export interface FFprobeStreamDisposition {
 /**
 The "tags" field on an FFprobe response stream object
 */
-// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type FFprobeStreamTags = {
   /**
   The track's language (usually represented using a 3 letter language code, e.g.: "eng")

@@ -397,7 +397,6 @@ export function parseDvAnalyzerSummaryTxt(txt: string) {
   let headerFound = false;
 
   const times: { time: number, name: string, tags: Record<string, string> }[] = [];
-  // eslint-disable-next-line eslint-js/no-restricted-syntax
   for (const line of lines) {
     if (headerFound) {
       const match = /^(\d{2}):(\d{2}):(\d{2}).(\d{3})\s+(\S+)\s+-\s+(\S+)\s+(\S+\s+\S+)\s+-\s+(\S+\s+\S+)/.exec(line);
@@ -443,7 +442,6 @@ export function parseSrt(text: string) {
     lines = [];
   };
 
-  // eslint-disable-next-line eslint-js/no-restricted-syntax
   for (const lineRaw of text.trim().split(/\r?\n/)) {
     const line = lineRaw.trim();
     if (line === '') {
