@@ -85,15 +85,14 @@ assert.ok(music == null || await exists(music), `--music must be one of ${Object
 const clipsUrl = process.env['FEATURE_MEDIA_CLIPS_URL'] ?? 'https://static.mifi.no/losslesscut';
 for (const clip of scenario.clips) {
   const path = join(clips, clip);
-  if (!await exists(path)) {
-    const sourceArgs = clipSources[clip];
-    if (sourceArgs != null) {
-      console.log('Making', clip, 'from its sources');
-      await ffmpegDownload(sourceArgs, path);
-    } else {
-      console.log('Downloading', clip);
-      await download(`${clipsUrl}/${clip}`, path);
-    }
+  if (await exists(path)) continue;
+  const sourceArgs = clipSources[clip];
+  if (sourceArgs != null) {
+    console.log('Making', clip, 'from its sources');
+    await ffmpegDownload(sourceArgs, path);
+  } else {
+    console.log('Downloading', clip);
+    await download(`${clipsUrl}/${clip}`, path);
   }
 }
 

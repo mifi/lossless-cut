@@ -148,15 +148,11 @@ export default ({ keyBindings, keyUpActions, getKeyboardAction, closeExportConfi
       // only use first one, if multiple matches (shouldn't happen anyway)
       const matchingKeyBinding = (keyBindingsByKeyCode[e.code] ?? []).find((kb) => {
         const kbKeys = new Set(kb.keys.split('+'));
-        // eslint-disable-next-line unicorn-js/no-chained-comparison -- false positive: this compares a boolean on purpose
-        if ((controlModifiers.intersection(kbKeys).size > 0) !== ctrl) return false;
-        // eslint-disable-next-line unicorn-js/no-chained-comparison -- false positive: this compares a boolean on purpose
-        if ((shiftModifiers.intersection(kbKeys).size > 0) !== shift) return false;
-        // eslint-disable-next-line unicorn-js/no-chained-comparison -- false positive: this compares a boolean on purpose
-        if ((altModifiers.intersection(kbKeys).size > 0) !== alt) return false;
-        // eslint-disable-next-line unicorn-js/no-chained-comparison -- false positive: this compares a boolean on purpose
-        if ((metaModifiers.intersection(kbKeys).size > 0) !== meta) return false;
-        return true;
+        const modifierMatches = (modifiers: Set<string>, pressed: boolean) => {
+          const inBinding = !modifiers.isDisjointFrom(kbKeys);
+          return inBinding === pressed;
+        };
+        return modifierMatches(controlModifiers, ctrl) && modifierMatches(shiftModifiers, shift) && modifierMatches(altModifiers, alt) && modifierMatches(metaModifiers, meta);
       });
 
       if (ev === 'keyup') onKeyUp({ e, action: matchingKeyBinding?.action });

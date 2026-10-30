@@ -196,7 +196,7 @@ function FileNameTemplateEditor(opts: {
       <div>
         {generated != null && (
           <div style={{ marginBottom: '.3em' }}>
-            <HighlightedText title={open ? t('Close') : t('Edit')} role="button" onClick={handleSampleClick} style={{ wordBreak: 'break-word', cursor: 'pointer' }}>
+            <HighlightedText title={t(open ? 'Close' : 'Edit')} role="button" onClick={handleSampleClick} style={{ wordBreak: 'break-word', cursor: 'pointer' }}>
               {generated.problems.error != null && <FaExclamationTriangle style={{ color: dangerColor, marginRight: '.2em', verticalAlign: 'middle' }} />}
               {generated.originalFileNames != null && formatCurrentSegFileOrFirst(generated.fileNames)}
               <span style={generated.originalFileNames != null ? { textDecoration: 'line-through', marginLeft: '.3em', color: dangerColor } : undefined}>

@@ -165,9 +165,7 @@ export function invertSegments(
 ) {
   const sortedSegments = sortedSegmentsIn.map((seg) => ({ ...seg, end: seg.end ?? seg.start }));
 
-  if (sortedSegments.length === 0) return [];
-
-  if (hasAnySegmentOverlap(sortedSegments)) return [];
+  if ((sortedSegments.length === 0) || hasAnySegmentOverlap(sortedSegments)) return [];
 
   const ret: { start: number, end?: number | undefined, segId?: string | undefined, name?: string | undefined }[] = [];
 

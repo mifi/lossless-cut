@@ -9,12 +9,12 @@ it('inverts for reverse direction', () => {
 
 it('uses default rate', () => {
   const r = adjustRate(1, 1);
-  expect(r).toBe(1 * DEFAULT_PLAYBACK_RATE);
+  expect(r).toBe(Number(DEFAULT_PLAYBACK_RATE));
 });
 
 it('allows multiplier override', () => {
   const r = adjustRate(1, 1, Math.PI);
-  expect(r).toBe(1 * Math.PI);
+  expect(r).toBe(Math.PI);
 });
 
 describe('speeding up', () => {

@@ -378,6 +378,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       for (const [fileId, { paramsByStream }] of paramsByFile.entries()) {
         for (const [streamId, streamParams] of paramsByStream.entries()) {
           const outputIndex = mapInputStreamIndexToOutputIndex(fileId, streamId);
+          // eslint-disable-next-line unicorn-js/prefer-continue -- dedenting this long block would make a large diff
           if (outputIndex != null) {
             const { disposition } = streamParams;
             if (disposition != null) {

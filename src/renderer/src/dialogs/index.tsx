@@ -87,7 +87,7 @@ export async function askForInputDir(defaultPath?: string | undefined) {
     message: i18n.t('Press confirm to grant LosslessCut access to write the project file (due to App Sandbox restrictions).'),
     buttonLabel: i18n.t('Confirm'),
   });
-  return (filePaths && filePaths.length === 1) ? filePaths[0] : undefined;
+  return (filePaths?.length === 1) ? filePaths[0] : undefined;
 }
 
 export async function askForOutDir(defaultPath?: string | undefined) {
@@ -116,7 +116,7 @@ export async function askForFfPath(defaultPath?: string | undefined) {
     defaultPath: defaultPath!,
     title: i18n.t('Select custom FFmpeg directory'),
   });
-  return (filePaths && filePaths.length === 1) ? filePaths[0] : undefined;
+  return (filePaths?.length === 1) ? filePaths[0] : undefined;
 }
 
 export type OpenFileResponse = 'open' | 'project' | 'tracks' | 'subtitles' | 'addToBatch' | 'mergeWithCurrentFile';
@@ -624,8 +624,7 @@ export async function checkAppPath() {
         return;
       }
       const pathSeg = pathMatch[1];
-      if (pathSeg == null) return;
-      if (pathSeg.startsWith(`57275${mf}.${ap}_`)) return;
+      if ((pathSeg == null) || pathSeg.startsWith(`57275${mf}.${ap}_`)) return;
       // this will report the path and may return a msg
       payload = `msstore-app-id:${pathSeg}`;
       // also check all store fakes (different title:)

@@ -9,8 +9,7 @@ export function isRequestAllowed({ host, origin, port }: {
   origin: string | undefined,
   port: number,
 }) {
-  if (origin != null) return false;
-  if (host == null) return false;
+  if ((origin != null) || (host == null)) return false;
   const allowedHosts = ['127.0.0.1', 'localhost', '[::1]'];
   const hostLower = host.toLowerCase();
   // a browser omits the port from `Host` when it's the default port for the scheme

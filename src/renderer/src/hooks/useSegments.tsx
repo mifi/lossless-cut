@@ -185,8 +185,7 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     errorText: string,
     fn: (onSegmentDetected: (seg: SegmentBase) => void) => Promise<{ ffmpegArgs: string[] }>,
   }) => {
-    if (!filePath) return;
-    if (workingRef.current) return;
+    if (!filePath || workingRef.current) return;
     try {
       setWorking({ text: workingText });
       setProgress(0);

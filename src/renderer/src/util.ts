@@ -98,10 +98,8 @@ export async function checkDirWriteAccess(dirPath: string) {
   try {
     await access(dirPath, W_OK);
   } catch (err) {
-    if (err instanceof Error && 'code' in err) {
-      if (err.code === 'EPERM') return false; // Thrown on Mac (MAS build) when user has not yet allowed access
-      if (err.code === 'EACCES') return false; // Thrown on Linux when user doesn't have access to output dir
-    }
+    // EPERM: thrown on Mac (MAS build) when user has not yet allowed access. EACCES: thrown on Linux when user doesn't have access to output dir
+    if (err instanceof Error && 'code' in err && (err.code === 'EPERM' || err.code === 'EACCES')) return false;
     console.error(err);
   }
   return true;
@@ -253,7 +251,7 @@ export async function findExistingHtml5FriendlyFile(fp: string, cod: string | un
     if (entryWithSuffix) matches = [...matches, { entry: entryWithSuffix, suffix }];
   });
 
-  const nonMatches = html5ifiedDirEntries.filter((entry) => !matches.some((m) => m.entry === entry)).map((entry) => ({ entry }));
+  const nonMatches = html5ifiedDirEntries.filter((entry) => matches.every((m) => m.entry !== entry)).map((entry) => ({ entry }));
 
   // Allow for non-suffix matches too, e.g. user has a custom html5ified- file but with none of the suffixes above (but last priority)
   matches = [...matches, ...nonMatches];
@@ -309,7 +307,7 @@ export const getStdioString = (stdio: string | Uint8Array) => (stdio instanceof 
 // A bit hacky but it works, unless someone has a file called "No space left on device" ( ͡° ͜ʖ ͡°)
 export const isOutOfSpaceError = (err: InvariantExecaError) => (
   err.exitCode !== 0
-  && !!getStdioString(err.stderr)?.includes('No space left on device')
+  && Boolean(getStdioString(err.stderr)?.includes('No space left on device'))
 );
 
 export const isMuxNotSupported = (err: InvariantExecaError) => (

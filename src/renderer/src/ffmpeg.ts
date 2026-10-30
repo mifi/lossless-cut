@@ -159,12 +159,8 @@ export function getSafeCutTime(frames: Frame[], cutTime: number, nextMode: boole
   if (index === -1) throw new UserFacingError(i18n.t('Failed to find any prev frame'));
   if (index === 0) throw new UserFacingError(i18n.t('We are on the first frame'));
 
-  if (index === frames.length - 1) {
-    // Last frame of video, no need to modify cut time
-    return undefined;
-  }
-  if (frames[index + 1]!.keyframe) {
-    // Already on frame before keyframe, no need to modify cut time
+  if (index === frames.length - 1 || frames[index + 1]!.keyframe) {
+    // Last frame of video, or already on frame before keyframe: no need to modify cut time
     return undefined;
   }
 
@@ -450,9 +446,9 @@ export async function extractWaveform({ filePath, outPath }: { filePath: string,
 }
 
 export function isIphoneHevc(format: FFprobeFormat, streams: FFprobeStream[]) {
-  if (!streams.some((s) => s.codec_name === 'hevc')) return false;
-  const makeTag = format.tags && format.tags['com.apple.quicktime.make'];
-  const modelTag = format.tags && format.tags['com.apple.quicktime.model'];
+  if (streams.every((s) => s.codec_name !== 'hevc')) return false;
+  const makeTag = format.tags?.['com.apple.quicktime.make'];
+  const modelTag = format.tags?.['com.apple.quicktime.model'];
   return (makeTag === 'Apple' && modelTag?.startsWith('iPhone'));
 }
 
@@ -512,7 +508,7 @@ export function getTimecodeFromStreams(streams: FFprobeStream[]) {
   // eslint-disable-next-line unicorn-js/no-unused-builtin-method-return -- TODO fix (new rule in @mifi/lint-config)
   streams.find((stream) => {
     try {
-      if (stream.tags && stream.tags['timecode']) {
+      if (stream.tags?.['timecode']) {
         const fps = getStreamFps(stream);
         foundTimecode = parseTimecode(stream.tags['timecode'], fps);
         console.log('Loaded timecode', stream.tags['timecode'], 'from stream', stream.index);

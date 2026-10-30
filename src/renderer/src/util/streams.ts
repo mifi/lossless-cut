@@ -118,13 +118,13 @@ export const isAspectRatioActive = (aspectRatio: BsfAspectRatioParams | undefine
 // Disposition doesn't count: it's shown and changed in the track row, and is also set automatically (e.g. for captured cover art)
 export const hasStreamEdits = (params: StreamParams | undefined) => params != null && (
   Object.keys(params.metadata).length > 0
-  || !!params.bsfH264Mp4toannexb || !!params.bsfHevcMp4toannexb || !!params.bsfHevcAudInsert
+  || Boolean(params.bsfH264Mp4toannexb) || Boolean(params.bsfHevcMp4toannexb) || Boolean(params.bsfHevcAudInsert)
   || params.tag != null
   || isCropActive(params.crop)
   || isAspectRatioActive(params.aspectRatio)
 );
 
-export const hasFileEdits = (params: FileParams | undefined) => params != null && (Object.keys(params.metadata).length > 0 || !!params.offset);
+export const hasFileEdits = (params: FileParams | undefined) => params != null && (Object.keys(params.metadata).length > 0 || Boolean(params.offset));
 
 type GetVideoArgsFn = (a: { streamIndex: number, outputIndex: number }) => string[] | undefined;
 
@@ -282,7 +282,7 @@ export function shouldCopyStreamByDefault(stream: FFprobeStream) {
 export const attachedPicDisposition = 'attached_pic';
 
 export function isStreamThumbnail(stream: Pick<FFprobeStream, 'codec_type' | 'disposition'>) {
-  return stream && stream.codec_type === 'video' && stream.disposition?.[attachedPicDisposition] === 1;
+  return stream?.codec_type === 'video' && stream.disposition?.[attachedPicDisposition] === 1;
 }
 
 /**
@@ -350,8 +350,7 @@ export function getKeyframeCutSeekCompensation({ formatName, streams, cutFrom }:
   streams: Pick<FFprobeStream, 'has_b_frames'>[],
   cutFrom: number,
 }) {
-  if (cutFrom <= 0 || !(formatName ?? '').split(',').some((f) => isMatroska(f))) return 0;
-  if (!streams.some((stream) => (stream.has_b_frames ?? 0) > 0)) return 0;
+  if (cutFrom <= 0 || (formatName ?? '').split(',').every((f) => !isMatroska(f)) || streams.every((stream) => !((stream.has_b_frames ?? 0) > 0))) return 0;
   return 3 / 23 + 0.001;
 }
 
@@ -502,7 +501,7 @@ export function isAudioDefinitelyNotSupported(streams: FFprobeStream[]) {
 }
 
 export function getVideoTimebase(videoStream: Pick<FFprobeStream, 'time_base'>) {
-  const timebaseMatch = videoStream.time_base && videoStream.time_base.split('/');
+  const timebaseMatch = videoStream.time_base?.split('/');
   if (timebaseMatch) {
     const timebaseParsed = parseInt(timebaseMatch[1]!, 10);
     if (!Number.isNaN(timebaseParsed)) return timebaseParsed;

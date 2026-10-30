@@ -256,7 +256,7 @@ function ExportConfirm({
     return {
       generic,
       specific,
-      totalNum: generic.filter((n) => n.warning).length + Object.values(specific).filter((n) => n != null && n.warning).length,
+      totalNum: generic.filter((n) => n.warning).length + Object.values(specific).filter((n) => n?.warning).length,
     };
   }, [effectiveExportMode, areWeCuttingProblematicStreams, mainCopiedThumbnailStreams, isMov, isIpod, movFastStart, t, preserveMovData, areWeCutting, needSmartCut, isEncoding, keyframeCut, enableOverwriteOutput, simpleMode, willMerge, avoidNegativeTs, outFormat, outputPlaybackRate, keyframesEnabled, haveSegmentWithProblematicKeyframe, hvc1NeededStreams]);
 

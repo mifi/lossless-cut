@@ -236,7 +236,7 @@ function App() {
     ipcRenderer.send('setLanguage', language);
   }, [language]);
 
-  const isFileOpened = !!filePath;
+  const isFileOpened = Boolean(filePath);
 
   const [hoveringTime, setHoveringTime] = useState<number>();
 
@@ -281,7 +281,7 @@ function App() {
 
   const toggleExportConfirmEnabled = useCallback(() => setExportConfirmEnabled((v) => {
     const newVal = !v;
-    showNotification({ text: newVal ? i18n.t('Export options will be shown before exporting.') : i18n.t('Export options will not be shown before exporting.') });
+    showNotification({ text: i18n.t(newVal ? 'Export options will be shown before exporting.' : 'Export options will not be shown before exporting.') });
     return newVal;
   }), [setExportConfirmEnabled, showNotification]);
 
@@ -450,7 +450,7 @@ function App() {
   }), [showNotification, setKeyframeCut]);
 
   const toggleSimpleMode = useCallback(() => setSimpleMode((v) => {
-    showNotification({ text: v ? i18n.t('Advanced view has been enabled. You will now also see non-essential buttons and functions') : i18n.t('Advanced view disabled. You will now see only the most essential buttons and functions') });
+    showNotification({ text: i18n.t(v ? 'Advanced view has been enabled. You will now also see non-essential buttons and functions' : 'Advanced view disabled. You will now see only the most essential buttons and functions') });
     return !v;
   }), [setSimpleMode, showNotification]);
 
@@ -493,7 +493,7 @@ function App() {
   const segColorsContext = useMemo<SegColorsContextType>(() => ({
     getSegColor: (seg: SegmentColorIndex | undefined) => {
       const color = getSegColor(seg);
-      return preferStrongColors ? color.desaturate(0.2) : color.desaturate(0.6);
+      return color.desaturate(preferStrongColors ? 0.2 : 0.6);
     },
     nextSegColorIndex: isInitialSegment(cutSegments) ? segColorCounter : segColorCounter + 1,
   }), [cutSegments, preferStrongColors, segColorCounter]);
@@ -544,8 +544,8 @@ function App() {
   // total number of streams for ALL files
   const numStreamsTotal = Object.values(allFilesMeta).flatMap(({ streams }) => streams).length;
 
-  const hasAudio = !!mainAudioStream;
-  const hasVideo = !!mainVideoStream;
+  const hasAudio = Boolean(mainAudioStream);
+  const hasVideo = Boolean(mainVideoStream);
 
   const forceBigWaveform = !hasVideo && hasAudio;
 
@@ -630,7 +630,7 @@ function App() {
 
   const shouldShowPlaybackStreamSelector = videoStreams.length > 0 || audioStreams.length > 0 || (subtitleStreams.length > 0 && !compatPlayerEnabled);
 
-  const usingPreviewFile = !!previewFilePath;
+  const usingPreviewFile = Boolean(previewFilePath);
   const effectiveFilePath = previewFilePath || filePath;
   useEffect(() => {
     if (!effectiveFilePath) return undefined;
@@ -782,7 +782,7 @@ function App() {
     const firstSegmentAtCursorIndex = segmentsAtCursorIndexes[0];
     const playingSegment = firstSegmentAtCursorIndex != null ? cutSegments[firstSegmentAtCursorIndex] : undefined;
 
-    if (playbackModeRef.current != null && playingRef.current && playingSegment && playingSegment.end != null) {
+    if (playbackModeRef.current != null && playingRef.current && playingSegment?.end != null) {
       const nextAction = getPlaybackAction({ playbackMode: playbackModeRef.current, currentTime, playingSegment: { start: playingSegment.start, end: playingSegment.end } });
 
       const exit = () => {
@@ -1620,8 +1620,7 @@ function App() {
 
   // todo merge with userOpenFiles?
   const batchOpenSingleFile = useCallback(async (path: string) => {
-    if (workingRef.current) return;
-    if (filePath === path) return;
+    if (workingRef.current || (filePath === path)) return;
     setWorking({ text: i18n.t('Loading file') });
     try {
       await withErrorHandling(async () => {
@@ -1693,11 +1692,7 @@ function App() {
   }, []);
 
   const extractAllStreams = useCallback(async () => {
-    if (!filePath) return;
-
-    if (!(await confirmDialog({ focusConfirm: true, description: t('Please confirm that you want to extract all tracks as separate files'), confirmButtonText: t('Extract all tracks') }))) return;
-
-    if (workingRef.current) return;
+    if (!filePath || !(await confirmDialog({ focusConfirm: true, description: t('Please confirm that you want to extract all tracks as separate files'), confirmButtonText: t('Extract all tracks') })) || workingRef.current) return;
     try {
       setWorking({ text: i18n.t('Extracting all streams') });
       setStreamsSelectorShown(false);
@@ -1822,7 +1817,7 @@ function App() {
     setBatchFiles((existingFiles) => {
       const mapPathsToFiles = (paths: string[]) => paths.map((path) => ({ path, name: basename(path) }));
       if (append) {
-        const newUniquePaths = newPaths.filter((newPath) => !existingFiles.some(({ path: existingPath }) => newPath === existingPath));
+        const newUniquePaths = newPaths.filter((newPath) => existingFiles.every(({ path: existingPath }) => newPath !== existingPath));
         const [firstNewUniquePath] = newUniquePaths;
         if (firstNewUniquePath == null) return existingFiles;
         setSelectedBatchFiles([firstNewUniquePath]);
@@ -1899,7 +1894,7 @@ function App() {
         const inputOptions: { open?: string, project?: string, tracks?: string, subtitles?: string, addToBatch?: string, mergeWithCurrentFile?: string } = {};
 
         if (newFilePaths.length === 1) {
-          inputOptions.open = isFileOpened ? i18n.t('Open the file instead of the current one') : i18n.t('Open the file');
+          inputOptions.open = i18n.t(isFileOpened ? 'Open the file instead of the current one' : 'Open the file');
         }
 
         if (isFileOpened && newFilePaths.length === 1) {
@@ -2245,9 +2240,7 @@ function App() {
   }, [askBeforeClose, isFileOpened]);
 
   const extractSingleStream = useCallback(async (index: number) => {
-    if (!filePath) return;
-
-    if (workingRef.current) return;
+    if (!filePath || workingRef.current) return;
     try {
       setWorking({ text: i18n.t('Extracting track') });
       // setStreamsSelectorShown(false);

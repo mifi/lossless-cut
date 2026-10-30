@@ -39,8 +39,7 @@ export default ({ autoSaveProjectFile, storeProjectInWorkingDir, filePath, custo
     async function save() {
       try {
         if (!autoSaveProjectFile
-          || !debouncedSaveOperation
-          || debouncedSaveOperation.filePath == null
+          || debouncedSaveOperation?.filePath == null
           // Don't create llc file if no segments yet
           || debouncedSaveOperation.cutSegments.length === 0
           // or if initial segment (and not deselected): https://github.com/mifi/lossless-cut/issues/2745#issuecomment-3979480707

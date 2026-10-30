@@ -96,8 +96,7 @@ function handleProgress(
   onProgress: (a: number) => void,
   customMatcher?: (a: string) => void,
 ) {
-  if (!onProgress) return;
-  if (process.stderr == null) return;
+  if (!onProgress || (process.stderr == null)) return;
   onProgress(0);
 
   const rl = readline.createInterface({ input: process.stderr });

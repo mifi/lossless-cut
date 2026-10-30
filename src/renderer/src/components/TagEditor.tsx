@@ -64,7 +64,7 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
   const newTagKey = editingTag != null ? newTagKeyState : undefined;
   const [newTagKeyInput, setNewTagKeyInput] = useState<string>('');
 
-  const newTagKeyInputError = useMemo(() => !!newTagKeyInput && newTagKeyInput.includes('='), [newTagKeyInput]);
+  const newTagKeyInputError = useMemo(() => Boolean(newTagKeyInput) && newTagKeyInput.includes('='), [newTagKeyInput]);
 
   const effectiveTags = useMemo(() => ({
     ...existingTags,
@@ -193,7 +193,7 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
             const thisTagCustom = customTags[tag] != null;
             const thisTagNew = existingTags[tag] == null;
             const value = effectiveTags[tag];
-            const isDeletedExisting = !!canDeleteExisting && !value && !thisTagNew;
+            const isDeletedExisting = Boolean(canDeleteExisting) && !value && !thisTagNew;
             const editingOther = editingTag != null && !editingThis;
 
             return (

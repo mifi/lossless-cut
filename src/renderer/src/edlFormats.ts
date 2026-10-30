@@ -95,10 +95,7 @@ export function parseCsv(csvStr: string, parseTimeFn: (a: string) => number | un
     }];
   });
 
-  if (!mapped.every(({ start, end }) => (
-    !Number.isNaN(start)
-    && (end === undefined || !Number.isNaN(end))
-  ))) {
+  if (mapped.some(({ start, end }) => Number.isNaN(start) || (end !== undefined && Number.isNaN(end)))) {
     console.log(mapped);
     throw new UserFacingError(i18n.t('Invalid start or end value. Must contain a number of seconds'));
   }
@@ -175,8 +172,7 @@ export async function parseMplayerEdl(text: string) {
     const start = parseFloat(match[1]!);
     const end = parseFloat(match[2]!);
     const type = parseInt(match[3]!, 10);
-    if (Number.isNaN(start) || Number.isNaN(end)) return [];
-    if (start < 0 || end < 0 || start >= end) return [];
+    if (Number.isNaN(start) || Number.isNaN(end) || start < 0 || end < 0 || start >= end) return [];
     return [{ start, end, type }];
   });
 
@@ -519,11 +515,10 @@ export function parseDjiGps2(lines: string[]) {
   if (pairsMatch == null) return undefined;
   for (const match of pairsMatch) {
     const split = match.split(':');
-    if (split.length === 2) {
-      const [key, value] = split;
-      if (key != null && value != null) {
-        records[key.trim()] = value.trim();
-      }
+    if (split.length !== 2) continue;
+    const [key, value] = split;
+    if (key != null && value != null) {
+      records[key.trim()] = value.trim();
     }
   }
   const altitude = parseFloat(records['abs_alt']!);

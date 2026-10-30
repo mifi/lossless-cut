@@ -68,7 +68,7 @@ interface EditingStream {
   path: string;
 }
 
-const getStreamDispositionsObj = (stream: FFprobeStream) => ((stream && stream.disposition) || {});
+const getStreamDispositionsObj = (stream: FFprobeStream) => (stream?.disposition || {});
 
 const getStreamParams = ({ paramsByFile, filePath, streamId }: { paramsByFile: ParamsByFile, filePath: string, streamId: number }) => (
   paramsByFile.get(filePath)?.paramsByStream.get(streamId)
@@ -163,7 +163,7 @@ function AspectEditor({ stream, streamParams, updateStreamParams }: {
   return (
     <>
       <div style={{ fontSize: '.85em', color: 'var(--gray-11)', marginBottom: '.4em' }}>
-        {isSar ? t('Losslessly change the sample aspect ratio (SAR) of this track with a bitstream filter.') : t('Losslessly change the display aspect ratio of this track at the container level.')}
+        {t(isSar ? 'Losslessly change the sample aspect ratio (SAR) of this track with a bitstream filter.' : 'Losslessly change the display aspect ratio of this track at the container level.')}
         {' '}
         {t('Note that this is not supported in all video players.')}
       </div>
@@ -413,7 +413,7 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
   const updateCurrentStreamParams = (setter: (a: StreamParams) => void) => updateStreamParams(editingFile, editingStreamId, setter);
 
   return (
-    <Dialog.Root open={editingStream != null} onOpenChange={(v) => v === false && setEditingStream(undefined)}>
+    <Dialog.Root open={editingStream != null} onOpenChange={(v) => !v && setEditingStream(undefined)}>
       <Dialog.Portal>
         <Dialog.Overlay />
         <Dialog.Content style={{ width: '40em' }} aria-describedby={undefined} onEscapeKeyDown={cancelTagEditOnEscape(editingKey, setEditingKey)}>
@@ -453,7 +453,7 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
                       <KeyValue
                         name={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'h264_mp4toannexb' })}
                         // eslint-disable-next-line no-param-reassign
-                        value={<Switch checked={!!streamParams?.bsfH264Mp4toannexb} onCheckedChange={(checked) => updateCurrentStreamParams((params) => { params.bsfH264Mp4toannexb = checked === true; })} />}
+                        value={<Switch checked={Boolean(streamParams?.bsfH264Mp4toannexb)} onCheckedChange={(checked) => updateCurrentStreamParams((params) => { params.bsfH264Mp4toannexb = checked; })} />}
                       />
                     )}
 
@@ -462,13 +462,13 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
                         <KeyValue
                           name={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'hevc_mp4toannexb' })}
                           // eslint-disable-next-line no-param-reassign
-                          value={<Switch checked={!!streamParams?.bsfHevcMp4toannexb} onCheckedChange={(checked) => updateCurrentStreamParams((params) => { params.bsfHevcMp4toannexb = checked === true; })} />}
+                          value={<Switch checked={Boolean(streamParams?.bsfHevcMp4toannexb)} onCheckedChange={(checked) => updateCurrentStreamParams((params) => { params.bsfHevcMp4toannexb = checked; })} />}
                         />
 
                         <KeyValue
                           name={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'hevc_metadata=aud=insert' })}
                           // eslint-disable-next-line no-param-reassign
-                          value={<Switch checked={!!streamParams?.bsfHevcAudInsert} onCheckedChange={(checked) => updateCurrentStreamParams((params) => { params.bsfHevcAudInsert = checked === true; })} />}
+                          value={<Switch checked={Boolean(streamParams?.bsfHevcAudInsert)} onCheckedChange={(checked) => updateCurrentStreamParams((params) => { params.bsfHevcAudInsert = checked; })} />}
                         />
                       </>
                     )}
@@ -571,7 +571,7 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
   const sampleRate = Number(stream.sample_rate);
   const title = stream.tags?.title;
 
-  const onClick = () => onToggle && onToggle(stream.index);
+  const onClick = () => onToggle?.(stream.index);
 
   const onDispositionChange = useCallback<ChangeEventHandler<HTMLSelectElement>>((e) => {
     let newDisposition: ContentDispositionOptions | 'llc_disposition_remove' | undefined;
@@ -798,7 +798,7 @@ function StreamsSelector({
   const { t } = useTranslation();
 
   function getFormatDuration(format: FFprobeFormat | undefined) {
-    if (!format || !format.duration) return undefined;
+    if (!format?.duration) return undefined;
     const parsed = parseFloat(format.duration);
     if (Number.isNaN(parsed)) return undefined;
     return parsed;
@@ -919,7 +919,7 @@ function StreamsSelector({
       </div>
 
       {editingFile != null && (
-        <Dialog.Root defaultOpen onOpenChange={(v) => v === false && setEditingFile(undefined)}>
+        <Dialog.Root defaultOpen onOpenChange={(v) => !v && setEditingFile(undefined)}>
           <Dialog.Portal>
             <Dialog.Overlay />
             <Dialog.Content style={{ width: '40em' }} aria-describedby={undefined} onEscapeKeyDown={cancelTagEditOnEscape(editingKey, setEditingKey)}>
