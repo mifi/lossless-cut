@@ -545,8 +545,11 @@ function SegmentList({
 
   useEffect(() => {
     if (invertCutSegments) return;
+    // Measure the segment first: its height may have just changed (e.g. a marker got an end time, #3071) before the virtualizer's ResizeObserver has run
+    const node = scrollerRef.current?.querySelector<HTMLElement>(`[data-index="${currentSegIndex}"]`);
+    if (node) rowVirtualizer.measureElement(node);
     rowVirtualizer.scrollToIndex(currentSegIndex, { behavior: 'smooth', align: 'auto' });
-  }, [currentSegIndex, invertCutSegments, rowVirtualizer]);
+  }, [currentSegIndex, currentCutSeg, invertCutSegments, rowVirtualizer]);
 
   const handleDragStart = (event: DragStartEvent) => {
     setDraggingId(event.active.id);
