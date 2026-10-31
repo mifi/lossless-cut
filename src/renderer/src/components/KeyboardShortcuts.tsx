@@ -121,7 +121,7 @@ const CreateBinding = memo(({
           </AnimatePresence>
 
           <div style={{ marginBottom: '1em', display: 'flex', gap: '.5em', flexWrap: 'wrap' }}>
-            {!keysDown.includes('esc') && <Button style={{ padding: '.2em .4em' }} onClick={() => addKeyDown('esc')}>ESC</Button>}
+            {!keysDown.includes('Escape') && <Button style={{ padding: '.2em .4em' }} onClick={() => addKeyDown('Escape')}>ESC</Button>}
             {keysDown.length > 0 && (
               <Button onClick={() => setKeysDown([])}><FaUndo style={{ fontSize: '.8em', verticalAlign: 'middle', marginRight: '.3em' }} />{t('Start over')}</Button>
             )}
