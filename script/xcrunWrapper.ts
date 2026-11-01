@@ -99,11 +99,9 @@ const maxRetries = 3;
 
 async function run() {
   for (let i = 0; i < maxRetries; i += 1) {
-    // eslint-disable-next-line no-await-in-loop
     const wantRetry = await runAttempt();
     if (!wantRetry) return; // success
     console.log('Retrying soon');
-    // eslint-disable-next-line no-await-in-loop
     await new Promise((resolve) => { setTimeout(resolve, 1000); });
   }
 

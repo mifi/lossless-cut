@@ -55,7 +55,7 @@ export default function GenericDialog({ dialog, onOpenChange }: {
       </Dialog.Root>
 
       {/* Alert dialog */ }
-      <AlertDialog.Root open={dialog != null && !!dialog.isAlert} onOpenChange={onOpenChange}>
+      <AlertDialog.Root open={dialog != null && Boolean(dialog.isAlert)} onOpenChange={onOpenChange}>
         <AlertDialog.Portal>
           <AlertDialog.Overlay />
 
@@ -220,7 +220,7 @@ export function useDialog() {
       function CleanupChoices() {
         const [choices, setChoices] = useState(cleanupChoicesInitial);
 
-        const getVal = (key: CleanupChoice) => !!choices[key];
+        const getVal = (key: CleanupChoice) => Boolean(choices[key]);
 
         const onChange = (key: CleanupChoice, val: boolean | string) => setChoices((oldChoices) => {
           const newChoices = { ...oldChoices, [key]: Boolean(val) };

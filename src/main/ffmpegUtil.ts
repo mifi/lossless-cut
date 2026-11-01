@@ -1,8 +1,8 @@
 /**
- * Convert 0-1 quality to ffmpeg jpeg quality scale
- * @param quality 0-1 where 1 is best quality
- * @returns ffmpeg jpeg quality value
- */
+Convert 0-1 quality to ffmpeg jpeg quality scale
+@param quality 0-1 where 1 is best quality
+@returns ffmpeg jpeg quality value
+*/
 export function getFfmpegJpegQuality(quality: number) {
   // Normal range for JPEG is 2-31 with 31 being the worst quality.
   const qMin = 2;

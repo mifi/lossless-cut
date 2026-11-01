@@ -128,7 +128,6 @@ myGlobal.fetch = undefined;
 // eslint-disable-next-line @stylistic/wrap-iife, func-names, unicorn-js/prefer-block-statement-over-iife -- TODO fix (new rule in @mifi/lint-config)
 (function () {
   onmessage = (event: MessageEvent<RequestMessageData>) => {
-    // eslint-disable-next-line strict, lines-around-directive
     'use strict';
 
     const { code, id, context: contextStr } = event.data;

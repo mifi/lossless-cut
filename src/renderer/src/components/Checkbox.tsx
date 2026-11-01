@@ -16,7 +16,6 @@ export default function Checkbox({ label, disabled, style, ...props }: CheckboxP
         </Indicator>
       </Root>
 
-      {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
       <label className={classes['Label']} htmlFor={id} style={{ opacity: disabled ? 0.5 : undefined }}>
         {label}
       </label>

@@ -141,7 +141,7 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate: storedMerged
 
     function addProblem(path: string, error: Problem) {
       problems[path] ??= [];
-      problems[path]!.push(error);
+      problems[path].push(error);
     }
 
     allFilesMetaExceptFirstFile.forEach(([path, { ffprobeMeta: { streams } }]) => {

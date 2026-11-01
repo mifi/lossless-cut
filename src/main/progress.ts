@@ -3,9 +3,9 @@ export function parseFfmpegProgressLine({ line, customMatcher, duration: duratio
   customMatcher?: ((a: string) => void) | undefined,
   duration: number | undefined,
 }) {
-  let match = line.match(/frame=\s*\S+\s+fps=\s*\S+\s+q=\s*\S+\s+(?:size|Lsize)=\s*\S+\s+time=\s*(\S+)\s+/);
+  let match = /frame=\s*\S+\s+fps=\s*\S+\s+q=\s*\S+\s+(?:size|Lsize)=\s*\S+\s+time=\s*(\S+)\s+/.exec(line);
   // Audio only looks like this: "size=  233422kB time=01:45:50.68 bitrate= 301.1kbits/s speed= 353x    "
-  match ??= line.match(/(?:size|Lsize)=\s*\S+\s+time=\s*(\S+)\s+/);
+  match ??= /(?:size|Lsize)=\s*\S+\s+time=\s*(\S+)\s+/.exec(line);
   if (!match) {
     customMatcher?.(line);
     return undefined;
@@ -17,7 +17,7 @@ export function parseFfmpegProgressLine({ line, customMatcher, duration: duratio
 
   const timeStr = match[1];
   // console.log(timeStr);
-  const match2 = timeStr!.match(/^(-?)(\d+):(\d+):(\d+)\.(\d+)$/);
+  const match2 = /^(-?)(\d+):(\d+):(\d+)\.(\d+)$/.exec(timeStr!);
   if (!match2) throw new Error(`Invalid time from ffmpeg progress ${timeStr}`);
 
   const sign = match2[1];

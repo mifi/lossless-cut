@@ -90,7 +90,6 @@ export default ({ detectedFps, timecodeFormat, showGenericDialog }: {
       }, [onOpenChange, t, value]);
 
       return (
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         <Dialog.Content aria-describedby={undefined} style={{ width: '80vw' }}>
           <Dialog.Title>{title}</Dialog.Title>
 

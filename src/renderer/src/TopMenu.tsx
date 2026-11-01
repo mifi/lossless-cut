@@ -59,7 +59,7 @@ function TopMenu({
 
   const onOutFormatLockedClick = useCallback(() => setOutFormatLocked((v) => (v ? undefined : fileFormat)), [fileFormat, setOutFormatLocked]);
 
-  const showClearWorkingDirButton = !!customOutDir;
+  const showClearWorkingDirButton = Boolean(customOutDir);
 
   function renderFormatLock() {
     const Icon = outFormatLocked ? FaLock : FaUnlock;
@@ -126,7 +126,7 @@ function TopMenu({
           title={customOutDir}
           style={{ paddingLeft: showClearWorkingDirButton ? '.4em' : undefined }}
         >
-          {customOutDir ? t('Working dir set') : t('Working dir unset')}
+          {t(customOutDir ? 'Working dir set' : 'Working dir unset')}
         </Button>
       </OutDirSelector>
 

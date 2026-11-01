@@ -231,8 +231,7 @@ function ExportConfirm({
       generic.push({ text: t('You are in simple mode, meaning some functionality has been simplified or hidden.') });
     }
 
-    // eslint-disable-next-line unicorn-js/prefer-includes-over-repeated-comparisons -- TODO fix (new rule in @mifi/lint-config)
-    if ((effectiveExportMode === 'separate' || effectiveExportMode === 'merge' || effectiveExportMode === 'merge+separate') && !areWeCutting) {
+    if (['separate', 'merge', 'merge+separate'].includes(effectiveExportMode) && !areWeCutting) {
       generic.push({ text: t('Exporting whole file without cutting, because there are no segments to export.') });
     }
 
@@ -256,7 +255,7 @@ function ExportConfirm({
     return {
       generic,
       specific,
-      totalNum: generic.filter((n) => n.warning).length + Object.values(specific).filter((n) => n != null && n.warning).length,
+      totalNum: generic.filter((n) => n.warning).length + Object.values(specific).filter((n) => n?.warning).length,
     };
   }, [effectiveExportMode, areWeCuttingProblematicStreams, mainCopiedThumbnailStreams, isMov, isIpod, movFastStart, t, preserveMovData, areWeCutting, needSmartCut, isEncoding, keyframeCut, enableOverwriteOutput, simpleMode, willMerge, avoidNegativeTs, outFormat, outputPlaybackRate, keyframesEnabled, haveSegmentWithProblematicKeyframe, hvc1NeededStreams]);
 

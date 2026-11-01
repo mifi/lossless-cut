@@ -35,7 +35,7 @@ const nonCopyableMetadataKeys = new Set<string>([...muxerWrittenMetadataKeys, ..
 const isDefaultHandlerName = (value: string) => /handler|core media|iso media|dji\./i.test(value);
 
 const isCopyableMetadata = (key: string, value: string) => {
-  const baseKey = key.toLowerCase().split('-')[0]!;
+  const baseKey = key.toLowerCase().split('-', 1)[0]!;
   if (baseKey === 'handler_name') return !isDefaultHandlerName(value);
   return !nonCopyableMetadataKeys.has(baseKey) && !baseKey.startsWith('_statistics_');
 };

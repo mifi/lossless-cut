@@ -276,7 +276,6 @@ async function startPlayback({ path, slaveVideo, masterVideo, videoStreamIndex, 
           slaveVideo.currentTime = masterVideo.currentTime;
           setStandardPlaybackRate();
         } else if (playbackDiff != null && playbackDiff > 0.3) {
-          // eslint-disable-next-line no-param-reassign
           if (setPlaybackRate(1.5)) {
             console.warn(`Playback behind by ${playbackDiff}s, speeding up playback`);
           }

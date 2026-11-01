@@ -16,7 +16,7 @@ export const Description = withClass(Dialog.Description, styles['DialogDescripti
 
 export const Title = withClass(Dialog.Title, styles['DialogTitle']!);
 
-export const Portal = (props: Dialog.DialogPortalProps) => <Dialog.Portal container={document.getElementById('app-root')!} {...props} />;
+export const Portal = (props: Dialog.DialogPortalProps) => <Dialog.Portal container={document.getElementById('app-root')} {...props} />;
 
 export const CloseButton = () => (
   <Dialog.Close asChild>

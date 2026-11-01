@@ -55,8 +55,7 @@ export const isExactTimecodeMatch = (str: string, parseTimecode: ParseTimecode, 
 
 // See also parseYoutube
 export function parseDuration(str: string, fps?: number) {
-  // eslint-disable-next-line unicorn/better-regex
-  const match = str.replaceAll(/\s/g, '').match(durationRegex);
+  const match = durationRegex.exec(str.replaceAll(/\s/g, ''));
 
   if (!match) return undefined;
 
@@ -72,7 +71,7 @@ export function parseDuration(str: string, fps?: number) {
   if (fps == null) {
     time = ((hour * 60) + min) * 60 + parseFloat(secWithFraction);
   } else {
-    const [secStr, framesStr] = secWithFraction.split('.');
+    const [secStr, framesStr] = secWithFraction.split('.', 2);
     const wholeSeconds = ((hour * 60) + min) * 60 + parseInt(secStr!, 10);
     const frames = framesStr != null ? parseInt(framesStr, 10) : 0;
     // inverse of formatDuration (which floors the frame remainder), needed for non-integer fps like 29.97

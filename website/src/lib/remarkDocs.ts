@@ -15,9 +15,9 @@ import { docsDir, findTitleHeading, getDocPath, getDocUrl, repoDir } from './doc
 const isDoc = (file: VFile) => file.path?.startsWith(docsDir + path.sep) ?? false;
 
 /**
- * Removes the doc's `# title` heading, because Starlight shows the title (taken from it) itself.
- * Images in it (e.g. badges) are kept, as a paragraph in its place.
- */
+Removes the doc's `# title` heading, because Starlight shows the title (taken from it) itself.
+Images in it (e.g. badges) are kept, as a paragraph in its place.
+*/
 export function remarkRemoveDocTitle() {
   return (tree: Root, file: VFile) => {
     if (!isDoc(file)) return;
@@ -29,9 +29,9 @@ export function remarkRemoveDocTitle() {
 }
 
 /**
- * Rewrites relative links, which are written for browsing the docs on GitHub, to the site's URLs:
- * other docs to their page, other files in the repo to GitHub. Relative images are left to Astro, which bundles them.
- */
+Rewrites relative links, which are written for browsing the docs on GitHub, to the site's URLs:
+other docs to their page, other files in the repo to GitHub. Relative images are left to Astro, which bundles them.
+*/
 export function remarkRepoLinks() {
   return (tree: Root, file: VFile) => {
     if (!isDoc(file)) return;
@@ -67,9 +67,9 @@ export function remarkRepoLinks() {
 }
 
 /**
- * Sets the page's id as `slug` in the frontmatter that remark/rehype plugins see. starlight-links-validator
- * uses it to know which page a file is, which it otherwise derives from the file's path in src/content/docs.
- */
+Sets the page's id as `slug` in the frontmatter that remark/rehype plugins see. starlight-links-validator
+uses it to know which page a file is, which it otherwise derives from the file's path in src/content/docs.
+*/
 export function remarkDocSlug() {
   return (_tree: Root, file: VFile) => {
     if (!isDoc(file)) return;

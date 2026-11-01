@@ -59,8 +59,7 @@ export function parseRatio(str: string, char = '/') {
   if (split.length !== 2) return undefined;
   const num = parseInt(split[0]!, 10);
   const den = parseInt(split[1]!, 10);
-  if (Number.isNaN(num) || Number.isNaN(den)) return undefined;
-  if (den <= 0) return undefined;
+  if (Number.isNaN(num) || Number.isNaN(den) || (den <= 0)) return undefined;
   return num / den;
 }
 

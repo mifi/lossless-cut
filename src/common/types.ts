@@ -16,9 +16,9 @@ export const ffmpegHwAccelSchema = z.enum(['none', 'auto', 'vdpau', 'dxva2', 'd3
 export type FfmpegHwAccel = z.infer<typeof ffmpegHwAccelSchema>;
 
 /**
- * The parts of an audio stream's ffprobe data needed to decide whether its channel layout
- * has to be fixed up before ffmpeg can resample or downmix it. See `getFixChannelLayoutFilter`.
- */
+The parts of an audio stream's ffprobe data needed to decide whether its channel layout
+has to be fixed up before ffmpeg can resample or downmix it. See `getFixChannelLayoutFilter`.
+*/
 export interface AudioChannelInfo {
   channels?: number | undefined,
   channelLayout?: string | undefined,
