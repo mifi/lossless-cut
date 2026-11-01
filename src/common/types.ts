@@ -82,17 +82,11 @@ export const configSchema = z.object({
   autoLoadTimecode: z.boolean(),
   segmentsToChapters: z.boolean(),
   simpleMode: z.boolean(),
-  /**
-  todo: rename to cutFileTemplate
-  */
+  /** todo: rename to cutFileTemplate */
   outSegTemplate: z.string().or(z.undefined()),
-  /**
-  todo: rename to cutMergedFileTemplate
-  */
+  /** todo: rename to cutMergedFileTemplate */
   mergedFileTemplate: z.string().or(z.undefined()),
-  /**
-  todo: rename to mergedFileTemplate
-  */
+  /** todo: rename to mergedFileTemplate */
   mergedFilesTemplate: z.string().or(z.undefined()),
   keyboardSeekAccFactor: z.number(),
   keyboardNormalSeekSpeed: z.number(),

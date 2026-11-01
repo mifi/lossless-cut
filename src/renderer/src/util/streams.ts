@@ -285,9 +285,7 @@ export function isStreamThumbnail(stream: Pick<FFprobeStream, 'codec_type' | 'di
   return stream?.codec_type === 'video' && stream.disposition?.[attachedPicDisposition] === 1;
 }
 
-/**
-Resolves every stream that is going to be copied to the output. Unknown streams resolve to `undefined`.
-*/
+/** Resolves every stream that is going to be copied to the output. Unknown streams resolve to `undefined`. */
 const getCopiedStreams = ({ allFilesMeta, copyFileStreams }: {
   allFilesMeta: AllFilesStreamMeta,
   copyFileStreams: CopyfileStreams,

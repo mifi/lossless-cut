@@ -2066,9 +2066,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mifi/lint-config@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "@mifi/lint-config@npm:1.0.0"
+"@mifi/lint-config@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "@mifi/lint-config@npm:1.1.0"
   dependencies:
     "@eslint-react/eslint-plugin": "npm:^5.28.8"
     "@stylistic/eslint-plugin": "npm:^5.10.0"
@@ -2084,7 +2084,7 @@ __metadata:
       optional: true
   bin:
     mifi-lint-migrate: migrate.mjs
-  checksum: 10/2747a390b6b86922c6f7f5976af684f6145568980535b407975c464af4c1835346b0ca5f7f4fd2dc71d135ea80727ec6c1d5b6e38137ca423334931f141762a2
+  checksum: 10/67ad1aa2a29b2df0495b5e0cca0f5de6a74a0c0b199ea36fe51b393ca0e08bf480c564d3081d938957e86e22d28120a4c927a7a902bad982294db41f31826f68
   languageName: node
   linkType: hard
 
@@ -9348,7 +9348,7 @@ __metadata:
     "@dnd-kit/sortable": "npm:^10.0.0"
     "@electron/remote": "npm:^2.1.3"
     "@fontsource/open-sans": "npm:^5.2.7"
-    "@mifi/lint-config": "npm:^1.0.0"
+    "@mifi/lint-config": "npm:^1.1.0"
     "@radix-ui/colors": "npm:^3.0.0"
     "@radix-ui/react-alert-dialog": "npm:^1.1.15"
     "@radix-ui/react-checkbox": "npm:^1.3.3"

@@ -14,9 +14,7 @@ export default function useErrorHandling() {
     setGenericError({ title, err });
   }, []);
 
-  /**
-  Run an operation with error handling
-  */
+  /** Run an operation with error handling */
   async function withErrorHandling(operation: () => Promise<void>, errorMsg?: string) {
     try {
       await operation();

@@ -78,9 +78,7 @@ export async function checkFfExists(cmd: FfCommand) {
 }
 
 const getFfprobePath = () => getFfPath('ffprobe');
-/**
-⚠️ Do not use directly when running ffmpeg, because we need to add certain options before running, like `LD_LIBRARY_PATH` on linux
-*/
+/** ⚠️ Do not use directly when running ffmpeg, because we need to add certain options before running, like `LD_LIBRARY_PATH` on linux */
 export const getFfmpegPath = () => getFfPath('ffmpeg');
 
 export function abortFfmpegs() {
