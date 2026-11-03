@@ -109,7 +109,7 @@ Everything here is lossless unless noted.
 - Cut a YouTube video (downloaded with [yt-dlp](https://github.com/yt-dlp/yt-dlp)) by its chapters, or by a list of times from a comment
 - Import a list of cut times from another tool as an EDL (edit decision list, CSV) and make those cuts, or export your cut times as a CSV EDL for another tool
 - Save an HLS (`.m3u8`) live stream or video to a file
-- Attach cover art or a thumbnail to a video or audio file, from a JPEG file or a frame on the timeline
+- Attach cover art or a thumbnail to a video or audio file, from a JPEG file or a frame on the timeline. For MP4/MOV exports with cover art, additional MOV metadata that requires "Preserve all metadata" is not copied.
 - Change the author, title, GPS position or recording time of a video
 - Fix the rotation of a video that has the wrong orientation flag
 - Crop away black bars (H.264/H.265)

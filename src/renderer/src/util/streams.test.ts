@@ -1,6 +1,6 @@
 import { test, expect } from 'vitest';
 
-import { getEffectiveAvoidNegativeTs, getKeyframeCutSeekCompensation, getMapStreamsArgs, getStreamIdsToCopy, isCopyingOnlyAudioStreams, hasFileEdits, hasStreamEdits } from './streams';
+import { getEffectiveAvoidNegativeTs, getKeyframeCutSeekCompensation, getMapStreamsArgs, getStreamIdsToCopy, isCopyingOnlyAudioStreams, hasFileEdits, hasStreamEdits, hasAttachedPicture } from './streams';
 import type { FFprobeStreamDisposition } from '../../../common/ffprobe';
 import type { LiteFFprobeStream } from '../types';
 
@@ -266,4 +266,26 @@ test('hasFileEdits', () => {
   expect(hasFileEdits({ metadata: {}, paramsByStream: new Map(), offset: 0 })).toBe(false);
   expect(hasFileEdits({ metadata: {}, paramsByStream: new Map(), offset: 1.5 })).toBe(true);
   expect(hasFileEdits({ metadata: { title: 'a' }, paramsByStream: new Map() })).toBe(true);
+});
+
+test('detects only copied attached pictures and respects disposition edits', () => {
+  const selectedFilesMeta = { source: { streams: streams1 } };
+  const copyFileStreams = [{ path: 'source', streamIds: [0, 1] }];
+  expect(hasAttachedPicture({ allFilesMeta: selectedFilesMeta, copyFileStreams })).toBe(true);
+  expect(hasAttachedPicture({ allFilesMeta: selectedFilesMeta, copyFileStreams: [{ path: 'source', streamIds: [1, 2] }] })).toBe(false);
+  expect(hasAttachedPicture({ allFilesMeta: selectedFilesMeta,
+    copyFileStreams,
+    paramsByFile: new Map([
+      ['source', { metadata: {}, paramsByStream: new Map([[0, { metadata: {}, disposition: 'llc_disposition_remove' }]]) }],
+    ]) })).toBe(false);
+  expect(hasAttachedPicture({ allFilesMeta: selectedFilesMeta,
+    copyFileStreams: [{ path: 'cover', streamIds: [0] }],
+    paramsByFile: new Map([
+      ['cover', { metadata: {}, paramsByStream: new Map([[0, { metadata: {}, disposition: 'attached_pic' }]]) }],
+    ]) })).toBe(true);
+  expect(hasAttachedPicture({ allFilesMeta: selectedFilesMeta,
+    copyFileStreams: [{ path: 'source', streamIds: [2] }],
+    paramsByFile: new Map([
+      ['source', { metadata: {}, paramsByStream: new Map([[0, { metadata: {}, disposition: 'attached_pic' }]]) }],
+    ]) })).toBe(false);
 });
