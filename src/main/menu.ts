@@ -387,6 +387,8 @@ export default ({ app, mainWindow, newVersion, isStoreBuild, openExternal }: {
         { role: 'togglefullscreen', label: esc(t('Toggle Full Screen')) },
         { role: 'resetZoom', label: esc(t('Reset font size')) },
         { role: 'zoomIn', label: esc(t('Increase font size')) },
+        // zoomIn's accelerator is CommandOrControl+Plus, which on many layouts needs Shift (Ctrl+Shift+=), so also accept Ctrl+= like browsers do https://github.com/mifi/lossless-cut/issues/3200
+        { role: 'zoomIn', accelerator: 'CommandOrControl+=', visible: false },
         { role: 'zoomOut', label: esc(t('Decrease font size')) },
       ],
     },
