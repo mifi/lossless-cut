@@ -535,6 +535,10 @@
       ]
     },
     "snap": {
+      "allowNativeWayland": false,
+      "executableArgs": [
+        "--ozone-platform=x11"
+      ],
       "plugs": [
         "default",
         "removable-media"
