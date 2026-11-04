@@ -534,15 +534,20 @@
         }
       ]
     },
-    "snap": {
-      "allowNativeWayland": false,
-      "executableArgs": [
-        "--ozone-platform=x11"
-      ],
-      "plugs": [
-        "default",
-        "removable-media"
-      ]
+    "snapcraft": {
+      "base": "core24",
+      "core24": {
+        "plugs": [
+          "default",
+          "removable-media",
+          {
+            "browser-sandbox": {
+              "interface": "browser-support",
+              "allow-sandbox": true
+            }
+          }
+        ]
+      }
     }
   },
   "packageManager": "yarn@4.18.0"
