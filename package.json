@@ -539,7 +539,13 @@
       "core24": {
         "plugs": [
           "default",
-          "removable-media"
+          "removable-media",
+          {
+            "browser-sandbox": {
+              "interface": "browser-support",
+              "allow-sandbox": true
+            }
+          }
         ]
       }
     }
