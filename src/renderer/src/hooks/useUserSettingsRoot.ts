@@ -153,6 +153,8 @@ export default function useUserSettingsRoot() {
   useEffect(() => safeSetConfig({ keyBindings }), [keyBindings]);
   const [enableSmartCut, setEnableSmartCut] = useState(safeGetConfigInitial('enableSmartCut'));
   useEffect(() => safeSetConfig({ enableSmartCut }), [enableSmartCut]);
+  const [fullEncode, setFullEncode] = useState(safeGetConfigInitial('fullEncode'));
+  useEffect(() => safeSetConfig({ fullEncode }), [fullEncode]);
   const [customFfPath, setCustomFfPath] = useState(safeGetConfigInitial('customFfPath'));
   useEffect(() => safeSetConfig({ customFfPath }), [customFfPath]);
   const [storeProjectInWorkingDir, setStoreProjectInWorkingDir] = useState(safeGetConfigInitial('storeProjectInWorkingDir'));
@@ -304,6 +306,7 @@ export default function useUserSettingsRoot() {
     segmentsToChaptersOnly,
     keyBindings,
     enableSmartCut,
+    fullEncode,
     customFfPath,
     storeProjectInWorkingDir,
     enableOverwriteOutput,
@@ -387,6 +390,7 @@ export default function useUserSettingsRoot() {
     setKeyBindings,
     resetKeyBindings,
     setEnableSmartCut,
+    setFullEncode,
     setCustomFfPath,
     setStoreProjectInWorkingDir,
     setEnableOverwriteOutput,
