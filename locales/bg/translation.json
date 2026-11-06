@@ -197,5 +197,16 @@
   "Decrease audio volume": "Намаляване силата на звука",
   "Decrease font size": "Намаляване размера на шрифта",
   "Decrease segment order": "Намаляване реда на сегментите",
-  "Default": "По подразбиране"
+  "Default": "По подразбиране",
+  "Delete": "Изтриване",
+  "Delete source file": "Изтриване на изходния файл",
+  "deleted": "изтрито",
+  "Depending on your specific file/player, you may have to try different options for best results.": "В зависимост от вашия конкретен файл/плейър, може да се наложи да опитате различни опции за най-добри резултати.",
+  "Deselect all segments": "Размаркиране на всички сегменти",
+  "Detect black scenes": "Открий черните сцени",
+  "Detect scene changes": "Открий промени в сцената",
+  "Detect silent scenes": "Открий тихите сцени",
+  "Detecting black scenes": "Откриване на черните сцени",
+  "Detecting scene changes": "Откриване на промени в сцената",
+  "Detecting silent scenes": "Откриване на тихите сцени"
 }
