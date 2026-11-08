@@ -281,10 +281,21 @@ export const filterNonMarkers = <T extends { end?: number | undefined }>(segment
 }] : []));
 
 export function makeDurationSegments(segmentDuration: number, totalDuration: number) {
+  if (!Number.isFinite(segmentDuration) || !Number.isFinite(totalDuration) || segmentDuration <= 0 || totalDuration <= 0) return [];
+
+  // Compute the segment count once from the ratio. A ratio within float error of a whole
+  // number is treated as exact, so exact multiples don't produce a tiny extra segment,
+  // while any real remainder still gets its own (last) segment.
+  const ratio = totalDuration / segmentDuration;
+  const nearestInt = Math.round(ratio);
+  const count = nearestInt >= 1 && Math.abs(ratio - nearestInt) <= 1e-12 * Math.max(1, Math.abs(ratio)) ? nearestInt : Math.ceil(ratio);
+
   const edl: { start: number, end: number }[] = [];
-  for (let start = 0; start < totalDuration; start += segmentDuration) {
-    const end = start + segmentDuration;
-    edl.push({ start, end: Math.min(end, totalDuration) });
+  // Multiply by the index instead of repeated addition, so float error doesn't accumulate
+  for (let i = 0; i < count; i += 1) {
+    const start = i * segmentDuration;
+    const end = i === count - 1 ? totalDuration : (i + 1) * segmentDuration;
+    edl.push({ start, end });
   }
   return edl;
 }
