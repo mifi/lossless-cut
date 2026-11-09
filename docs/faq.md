@@ -10,6 +10,10 @@ LosslessCut is free and open source, and you can download it for free from [GitH
 
 The app store versions are often a few versions behind the latest GitHub version, because I want to be sure that a new version works well before releasing it there. The GitHub versions contain new, untested features and may contain some bugs (even in existing functionality): I consider the newest GitHub versions to be a public "beta". The app store and GitHub versions have the same features, except for a few platform limitations: Apple doesn't allow app store apps to open VOB files, and Mac App Store apps run in a sandbox, so they need to ask for an output folder before they can write files.
 
+### Where's my receipt? How do I get a refund?
+
+If you bought LosslessCut in the Mac App Store or Microsoft Store, the purchase was made with the store, not with me, so I can't see your purchase or send you a receipt. The store emails you a receipt, and you can also find it in your purchase history: for Apple at https://reportaproblem.apple.com (or *Settings → [your name] → Media & Purchases → View Account → Purchase History* on iPhone/iPad), and for Microsoft at https://account.microsoft.com/billing/orders. You can request a refund in the same place. If you can't find LosslessCut there, you may have bought a [fake clone](https://github.com/mifi/lossless-cut/issues/550).
+
 ### Is LosslessCut safe?
 
 Yes, if you get it from an [official source](#can-i-download-losslesscut-from-other-websites-or-package-managers). LosslessCut is open source, so anyone can read its code, and the GitHub releases are built from that code by GitHub Actions. The Windows version on GitHub isn't code signed, so Windows and antivirus software may warn about it. LosslessCut has no ads or tracking, see the [privacy policy](https://losslesscut.app/privacy-policy).
