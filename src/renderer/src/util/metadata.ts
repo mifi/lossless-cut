@@ -1,16 +1,31 @@
 import type { FFprobeStream } from '../../../common/ffprobe';
 import type { Suggestion } from '../components/SuggestionTextField';
-import { isMov } from './streams';
+import { isMatroska, isMov } from './streams';
 
 
 // Common metadata keys (as named by ffmpeg) to suggest
 export const fileMetadataKeys = ['title', 'artist', 'album_artist', 'album', 'composer', 'genre', 'date', 'track', 'comment', 'description', 'copyright', 'creation_time'] as const;
 export const streamMetadataKeys = ['title', 'language', 'handler_name', 'creation_time'] as const;
 
+// The MP4 and MOV muxers write a track's `title` as its name (`udta/name`), the other MP4-like muxers (ipod, ismv) don't
+const isMovTrackNameFormat = (outFormat: string | undefined) => outFormat === 'mp4' || outFormat === 'mov';
+
 // Keys that the MP4/MOV muxer stores natively (without `-movflags use_metadata_tags`)
 const movNativeFileKeys = new Set<string>([...fileMetadataKeys, 'grouping', 'lyrics', 'synopsis', 'show', 'episode_id', 'network', 'disc', 'encoder']);
-// track title is only written in MOV mode
-const getMovNativeStreamKeys = (outFormat: string | undefined) => new Set<string>(['language', 'handler_name', 'creation_time', ...(outFormat === 'mov' ? ['title'] : [])]);
+const getMovNativeStreamKeys = (outFormat: string | undefined) => new Set<string>(['language', 'handler_name', 'creation_time', ...(isMovTrackNameFormat(outFormat) ? ['title'] : [])]);
+
+/**
+The MP4/MOV demuxer reads a track's name as `name`, but the MP4/MOV and Matroska muxers write the track name from `title`
+(MP4/MOV drop `name`, Matroska keeps it only as a tag), so a copied track loses its name (https://github.com/mifi/lossless-cut/issues/3212).
+Returns the `title` to set on the output track, if any. `existing` is the input track's metadata, `custom` the user's changes ('' means deleted).
+*/
+export function getTrackTitleFromName({ existing, custom, outFormat }: { existing: Record<string, string> | undefined, custom?: Record<string, string> | undefined, outFormat: string | undefined }) {
+  if (!isMovTrackNameFormat(outFormat) && !isMatroska(outFormat)) return undefined;
+  const { title, name } = { ...existing, ...custom };
+  // the user's (or the input's) own title wins, also if the user deleted it
+  if (title != null) return undefined;
+  return name != null && name !== '' ? name : undefined;
+}
 
 export const getNonNativeMovMetadataKeys = ({ metadata, outFormat, isStream }: { metadata: Record<string, string> | undefined, outFormat: string | undefined, isStream: boolean }) => {
   const nativeKeys = isStream ? getMovNativeStreamKeys(outFormat) : movNativeFileKeys;
