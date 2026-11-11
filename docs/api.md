@@ -52,7 +52,7 @@ LosslessCut --http-api
 Then run the script in a different terminal:
 
 ```bash
-for PROJECT in /path/to/folder/with/projects/*.llc
+for PROJECT in /path/to/folder/with/projects/*.llc; do
     LosslessCut $PROJECT
     sleep 5 # wait for the file to open
     curl -X POST http://localhost:8080/api/action/export
