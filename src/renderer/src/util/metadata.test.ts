@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { getCopyableMetadata, getEffectiveMetadata, getLanguageSuggestions, getNonNativeMovMetadataKeys, isValidCodecTag, isValidCreationTime, isValidLanguageCode, needsHvc1Tag } from './metadata';
+import { getCopyableMetadata, getEffectiveMetadata, getLanguageSuggestions, getNonNativeMovMetadataKeys, getTrackTitleFromName, isValidCodecTag, isValidCreationTime, isValidLanguageCode, needsHvc1Tag } from './metadata';
 
 
 describe('getLanguageSuggestions', () => {
@@ -38,9 +38,31 @@ test('needsHvc1Tag', () => {
 
 test('getNonNativeMovMetadataKeys', () => {
   expect(getNonNativeMovMetadataKeys({ metadata: { title: 'a', custom: 'b', deleted: '' }, outFormat: 'mov', isStream: true })).toStrictEqual(['custom']);
-  expect(getNonNativeMovMetadataKeys({ metadata: { title: 'a' }, outFormat: 'mp4', isStream: true })).toStrictEqual(['title']);
+  // the MP4 muxer writes a track's title as its name, but the ipod (m4a) muxer doesn't
+  expect(getNonNativeMovMetadataKeys({ metadata: { title: 'a' }, outFormat: 'mp4', isStream: true })).toStrictEqual([]);
+  expect(getNonNativeMovMetadataKeys({ metadata: { title: 'a' }, outFormat: 'ipod', isStream: true })).toStrictEqual(['title']);
   expect(getNonNativeMovMetadataKeys({ metadata: { title: 'a', lyrics: 'b', custom: 'c' }, outFormat: 'mp4', isStream: false })).toStrictEqual(['custom']);
   expect(getNonNativeMovMetadataKeys({ metadata: undefined, outFormat: 'mp4', isStream: true })).toStrictEqual([]);
+});
+
+test('getTrackTitleFromName', () => {
+  // MP4/MOV track names are read as `name`, but written from `title`
+  expect(getTrackTitleFromName({ existing: { name: 'Dialogue', handler_name: 'SoundHandler' }, outFormat: 'mp4' })).toBe('Dialogue');
+  expect(getTrackTitleFromName({ existing: { name: 'Dialogue' }, outFormat: 'mov' })).toBe('Dialogue');
+  expect(getTrackTitleFromName({ existing: { name: 'Dialogue' }, outFormat: 'matroska' })).toBe('Dialogue');
+  // formats that don't write a track name from `title`
+  expect(getTrackTitleFromName({ existing: { name: 'Dialogue' }, outFormat: 'ipod' })).toBeUndefined();
+  expect(getTrackTitleFromName({ existing: { name: 'Dialogue' }, outFormat: 'mpegts' })).toBeUndefined();
+  expect(getTrackTitleFromName({ existing: { name: 'Dialogue' }, outFormat: undefined })).toBeUndefined();
+  // an existing title, or the user's own title (also when deleted), wins
+  expect(getTrackTitleFromName({ existing: { name: 'Dialogue', title: 'Other' }, outFormat: 'mp4' })).toBeUndefined();
+  expect(getTrackTitleFromName({ existing: { name: 'Dialogue' }, custom: { title: 'Mine' }, outFormat: 'mp4' })).toBeUndefined();
+  expect(getTrackTitleFromName({ existing: { name: 'Dialogue', title: 'Other' }, custom: { title: '' }, outFormat: 'mp4' })).toBeUndefined();
+  // the user's changes to the name are used
+  expect(getTrackTitleFromName({ existing: { name: 'Dialogue' }, custom: { name: 'Speech' }, outFormat: 'mp4' })).toBe('Speech');
+  expect(getTrackTitleFromName({ existing: { name: 'Dialogue' }, custom: { name: '' }, outFormat: 'mp4' })).toBeUndefined();
+  expect(getTrackTitleFromName({ existing: { handler_name: 'SoundHandler' }, outFormat: 'mp4' })).toBeUndefined();
+  expect(getTrackTitleFromName({ existing: undefined, outFormat: 'mp4' })).toBeUndefined();
 });
 
 test('isValidCreationTime', () => {
