@@ -93,7 +93,7 @@
     "electron": "^45.0.0",
     "electron-builder": "26.16.1",
     "electron-vite": "^5.0.0",
-    "fast-xml-parser": "^5.8.0",
+    "fast-xml-parser": "^5.12.0",
     "i18next-cli": "^1.58.1",
     "immer": "^11.1.8",
     "ky": "^2.0.2",
