@@ -1,6 +1,6 @@
 import { test, it, expect, describe } from 'vitest';
 
-import { convertSegmentsToChaptersWithGaps, partitionIntoOverlappingRanges, formatSegNum, combineOverlappingSegments, invertSegments } from './segments';
+import { convertSegmentsToChaptersWithGaps, partitionIntoOverlappingRanges, formatSegNum, getExtractedFramesSegPrefixes, combineOverlappingSegments, invertSegments } from './segments';
 
 it('converts segments to chapters with gaps', () => {
   expect(convertSegmentsToChaptersWithGaps([
@@ -114,6 +114,23 @@ test('formatSegNum', () => {
 
   expect(formatSegNum(0, 10, 2)).toBe('01');
   expect(formatSegNum(0, 10, 3)).toBe('001');
+});
+
+describe('getExtractedFramesSegPrefixes', () => {
+  test('no prefix for a single segment', () => {
+    expect(getExtractedFramesSegPrefixes([])).toStrictEqual([]);
+    expect(getExtractedFramesSegPrefixes([{ originalIndex: 4 }])).toStrictEqual(['']);
+  });
+
+  // https://github.com/mifi/lossless-cut/issues/3216
+  test('a different prefix for each of multiple segments', () => {
+    expect(getExtractedFramesSegPrefixes([{ originalIndex: 0 }, { originalIndex: 1 }])).toStrictEqual(['seg1-', 'seg2-']);
+  });
+
+  test('segment numbers from the segment list, zero padded', () => {
+    expect(getExtractedFramesSegPrefixes([{ originalIndex: 1 }, { originalIndex: 11 }])).toStrictEqual(['seg02-', 'seg12-']);
+    expect(getExtractedFramesSegPrefixes([{ originalIndex: 0 }, { originalIndex: 1 }], 3)).toStrictEqual(['seg001-', 'seg002-']);
+  });
 });
 
 describe('invertSegments', () => {
