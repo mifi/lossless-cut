@@ -553,7 +553,7 @@
   "Times in seconds (CSV)": "Časy v sekundách (CSV)",
   "You have no write access to the directory of this file": "Momentálně nemáte právo zápisu do adresáře tohoto souboru",
   "Clear batch file list after merge": "Po spojení odstranit dávkový seznam souborů",
-  "Deselect all segments": "Odznačit všechny segmenty",
+  "Deselect all segments": "Zrušit výběr všech segmentů",
   "Extract all frames": "Extrahovat všechny snímky",
   "Extract all frames as images": "Extrahovat všechny snímky jako obrázky",
   "Frames extracted to: {{path}}": "Snímky extrahovány do: {{path}}",
