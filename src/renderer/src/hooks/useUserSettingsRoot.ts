@@ -117,6 +117,8 @@ export default function useUserSettingsRoot() {
   useEffect(() => safeSetConfig({ autoDeleteMergedSegments }), [autoDeleteMergedSegments]);
   const [exportConfirmEnabled, setExportConfirmEnabled] = useState(safeGetConfigInitial('exportConfirmEnabled'));
   useEffect(() => safeSetConfig({ exportConfirmEnabled }), [exportConfirmEnabled]);
+  const [copyFilesToClipboardAfterExport, setCopyFilesToClipboardAfterExport] = useState(safeGetConfigInitial('copyFilesToClipboardAfterExport'));
+  useEffect(() => safeSetConfig({ copyFilesToClipboardAfterExport }), [copyFilesToClipboardAfterExport]);
   const [segmentsToChapters, setSegmentsToChapters] = useState(safeGetConfigInitial('segmentsToChapters'));
   useEffect(() => safeSetConfig({ segmentsToChapters }), [segmentsToChapters]);
   const [simpleMode, setSimpleMode] = useState(safeGetConfigInitial('simpleMode'));
@@ -287,6 +289,7 @@ export default function useUserSettingsRoot() {
     autoLoadTimecode,
     autoDeleteMergedSegments,
     exportConfirmEnabled,
+    copyFilesToClipboardAfterExport,
     segmentsToChapters,
     simpleMode,
     cutFileTemplate,
@@ -369,6 +372,7 @@ export default function useUserSettingsRoot() {
     setAutoLoadTimecode,
     setAutoDeleteMergedSegments,
     setExportConfirmEnabled,
+    setCopyFilesToClipboardAfterExport,
     setSegmentsToChapters,
     setSimpleMode,
     setCutFileTemplate,

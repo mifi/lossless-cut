@@ -42,6 +42,7 @@ import * as ffmpeg from './ffmpeg.js';
 import * as compatPlayer from './compatPlayer.js';
 import { downloadMediaUrl } from './ffmpeg.js';
 import { hasDisabledNetworking, setDisableNetworking } from './networking.js';
+import { copyFilesToClipboard } from './clipboard.js';
 
 
 electronUnhandled({ showDialog: true, logger: (err) => logger.error('electron-unhandled', err) });
@@ -480,6 +481,7 @@ const remoteApi = {
   sendOsNotification,
   writeClipboardText: (text: string) => electron.clipboard.writeText(text),
   readClipboardText: () => electron.clipboard.readText(),
+  copyFilesToClipboard,
   openExternal,
 };
 

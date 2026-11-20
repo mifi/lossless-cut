@@ -110,6 +110,7 @@ const defaults: Config = {
   invertCutSegments: false,
   autoExportExtraStreams: true,
   exportConfirmEnabled: true,
+  copyFilesToClipboardAfterExport: false,
   askBeforeClose: false,
   enableImportChapters: 'ask',
   enableAskForFileOpenAction: true,

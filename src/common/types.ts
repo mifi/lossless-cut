@@ -62,6 +62,7 @@ export const configSchema = z.object({
   invertCutSegments: z.boolean(),
   autoExportExtraStreams: z.boolean(),
   exportConfirmEnabled: z.boolean(),
+  copyFilesToClipboardAfterExport: z.boolean(),
   askBeforeClose: z.boolean(),
   enableImportChapters: enableImportChaptersSchema,
   enableAskForFileOpenAction: z.boolean(),

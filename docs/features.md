@@ -73,6 +73,7 @@ Lossless cuts can only start at a keyframe, so a cut starts at the keyframe befo
 - Losslessly remux video/audio into a different container (file) format
 - Fix an incorrect file duration
 - Output file names from a customizable template
+- Optionally copy the exported files to the clipboard, so you can paste them into a file manager or another app
 - Take full-resolution snapshots from videos as JPEG/PNG (low or high quality), or copy them to the clipboard
 - Export ranges of video frames to images: every frame, every nth frame or second, at scene changes, or the best image every nth second
   - Only from a selected time range (segment)
