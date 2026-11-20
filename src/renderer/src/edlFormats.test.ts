@@ -1,7 +1,9 @@
+import { join } from 'node:path';
 import { it, describe, expect, test } from 'vitest';
+import cueParser from 'cue-parser';
 
 import type { Otio } from './edlFormats';
-import { parseSrtToSegments, formatSrt, parseYouTube, formatYouTube, parseMplayerEdl, parseXmeml, parseFcpXml, parseCsv, parseCsvTime, getFrameValParser, formatCsvFrames, getFrameCountRaw, parsePbf, parseDvAnalyzerSummaryTxt, parseCutlist, parseDjiGps1, parseOtio, parseDjiGps2 } from './edlFormats';
+import { parseSrtToSegments, formatSrt, parseYouTube, formatYouTube, parseMplayerEdl, parseXmeml, parseFcpXml, parseCsv, parseCsvTime, getFrameValParser, formatCsvFrames, getFrameCountRaw, parsePbf, parseDvAnalyzerSummaryTxt, parseCutlist, parseDjiGps1, parseOtio, parseDjiGps2, parseCuesheet } from './edlFormats';
 import { readFixture, readFixtureBinary } from './test/util';
 import otioFixture from './test/fixtures/otio';
 
@@ -397,6 +399,16 @@ it('parses srt', async () => {
 
 it('format srt', async () => {
   expect(formatSrt(parseSrtToSegments(await readFixture('sample.srt')))).toMatchSnapshot();
+});
+
+// https://github.com/mifi/lossless-cut/issues/3229
+it('parses cue sheet, last track ends at the end of the file', () => {
+  const cuesheet = cueParser.parse(join(import.meta.dirname, 'test', 'fixtures', 'cuesheet.cue'));
+  expect(parseCuesheet(cuesheet, 3384)).toStrictEqual([
+    { name: 'First', start: 0, end: 310.49333333333334, tags: { performer: 'Test Artist', title: 'First' } },
+    { name: 'Second', start: 310.49333333333334, end: 2805, tags: { performer: 'Test Artist', title: 'Second' } },
+    { name: 'Last', start: 2805, end: 3384, tags: { performer: 'Test Artist', title: 'Last' } },
+  ]);
 });
 
 // https://github.com/mifi/lossless-cut/issues/1664

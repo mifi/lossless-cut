@@ -221,7 +221,7 @@ export async function parseEdl(text: string, fps: number) {
   return parseMplayerEdl(text);
 }
 
-export function parseCuesheet(cuesheet: ICueSheet) {
+export function parseCuesheet(cuesheet: ICueSheet, fileDuration?: number | undefined) {
   // There are 75 such frames per second of audio.
   // https://en.wikipedia.org/wiki/Cue_sheet_(computing)
   const fps = 75;
@@ -239,7 +239,9 @@ export function parseCuesheet(cuesheet: ICueSheet) {
 
   return tracks!.map((track, i) => {
     const nextTrack = tracks![i + 1];
-    const end = nextTrack && getTime(nextTrack);
+    // the last track has no next track to end it, so it lasts until the end of the file
+    // (otherwise it would become a marker) https://github.com/mifi/lossless-cut/issues/3229
+    const end = nextTrack ? getTime(nextTrack) : fileDuration;
 
     return { name: track.title, start: getTime(track) ?? 0, end, tags: { performer: track.performer, title: track.title } };
   });
