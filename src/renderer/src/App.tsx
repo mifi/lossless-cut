@@ -1430,6 +1430,8 @@ function App() {
           await ensureAccessToSourceDir(fp);
           // Ok, we got access from the user (or already have access), now read the project file
           await loadEdlFile({ path: sameDirEdlFilePath, type: 'llc' });
+          // don't fall through to importing chapters, or else they would replace the segments that we just loaded
+          return;
         }
 
         // OK, we didn't find a project file, instead maybe try to create project (segments) from chapters
