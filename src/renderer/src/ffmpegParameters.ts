@@ -57,7 +57,7 @@ const parametersRaw = {
       value: '24',
       hint: () => i18n.t('Set higher black value threshold, which can be optionally specified from nothing (0) to everything (255 for 8-bit based formats). An intensity value greater to the set value is considered non-black. It defaults to 24. You can also specify a value between 0.0 and 1.0 which will be scaled depending on the bitdepth of the pixel format. '),
     },
-    reset_count: {
+    resetCount: {
       value: '1',
       hint: () => i18n.t('Set the counter that determines after how many frames cropdetect will reset the previously detected largest video area and start over to detect the current optimal crop area. Default ffmpeg value is 0, but for detecting segments it is >=1. This can be useful when channel logos distort the video area. 0 indicates ’never reset’, and returns the largest area encountered during playback. '),
     },

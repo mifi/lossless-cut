@@ -352,18 +352,14 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
     // only delete the segment that we are replacing once the user has confirmed (not if cancelled)
     deleteCurrentCutSeg();
     setFfmpegParametersForDialog(dialogType, parameters);
-    invariant(filePath != null)
-    const limit = parameters['limit'];
-    const reset_count = parameters['reset_count'];
-    const minSegmentDuration = parameters['minSegmentDuration'];
-    const width = parameters['width'];
-    const height = parameters['height'];
+    invariant(filePath != null);
+    const {limit, resetCount, minSegmentDuration, width, height} = parameters;
     invariant(limit != null);
-    invariant(reset_count != null);
+    invariant(resetCount != null);
     invariant(minSegmentDuration != null);
     invariant(width != null);
     invariant(height != null);
-    await detectSegments({ name: 'croppedScenes', workingText: i18n.t('Detecting cropped scenes'), errorText: i18n.t('Failed to detect cropped scenes'), fn: async (onSegmentDetected) => cropDetect({ filePath, streamId: activeVideoStreamIndex, limit, reset_count, minSegmentDuration, width, height , onProgress: setProgress, onSegmentDetected, from: start, to: end, ffmpegHwaccel }) });
+    await detectSegments({ name: 'croppedScenes', workingText: i18n.t('Detecting cropped scenes'), errorText: i18n.t('Failed to detect cropped scenes'), fn: async (onSegmentDetected) => cropDetect({ filePath, streamId: activeVideoStreamIndex, limit, resetCount: resetCount, minSegmentDuration, width, height, onProgress: setProgress, onSegmentDetected, from: start, to: end, ffmpegHwaccel }) });
   }, [activeVideoStreamIndex, currentCutSegOrWholeTimeline, deleteCurrentCutSeg, detectSegments, ffmpegHwaccel, filePath, getFfmpegParameters, setFfmpegParametersForDialog, setProgress, showParametersDialog]);
 
   const createSegmentsFromKeyframes = useCallback(async () => {

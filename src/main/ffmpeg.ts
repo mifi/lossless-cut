@@ -437,11 +437,11 @@ export async function silenceDetect({ streamId, filterOptions, ...rest }: {
   });
 }
 
-export async function cropDetect({ filePath, streamId, limit, reset_count, minSegmentDuration, width, height, onProgress, onSegmentDetected, from, to, ffmpegHwaccel }: {
+export async function cropDetect({ filePath, streamId, limit, resetCount, minSegmentDuration, width, height, onProgress, onSegmentDetected, from, to, ffmpegHwaccel }: {
   filePath: string,
   streamId: number | undefined
   limit: number | string,
-  reset_count: number | string,
+  resetCount: number | string,
   minSegmentDuration: string,
   width: string,
   height: string,
@@ -456,7 +456,7 @@ export async function cropDetect({ filePath, streamId, limit, reset_count, minSe
     ...getHwaccelArgs(ffmpegHwaccel),
     ...getInputSeekArgs({ filePath, from, to }),
     '-map', streamId != null ? `0:${streamId}` : 'v:0',
-    '-filter:v', `cropdetect=reset_count=${reset_count}:limit=${limit}:round=1`,
+    '-filter:v', `cropdetect=reset_count=${resetCount}:limit=${limit}:round=1`,
     '-f', 'null', '-',
   ];
   const process = runFfmpegProcess(args, { buffer: false });
@@ -481,8 +481,8 @@ export async function cropDetect({ filePath, streamId, limit, reset_count, minSe
     const match = line.match(/\s+t:([\d.]+)\s+limit:[\d.]+\s+crop=((\d+):(\d+):(\d+):(\d+))$/);
     if (!match) return;
     const time = parseFloat(match[1]!);
-    const widthTest = maxWidth === 0 || parseInt(match[3]!, 10) - maxWidth <= 0;
-    const heightTest = maxHeight === 0 || parseInt(match[4]!, 10) - maxHeight <= 0;
+    const widthTest = maxWidth === 0 || parseInt(match[3]!, 10) <= maxWidth;
+    const heightTest = maxHeight === 0 || parseInt(match[4]!, 10) <= maxHeight;
 
     if (!Number.isNaN(time)) {
       if (time > lastTime) {
@@ -499,23 +499,20 @@ export async function cropDetect({ filePath, streamId, limit, reset_count, minSe
             skipping = false;
           }
           currentEndTime = time;
-        } else {
-          if (!skipping) {
+        } else if (!skipping) {
             skipping = true;
             skippedStart = time;
-          }
         }
       }
       lastTime = time;
     }
-      });
+  });
     await process;
 
     // Create Last Segment
     if (currentStartTime != null && currentEndTime != null && currentEndTime - currentStartTime >= minDuration) {
       onSegmentDetected({ start: from + currentStartTime, end: from + currentEndTime });
     }
-
 
   return { ffmpegArgs: args };
 }
