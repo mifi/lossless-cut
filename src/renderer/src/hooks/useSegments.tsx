@@ -306,10 +306,11 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
 
   const detectBlackScenes = useCallback(async () => {
     const { start, end } = currentCutSegOrWholeTimeline;
-    deleteCurrentCutSeg();
     const dialogType = 'blackdetect';
     const parameters = await showParametersDialog({ title: i18n.t('Enter parameters'), dialogType, parameters: getFfmpegParameters(dialogType), docUrl: 'https://ffmpeg.org/ffmpeg-filters.html#blackdetect' });
     if (parameters == null) return;
+    // only delete the segment that we are replacing once the user has confirmed (not if cancelled)
+    deleteCurrentCutSeg();
     const { mode, ...filterOptions } = parameters;
     setFfmpegParametersForDialog(dialogType, parameters);
     invariant(mode === '1' || mode === '2');
@@ -319,10 +320,11 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
 
   const detectSilentScenes = useCallback(async () => {
     const { start, end } = currentCutSegOrWholeTimeline;
-    deleteCurrentCutSeg();
     const dialogType = 'silencedetect';
     const parameters = await showParametersDialog({ title: i18n.t('Enter parameters'), dialogType, parameters: getFfmpegParameters(dialogType), docUrl: 'https://ffmpeg.org/ffmpeg-filters.html#silencedetect' });
     if (parameters == null) return;
+    // only delete the segment that we are replacing once the user has confirmed (not if cancelled)
+    deleteCurrentCutSeg();
     setFfmpegParametersForDialog(dialogType, parameters);
     const { mode, ...filterOptions } = parameters;
     invariant(mode === '1' || mode === '2');
@@ -332,10 +334,11 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
 
   const detectSceneChanges = useCallback(async () => {
     const { start, end } = currentCutSegOrWholeTimeline;
-    deleteCurrentCutSeg();
     const dialogType = 'sceneChange';
     const parameters = await showParametersDialog({ title: i18n.t('Enter parameters'), dialogType, parameters: getFfmpegParameters(dialogType) });
     if (parameters == null) return;
+    // only delete the segment that we are replacing once the user has confirmed (not if cancelled)
+    deleteCurrentCutSeg();
     setFfmpegParametersForDialog(dialogType, parameters);
     invariant(filePath != null);
     // eslint-disable-next-line prefer-destructuring
@@ -346,9 +349,9 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
 
   const createSegmentsFromKeyframes = useCallback(async () => {
     const { start, end } = currentCutSegOrWholeTimeline;
-    deleteCurrentCutSeg();
     if (!videoStream) return;
     invariant(filePath != null);
+    deleteCurrentCutSeg();
     const keyframes = (await readFrames({ filePath, from: start, to: end, streamIndex: videoStream.index })).filter((frame) => frame.keyframe);
     const newSegments = mapTimesToSegments(keyframes.map((keyframe) => keyframe.time), true);
     loadCutSegments({ segments: newSegments, append: true, getNextCurrentSegIndex: (edl) => edl.length - 1, clampDuration: fileDuration });
