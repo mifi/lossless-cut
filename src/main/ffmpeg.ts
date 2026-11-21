@@ -463,34 +463,34 @@ export async function cropDetect({ filePath, streamId, limit, reset_count, minSe
 
   handleProgress(process, to - from, onProgress);
 
-  assert(process.stderr != null);
-  const rl = readline.createInterface({ input: process.stderr});
+  assert.ok(process.stderr != null);
+  const rl = readline.createInterface({ input: process.stderr });
 
   const minDuration = parseFloat(minSegmentDuration);
-  const maxWidth = parseInt(width);
-  const maxHeight = parseInt(height);
+  const maxWidth = parseInt(width, 10);
+  const maxHeight = parseInt(height, 10);
 
-  let lastTime: number = 0;
-  let currentStartTime: number = 0;
-  let currentEndTime: number = 0;
-  let skippedStart: number = 0;
-  let skipping: boolean = false;
+  let lastTime = 0;
+  let currentStartTime = 0;
+  let currentEndTime = 0;
+  let skippedStart = 0;
+  let skipping = false;
 
   rl.on('line', (line) => {
         // cropdetect output => match[1]=pts_time,match[2]=crop values, match[3]=w, match[4]=h, match[5]=x, match[6]=y
     const match = line.match(/\s+t:([\d.]+)\s+limit:[\d.]+\s+crop=((\d+):(\d+):(\d+):(\d+))$/);
     if (!match) return;
     const time = parseFloat(match[1]!);
-    const widthTest = maxWidth == 0 || parseInt(match[3]!) - maxWidth <= 0;
-    const heightTest = maxHeight == 0 || parseInt(match[4]!) - maxHeight <= 0;
+    const widthTest = maxWidth === 0 || parseInt(match[3]!, 10) - maxWidth <= 0;
+    const heightTest = maxHeight === 0 || parseInt(match[4]!, 10) - maxHeight <= 0;
 
     if (!Number.isNaN(time)) {
-      if (time > lastTime){
-        if(widthTest && heightTest) {
-          if (skipping){
-            if (lastTime-skippedStart > minDuration){
+      if (time > lastTime) {
+        if (widthTest && heightTest) {
+          if (skipping) {
+            if (lastTime - skippedStart > minDuration) {
               // Skipped duration is long enough to be left out
-              if (currentEndTime - currentStartTime >= minDuration){
+              if (currentEndTime - currentStartTime >= minDuration) {
                 // Current Segment is long enough
                 onSegmentDetected({ start: from + currentStartTime, end: from + currentEndTime });
               }
@@ -500,7 +500,7 @@ export async function cropDetect({ filePath, streamId, limit, reset_count, minSe
           }
           currentEndTime = time;
         } else {
-          if (!skipping){
+          if (!skipping) {
             skipping = true;
             skippedStart = time;
           }
@@ -508,13 +508,11 @@ export async function cropDetect({ filePath, streamId, limit, reset_count, minSe
       }
       lastTime = time;
     }
-
-
       });
     await process;
 
     // Create Last Segment
-    if(currentStartTime != null && currentEndTime != null && currentEndTime - currentStartTime >= minDuration) {
+    if (currentStartTime != null && currentEndTime != null && currentEndTime - currentStartTime >= minDuration) {
       onSegmentDetected({ start: from + currentStartTime, end: from + currentEndTime });
     }
 
