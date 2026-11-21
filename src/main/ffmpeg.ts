@@ -477,8 +477,8 @@ export async function cropDetect({ filePath, streamId, limit, resetCount, minSeg
   let skipping = false;
 
   rl.on('line', (line) => {
-        // cropdetect output => match[1]=pts_time,match[2]=crop values, match[3]=w, match[4]=h, match[5]=x, match[6]=y
-    const match = line.match(/\s+t:([\d.]+)\s+limit:[\d.]+\s+crop=((\d+):(\d+):(\d+):(\d+))$/);
+    // cropdetect output => match[1]=pts_time,match[2]=crop values, match[3]=w, match[4]=h, match[5]=x, match[6]=y
+    const match = /\s+t:([\d.]+)\s+limit:[\d.]+\s+crop=((\d+):(\d+):(\d+):(\d+))$/.exec(line);
     if (!match) return;
     const time = parseFloat(match[1]!);
     const widthTest = maxWidth === 0 || parseInt(match[3]!, 10) <= maxWidth;
@@ -500,19 +500,19 @@ export async function cropDetect({ filePath, streamId, limit, resetCount, minSeg
           }
           currentEndTime = time;
         } else if (!skipping) {
-            skipping = true;
-            skippedStart = time;
+          skipping = true;
+          skippedStart = time;
         }
       }
       lastTime = time;
     }
   });
-    await process;
+  await process;
 
-    // Create Last Segment
-    if (currentStartTime != null && currentEndTime != null && currentEndTime - currentStartTime >= minDuration) {
-      onSegmentDetected({ start: from + currentStartTime, end: from + currentEndTime });
-    }
+  // Create Last Segment
+  if (currentStartTime != null && currentEndTime != null && currentEndTime - currentStartTime >= minDuration) {
+    onSegmentDetected({ start: from + currentStartTime, end: from + currentEndTime });
+  }
 
   return { ffmpegArgs: args };
 }
