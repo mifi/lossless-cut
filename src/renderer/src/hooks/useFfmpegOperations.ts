@@ -86,6 +86,17 @@ async function tryDeleteFiles(paths: string[]) {
   return pMap(paths, (path) => unlinkWithRetry(path).catch((err: unknown) => console.error('Failed to delete', path, err)), { concurrency: 5 });
 }
 
+// If ffmpeg fails or is cancelled, it leaves behind a partially written (truncated) output file.
+// Delete it, or else it could later be mistaken for a finished export (e.g. skipped when "overwrite output" is disabled)
+async function withPartialOutputCleanup<T>(outPath: string, fn: () => Promise<T>) {
+  try {
+    return await fn();
+  } catch (err) {
+    if (await mainApi.pathExists(outPath)) await tryDeleteFiles([outPath]);
+    throw err;
+  }
+}
+
 export async function maybeMkDeepOutDir({ outputDir, fileOutPath }: { outputDir: string, fileOutPath: string }) {
   // cutFileNames might contain slashes and therefore might have a subdir(tree) that we need to mkdir
   // https://github.com/mifi/lossless-cut/issues/1532
@@ -621,13 +632,9 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     // or if enabled, will first cut&encode the part before the next keyframe, trying to match the input file's codec params
     // then it will cut the part *from* the keyframe to "end", and concat them together and return the concated file
     // so that for the calling code it looks as if it's just a normal segment
-    const cutSegment = async ({ start: desiredCutFrom, end: cutTo }: { start: number, end: number }, i: number) => {
+    const cutSegmentToPath = async ({ start: desiredCutFrom, end: cutTo }: { start: number, end: number }, i: number, finalOutPath: string) => {
       const onProgress = (progress: number) => onSingleProgress(i, progress / 2);
       const onConcatProgress = (progress: number) => onSingleProgress(i, (1 + progress) / 2);
-
-      const finalOutPath = join(outputDir, cutFileNames[i]!);
-
-      if (await shouldSkipExistingFile(finalOutPath)) return { path: finalOutPath, created: false };
 
       await maybeMkDeepOutDir({ outputDir, fileOutPath: finalOutPath });
 
@@ -742,6 +749,14 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       }
     };
 
+    const cutSegment = async (segment: { start: number, end: number }, i: number) => {
+      const finalOutPath = join(outputDir, cutFileNames[i]!);
+
+      if (await shouldSkipExistingFile(finalOutPath)) return { path: finalOutPath, created: false };
+
+      return withPartialOutputCleanup(finalOutPath, async () => cutSegmentToPath(segment, i, finalOutPath));
+    };
+
     try {
       return await pMap(segments, cutSegment, { concurrency: 1 });
     } finally {
@@ -763,7 +778,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
   }) => {
     const outDir = getOutDir(customOutDir, filePath);
 
-    if (await shouldSkipExistingFile(mergedOutFilePath)) return;
+    if (await shouldSkipExistingFile(mergedOutFilePath)) return { created: false };
 
     const chapters = await createChaptersFromSegments({ paths: segmentPaths, defaultChapterNames: chapterNames });
 
@@ -771,7 +786,8 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     invariant(metadataFromPath != null);
     // need to re-read streams because may have changed
     const { streams } = await readFileFfprobeMeta(metadataFromPath);
-    await concatFiles({ paths: segmentPaths, outDir, outPath: mergedOutFilePath, metadataFromPath, outFormat, includeAllStreams: true, streams, ffmpegExperimental, onProgress, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge });
+    await withPartialOutputCleanup(mergedOutFilePath, async () => concatFiles({ paths: segmentPaths, outDir, outPath: mergedOutFilePath, metadataFromPath, outFormat, includeAllStreams: true, streams, ffmpegExperimental, onProgress, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge }));
+    return { created: true };
   }, [concatFiles, filePath, shouldSkipExistingFile]);
 
   // This is just used to load something into the player with correct duration,
