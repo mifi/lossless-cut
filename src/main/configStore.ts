@@ -235,7 +235,8 @@ async function tryCreateStore({ customStoragePath }: { customStoragePath: string
 
 let customStoragePath: string | undefined;
 
-export const getConfigPath = () => customStoragePath ?? join(app.getPath('userData'), configFileName); // custom path, or default used by electron-store
+// customStoragePath is a directory (electron-store's `cwd`), so we need to append the file name in both cases
+export const getConfigPath = () => join(customStoragePath ?? app.getPath('userData'), configFileName); // custom path, or default used by electron-store
 
 async function tryBackupConfigFile(oldConfigVersion: number, appVersion: string) {
   try {
