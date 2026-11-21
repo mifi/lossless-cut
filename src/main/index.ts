@@ -387,6 +387,7 @@ async function init() {
 
     ipcMain.on('apiActionResponse', (_e, { id }) => {
       apiActionRequests.get(id)?.();
+      apiActionRequests.delete(id);
     });
 
     logger.info('Waiting for app to become ready');
