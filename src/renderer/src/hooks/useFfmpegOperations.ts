@@ -316,7 +316,9 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     const copyInitialNonKeyframesArgs = cuttingStart && !ssBeforeInput && isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams: copyFileStreamsFiltered }) ? ['-copyinkf'] : [];
 
     // If cutting multiple files, `-ss` must be before `-i`, regardless of `ssBeforeInput` choice
-    // and it seems that `-t` must be after `-i` #896
+    // `-t` must be after `-i` #896, as an *output* option. Note that ffmpeg applies an option to the next file on the command line,
+    // so `-t` is added once after *all* inputs (see cutToArgs below). Otherwise it would end up as an input option of the next input
+    // (e.g. a cover art file or the chapters ffmetadata file), and the output would not be cut at the end.
     const inputFilesArgs = copyFileStreamsFiltered.length > 1
       ? copyFileStreamsFiltered.flatMap(({ streamIds, path }) => {
         const fileParams = paramsByFile.get(path);
@@ -332,14 +334,12 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
           ...cutFromArgs,
           ...itsOffsetArgs,
           '-i', path,
-          ...cutToArgs,
         ];
       })
       : [
         ...(ssBeforeInput ? [...cutFromArgs, ...seekCompensationArgs] : []),
         '-i', copyFileStreamsFiltered[0]!.path,
         ...(!ssBeforeInput ? cutFromArgs : []),
-        ...cutToArgs,
       ];
 
     const chaptersInputIndex = copyFileStreamsFiltered.length;
@@ -470,6 +470,9 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
       ...inputFilesArgs,
       ...getChaptersInputArgs(chaptersPath),
+
+      // must come after all inputs, see inputFilesArgs
+      ...cutToArgs,
 
       ...avoidNegativeTsArgs,
 
