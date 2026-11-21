@@ -508,95 +508,41 @@ export async function cropDetect({ filePath, streamId, limit, reset_count, minSe
   let lastTime: number = 0;
   let currentStartTime: number = 0;
   let currentEndTime: number = 0;
+  let skippedStart: number = 0;
+  let skipping: boolean = false;
 
-  if (maxWidth == 0 && maxHeight == 0){
-
-    let nextStartTime: number = 0;
-    let currentCrop: string ="StartValue";
-    let lastCrop: string | undefined;
-    let setNextSegmnent: boolean = false;
-
-    rl.on('line', (line) => {
-      // cropdetect output => match[1]=pts_time,match[2]=crop values, match[3]=w, match[4]=h, match[5]=x, match[6]=y
-      const match = line.match(/\s+t:([\d.]+)\s+limit:[\d.]+\s+crop=((\d+):(\d+):(\d+):(\d+))$/);
-      if (!match) return;
-      const time = parseFloat(match[1]!);
-      const crop = match[2]!;
-      if (!Number.isNaN(time)) {
-        if (setNextSegmnent && time > lastTime) {
-          // Next segment was reset in previous iteration and current segment was extended
-          nextStartTime = time;
-          setNextSegmnent = false;
-        } else if (lastCrop != null && time > lastTime && crop != lastCrop) {
-          if (currentCrop == "StartValue") {
-            // First Crop Change
-            currentEndTime = lastTime;
-            nextStartTime = time;
-            currentCrop = lastCrop;
-          }else if (lastTime - nextStartTime >= minDuration){
-            // Next Segment is at least the min duration required for a segment
-            // Current Segment will be created and next segmnent will be set to the be the current one
-            onSegmentDetected({ start: from + currentStartTime, end: from + currentEndTime });
-            currentStartTime = nextStartTime;
-            currentEndTime = lastTime;
-            nextStartTime = time;
-          } else if (crop == currentCrop){
-            // Next Segment is not long enough and the crop values are the same as the current segment
-            // Reset next Segment
-            currentEndTime = time;
-            nextStartTime = 0;
-            setNextSegmnent = true;
-          }
-          // If none of the cases is true the next segment will be extended to the next crop change
-        }
-        lastTime = time;
-        lastCrop = crop;
-      }
-    });
-    await process;
-
-    // Create Last 1-2 Segments
-    if(!setNextSegmnent && nextStartTime > 0 && currentStartTime != null && lastTime != null && lastTime - nextStartTime >= minDuration){
-      onSegmentDetected({ start: from + currentStartTime!, end: from + currentEndTime! });
-      onSegmentDetected({ start: from + nextStartTime!, end: from + lastTime! });
-    }else if(currentStartTime != null && lastTime != null) {
-      onSegmentDetected({ start: from + currentStartTime!, end: from + lastTime! });
-    }
-  } else {
-      let skippedStart: number = 0;
-      let skipping: boolean = false;
-      rl.on('line', (line) => {
+  rl.on('line', (line) => {
         // cropdetect output => match[1]=pts_time,match[2]=crop values, match[3]=w, match[4]=h, match[5]=x, match[6]=y
-        const match = line.match(/\s+t:([\d.]+)\s+limit:[\d.]+\s+crop=((\d+):(\d+):(\d+):(\d+))$/);
-        if (!match) return;
-        const time = parseFloat(match[1]!);
-        const widthTest = maxWidth == 0 || parseInt(match[3]!) - maxWidth <= 0;
-        const heightTest = maxHeight == 0 || parseInt(match[4]!) - maxHeight <= 0;
+    const match = line.match(/\s+t:([\d.]+)\s+limit:[\d.]+\s+crop=((\d+):(\d+):(\d+):(\d+))$/);
+    if (!match) return;
+    const time = parseFloat(match[1]!);
+    const widthTest = maxWidth == 0 || parseInt(match[3]!) - maxWidth <= 0;
+    const heightTest = maxHeight == 0 || parseInt(match[4]!) - maxHeight <= 0;
 
-        if (!Number.isNaN(time)) {
-          if (time > lastTime){
-            if(widthTest && heightTest) {
-              if (skipping){
-                if (lastTime-skippedStart > minDuration){
-                  // Skipped duration is long enough to be left out
-                  if (currentEndTime - currentStartTime >= minDuration){
-                    // Current Segment is long enough
-                    onSegmentDetected({ start: from + currentStartTime, end: from + currentEndTime });
-                  }
-                  currentStartTime = time;
-                }
-                skipping = false;
+    if (!Number.isNaN(time)) {
+      if (time > lastTime){
+        if(widthTest && heightTest) {
+          if (skipping){
+            if (lastTime-skippedStart > minDuration){
+              // Skipped duration is long enough to be left out
+              if (currentEndTime - currentStartTime >= minDuration){
+                // Current Segment is long enough
+                onSegmentDetected({ start: from + currentStartTime, end: from + currentEndTime });
               }
-              currentEndTime = time;
-            } else {
-              if (!skipping){
-                skipping = true;
-                skippedStart = time;
-              }
+              currentStartTime = time;
             }
+            skipping = false;
           }
-          lastTime = time;
+          currentEndTime = time;
+        } else {
+          if (!skipping){
+            skipping = true;
+            skippedStart = time;
+          }
         }
+      }
+      lastTime = time;
+    }
 
 
       });
@@ -606,7 +552,7 @@ export async function cropDetect({ filePath, streamId, limit, reset_count, minSe
     if(currentStartTime != null && currentEndTime != null && currentEndTime - currentStartTime >= minDuration) {
       onSegmentDetected({ start: from + currentStartTime, end: from + currentEndTime });
     }
-  }
+
 
   return { ffmpegArgs: args };
 }
