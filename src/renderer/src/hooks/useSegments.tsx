@@ -352,10 +352,11 @@ function useSegments({ filePath, workingRef, setWorking, setProgress, videoStrea
 
   const detectCroppedScenes = useCallback(async () => {
     const { start, end } = currentCutSegOrWholeTimeline;
-    deleteCurrentCutSeg();
     const dialogType = 'cropdetect';
     const parameters = await showParametersDialog({ title: i18n.t('Enter parameters'), dialogType, parameters: getFfmpegParameters(dialogType), docUrl: 'https://ffmpeg.org/ffmpeg-filters.html#cropdetect' });
     if (parameters == null) return;
+    // only delete the segment that we are replacing once the user has confirmed (not if cancelled)
+    deleteCurrentCutSeg();
     setFfmpegParametersForDialog(dialogType, parameters);
     invariant(filePath != null)
     const limit = parameters['limit'];
