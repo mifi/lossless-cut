@@ -15,11 +15,15 @@ import isDev from '../isDev';
 - Go to timecode (`g` shortcut): shouldn't insert the letter `g` into input box. This also applies to all the detect* actions
 - Seek (autorepeat) and acceleration factor should reset after keyup
 - Bind keyboard action dialog should not close when its key binding (shift+slash) is triggered
+- Escape in an input (and Enter in the cut time inputs) should release focus, so that keyboard shortcuts work again
 
 See also https://github.com/mifi/lossless-cut/issues/2515
 */
 
 interface KeyEventParams { e: KeyboardEvent, action: KeyboardAction | undefined }
+
+// whether a key binding's modifiers (e.g. both ControlLeft and ControlRight) match whether that modifier is pressed
+const modifierMatches = (modifiers: Set<string>, bindingKeys: Set<string>, pressed: boolean) => modifiers.isDisjointFrom(bindingKeys) !== pressed;
 
 export default ({ keyBindings, keyUpActions, getKeyboardAction, closeExportConfirm, exportConfirmOpen }: {
   keyBindings: KeyBinding[],
@@ -51,6 +55,12 @@ export default ({ keyBindings, keyUpActions, getKeyboardAction, closeExportConfi
       if (action !== 'export') {
         return; // stop here, don't allow other key actions than export while dialog is open
       }
+    }
+
+    // Escape releases focus from inputs, buttons etc. (outside of dialogs), so that keyboard shortcuts work again https://github.com/mifi/lossless-cut/issues/2942
+    if (isEscape && !e.defaultPrevented && !e.isComposing && e.target instanceof HTMLElement && e.target !== document.body && e.target.closest('[role="dialog"], [role="alertdialog"]') == null) {
+      e.target.blur();
+      return;
     }
 
     // From now on, only handle key events when focus is on document body
@@ -99,13 +109,13 @@ export default ({ keyBindings, keyUpActions, getKeyboardAction, closeExportConfi
   }, [onKeyUp2]);
 
   useEffect(() => {
-    const keyBindingsByKeyCode = keyBindings.reduce((acc, kb) => {
+    const keyBindingsByKeyCode = keyBindings.reduce<Record<string, KeyBinding[]>>((acc, kb) => {
       kb.keys.split('+').forEach((key) => {
-        if (!acc[key]) acc[key] = [];
+        acc[key] ??= [];
         acc[key].push(kb);
       });
       return acc;
-    }, {} as Record<string, KeyBinding[]>);
+    }, {});
 
     function onKeyDown(params: KeyEventParams) {
       if (onKeyDownRef.current == null) return true;
@@ -141,11 +151,7 @@ export default ({ keyBindings, keyUpActions, getKeyboardAction, closeExportConfi
       // only use first one, if multiple matches (shouldn't happen anyway)
       const matchingKeyBinding = (keyBindingsByKeyCode[e.code] ?? []).find((kb) => {
         const kbKeys = new Set(kb.keys.split('+'));
-        if ((controlModifiers.intersection(kbKeys).size > 0) !== ctrl) return false;
-        if ((shiftModifiers.intersection(kbKeys).size > 0) !== shift) return false;
-        if ((altModifiers.intersection(kbKeys).size > 0) !== alt) return false;
-        if ((metaModifiers.intersection(kbKeys).size > 0) !== meta) return false;
-        return true;
+        return modifierMatches(controlModifiers, kbKeys, ctrl) && modifierMatches(shiftModifiers, kbKeys, shift) && modifierMatches(altModifiers, kbKeys, alt) && modifierMatches(metaModifiers, kbKeys, meta);
       });
 
       if (ev === 'keyup') onKeyUp({ e, action: matchingKeyBinding?.action });

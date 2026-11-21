@@ -1,10 +1,10 @@
-import type { FormEventHandler } from 'react';
+import type { SubmitEventHandler, KeyboardEventHandler } from 'react';
 import { memo, useRef, useState, useMemo, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import invariant from 'tiny-invariant';
 import { motion } from 'motion/react';
-import { FaCheck, FaClipboard, FaClipboardList, FaEdit, FaInfo, FaPlus, FaTrash, FaUndo } from 'react-icons/fa';
-import { IconButton, Tooltip, Button, TextField } from '@radix-ui/themes';
+import { FaCheck, FaChevronDown, FaClipboard, FaClipboardList, FaClone, FaCopy, FaEdit, FaInfo, FaPlus, FaTrash, FaUndo } from 'react-icons/fa';
+import { IconButton, Tooltip, Button, TextArea, DropdownMenu } from '@radix-ui/themes';
 
 import type { SegmentTags } from '../types';
 import { segmentTagsSchema } from '../types';
@@ -12,13 +12,33 @@ import CopyClipboardButton from './CopyClipboardButton';
 import { errorToast } from '../swal';
 import Warning from './Warning';
 import mainApi from '../mainApi';
+import type { Suggestion } from './SuggestionTextField';
+import SuggestionTextField from './SuggestionTextField';
 
 
 const activeColor = 'var(--gray-12)';
 
 const emptyObject = {};
 
-function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editingTag, setEditingTag, onTagsChange, onTagReset, addTagTitle, tagInfo, canDeleteExisting }: {
+export type TagInfo = Record<string, {
+  description?: string,
+  url?: string,
+  suggestions?: Suggestion[],
+  multiline?: boolean,
+  // returns an error message if invalid
+  validate?: (value: string) => string | undefined,
+}>;
+
+// For the containing dialog's `onEscapeKeyDown`: Esc discards the unsaved edit instead of closing the dialog.
+// Handled at the dialog level so that it also works when the input doesn't have focus (or is not mounted, e.g. another tab)
+export const cancelTagEditOnEscape = (editingTag: string | undefined, setEditingTag: (v: string | undefined) => void) => (e: KeyboardEvent) => {
+  if (editingTag == null) return;
+  e.preventDefault();
+  setEditingTag(undefined);
+};
+
+// eslint-disable-next-line react/no-object-type-as-default-prop -- TODO fix (new rule in @mifi/lint-config)
+function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editingTag, setEditingTag, onTagsChange, onTagReset, addTagTitle, tagInfo, keySuggestions, canDeleteExisting, onApplyToAll, applyToAllTitle, copyFromSources = [] }: {
   existingTags?: SegmentTags,
   customTags?: SegmentTags | undefined,
   editingTag: string | undefined,
@@ -26,17 +46,25 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
   onTagsChange: (keyValues: Record<string, string>) => void,
   onTagReset: (tag: string) => void,
   addTagTitle: string,
-  tagInfo?: Record<string, { description: string, url?: string }>,
+  tagInfo?: TagInfo,
+  keySuggestions?: readonly string[],
   canDeleteExisting?: boolean,
+  onApplyToAll?: ((tag: string, value: string) => void) | undefined,
+  applyToAllTitle?: string,
+  // other tracks/files to copy metadata from
+  copyFromSources?: { key: string, label: string, metadata: Record<string, string> }[],
 }) {
   const { t } = useTranslation();
-  const ref = useRef<HTMLInputElement>(null);
+  const editRef = useRef<HTMLInputElement & HTMLTextAreaElement>(null);
+  const addRef = useRef<HTMLInputElement>(null);
 
   const [editingTagVal, setEditingTagVal] = useState<string>();
-  const [newTagKey, setNewTagKey] = useState<string>();
+  const [newTagKeyState, setNewTagKey] = useState<string>();
+  // the edit can also be discarded from outside (see cancelTagEditOnEscape), so only use it while editing
+  const newTagKey = editingTag != null ? newTagKeyState : undefined;
   const [newTagKeyInput, setNewTagKeyInput] = useState<string>('');
 
-  const newTagKeyInputError = useMemo(() => !!newTagKeyInput && newTagKeyInput.includes('='), [newTagKeyInput]);
+  const newTagKeyInputError = useMemo(() => Boolean(newTagKeyInput) && newTagKeyInput.includes('='), [newTagKeyInput]);
 
   const effectiveTags = useMemo(() => ({
     ...existingTags,
@@ -62,6 +90,14 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
     }
   }, [onTagsChange]);
 
+  // Only the keys that differ, so unchanged tags aren't shown as edited.
+  // A copied value equal to the original resets the user's edit instead
+  const onCopyFrom = useCallback((metadata: Record<string, string>) => {
+    const changes = Object.entries(metadata).filter(([key, value]) => effectiveTags[key] !== value);
+    changes.filter(([key, value]) => existingTags[key] === value).forEach(([key]) => onTagReset(key));
+    onTagsChange(Object.fromEntries(changes.filter(([key, value]) => existingTags[key] !== value)));
+  }, [effectiveTags, existingTags, onTagReset, onTagsChange]);
+
   const saveTag = useCallback(() => {
     invariant(editingTag != null);
     invariant(editingTagVal != null);
@@ -85,12 +121,20 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
     }
   }, [editingTag, editingTagVal, existingTags, effectiveTags, newTagKey, onResetClick, saveTag, setEditingTag]);
 
+  // Ctrl/Cmd+Enter saves (needed for multiline)
+  const onEditKeyDown = useCallback<KeyboardEventHandler>((e) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      onEditClick();
+    }
+  }, [onEditClick]);
+
   const onDeleteExistingClick = useCallback((tag: string) => {
     onTagsChange({ [tag]: '' }); // empty string means delete metadata in ffmpeg
     setEditingTag(undefined);
   }, [onTagsChange, setEditingTag]);
 
-  const onSubmit = useCallback<FormEventHandler<HTMLFormElement>>((e) => {
+  const onSubmit = useCallback<SubmitEventHandler<HTMLFormElement>>((e) => {
     e.preventDefault();
     onEditClick();
   }, [onEditClick]);
@@ -109,14 +153,18 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
     setNewTagKeyInput('');
   }, [editingTag, effectiveTags, newTagKey, newTagKeyInput, newTagKeyInputError, onEditClick, setEditingTag]);
 
-  const onAddSubmit = useCallback<FormEventHandler<HTMLFormElement>>((e) => {
+  const onAddSubmit = useCallback<SubmitEventHandler<HTMLFormElement>>((e) => {
     e.preventDefault();
     add();
   }, [add]);
 
   useEffect(() => {
-    ref.current?.focus();
+    (editingTag != null ? editRef : addRef).current?.focus();
   }, [editingTag]);
+
+  const editingTagError = editingTag != null && editingTagVal ? tagInfo?.[editingTag]?.validate?.(editingTagVal) : undefined;
+
+  const availableKeySuggestions = useMemo(() => (keySuggestions ?? []).filter((key) => effectiveTags[key] == null).map((value) => ({ value })), [effectiveTags, keySuggestions]);
 
   const canAdd = !newTagKey && (editingTag == null || effectiveTags[editingTag] == null);
 
@@ -139,12 +187,13 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
     <>
       <table style={{ marginBottom: '1em', width: '100%' }}>
         <tbody>
+          {/* eslint-disable-next-line unicorn-js/prefer-object-iterable-methods -- TODO fix (new rule in @mifi/lint-config) */}
           {Object.keys(effectiveTags).map((tag) => {
             const editingThis = tag === editingTag;
             const thisTagCustom = customTags[tag] != null;
             const thisTagNew = existingTags[tag] == null;
             const value = effectiveTags[tag];
-            const isDeletedExisting = !!canDeleteExisting && !value && !thisTagNew;
+            const isDeletedExisting = Boolean(canDeleteExisting) && !value && !thisTagNew;
             const editingOther = editingTag != null && !editingThis;
 
             return (
@@ -161,13 +210,17 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
                 <td style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '.5em' }}>
                   {editingThis ? (
                     <form style={{ marginRight: '.5em', display: 'inline' }} onSubmit={onSubmit}>
-                      <TextField.Root ref={ref} placeholder={t('Enter value')} value={editingTagVal ?? ''} onChange={(e) => setEditingTagVal(e.target.value)} />
+                      {tagInfo?.[tag]?.multiline || editingTagVal?.includes('\n') ? (
+                        <TextArea ref={editRef} placeholder={t('Enter value')} value={editingTagVal ?? ''} onChange={(e) => setEditingTagVal(e.target.value)} onKeyDown={onEditKeyDown} resize="vertical" style={{ width: '20em' }} />
+                      ) : (
+                        <SuggestionTextField ref={editRef} placeholder={t('Enter value')} value={editingTagVal ?? ''} onValueChange={setEditingTagVal} onKeyDown={onEditKeyDown} suggestions={tagInfo?.[tag]?.suggestions ?? []} />
+                      )}
                     </form>
                   ) : (
                     renderValue({ isDeletedExisting, value, thisTagCustom })
                   )}
 
-                  {tagInfo?.[tag] && !editingThis && (
+                  {tagInfo?.[tag]?.description && !editingThis && (
                     <Tooltip content={tagInfo[tag].description}>
                       <IconButton size="1" variant="ghost" color="gray" style={{ cursor: tagInfo[tag]?.url ? 'pointer' : undefined }} onClick={() => tagInfo[tag]?.url && mainApi.openExternal(tagInfo[tag].url)}><FaInfo /></IconButton>
                     </Tooltip>
@@ -183,6 +236,10 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
                     <IconButton size="1" color="red" variant="ghost" title={t('Reset')} onClick={onResetClick}><FaUndo /></IconButton>
                   )}
 
+                  {onApplyToAll && !editingThis && (
+                    <IconButton disabled={editingOther} size="1" variant="ghost" color="gray" title={applyToAllTitle} onClick={() => onApplyToAll(tag, value ?? '')}><FaClone /></IconButton>
+                  )}
+
                   {canDeleteExisting && !isDeletedExisting && !editingThis && existingTags[tag] != null && (
                     <IconButton disabled={editingOther} size="1" color="red" variant="ghost" title={t('Delete')} onClick={() => onDeleteExistingClick(tag)}><FaTrash /></IconButton>
                   )}
@@ -193,8 +250,10 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
         </tbody>
       </table>
 
+      {editingTagError && <Warning style={{ marginBottom: '1em' }}>{editingTagError}</Warning>}
+
       <form onSubmit={onAddSubmit} style={{ opacity: canAdd ? undefined : 0.5, marginBottom: '1em', display: 'flex', alignItems: 'center' }}>
-        <TextField.Root ref={ref} disabled={!canAdd} value={newTagKeyInput} onChange={(e) => setNewTagKeyInput(e.target.value)} placeholder={addTagTitle} style={{ marginRight: '1em' }} />
+        <SuggestionTextField ref={addRef} disabled={!canAdd} value={newTagKeyInput} onValueChange={setNewTagKeyInput} suggestions={availableKeySuggestions} placeholder={addTagTitle} style={{ marginRight: '1em' }} />
         <IconButton size="2" type="submit" disabled={!canAdd} title={addTagTitle} onClick={add}><FaPlus /></IconButton>
       </form>
 
@@ -205,7 +264,20 @@ function TagEditor({ existingTags = emptyObject, customTags = emptyObject, editi
           {({ onClick }) => <Button color="gray" size="1" onClick={onClick}><FaClipboardList />{t('Copy to clipboard')}</Button>}
         </CopyClipboardButton>
 
-        <Button color="gray" size="1" onClick={onPasteClick}><FaClipboard />{t('Paste')}</Button>
+        <Button color="gray" size="1" disabled={editingTag != null} onClick={onPasteClick} style={{ marginRight: '.3em' }}><FaClipboard />{t('Paste')}</Button>
+
+        {copyFromSources.length > 0 && (
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger disabled={editingTag != null}>
+              <Button color="gray" size="1"><FaCopy />{t('Copy from')}<FaChevronDown /></Button>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content size="1" style={{ maxHeight: '20em' }}>
+              {copyFromSources.map(({ key, label, metadata }) => (
+                <DropdownMenu.Item key={key} onSelect={() => onCopyFrom(metadata)}>{label}</DropdownMenu.Item>
+              ))}
+            </DropdownMenu.Content>
+          </DropdownMenu.Root>
+        )}
       </div>
     </>
   );

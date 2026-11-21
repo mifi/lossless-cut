@@ -55,18 +55,18 @@ it('converts segments to chapters with single long segment', () => {
 it('detects overlapping segments', () => {
   expect(partitionIntoOverlappingRanges([
     { start: 0, end: 1 },
-  ])).toEqual([]);
+  ])).toStrictEqual([]);
 
   expect(partitionIntoOverlappingRanges([
     { start: 0, end: 1 },
     { start: 1, end: 2 },
-  ])).toEqual([]);
+  ])).toStrictEqual([]);
 
   expect(partitionIntoOverlappingRanges([
     { start: 0, end: 1 },
     { start: 0.5, end: 2 },
     { start: 2, end: 3 },
-  ])).toEqual([
+  ])).toStrictEqual([
     [
       { start: 0, end: 1 },
       { start: 0.5, end: 2 },
@@ -76,7 +76,7 @@ it('detects overlapping segments', () => {
   expect(partitionIntoOverlappingRanges([
     { start: 0, end: 2 },
     { start: 0.5, end: 1 },
-  ])).toEqual([
+  ])).toStrictEqual([
     [
       { start: 0, end: 2 },
       { start: 0.5, end: 1 },
@@ -95,7 +95,7 @@ it('detects overlapping segments', () => {
     { start: 19, end: 19.5 },
     { start: 19.5, end: 22 },
     { start: 22, end: 25 },
-  ])).toEqual([
+  ])).toStrictEqual([
     [{ start: 11, end: 12 }, { start: 11.5, end: 13 }, { start: 11.5, end: 12.5 }],
     [{ start: 17, end: 20 }, { start: 17.5, end: 18.5 }, { start: 18, end: 19.5 }, { start: 19, end: 19.5 }, { start: 19.5, end: 22 }],
   ]);
@@ -105,7 +105,7 @@ it('detects overlapping segments, undefined end', () => {
   expect(partitionIntoOverlappingRanges([
     { start: 1, end: undefined },
     { start: 1.5, end: undefined },
-  ])).toEqual([]);
+  ])).toStrictEqual([]);
 });
 
 test('formatSegNum', () => {

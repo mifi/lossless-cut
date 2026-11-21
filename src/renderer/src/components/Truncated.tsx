@@ -11,7 +11,6 @@ export default function Truncated({ maxWidth, style, ...props }: DetailedHTMLPro
         textOverflow: 'ellipsis',
         ...style,
       }}
-      // eslint-disable-next-line react/jsx-props-no-spreading
       {...props}
     />
   );

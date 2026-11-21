@@ -1,5 +1,4 @@
 import i18n from 'i18next';
-import type { PlatformPath } from 'node:path';
 import pMap from 'p-map';
 import max from 'lodash/max';
 import invariant from 'tiny-invariant';
@@ -13,6 +12,8 @@ import type { FileStats, FormatTimecode, SegmentToExport } from '../types';
 import safeishEval from '../worker/eval';
 import { UserFacingError } from '../../errors';
 import type { FileFfprobeMeta } from '../ffmpeg';
+import { truncateFileName } from '../../../common/util';
+import { parse as parsePath, sep as pathSep, join as pathJoin, normalize as pathNormalize, basename } from './path';
 
 
 export const segNumVariable = 'SEG_NUM';
@@ -25,8 +26,6 @@ export const segTagsVariable = 'SEG_TAGS';
 
 // I don't remember why I set it to 200, but on Windows max length seems to be 256, on MacOS it seems to be 255.
 export const maxFileNameLength = 250;
-
-const { parse: parsePath, sep: pathSep, join: pathJoin, normalize: pathNormalize, basename }: PlatformPath = window.require('node:path');
 
 
 export interface GeneratedOutFileNames {
@@ -48,6 +47,12 @@ export interface GenerateMergedOutFileNamesParams {
   fileFormat: string;
   outputDir: string;
   epochMs: number;
+}
+
+// make invisible control characters readable, e.g. U+0009
+function formatInvalidChar(char: string) {
+  const codePoint = char.codePointAt(0)!;
+  return codePoint < 0x20 ? `U+${codePoint.toString(16).toUpperCase().padStart(4, '0')}` : char;
 }
 
 function getTemplateProblems({ fileNames, filePath, outputDir, safeOutputFileName }: {
@@ -72,6 +77,8 @@ function getTemplateProblems({ fileNames, filePath, outputDir, safeOutputFileNam
     // note that we allow path separators in some cases (see below)
     if (isWindows) {
       ['<', '>', ':', '"', '|', '?', '*'].forEach((char) => invalidChars.add(char));
+      // control characters https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions
+      for (let code = 0; code < 32; code += 1) invalidChars.add(String.fromCodePoint(code));
     } else if (isMac) {
       // Colon is invalid on windows https://github.com/mifi/lossless-cut/issues/631 and on MacOS, but not Linux https://github.com/mifi/lossless-cut/issues/830
       [':'].forEach((char) => invalidChars.add(char));
@@ -102,9 +109,10 @@ function getTemplateProblems({ fileNames, filePath, outputDir, safeOutputFileNam
       error = i18n.t('At least one resulting file name has no length');
       break;
     }
+    // eslint-disable-next-line @typescript-eslint/no-misused-spread -- we want code points
     const matchingInvalidChars = new Set([...fileName].filter((char) => invalidChars.has(char)));
     if (matchingInvalidChars.size > 0) {
-      error = i18n.t('At least one resulting file name contains invalid character(s): {{invalidChars}}', { invalidChars: `"${[...matchingInvalidChars].join('", "')}"` });
+      error = i18n.t('At least one resulting file name contains invalid character(s): {{invalidChars}}', { invalidChars: `"${[...matchingInvalidChars].map((char) => formatInvalidChar(char)).join('", "')}"` });
       break;
     }
     if (sameAsInputPath) {
@@ -209,7 +217,7 @@ async function interpolateOutFileName(template: string, {
     [segTagsVariable]: tags && {
       // allow both original case and uppercase
       ...tags,
-      ...Object.fromEntries(Object.entries(tags).map(([key, value]) => [`${key.toLocaleUpperCase('en-US')}`, value])),
+      ...Object.fromEntries(Object.entries(tags).map(([key, value]) => [key.toLocaleUpperCase('en-US'), value])),
     },
     FILE_EXPORT_COUNT: currentFileExportCount != null ? currentFileExportCount + 1 : undefined,
     EXPORT_COUNT: exportCount != null ? exportCount + 1 : undefined,
@@ -230,7 +238,7 @@ function maybeTruncatePath(fileName: string, truncate: boolean) {
   return [
     ...rest,
     // If sanitation is enabled, make sure filename (last seg of the path) is not too long
-    truncate ? lastSeg!.slice(0, maxFileNameLength) : lastSeg,
+    truncate ? truncateFileName(lastSeg!, maxFileNameLength, isWindows) : lastSeg,
   ].join(pathSep);
 }
 
@@ -264,8 +272,8 @@ async function generateWithFallback({ generate, desiredTemplate, defaultTemplate
     };
   }
 
-  // Try again with default template if there was an error
-  if (problems.error != null && desiredTemplate !== defaultTemplate) {
+  // Try again with default template if there was an error (also if the desired template is the default, because sanitizing may fix it) https://github.com/mifi/lossless-cut/issues/2986
+  if (problems.error != null) {
     const fileNames = await generate({ template: defaultTemplate, sanitizeName: (name: string) => sanitizeName(name, true), safeOutputFileName: true });
     return { fileNames, originalFileNames, problems };
   }
@@ -418,7 +426,7 @@ export async function generateMergedFileNames({ template: desiredTemplate, isCus
       return [maybeTruncatePath(fileName, safeOutputFileName2)];
     },
     desiredTemplate,
-    defaultTemplate: defaultCutMergedFileTemplate,
+    defaultTemplate: defaultMergedFileTemplate,
     filePath: firstFile.path,
     outputDir,
     maxLabelLength,

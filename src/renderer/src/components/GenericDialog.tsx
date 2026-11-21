@@ -1,5 +1,5 @@
-import type { FormEventHandler, MouseEventHandler, ReactNode } from 'react';
-import React, { useCallback, useContext, useMemo, useRef, useState } from 'react';
+import type { SubmitEventHandler, MouseEventHandler, ReactNode } from 'react';
+import React, { use, useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import invariant from 'tiny-invariant';
 import { FaCheckCircle, FaInfoCircle } from 'react-icons/fa';
@@ -30,7 +30,7 @@ interface GenericDialogContextValue {
 const GenericDialogContext = React.createContext<GenericDialogContextValue | undefined>(undefined);
 
 export function useGenericDialogContext() {
-  const context = useContext(GenericDialogContext);
+  const context = use(GenericDialogContext);
   invariant(context);
   return context;
 }
@@ -48,20 +48,20 @@ export default function GenericDialog({ dialog, onOpenChange }: {
         <Dialog.Portal>
           <Dialog.Overlay />
 
-          <GenericDialogContext.Provider value={context}>
+          <GenericDialogContext value={context}>
             {dialog != null && !dialog.isAlert && dialog.render()}
-          </GenericDialogContext.Provider>
+          </GenericDialogContext>
         </Dialog.Portal>
       </Dialog.Root>
 
       {/* Alert dialog */ }
-      <AlertDialog.Root open={dialog != null && !!dialog.isAlert} onOpenChange={onOpenChange}>
+      <AlertDialog.Root open={dialog != null && Boolean(dialog.isAlert)} onOpenChange={onOpenChange}>
         <AlertDialog.Portal>
           <AlertDialog.Overlay />
 
-          <GenericDialogContext.Provider value={context}>
+          <GenericDialogContext value={context}>
             {dialog != null && dialog.isAlert && dialog.render()}
-          </GenericDialogContext.Provider>
+          </GenericDialogContext>
         </AlertDialog.Portal>
       </AlertDialog.Root>
     </>
@@ -220,7 +220,7 @@ export function useDialog() {
       function CleanupChoices() {
         const [choices, setChoices] = useState(cleanupChoicesInitial);
 
-        const getVal = (key: CleanupChoice) => !!choices[key];
+        const getVal = (key: CleanupChoice) => Boolean(choices[key]);
 
         const onChange = (key: CleanupChoice, val: boolean | string) => setChoices((oldChoices) => {
           const newChoices = { ...oldChoices, [key]: Boolean(val) };
@@ -312,7 +312,7 @@ export function useDialog() {
         let parseableValue = value.trim();
         if (!parseableValue) return undefined;
         let sign = 1;
-        if (parseableValue[0] === '-') {
+        if (parseableValue.startsWith('-')) {
           sign = -1;
           parseableValue = parseableValue.slice(1);
         }
@@ -323,7 +323,7 @@ export function useDialog() {
         return duration * sign;
       }, []);
 
-      const handleSubmit = useCallback<FormEventHandler<HTMLFormElement>>((e) => {
+      const handleSubmit = useCallback<SubmitEventHandler<HTMLFormElement>>((e) => {
         e.preventDefault();
         try {
           const start = parseValue(startValue);
@@ -382,7 +382,7 @@ export function useDialog() {
       const [fpsStr, setFps] = useState('20');
       const [nStr, setN] = useState('1');
 
-      const handleSubmit = useCallback<FormEventHandler<HTMLFormElement>>((e) => {
+      const handleSubmit = useCallback<SubmitEventHandler<HTMLFormElement>>((e) => {
         e.preventDefault();
         try {
           const n = Number(nStr);

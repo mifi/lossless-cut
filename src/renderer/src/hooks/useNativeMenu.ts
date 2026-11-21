@@ -3,7 +3,6 @@ import { useCallback, useMemo } from 'react';
 
 // TODO pull out?
 const { getCurrentWindow, Menu } = window.require('@electron/remote');
-// eslint-disable-next-line prefer-destructuring
 
 // https://github.com/transflow/use-electron-context-menu
 // https://www.electronjs.org/docs/latest/api/menu-item

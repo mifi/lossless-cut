@@ -30,7 +30,7 @@ export default function WhatsNew() {
 
   const matchingVersions = useMemo(() => versions
     .filter(({ version }) => semver.gt(version, initialLastAppVersion) && semver.lte(version, appVersion))
-    .sort(({ version: a }, { version: b }) => semver.compare(b, a)), [initialLastAppVersion]);
+    .toSorted(({ version: a }, { version: b }) => semver.compare(b, a)), [initialLastAppVersion]);
 
   if (initialLastAppVersion === appVersion) return null;
 
@@ -62,7 +62,6 @@ export default function WhatsNew() {
                       components={{
                         // eslint-disable-next-line react/no-unstable-nested-components
                         code(props) {
-                          // eslint-disable-next-line react/jsx-props-no-spreading
                           return <code className="highlighted" {...props} />;
                         },
                       }}

@@ -1,21 +1,21 @@
-// eslint-disable-line unicorn/filename-case
-// eslint-disable-next-line import/no-extraneous-dependencies
+// eslint-disable-next-line import-js/no-extraneous-dependencies
 import { test, expect, describe } from 'vitest';
 
 import { pathToFileURL } from 'node:url';
 
 
+// eslint-disable-next-line vitest/no-conditional-tests -- TODO fix (new rule in @mifi/lint-config)
 if (process.platform === 'win32') {
   describe('file uri windows only', () => {
     test('converts path to file url', () => {
-      expect(pathToFileURL(String.raw`C:\Users\sindresorhus\dev\te^st.jpg`).href).toEqual('file:///C:/Users/sindresorhus/dev/te%5Est.jpg');
+      expect(pathToFileURL(String.raw`C:\Users\sindresorhus\dev\te^st.jpg`).href).toBe('file:///C:/Users/sindresorhus/dev/te%5Est.jpg');
     });
   });
 } else {
   describe('file uri non-windows', () => {
     // https://github.com/mifi/lossless-cut/issues/1941
     test('file with backslash', () => {
-      expect(pathToFileURL(String.raw`/has/back\slash`).href).toEqual('file:///has/back%5Cslash');
+      expect(pathToFileURL(String.raw`/has/back\slash`).href).toBe('file:///has/back%5Cslash');
     });
   });
 }

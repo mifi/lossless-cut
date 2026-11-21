@@ -19,7 +19,7 @@ import useActionTitle from './hooks/useActionTitle';
 import { saveColor, controlsBackground, primaryTextColor, darkModeTransition } from './colors';
 import { useSegColors } from './contexts';
 import { getSegmentTags } from './segments';
-import TagEditor from './components/TagEditor';
+import TagEditor, { cancelTagEditOnEscape } from './components/TagEditor';
 import type { ContextMenuTemplate, DefiniteSegmentBase, FormatTimecode, GetFrameCount, InverseCutSegment, SegmentBase, SegmentColorIndex, SegmentTags, StateSegment } from './types';
 import type { UseSegments } from './hooks/useSegments';
 import * as Dialog from './components/Dialog';
@@ -250,9 +250,7 @@ const Segment = memo(({
       className="segment-list-entry"
     >
       <div
-        // eslint-disable-next-line react/jsx-props-no-spreading
         {...sortable.attributes}
-        // eslint-disable-next-line react/jsx-props-no-spreading
         {...sortable.listeners}
         role="button"
         tabIndex={-1}
@@ -510,7 +508,6 @@ function SegmentList({
 
   const onTagReset = useCallback((tag: string) => setEditingSegmentTags((tags) => {
     invariant(tags != null);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { [tag]: _deleted, ...rest } = tags;
     return rest;
   }), [setEditingSegmentTags]);
@@ -617,7 +614,7 @@ function SegmentList({
       <Dialog.Root open={editingSegmentTagsSegmentIndex != null} onOpenChange={(open) => !open && onSegmentTagsCloseComplete()}>
         <Dialog.Portal>
           <Dialog.Overlay />
-          <Dialog.Content style={{ width: '40em' }} aria-describedby={undefined}>
+          <Dialog.Content style={{ width: '40em' }} aria-describedby={undefined} onEscapeKeyDown={cancelTagEditOnEscape(editingTag, setEditingTag)}>
             <Dialog.Title>{t('Edit segment tags')}</Dialog.Title>
 
             <TagEditor customTags={editingSegmentTags} editingTag={editingTag} setEditingTag={setEditingTag} onTagsChange={onTagsChange} onTagReset={onTagReset} addTagTitle={t('Add segment tag')} />

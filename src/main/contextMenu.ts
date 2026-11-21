@@ -1,5 +1,5 @@
 import type { BrowserWindow } from 'electron';
-// eslint-disable-next-line import/no-extraneous-dependencies
+// eslint-disable-next-line import-js/no-extraneous-dependencies
 import { Menu } from 'electron';
 
 // https://github.com/electron/electron/issues/4068#issuecomment-274159726

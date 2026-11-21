@@ -14,6 +14,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }> {
     this.state = { error: undefined };
   }
 
+  // eslint-disable-next-line unicorn-js/consistent-class-member-order -- TODO fix (new rule in @mifi/lint-config)
   static getDerivedStateFromError(error: unknown) {
     return { error };
   }
@@ -28,13 +29,13 @@ class ErrorBoundary extends Component<{ children: ReactNode }> {
       return (
         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
           <h1><Trans>Something went wrong</Trans></h1>
+          {/* eslint-disable-next-line @typescript-eslint/no-base-to-string -- error can be anything */}
           <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{error instanceof Error ? error.message : String(error)}</div>
           <p><button type="button" onClick={() => openSendReportDialog({ err: error })} style={{ padding: 10, fontSize: 20 }}><Trans>Report error</Trans></button></p>
         </div>
       );
     }
 
-    // eslint-disable-next-line react/destructuring-assignment
     return this.props.children;
   }
 }

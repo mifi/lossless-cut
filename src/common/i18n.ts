@@ -1,8 +1,7 @@
 // returned from app.getLocale()
 // https://www.electronjs.org/docs/api/app#appgetlocale
 // https://source.chromium.org/chromium/chromium/src/+/master:ui/base/l10n/l10n_util.cc
-export type ElectronLanguageKey =
-'af' // Afrikaans
+export type ElectronLanguageKey = 'af' // Afrikaans
 | 'ak' // Twi
 | 'am' // Amharic
 | 'an' // Aragonese
@@ -185,7 +184,7 @@ export type ElectronLanguageKey =
 | 'zh-CN' // Chinese (China)
 | 'zh-HK' // Chinese (Hong Kong)
 | 'zh-TW' // Chinese (Taiwan)
-| 'zu' // Zulu
+| 'zu'; // Zulu
 
 // https://www.electronjs.org/docs/api/app#appgetlocale
 // https://source.chromium.org/chromium/chromium/src/+/master:ui/base/l10n/l10n_util.cc

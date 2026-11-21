@@ -1,6 +1,6 @@
 import { test, expect } from 'vitest';
 
-import { getMapStreamsArgs, getStreamIdsToCopy } from './streams';
+import { getEffectiveAvoidNegativeTs, getKeyframeCutSeekCompensation, getMapStreamsArgs, getStreamIdsToCopy, isCopyingOnlyAudioStreams, hasFileEdits, hasStreamEdits } from './streams';
 import type { FFprobeStreamDisposition } from '../../../common/ffprobe';
 import type { LiteFFprobeStream } from '../types';
 
@@ -52,7 +52,7 @@ test('getMapStreamsArgs', () => {
     allFilesMeta,
     copyFileStreams: [{ path, streamIds: streams1.map((stream) => stream.index) }],
     outFormat,
-  })).toEqual([
+  })).toStrictEqual([
     '-map', '0:0', '-c:0', 'copy',
     '-map', '0:1', '-c:1', 'copy',
     '-map', '0:2', '-c:2', 'copy',
@@ -61,6 +61,22 @@ test('getMapStreamsArgs', () => {
     '-map', '0:5', '-c:5', 'copy',
     '-map', '0:6', '-c:6', 'copy',
     '-map', '0:7', '-c:7', 'mov_text',
+  ]);
+});
+
+test('getMapStreamsArgs, flac re-encode sets frame size', () => {
+  const flacStreams: LiteFFprobeStream[] = [
+    { index: 0, codec_type: 'video', codec_tag: '0x0000', codec_name: 'mjpeg', time_base: '', disposition: makeDisposition({ attached_pic: 1 }) },
+    { index: 1, codec_type: 'audio', codec_tag: '0x0000', codec_name: 'flac', time_base: '', disposition: makeDisposition() },
+  ];
+  expect(getMapStreamsArgs({
+    allFilesMeta: { [path]: { streams: flacStreams } },
+    copyFileStreams: [{ path, streamIds: [0, 1] }],
+    outFormat: 'flac',
+    needFlac: true,
+  })).toStrictEqual([
+    '-map', '0:0', '-c:0', 'copy',
+    '-map', '0:1', '-c:1', 'flac', '-frame_size:1', '4608',
   ]);
 });
 
@@ -75,7 +91,7 @@ test('getMapStreamsArgs, subtitles to matroska', () => {
     allFilesMeta: { [path]: { streams } },
     copyFileStreams: [{ path, streamIds: streams.map((stream) => stream.index) }],
     outFormat,
-  })).toEqual([
+  })).toStrictEqual([
     '-map', '0:0', '-c:0', 'srt',
   ]);
 });
@@ -88,7 +104,7 @@ test('getMapStreamsArgs, disposition', () => {
     copyFileStreams: [{ path, streamIds: [0] }],
     outFormat,
     manuallyCopyDisposition: true,
-  })).toEqual([
+  })).toStrictEqual([
     '-map', '0:0',
     '-c:0', 'copy',
     '-disposition:0', 'attached_pic',
@@ -112,7 +128,7 @@ test('getMapStreamsArgs, smart cut', () => {
       }
       return undefined;
     },
-  })).toEqual([
+  })).toStrictEqual([
     '-map', '0:1',
     '-c:0', 'copy',
     '-map', '0:2',
@@ -131,8 +147,8 @@ test('getMapStreamsArgs, smart cut', () => {
 
 test('getStreamIdsToCopy, includeAllStreams false', () => {
   const { streamIdsToCopy, excludedStreamIds } = getStreamIdsToCopy({ streams: streams1, includeAllStreams: false });
-  expect(streamIdsToCopy).toEqual([2, 1, 7]);
-  expect(excludedStreamIds).toEqual([0, 3, 4, 5, 6]);
+  expect(streamIdsToCopy).toStrictEqual([2, 1, 7]);
+  expect(excludedStreamIds).toStrictEqual([0, 3, 4, 5, 6]);
 });
 
 test('srt output', () => {
@@ -140,7 +156,7 @@ test('srt output', () => {
     allFilesMeta: { [path]: { streams: [{ index: 0, codec_type: 'subtitle', codec_tag: '0x67337874', codec_name: 'mov_text', time_base: '', disposition: makeDisposition() }] } },
     copyFileStreams: [{ path, streamIds: [0] }],
     outFormat: 'srt',
-  })).toEqual([
+  })).toStrictEqual([
     '-map', '0:0', '-c:0', 'srt',
   ]);
 });
@@ -150,7 +166,7 @@ test('webvtt output', () => {
     allFilesMeta: { [path]: { streams: [{ index: 0, codec_type: 'subtitle', codec_tag: '0x67337874', codec_name: 'mov_text', time_base: '', disposition: makeDisposition() }] } },
     copyFileStreams: [{ path, streamIds: [0] }],
     outFormat: 'webvtt',
-  })).toEqual([
+  })).toStrictEqual([
     '-map', '0:0', '-c:0', 'webvtt',
   ]);
 });
@@ -160,7 +176,94 @@ test('ass output', () => {
     allFilesMeta: { [path]: { streams: [{ index: 0, codec_type: 'subtitle', codec_tag: '0x67337874', codec_name: 'mov_text', time_base: '', disposition: makeDisposition() }] } },
     copyFileStreams: [{ path, streamIds: [0] }],
     outFormat: 'ass',
-  })).toEqual([
+  })).toStrictEqual([
     '-map', '0:0', '-c:0', 'ass',
   ]);
+});
+
+// stream 0 of `streams1` is an attached_pic (cover art) mjpeg stream
+// https://github.com/mifi/lossless-cut/issues/3009
+test('getEffectiveAvoidNegativeTs, downgrades to auto when copying cover art', () => {
+  expect(getEffectiveAvoidNegativeTs({
+    avoidNegativeTs: 'make_zero',
+    allFilesMeta,
+    copyFileStreams: [{ path, streamIds: [0, 1] }],
+  })).toBe('auto');
+
+  expect(getEffectiveAvoidNegativeTs({
+    avoidNegativeTs: 'make_non_negative',
+    allFilesMeta,
+    copyFileStreams: [{ path, streamIds: [0, 1] }],
+  })).toBe('auto');
+});
+
+test('getEffectiveAvoidNegativeTs, passes through when not copying cover art', () => {
+  expect(getEffectiveAvoidNegativeTs({
+    avoidNegativeTs: 'make_zero',
+    allFilesMeta,
+    copyFileStreams: [{ path, streamIds: [1, 2] }],
+  })).toBe('make_zero');
+
+  expect(getEffectiveAvoidNegativeTs({
+    avoidNegativeTs: 'make_non_negative',
+    allFilesMeta,
+    copyFileStreams: [{ path, streamIds: [1, 2] }],
+  })).toBe('make_non_negative');
+});
+
+test('getEffectiveAvoidNegativeTs, leaves other values alone', () => {
+  const copyFileStreams = [{ path, streamIds: [0, 1] }];
+
+  expect(getEffectiveAvoidNegativeTs({ avoidNegativeTs: 'auto', allFilesMeta, copyFileStreams })).toBe('auto');
+  expect(getEffectiveAvoidNegativeTs({ avoidNegativeTs: 'disabled', allFilesMeta, copyFileStreams })).toBe('disabled');
+  expect(getEffectiveAvoidNegativeTs({ avoidNegativeTs: undefined, allFilesMeta, copyFileStreams })).toBeUndefined();
+});
+
+// see `streams1`: 0 is cover art, 1 and 4 are audio, 2 and 3 are video, 7 is subtitle
+test('isCopyingOnlyAudioStreams, true for audio (with or without cover art)', () => {
+  expect(isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams: [{ path, streamIds: [1] }] })).toBe(true);
+  expect(isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams: [{ path, streamIds: [1, 4] }] })).toBe(true);
+  expect(isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams: [{ path, streamIds: [0, 1] }] })).toBe(true);
+  expect(isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams: [{ path, streamIds: [0] }] })).toBe(true); // cover art alone is a single keyframe, so harmless
+});
+
+test('isCopyingOnlyAudioStreams, false when copying video, subtitles, unknown streams or nothing', () => {
+  expect(isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams: [{ path, streamIds: [1, 2] }] })).toBe(false);
+  expect(isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams: [{ path, streamIds: [1, 7] }] })).toBe(false);
+  expect(isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams: [{ path, streamIds: [1, 99] }] })).toBe(false);
+  expect(isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams: [{ path, streamIds: [] }] })).toBe(false);
+  expect(isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams: [] })).toBe(false);
+});
+
+test('getKeyframeCutSeekCompensation', () => {
+  const bFrames = [{ has_b_frames: 2 }, {}];
+  const compensation = 3 / 23 + 0.001;
+
+  expect(getKeyframeCutSeekCompensation({ formatName: 'matroska,webm', streams: bFrames, cutFrom: 6 })).toBe(compensation);
+  // no B-frames
+  expect(getKeyframeCutSeekCompensation({ formatName: 'matroska,webm', streams: [{ has_b_frames: 0 }, {}], cutFrom: 6 })).toBe(0);
+  // formats with AVFMT_SEEK_TO_PTS, or not handled
+  expect(getKeyframeCutSeekCompensation({ formatName: 'mov,mp4,m4a,3gp,3g2,mj2', streams: bFrames, cutFrom: 6 })).toBe(0);
+  expect(getKeyframeCutSeekCompensation({ formatName: undefined, streams: bFrames, cutFrom: 6 })).toBe(0);
+  // not cutting start
+  expect(getKeyframeCutSeekCompensation({ formatName: 'matroska,webm', streams: bFrames, cutFrom: 0 })).toBe(0);
+});
+
+test('hasStreamEdits', () => {
+  expect(hasStreamEdits(undefined)).toBe(false);
+  // lingering params that don't affect the export
+  expect(hasStreamEdits({ metadata: {}, bsfH264Mp4toannexb: false, crop: { left: 0, right: 0, top: 0, bottom: 0 }, aspectRatio: { num: 16, den: 0 } })).toBe(false);
+  expect(hasStreamEdits({ metadata: { language: 'eng' } })).toBe(true);
+  expect(hasStreamEdits({ metadata: { title: '' } })).toBe(true); // empty means delete
+  expect(hasStreamEdits({ metadata: {}, tag: 'hvc1' })).toBe(true);
+  expect(hasStreamEdits({ metadata: {}, disposition: 'attached_pic' })).toBe(false);
+  expect(hasStreamEdits({ metadata: {}, crop: { left: 2, right: 0, top: 0, bottom: 0 } })).toBe(true);
+});
+
+test('hasFileEdits', () => {
+  expect(hasFileEdits(undefined)).toBe(false);
+  expect(hasFileEdits({ metadata: {}, paramsByStream: new Map([[0, { metadata: { title: 'a' } }]]) })).toBe(false); // track edits don't count
+  expect(hasFileEdits({ metadata: {}, paramsByStream: new Map(), offset: 0 })).toBe(false);
+  expect(hasFileEdits({ metadata: {}, paramsByStream: new Map(), offset: 1.5 })).toBe(true);
+  expect(hasFileEdits({ metadata: { title: 'a' }, paramsByStream: new Map() })).toBe(true);
 });

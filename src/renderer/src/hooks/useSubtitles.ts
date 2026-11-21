@@ -8,14 +8,14 @@ export default () => {
 
   const loadSubtitle = useCallback(async ({ filePath, index, subtitleStream }: { filePath: string, index: number, subtitleStream: FFprobeStream }) => {
     const url = await extractSubtitleTrackVtt(filePath, index);
-    setSubtitlesByStreamId((old) => ({ ...old, [index]: { url, lang: subtitleStream.tags && subtitleStream.tags.language } }));
+    setSubtitlesByStreamId((old) => ({ ...old, [index]: { url, lang: subtitleStream.tags?.language } }));
   }, []);
 
   // Cleanup removed subtitles
   const subtitlesByStreamIdRef = useRef<typeof subtitlesByStreamId>({});
   useEffect(() => {
     Object.values(subtitlesByStreamIdRef.current).forEach(({ url, lang }) => {
-      if (!Object.values(subtitlesByStreamId).some((existingSubtitle) => existingSubtitle.url === url)) {
+      if (Object.values(subtitlesByStreamId).every((existingSubtitle) => existingSubtitle.url !== url)) {
         console.log('Cleanup subtitle', lang);
         URL.revokeObjectURL(url);
       }

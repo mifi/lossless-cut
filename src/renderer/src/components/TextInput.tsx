@@ -1,4 +1,5 @@
-import { forwardRef, type CSSProperties, type InputHTMLAttributes } from 'react';
+import { forwardRef } from 'react';
+import type { CSSProperties, InputHTMLAttributes } from 'react';
 
 
 type Props = InputHTMLAttributes<HTMLInputElement> & { style?: CSSProperties };
@@ -7,7 +8,6 @@ const inputStyle: CSSProperties = { borderRadius: '.4em', flexGrow: 1, fontFamil
 
 // eslint-disable-next-line react/display-name
 const TextInput = forwardRef<HTMLInputElement, Props>(({ style, ...props }, forwardedRef) => (
-  // eslint-disable-next-line react/jsx-props-no-spreading
   <input type="text" ref={forwardedRef} style={{ ...inputStyle, ...style }} {...props} />
 ));
 

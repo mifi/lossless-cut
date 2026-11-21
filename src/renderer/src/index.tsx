@@ -29,19 +29,20 @@ import App from './App';
 import ErrorBoundary from './ErrorBoundary';
 import './i18n';
 
-import type { RemoteApiLegacy, RemoteRpcApi } from '../../main';
+import type { RemoteApiLegacy } from '../../main';
 
 import './main.css';
 import './swal2.scss';
 
 
+/* eslint-disable @stylistic/operator-linebreak, @stylistic/indent -- chained conditional types read best like this */
 type TypedRemote = Omit<typeof Remote, 'require'> & {
   require: <T extends string>(module: T) => (
     T extends './index.js' ? RemoteApiLegacy :
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     any
   );
-}
+};
 
 declare global {
   interface Window {
@@ -55,7 +56,7 @@ declare global {
       T extends 'cue-parser' ? typeof cueParser :
       never
     );
-    electron: RemoteRpcApi;
+    /* eslint-enable @stylistic/operator-linebreak, @stylistic/indent */
   }
   interface Navigator {
     keyboard: {

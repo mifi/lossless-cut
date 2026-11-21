@@ -24,9 +24,7 @@ import FileNameTemplateEditor from './FileNameTemplateEditor';
 import HighlightedText from './HighlightedText';
 import type { FileStats } from '../types';
 import OutDirSelector from './OutDirSelector';
-import { parseRatio } from '../../../common/util';
-
-const { basename } = window.require('node:path');
+import { basename } from '../util/path';
 
 
 const rowStyle: CSSProperties = {
@@ -39,17 +37,8 @@ function Alert({ text }: { text: string }) {
   );
 }
 
+// eslint-disable-next-line unicorn-js/prefer-smaller-scope -- TODO fix (new rule in @mifi/lint-config)
 type ProblemValue = string | number | undefined;
-
-type Problem = {
-  index: number,
-} & ({
-  type: 'extraneous',
-} | {
-  type: 'parameter_mismatch',
-  key: string,
-  values: [ProblemValue, ProblemValue],
-});
 
 function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate: storedMergedFileTemplate, generateMergedFileNames, onConcat, alwaysConcatMultipleFiles, setAlwaysConcatMultipleFiles, fileFormat, setFileFormat, detectedFileFormat, setDetectedFileFormat, onOutputFormatUserChange }: {
   isShown: boolean,
@@ -136,14 +125,23 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate: storedMerged
   }, [allFilesMeta, paths]);
 
   const problemsByFile = useMemo(() => {
+    type Problem = {
+      index: number,
+    } & ({
+      type: 'extraneous',
+    } | {
+      type: 'parameter_mismatch',
+      key: string,
+      values: [ProblemValue, ProblemValue],
+    });
     if (!matchingFilesMeta) return {};
     const allFilesMetaExceptFirstFile = matchingFilesMeta.slice(1);
     const [, firstFileMeta] = matchingFilesMeta[0]!;
     const problems: Record<string, Problem[]> = {};
 
     function addProblem(path: string, error: Problem) {
-      if (!problems[path]) problems[path] = [];
-      problems[path]!.push(error);
+      problems[path] ??= [];
+      problems[path].push(error);
     }
 
     allFilesMetaExceptFirstFile.forEach(([path, { ffprobeMeta: { streams } }]) => {
@@ -154,21 +152,12 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate: storedMerged
           return;
         }
         // check all these parameters
-        (['codec_name', 'width', 'height', 'pix_fmt', 'level', 'profile', 'sample_fmt', 'avg_frame_rate', 'r_frame_rate', 'time_base'] as const).forEach((key) => {
-          // special handling: https://github.com/mifi/lossless-cut/discussions/2740
-          if (key === 'avg_frame_rate') {
-            const val = parseRatio(stream[key]);
-            const referenceVal = parseRatio(referenceStream[key]);
-            const sigma = 0.01;
-            if ((val == null && referenceVal != null) || (val != null && referenceVal == null) || (val != null && referenceVal != null && Math.abs(val - referenceVal) >= sigma)) {
-              addProblem(path, { type: 'parameter_mismatch', index: stream.index, key, values: [String(val), referenceVal] });
-            }
-          } else {
-            const val = stream[key];
-            const referenceVal = referenceStream[key];
-            if (val !== referenceVal) {
-              addProblem(path, { type: 'parameter_mismatch', index: stream.index, key, values: [String(val), referenceVal] });
-            }
+        // avg_frame_rate is not checked, because it often differs slightly between files that merge fine https://github.com/mifi/lossless-cut/issues/2759
+        (['codec_name', 'width', 'height', 'pix_fmt', 'level', 'profile', 'sample_fmt', 'r_frame_rate', 'time_base'] as const).forEach((key) => {
+          const val = stream[key];
+          const referenceVal = referenceStream[key];
+          if (val !== referenceVal) {
+            addProblem(path, { type: 'parameter_mismatch', index: stream.index, key, values: [String(val), referenceVal] });
           }
         });
       });
@@ -220,7 +209,7 @@ function ConcatDialog({ isShown, onHide, paths, mergedFileTemplate: storedMerged
       }
       setAllFilesMeta((existing) => ({ ...existing, ...Object.fromEntries(newMetaEntries) }));
       setUniqueSuffix(Date.now());
-    })().catch((err) => {
+    })().catch((err: unknown) => {
       if (err instanceof Error && err.name === 'AbortError') return;
       console.error(err);
     });

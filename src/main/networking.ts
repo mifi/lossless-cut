@@ -1,6 +1,6 @@
 let disableNetworking: boolean;
 
-export const hasDisabledNetworking = () => !!disableNetworking;
+export const hasDisabledNetworking = () => Boolean(disableNetworking);
 
 export function throwIfDisabledNetworking() {
   if (hasDisabledNetworking()) {

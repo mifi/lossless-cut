@@ -30,7 +30,7 @@ export default function useStreamsMeta({ mainStreams, externalFilesMeta, filePat
   const [enabledStreamsFilter, setEnabledStreamsFilter] = useState<string>();
 
   const isCopyingStreamId = useCallback((path: string | undefined, streamId: number) => (
-    !!((path != null && copyStreamIdsByFile[path]) || {})[streamId]
+    Boolean(path != null && copyStreamIdsByFile[path]?.[streamId])
   ), [copyStreamIdsByFile]);
 
   const mainCopiedStreams = useMemo(() => mainStreams.filter((stream) => isCopyingStreamId(filePath, stream.index)), [filePath, isCopyingStreamId, mainStreams]);

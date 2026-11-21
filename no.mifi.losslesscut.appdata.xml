@@ -14,7 +14,7 @@
   <launchable type="desktop-id">no.mifi.losslesscut.desktop</launchable>
   <screenshots>
     <screenshot type="default">
-      <image>https://raw.githubusercontent.com/mifi/lossless-cut/master/main_screenshot.jpg</image>
+      <image>https://static.mifi.no/media/InHeghy_4DwVeujK/2000.jpg</image>
       <caption>A screenshot of the main window of LosslessCut</caption>
     </screenshot>
   </screenshots>
@@ -22,6 +22,9 @@
   <url type="bugtracker">https://github.com/mifi/lossless-cut/issues</url>
   <url type="donation">https://paypal.me/mifino/usd</url>
   <releases>
+    <release version="3.70.2" date="2026-10-28"/>
+    <release version="3.70.1" date="2026-10-19"/>
+    <release version="3.70.0" date="2026-10-19"/>
     <release version="3.69.0" date="2026-06-03"/>
     <release version="3.68.1" date="2026-01-30"/>
     <release version="3.68.0" date="2026-01-30"/>

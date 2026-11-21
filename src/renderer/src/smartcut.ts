@@ -46,7 +46,6 @@ export async function needsSmartCut({ path, desiredCutFrom, videoStream }: {
   };
 }
 
-// eslint-disable-next-line import/prefer-default-export
 export async function getCodecParams({ path, fileDuration, streams }: {
   path: string,
   fileDuration: number | undefined,

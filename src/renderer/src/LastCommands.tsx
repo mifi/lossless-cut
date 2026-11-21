@@ -29,7 +29,7 @@ function LastCommands({ visible, onTogglePress, ffmpegCommandLog, setFfmpegComma
             <div>
               <Button onClick={() => setFfmpegCommandLog([])} style={{ fontSize: '1em', marginBottom: '.5em' }}>{t('Clear')}</Button>
 
-              {sortBy(ffmpegCommandLog, (l) => -l.time).map(({ command, time }, i) => (
+              {sortBy(ffmpegCommandLog, (l) => -l.time.getTime()).map(({ command, time }, i) => (
                 // eslint-disable-next-line react/no-array-index-key
                 <div key={i} style={{ whiteSpace: 'pre', padding: '.3em 0', fontFamily: 'monospace', overflow: 'scroll' }}>
                   <CopyClipboardButton text={command} style={{ marginRight: '.5em', verticalAlign: 'middle' }} />

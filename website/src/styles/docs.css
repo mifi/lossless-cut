@@ -1,0 +1,42 @@
+/* Starlight theme overrides for the docs pages, in LosslessCut's colors. */
+
+:root {
+  --sl-color-accent-low: #0b3438;
+  --sl-color-accent: #1d8a96;
+  --sl-color-accent-high: #a9e8ef;
+}
+
+:root[data-theme='light'] {
+  --sl-color-accent-low: #c8f0f4;
+  --sl-color-accent: #1a7b86;
+  --sl-color-accent-high: #0c3a40;
+}
+
+/*
+ * Headings and spacing like GitHub's markdown rendering. Starlight's are larger: headings up to 42px (h2 35px) with
+ * 1.5 × their size of space above, a line height of 1.75, and more padding around the page title.
+ * Starlight's styles are in cascade layers, so these (unlayered) rules win.
+ */
+:root {
+  --sl-text-h1: 2rem;
+  --sl-text-h2: 1.5rem;
+  --sl-text-h3: 1.25rem;
+  --sl-text-h4: 1rem;
+}
+
+/* the site name in the header is sized like an h4 */
+.site-title {
+  font-size: var(--sl-text-xl);
+}
+
+.content-panel {
+  padding-block: 1rem;
+}
+
+.sl-markdown-content {
+  line-height: 1.6;
+}
+
+.sl-markdown-content :not(h1, h2, h3, h4, h5, h6) + :is(h2, h3, h4, h5, h6):not(:where(.not-content *)) {
+  margin-top: 1.5rem;
+}

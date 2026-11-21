@@ -2,14 +2,17 @@ process.traceDeprecation = true;
 process.traceProcessWarnings = true;
 
 /* eslint-disable import/first */
-// eslint-disable-next-line import/no-extraneous-dependencies
-import electron, { BrowserWindow, type BrowserWindowConstructorOptions, nativeTheme, shell, app, ipcMain, Notification, type NotificationConstructorOptions } from 'electron';
+// eslint-disable-next-line import-js/no-extraneous-dependencies
+import electron, { BrowserWindow, nativeTheme, shell, app, ipcMain, Notification } from 'electron';
+import type { BrowserWindowConstructorOptions, NotificationConstructorOptions } from 'electron';
 import i18n from 'i18next';
-import debounce from 'lodash.debounce/index.js';
+// eslint-disable-next-line import-js/no-extraneous-dependencies
+import debounce from 'lodash/debounce.js';
 import yargsParser from 'yargs-parser';
 import JSON5 from 'json5';
 import remote from '@electron/remote/main/index.js';
-import { stat } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
+import { join } from 'node:path';
 import assert from 'node:assert';
 import timers from 'node:timers/promises';
 import { z } from 'zod';
@@ -17,14 +20,14 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import electronUnhandled from 'electron-unhandled';
 import { fileTypeFromFile } from 'file-type';
 import type { Asyncify } from 'type-fest';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { installExtension, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
+// eslint-disable-next-line import-js/no-extraneous-dependencies
+import { downloadChromeExtension } from 'electron-devtools-installer/dist/downloadChromeExtension.js';
 import mitt from 'mitt';
 
 import logger from './logger.js';
 import menu from './menu.js';
 import * as configStore from './configStore.js';
-import { isLinux, isWindows, isMac, platform, arch, pathExists } from './util.js';
+import { isLinux, isWindows, isMac, platform, arch, pathExists, resolveCliFileArgs, parseCliKeyboardActionArgs, parseSettingsJson } from './util.js';
 import { appName } from './common.js';
 import attachContextMenu from './contextMenu.js';
 import HttpServer from './httpServer.js';
@@ -34,7 +37,7 @@ import { getAboutPanelOptions } from './aboutPanel.js';
 import { checkNewVersion } from './updateChecker.js';
 import * as i18nCommon from './i18nCommon.js';
 import './i18n.js';
-import type { ApiActionRequest } from '../common/types.js';
+import type { ApiActionRequest, Config } from '../common/types.js';
 import * as ffmpeg from './ffmpeg.js';
 import * as compatPlayer from './compatPlayer.js';
 import { downloadMediaUrl } from './ffmpeg.js';
@@ -47,6 +50,9 @@ electronUnhandled({ showDialog: true, logger: (err) => logger.error('electron-un
 // https://peter.sh/experiments/chromium-command-line-switches/
 // https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5
 app.commandLine.appendSwitch('enable-blink-features', 'AudioVideoTracks');
+// OS media keys / media session don't work properly with our player (play only a single frame), so disable them https://github.com/mifi/lossless-cut/issues/3028
+// appendSwitch replaces any existing value, e.g. one passed on the command line, so keep it
+app.commandLine.appendSwitch('disable-features', [app.commandLine.getSwitchValue('disable-features'), 'HardwareMediaKeyHandling', 'MediaSessionService'].filter(Boolean).join(','));
 
 remote.initialize();
 
@@ -75,12 +81,22 @@ const openFiles = (paths: string[]) => mainWindow!.webContents.send('openFiles',
 let apiActionRequestsId = 0;
 const apiActionRequests = new Map<number, () => void>();
 
+// Not using installExtension from electron-devtools-installer because it calls deprecated Electron session APIs
+async function installReactDevTools() {
+  const id = 'fmkadmapgofadopljbjfkapdkoienihi';
+  let extensionFolder = await downloadChromeExtension(id);
+  // The downloaded copy is cached forever, so replace it if it's an old Manifest V2 build
+  const { manifest_version: manifestVersion } = JSON.parse(await readFile(join(extensionFolder, 'manifest.json'), 'utf8'));
+  if (manifestVersion < 3) extensionFolder = await downloadChromeExtension(id, { forceDownload: true });
+  return electron.session.defaultSession.extensions.loadExtension(extensionFolder);
+}
+
 async function sendApiAction(action: string, args?: unknown[]) {
   try {
     const id = apiActionRequestsId;
     apiActionRequestsId += 1;
     mainWindow!.webContents.send('apiAction', { id, action, args } satisfies ApiActionRequest);
-    await new Promise<void>((resolve) => apiActionRequests.set(id, resolve));
+    await new Promise<void>((resolve) => { apiActionRequests.set(id, resolve); });
   } catch (err) {
     logger.error('sendApiAction', err);
   }
@@ -92,7 +108,7 @@ export type AppEvent = {
 } | {
   eventName: 'export-start',
   path: string,
-}
+};
 
 const appEventEmitter = mitt<{ appEvent: AppEvent }>();
 
@@ -144,12 +160,9 @@ function getSavedBounds() {
   };
 }
 
-function createWindow() {
-  const darkMode = configStore.get('darkMode');
-  // todo follow darkMode setting when user switches
-  // https://www.electronjs.org/docs/latest/tutorial/dark-mode
-  if (darkMode) nativeTheme.themeSource = 'dark';
+const getBackgroundColor = () => (nativeTheme.shouldUseDarkColors ? '#333' : '#fff');
 
+function createWindow() {
   const savedBounds = getSavedBounds();
 
   mainWindow = new BrowserWindow({
@@ -162,7 +175,7 @@ function createWindow() {
       webSecurity: !isDev,
       preload: fileURLToPath(new URL('../preload/index.cjs', import.meta.url)),
     },
-    backgroundColor: darkMode ? '#333' : '#fff',
+    backgroundColor: getBackgroundColor(),
     minWidth: 300,
     minHeight: 300,
   });
@@ -192,7 +205,7 @@ function createWindow() {
   mainWindow.on('close', (e) => {
     if (!askBeforeClose) return;
 
-    assert(mainWindow);
+    assert.ok(mainWindow);
     const choice = electron.dialog.showMessageBoxSync(mainWindow, {
       type: 'question',
       buttons: ['Yes', 'No'],
@@ -227,7 +240,7 @@ async function openExternal(url: string) {
 }
 
 function updateMenu() {
-  assert(mainWindow);
+  assert.ok(mainWindow);
   menu({ app, mainWindow, newVersion, isStoreBuild, openExternal });
 }
 
@@ -259,14 +272,13 @@ function parseCliArgs(rawArgv = process.argv) {
 
   return yargsParser(argsWithoutAppName, {
     boolean: ['disable-networking'],
-    string: ['settings-json', 'config-dir', 'lossy-mode'],
+    string: ['settings-json', 'config-dir', 'lossy-mode', 'keyboard-action'],
   });
 }
 
 const argv = parseCliArgs();
 
 const lossyModeSchema = z.object({ videoEncoder: z.union([z.literal('libx264'), z.literal('libx265'), z.literal('libsvtav1')]) });
-// eslint-disable-next-line prefer-destructuring
 const lossyMode = argv['lossyMode'] ? lossyModeSchema.parse(JSON5.parse(argv['lossyMode'])) : undefined;
 
 export type LossyMode = z.infer<typeof lossyModeSchema>;
@@ -307,21 +319,28 @@ async function init() {
     // However when users start your app in command line, the system's single instance mechanism will be bypassed, and you have to use this method to ensure single instance.
     // This can be tested with one terminal: npx electron .
     // and another terminal: npx electron . path/to/file.mp4
-    app.on('second-instance', (_event, _commandLine, _workingDirectory, additionalData) => {
+    app.on('second-instance', (_event, _commandLine, workingDirectory, additionalData) => {
       // Someone tried to run a second instance, we should focus our window.
       if (mainWindow) {
         if (mainWindow.isMinimized()) mainWindow.restore();
         mainWindow.focus();
       }
 
-      if (!(additionalData != null && typeof additionalData === 'object' && 'argv' in additionalData) || !Array.isArray(additionalData.argv)) return;
+      const parsedAdditionalData = z.object({ argv: z.string().array() }).safeParse(additionalData);
+      if (!parsedAdditionalData.success) return;
 
-      const argv2 = parseCliArgs(additionalData.argv);
+      const argv2 = parseCliArgs(parsedAdditionalData.data.argv);
 
       logger.info('second-instance', argv2);
 
-      if (argv2['keyboardAction']) sendApiAction(argv2['keyboardAction'], argv2._.map((arg) => JSON.parse(String(arg))));
-      else if (argv2._ && argv2._.length > 0) openFilesEventually(argv2._.map(String));
+      const { keyboardAction } = argv2;
+      if (keyboardAction) {
+        try {
+          sendApiAction(keyboardAction, parseCliKeyboardActionArgs(keyboardAction, argv2._, workingDirectory));
+        } catch (err) {
+          logger.error('Invalid --keyboard-action arguments', err);
+        }
+      } else if (argv2._ && argv2._.length > 0) openFilesEventually(resolveCliFileArgs(argv2._.map(String), workingDirectory));
     });
 
     // Quit when all windows are closed.
@@ -373,19 +392,25 @@ async function init() {
     logger.info('Waiting for app to become ready');
     await readyPromise;
 
+    // https://www.electronjs.org/docs/latest/tutorial/dark-mode
+    // also affects what `prefers-color-scheme` reports in the renderer
+    nativeTheme.themeSource = configStore.get('theme');
+    configStore.onDidChange('theme', (theme) => { nativeTheme.themeSource = theme; });
+    nativeTheme.on('updated', () => mainWindow?.setBackgroundColor(getBackgroundColor()));
+
     logger.info('CLI arguments', argv);
+    if (argv['keyboardAction']) logger.warn('--keyboard-action only works with an already running instance (and "Allow multiple instances" disabled), ignoring it and its arguments');
     // Only if no files to open already (open-file might have already added some files)
-    if (filesToOpen.length === 0) filesToOpen = argv._.map(String);
+    else if (filesToOpen.length === 0) filesToOpen = argv._.map(String);
     const { settingsJson } = argv;
 
     setDisableNetworking(argv['disableNetworking']);
 
     if (settingsJson != null) {
       logger.info('initializing settings', settingsJson);
-      Object.entries(JSON5.parse(settingsJson)).forEach(([key, value]) => {
-        // @ts-expect-error todo use zod?
-        configStore.set(key, value);
-      });
+      const settings = parseSettingsJson(settingsJson);
+      if (settings.success) Object.entries(settings.data).forEach(([key, value]) => configStore.set(key as keyof Config, value));
+      else logger.error('Invalid --settings-json, ignoring it', z.prettifyError(settings.error));
     }
 
     const { httpApi } = argv;
@@ -399,8 +424,8 @@ async function init() {
 
 
     if (isDev) {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires,global-require,import/no-extraneous-dependencies
-      installExtension(REACT_DEVELOPER_TOOLS)
+      // eslint-disable-next-line @typescript-eslint/no-var-requires,global-require,import-js/no-extraneous-dependencies
+      installReactDevTools()
         .then((extension) => logger.info('Added Extension', extension.name))
         .catch((err: unknown) => logger.error('Failed to add extension', err));
     }
@@ -495,7 +520,7 @@ app.addListener('remote-require', (event: { returnValue: RemoteApiLegacy }, _web
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ipcMain.handle('__electron_rpc__', async (_event, method: keyof RemoteApi, args: any[]) => {
   const fn = remoteApi[method];
-  assert(fn, `Unknown API method: ${method}`);
+  assert.ok(fn, `Unknown API method: ${method}`);
   // @ts-expect-error don't know how to type
   return fn(...args);
 });

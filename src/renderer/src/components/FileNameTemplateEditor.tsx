@@ -1,6 +1,6 @@
 import type { ChangeEventHandler } from 'react';
 import { memo, useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { useDebounce } from 'use-debounce';
+import { useDebounce, useDebouncedCallback } from 'use-debounce';
 import { useTranslation } from 'react-i18next';
 import { IoIosHelpCircle } from 'react-icons/io';
 import { motion, AnimatePresence } from 'motion/react';
@@ -43,6 +43,8 @@ function FileNameTemplateEditor(opts: {
 
   const [text, setText] = useState(templateIn);
   const [debouncedText] = useDebounce(text, 500);
+  // save the template from the change events (not from debouncedText), so that it can be flushed, and so that it always follows the text (also after an undo)
+  const debouncedSetTemplate = useDebouncedCallback(setTemplate, 500, { flushOnExit: true });
   const [generated, setGenerated] = useState<GeneratedOutFileNames>();
 
   const isSimpleMergeFilesMode = simpleMode && mode === 'merge-files';
@@ -58,7 +60,7 @@ function FileNameTemplateEditor(opts: {
   }, [haveImportantMessage]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    // eslint-disable-next-line react-hooks/set-state-in-effect, react/no-deriving-state-in-effects -- TODO fix (new rule in @mifi/lint-config)
     setText(templateIn);
   }, [templateIn]);
 
@@ -117,23 +119,37 @@ function FileNameTemplateEditor(opts: {
   const isMissingExtension = !debouncedText.endsWith(extVariableFormatted);
 
   useEffect(() => {
-    setTemplate(debouncedText);
-  }, [debouncedText, setTemplate]);
-
-  useEffect(() => {
     if (open) inputRef.current?.focus();
   }, [open]);
 
   const reset = useCallback(() => {
+    // edit through the input so that native undo works
+    const input = inputRef.current;
+    if (input != null) {
+      input.focus();
+      input.select();
+      // TODO execCommand is deprecated, but it's the only way to insert text while keeping the undo history
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      if (document.execCommand('insertText', false, defaultTemplate)) {
+        debouncedSetTemplate.flush(); // save right away
+        return;
+      }
+    }
+    debouncedSetTemplate.cancel();
     setTemplate(defaultTemplate);
     setText(defaultTemplate);
-  }, [defaultTemplate, setTemplate]);
+  }, [debouncedSetTemplate, defaultTemplate, setTemplate]);
 
   const handleSampleClick = useCallback(() => {
     setOpen((v) => !v);
   }, []);
 
-  const onTextChange = useCallback<ChangeEventHandler<HTMLInputElement>>((e) => setText(e.target.value), []);
+  const onTextChange = useCallback<ChangeEventHandler<HTMLInputElement>>((e) => {
+    setText(e.target.value);
+    debouncedSetTemplate(e.target.value);
+  }, [debouncedSetTemplate]);
+
+  const onTextBlur = useCallback(() => debouncedSetTemplate.flush(), [debouncedSetTemplate]);
 
   const onVariableClick = useCallback((variable: string) => {
     const input = inputRef.current;
@@ -143,9 +159,17 @@ function FileNameTemplateEditor(opts: {
 
     const toInsert = variable === segTagsExample ? `${segTagsExample} ?? ''` : variable;
 
-    const newValue = `${text.slice(0, startPos)}${`${formatVariable(toInsert)}${text.slice(endPos)}`}`;
+    // insert through the input so that native undo works
+    input!.focus();
+    input!.setSelectionRange(startPos, endPos);
+    // TODO see above
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    if (document.execCommand('insertText', false, formatVariable(toInsert))) return;
+
+    const newValue = `${text.slice(0, startPos)}${formatVariable(toInsert)}${text.slice(endPos)}`;
     setText(newValue);
-  }, [text]);
+    debouncedSetTemplate(newValue);
+  }, [debouncedSetTemplate, text]);
 
   function formatCurrentSegFileOrFirst(names: string[]) {
     if (mode === 'separate') {
@@ -172,7 +196,7 @@ function FileNameTemplateEditor(opts: {
       <div>
         {generated != null && (
           <div style={{ marginBottom: '.3em' }}>
-            <HighlightedText title={open ? t('Close') : t('Edit')} role="button" onClick={handleSampleClick} style={{ wordBreak: 'break-word', cursor: 'pointer' }}>
+            <HighlightedText title={t(open ? 'Close' : 'Edit')} role="button" onClick={handleSampleClick} style={{ wordBreak: 'break-word', cursor: 'pointer' }}>
               {generated.problems.error != null && <FaExclamationTriangle style={{ color: dangerColor, marginRight: '.2em', verticalAlign: 'middle' }} />}
               {generated.originalFileNames != null && formatCurrentSegFileOrFirst(generated.fileNames)}
               <span style={generated.originalFileNames != null ? { textDecoration: 'line-through', marginLeft: '.3em', color: dangerColor } : undefined}>
@@ -201,7 +225,7 @@ function FileNameTemplateEditor(opts: {
               )}
 
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '.2em', gap: '.5em' }}>
-                <TextInput ref={inputRef} onChange={onTextChange} value={text} autoComplete="off" autoCapitalize="off" autoCorrect="off" style={{ padding: '.3em' }} />
+                <TextInput ref={inputRef} onChange={onTextChange} onBlur={onTextBlur} value={text} autoComplete="off" autoCapitalize="off" autoCorrect="off" style={{ padding: '.3em' }} />
 
                 {generated != null && generated.fileNames.length > 1 && (
                   <Dialog.Root>
@@ -241,7 +265,7 @@ function FileNameTemplateEditor(opts: {
               {hasTextNumericPaddedValue && (
                 <div style={{ marginBottom: '.3em' }}>
                   <Select value={outputFileNameMinZeroPadding} onChange={(e) => setOutputFileNameMinZeroPadding(parseInt(e.target.value, 10))} style={{ marginRight: '.5em', fontSize: '1em' }}>
-                    {Array.from({ length: 10 }).map((_v, i) => i + 1).map((v) => <option key={v} value={v}>{v}</option>)}
+                    {Array.from({ length: 10 }, (_v, i) => i + 1).map((v) => <option key={v} value={v}>{v}</option>)}
                   </Select>
                   {t('Minimum numeric padded length')}
                 </div>

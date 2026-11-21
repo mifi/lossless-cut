@@ -1,8 +1,14 @@
 import invariant from 'tiny-invariant';
 import type { FFprobeStream, FFprobeStreamDisposition } from '../../../common/ffprobe';
-import type { AllFilesMeta, ChromiumHTMLAudioElement, ChromiumHTMLVideoElement, CopyfileStreams, LiteFFprobeStream } from '../types';
+import type { AvoidNegativeTs } from '../../../common/types';
+import type { AllFilesMeta, BsfAspectRatioParams, BsfCropParams, ChromiumHTMLAudioElement, ChromiumHTMLVideoElement, CopyfileStreams, FileParams, LiteFFprobeStream, StreamParams } from '../types';
 import type { FileStream } from '../ffmpeg';
 
+
+// Since ffmpeg 9, the CLI sets the frame size of encoders like FLAC from the first decoded frame (e.g. 1024 for AAC),
+// which makes FLAC files much bigger. 4608 is FLAC's standard block size, and gives the same sizes as ffmpeg 8.
+export const flacFrameSize = '4608';
+export const flacEncodeArgs = ['-acodec', 'flac', '-frame_size', flacFrameSize];
 
 // taken from `ffmpeg -codecs`
 export const pcmAudioCodecs = [
@@ -104,6 +110,22 @@ export const isMov = (format: string | undefined) => format != null && ['ismv', 
 
 export const isMatroska = (format: string | undefined) => format != null && ['matroska', 'webm'].includes(format);
 
+// all zero means no crop / aspect ratio (the editors store zeros when cleared)
+export const isCropActive = (crop: BsfCropParams | undefined): crop is BsfCropParams => crop != null && (crop.left > 0 || crop.right > 0 || crop.top > 0 || crop.bottom > 0);
+export const isAspectRatioActive = (aspectRatio: BsfAspectRatioParams | undefined): aspectRatio is BsfAspectRatioParams => aspectRatio != null && aspectRatio.num > 0 && aspectRatio.den > 0;
+
+// whether the user has made any changes that affect the export (params can linger after being undone, e.g. a switch turned off)
+// Disposition doesn't count: it's shown and changed in the track row, and is also set automatically (e.g. for captured cover art)
+export const hasStreamEdits = (params: StreamParams | undefined) => params != null && (
+  Object.keys(params.metadata).length > 0
+  || Boolean(params.bsfH264Mp4toannexb) || Boolean(params.bsfHevcMp4toannexb) || Boolean(params.bsfHevcAudInsert)
+  || params.tag != null
+  || isCropActive(params.crop)
+  || isAspectRatioActive(params.aspectRatio)
+);
+
+export const hasFileEdits = (params: FileParams | undefined) => params != null && (Object.keys(params.metadata).length > 0 || Boolean(params.offset));
+
 type GetVideoArgsFn = (a: { streamIndex: number, outputIndex: number }) => string[] | undefined;
 
 function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposition = false, getVideoArgs = () => undefined, needFlac }: {
@@ -123,7 +145,7 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
     addArgs(`-c:${outputIndex}`, codec);
   }
 
-  // eslint-disable-next-line unicorn/prefer-switch
+  // eslint-disable-next-line unicorn-js/prefer-switch
   if (stream.codec_type === 'subtitle') {
     // mp4/mov only supports mov_text, so convert it https://stackoverflow.com/a/17584272/6519037
     // https://github.com/mifi/lossless-cut/issues/418
@@ -139,7 +161,7 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
       // Only WebVTT subtitles are supported for WebM.
       // https://github.com/mifi/lossless-cut/issues/2179#issuecomment-2395413115
       addCodecArgs('webvtt');
-    // eslint-disable-next-line unicorn/prefer-switch
+    // eslint-disable-next-line unicorn-js/prefer-switch
     } else if (outFormat === 'srt') { // not technically lossless but why not
       addCodecArgs('srt');
     } else if (outFormat === 'ass') { // not technically lossless but why not
@@ -170,6 +192,7 @@ function getPerStreamFlags({ stream, outputIndex, outFormat, manuallyCopyDisposi
       addArgs(`-ar:${outputIndex}`, '48000'); // maybe technically not lossless?
     } else if (outFormat === 'flac' && needFlac && stream.codec_name === 'flac') { // https://github.com/mifi/lossless-cut/issues/1809
       addCodecArgs('flac'); // lossless because flac is a lossless codec
+      addArgs(`-frame_size:${outputIndex}`, flacFrameSize);
     } else {
       addCodecArgs('copy');
     }
@@ -259,13 +282,82 @@ export function shouldCopyStreamByDefault(stream: FFprobeStream) {
 export const attachedPicDisposition = 'attached_pic';
 
 export function isStreamThumbnail(stream: Pick<FFprobeStream, 'codec_type' | 'disposition'>) {
-  return stream && stream.codec_type === 'video' && stream.disposition?.[attachedPicDisposition] === 1;
+  return stream?.codec_type === 'video' && stream.disposition?.[attachedPicDisposition] === 1;
+}
+
+/** Resolves every stream that is going to be copied to the output. Unknown streams resolve to `undefined`. */
+const getCopiedStreams = ({ allFilesMeta, copyFileStreams }: {
+  allFilesMeta: AllFilesStreamMeta,
+  copyFileStreams: CopyfileStreams,
+}) => copyFileStreams.flatMap(({ path, streamIds }) => streamIds.map((streamId) => getStreamById({ allFilesMeta, streamId, path })));
+
+function isCopyingThumbnailStream({ allFilesMeta, copyFileStreams }: {
+  allFilesMeta: AllFilesStreamMeta,
+  copyFileStreams: CopyfileStreams,
+}) {
+  return getCopiedStreams({ allFilesMeta, copyFileStreams }).some((stream) => stream != null && isStreamThumbnail(stream));
+}
+
+/**
+Whether every stream being copied is audio (cover art is allowed, as it is a single keyframe anyway).
+
+Used to decide whether it is safe to pass `-copyinkf` to ffmpeg. When cutting with `-ss` *after* `-i`
+(keyframe cut mode off), ffmpeg's stream copy discards packets until it sees one flagged as a keyframe.
+Audio packets are normally all keyframes, but some audio-only MP4/M4A files carry a sync sample table
+(`stss`) that only flags a packet every few seconds. The cut then starts seconds late (and with `-ss`
+before `-i`, seconds early). `-copyinkf` makes ffmpeg keep the leading non-keyframe packets, which is
+harmless for audio, but would produce broken frames for video, so we only do it for audio-only exports.
+*/
+export function isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams }: {
+  allFilesMeta: AllFilesStreamMeta,
+  copyFileStreams: CopyfileStreams,
+}) {
+  const streams = getCopiedStreams({ allFilesMeta, copyFileStreams });
+  return streams.length > 0 && streams.every((stream) => stream != null && (stream.codec_type === 'audio' || isStreamThumbnail(stream)));
+}
+
+/**
+An attached_pic (cover art) packet has no position on the timeline - the demuxer emits it at
+pts 0. When seeking before the input (`-ss` before `-i`), ffmpeg applies the seek offset to it
+anyway, dragging it to -(cut from), and it reaches the muxer first. `make_zero` and
+`make_non_negative` then derive their file-wide correction from that packet and shift every
+other stream back by +(cut from), undoing the rebase to zero that the audio/video already got.
+The mov muxer records that as an empty edit, so the muxed duration ends up being the segment's
+end time in the source instead of its length (ffprobe hides this, but e.g. VLC reports it).
+`auto` doesn't use the attached pic as its reference, so it cuts correctly and keeps the cover art.
+See https://github.com/mifi/lossless-cut/issues/3009
+*/
+export function getEffectiveAvoidNegativeTs({ avoidNegativeTs, allFilesMeta, copyFileStreams }: {
+  avoidNegativeTs: AvoidNegativeTs | undefined,
+  allFilesMeta: AllFilesStreamMeta,
+  copyFileStreams: CopyfileStreams,
+}) {
+  if (avoidNegativeTs !== 'make_zero' && avoidNegativeTs !== 'make_non_negative') return avoidNegativeTs;
+  if (!isCopyingThumbnailStream({ allFilesMeta, copyFileStreams })) return avoidNegativeTs;
+  return 'auto';
+}
+
+/**
+For input formats without AVFMT_SEEK_TO_PTS (e.g. Matroska/WebM), when any stream has B-frames, ffmpeg seeks
+3/23s earlier than the input `-ss` (`dts_heuristic` in fftools/ffmpeg_demux.c). With `-ss` before `-i`, a keyframe cut
+starting on (or up to ~0.13s after) a keyframe then starts from the *previous* keyframe. Returns how much to add to the
+input `-ss` (and pass as `-itsoffset`) to undo that. See https://github.com/mifi/lossless-cut/issues/1216
+*/
+export function getKeyframeCutSeekCompensation({ formatName, streams, cutFrom }: {
+  formatName: string | undefined,
+  streams: Pick<FFprobeStream, 'has_b_frames'>[],
+  cutFrom: number,
+}) {
+  const isMatroskaFormat = (formatName ?? '').split(',').some((f) => isMatroska(f));
+  const hasBFrames = streams.some((stream) => (stream.has_b_frames ?? 0) > 0);
+  if (cutFrom <= 0 || !isMatroskaFormat || !hasBFrames) return 0;
+  return 3 / 23 + 0.001;
 }
 
 export const getAudioStreams = <T extends Pick<FFprobeStream, 'codec_type'>>(streams: T[]) => streams.filter((stream) => stream.codec_type === 'audio');
 export const getRealVideoStreams = <T extends Pick<FFprobeStream, 'codec_type' | 'disposition'>>(streams: T[]) => streams.filter((stream) => stream.codec_type === 'video' && !isStreamThumbnail(stream));
 export const getSubtitleStreams = <T extends Pick<FFprobeStream, 'codec_type'>>(streams: T[]) => streams.filter((stream) => stream.codec_type === 'subtitle');
-export const isGpsStream = <T extends Pick<FileStream, 'guessedType' | 'codec_type' | 'tags'>>(stream: T) => stream.codec_type === 'subtitle' && (stream.tags?.['handler_name'] === '\u0010DJI.Subtitle' || stream.guessedType === 'dji-gps-srt');
+export const isGpsStream = (stream: Pick<FileStream, 'guessedType' | 'codec_type' | 'tags'>) => stream.codec_type === 'subtitle' && (stream.tags?.handler_name === '\u{10}DJI.Subtitle' || stream.guessedType === 'dji-gps-srt');
 
 // videoTracks/audioTracks seems to be 1-indexed, while ffmpeg is 0-indexes
 const getHtml5TrackId = (ffmpegTrackIndex: number) => String(ffmpegTrackIndex + 1);
@@ -409,7 +501,7 @@ export function isAudioDefinitelyNotSupported(streams: FFprobeStream[]) {
 }
 
 export function getVideoTimebase(videoStream: Pick<FFprobeStream, 'time_base'>) {
-  const timebaseMatch = videoStream.time_base && videoStream.time_base.split('/');
+  const timebaseMatch = videoStream.time_base?.split('/');
   if (timebaseMatch) {
     const timebaseParsed = parseInt(timebaseMatch[1]!, 10);
     if (!Number.isNaN(timebaseParsed)) return timebaseParsed;

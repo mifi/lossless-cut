@@ -1,4 +1,4 @@
-import type { CSSProperties, ClipboardEvent, Dispatch, FormEvent, SetStateAction } from 'react';
+import type { CSSProperties, ClipboardEvent, Dispatch, SubmitEvent, KeyboardEvent, SetStateAction } from 'react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { MdRotate90DegreesCcw } from 'react-icons/md';
@@ -19,10 +19,11 @@ import Select from './components/Select';
 
 import SimpleModeButton from './components/SimpleModeButton';
 import { withBlur, mirrorTransform } from './util';
-import getSwal from './swal';
+import getSwal, { errorToast } from './swal';
+import { UserFacingError } from '../errors';
 import { getSegColor as getSegColorRaw } from './util/colors';
 import { useSegColors } from './contexts';
-import { isExactDurationMatch } from './util/duration';
+import { isExactTimecodeMatch } from './util/duration';
 import useUserSettings from './hooks/useUserSettings';
 import useActionTitle from './hooks/useActionTitle';
 import { askForPlaybackRate, checkAppPath } from './dialogs';
@@ -32,7 +33,7 @@ import type { Frame } from './ffmpeg';
 import mainApi from './mainApi';
 
 
-const zoomOptions = Array.from({ length: 13 }).fill(undefined).map((_unused, z) => 2 ** z);
+const zoomOptions = Array.from({ length: 13 }, (_unused, z) => 2 ** z);
 
 const leftRightWidth = 100;
 
@@ -54,9 +55,7 @@ const InvertCutModeButton = memo(({ invertCutSegments, setInvertCutSegments }: {
     setInvertCutSegments((v) => {
       const newVal = !v;
       getSwal().toast.fire({
-        title: newVal
-          ? t('When you export, selected segments on the timeline will be REMOVED - the surrounding areas will be KEPT')
-          : t('When you export, selected segments on the timeline will be KEPT - the surrounding areas will be REMOVED.'),
+        title: t(newVal ? 'When you export, selected segments on the timeline will be REMOVED - the surrounding areas will be KEPT' : 'When you export, selected segments on the timeline will be KEPT - the surrounding areas will be REMOVED.'),
       });
       return newVal;
     });
@@ -70,7 +69,7 @@ const InvertCutModeButton = memo(({ invertCutSegments, setInvertCutSegments }: {
       >
         <FaYinYang
           role="button"
-          title={invertCutSegments ? t('Discard selected segments') : t('Keep selected segments')}
+          title={t(invertCutSegments ? 'Discard selected segments' : 'Keep selected segments')}
           style={{ display: 'block', fontSize: '1.5em', color: invertCutSegments ? dangerColor : undefined }}
           onClick={onYinYangClick}
         />
@@ -95,9 +94,11 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
 }) => {
   const { t } = useTranslation();
   const { getSegColor } = useSegColors();
+  const { timecodeFormat } = useUserSettings();
 
   const [cutTimeManual, setCutTimeManual] = useState<string>();
   const [error, setError] = useState<boolean>(false);
+  const skipCommitOnBlurRef = useRef(false);
 
   // Clear manual overrides if upstream cut time has changed
   useEffect(() => {
@@ -105,71 +106,66 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setCutTimeManual(undefined);
     setError(false);
-  }, [setCutTimeManual, currentCutSeg?.start, currentCutSeg?.end]);
+  }, [currentCutSeg?.segId, currentCutSeg?.start, currentCutSeg?.end]);
 
-  const isCutTimeManualSet = useCallback(() => cutTimeManual !== undefined, [cutTimeManual]);
+  const isCutTimeManualSet = cutTimeManual !== undefined;
 
   const border = useMemo(() => {
     const segColor = getSegColor(currentCutSeg);
     return `.1em solid ${darkMode ? segColor.desaturate(0.4).lightness(50).string() : segColor.desaturate(0.2).lightness(60).string()}`;
   }, [currentCutSeg, darkMode, getSegColor]);
 
-  const setTime = useCallback((timeWithOffset: number | undefined) => {
+  const setTime = useCallback((timeWithOffset: number | undefined, seek: boolean) => {
     // Note: If we get an error from setCutTime, remain in the editing state (cutTimeManual)
     // https://github.com/mifi/lossless-cut/issues/988
 
     if (timeWithOffset == null) { // clear time
       invariant(!isStart);
       setCutTime('end', undefined);
-      setCutTimeManual(undefined);
-      setError(false);
-      return;
+    } else {
+      const timeWithoutOffset = Math.max(timeWithOffset - startTimeOffset, 0);
+      setCutTime(isStart ? 'start' : 'end', timeWithoutOffset);
+      if (seek) seekAbs(timeWithoutOffset);
     }
-
-    const timeWithoutOffset = Math.max(timeWithOffset - startTimeOffset, 0);
-    setCutTime(isStart ? 'start' : 'end', timeWithoutOffset);
-    seekAbs(timeWithoutOffset);
     setCutTimeManual(undefined);
     setError(false);
   }, [isStart, seekAbs, setCutTime, startTimeOffset]);
 
   const isEmptyEndTime = useCallback((v: string | undefined) => !isStart && v?.trim() === '', [isStart]);
 
-  const handleSubmit = useCallback((e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    try {
-      if (isEmptyEndTime(cutTimeManual)) {
-        setTime(undefined); // clear time
-        return;
-      }
-
-      // Don't proceed if not a valid time value
-      const timeWithOffset = cutTimeManual != null ? parseTimecode(cutTimeManual) : undefined;
-      if (timeWithOffset === undefined) return;
-
-      setTime(timeWithOffset);
-    } catch (err) {
-      console.warn('Cannot submit cut time', err);
-    }
-  }, [cutTimeManual, isEmptyEndTime, parseTimecode, setTime]);
-
-  const parseAndSetCutTime = useCallback((text: string) => {
+  const parseAndSetCutTime = useCallback((text: string, seek = true) => {
     if (isEmptyEndTime(text)) {
-      setTime(undefined); // clear time
-      return;
+      setTime(undefined, seek); // clear time
+      return true;
     }
 
     // Don't proceed if not a valid time value
     const timeWithOffset = parseTimecode(text);
-    if (timeWithOffset === undefined) return;
+    if (timeWithOffset === undefined || !Number.isFinite(timeWithOffset)) return false;
 
-    setTime(timeWithOffset);
+    setTime(timeWithOffset, seek);
+    return true;
   }, [isEmptyEndTime, parseTimecode, setTime]);
+
+  const handleSubmit = useCallback((e: SubmitEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    try {
+      if (cutTimeManual != null && !parseAndSetCutTime(cutTimeManual)) return;
+
+      // release focus, so that keyboard shortcuts work again https://github.com/mifi/lossless-cut/issues/2942
+      skipCommitOnBlurRef.current = true; // already committed
+      e.currentTarget.querySelector('input')?.blur();
+    } catch (err) {
+      console.warn('Cannot submit cut time', err);
+      setError(true);
+    }
+  }, [cutTimeManual, parseAndSetCutTime]);
 
   const handleCutTimeInput = useCallback((text: string) => {
     try {
-      if (isExactDurationMatch(text) || isEmptyEndTime(text)) {
+      // In frame count mode, every prefix of a number is also a valid frame number (typing 123 would commit 1, 12, 123), so wait for enter/blur
+      if ((timecodeFormat !== 'frameCount' && isExactTimecodeMatch(text, parseTimecode, formatTimecode)) || isEmptyEndTime(text)) {
         parseAndSetCutTime(text);
         return;
       }
@@ -180,20 +176,46 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
 
     // else or if error, just set manual value, to make sure it doesn't jump to end https://github.com/mifi/lossless-cut/issues/988#issuecomment-3475870072
     setCutTimeManual(text);
-  }, [isEmptyEndTime, parseAndSetCutTime]);
+  }, [formatTimecode, isEmptyEndTime, parseAndSetCutTime, parseTimecode, timecodeFormat]);
 
-  const handleInputBlur = useCallback(() => {
-    setCutTimeManual(undefined);
-    setError(false);
+  const handleInputKeyDown = useCallback((e: KeyboardEvent<HTMLInputElement>) => {
+    // escape cancels the edit instead of committing it on blur
+    if (e.key === 'Escape' && !e.nativeEvent.isComposing) {
+      skipCommitOnBlurRef.current = true;
+      e.currentTarget.blur();
+    }
   }, []);
 
-  const handleCutTimePaste = useCallback((e: ClipboardEvent<HTMLInputElement>) => {
-    e.preventDefault();
+  const handleInputBlur = useCallback(() => {
+    const skipCommit = skipCommitOnBlurRef.current;
+    skipCommitOnBlurRef.current = false;
+    if (!skipCommit) {
+      // keep the text if the whole window lost focus (e.g. switching app to copy a timecode). Focus will be restored to the input
+      if (!document.hasFocus()) return;
 
+      // commit input when focus is lost (e.g. clicking elsewhere), so that it's not silently lost. Don't seek, because that would override where the user clicked
+      if (cutTimeManual != null) {
+        try {
+          if (!parseAndSetCutTime(cutTimeManual, false)) {
+            setError(true); // keep the text, so the user can see and fix it
+            return;
+          }
+        } catch (err) {
+          console.warn('Cannot set cut time on blur', err);
+          if (err instanceof UserFacingError) errorToast(err.message);
+          setError(true);
+          return;
+        }
+      }
+    }
+    setCutTimeManual(undefined);
+    setError(false);
+  }, [cutTimeManual, parseAndSetCutTime]);
+
+  const pasteCutTime = useCallback((text: string) => {
     try {
-      const clipboardData = e.clipboardData.getData('Text');
-      setCutTimeManual(clipboardData);
-      parseAndSetCutTime(clipboardData);
+      setCutTimeManual(text);
+      parseAndSetCutTime(text);
       setError(false);
     } catch (err) {
       console.warn(err);
@@ -201,19 +223,15 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
     }
   }, [parseAndSetCutTime]);
 
+  const handleCutTimePaste = useCallback((e: ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    pasteCutTime(e.clipboardData.getData('Text'));
+  }, [pasteCutTime]);
+
   const handleContextMenu = useCallback(async () => {
     const text = await mainApi.readClipboardText();
-    if (text) {
-      try {
-        setCutTimeManual(text);
-        parseAndSetCutTime(text);
-        setError(false);
-      } catch (err) {
-        console.warn(err);
-        setError(true);
-      }
-    }
-  }, [parseAndSetCutTime]);
+    if (text) pasteCutTime(text);
+  }, [pasteCutTime]);
 
   const style = useMemo<CSSProperties>(() => ({
     border,
@@ -232,11 +250,11 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
     letterSpacing: '-.05em',
     width: 94,
     outline: 'none',
-    color: error ? dangerColor : (isCutTimeManualSet() ? 'var(--gray-12)' : 'var(--gray-11)'),
+    color: error ? dangerColor : (isCutTimeManualSet ? 'var(--gray-12)' : 'var(--gray-11)'),
   }), [border, error, isCutTimeManualSet, isStart]);
 
   function renderValue() {
-    if (isCutTimeManualSet()) return cutTimeManual;
+    if (isCutTimeManualSet) return cutTimeManual;
     if (cutTime == null) return formatTimecode({ seconds: 0 }); // marker, see https://github.com/mifi/lossless-cut/issues/2590
     return formatTimecode({ seconds: cutTime + startTimeOffset });
   }
@@ -247,10 +265,11 @@ const CutTimeInput = memo(({ disabled, darkMode, cutTime, setCutTime, startTimeO
         disabled={disabled}
         style={style}
         type="text"
-        title={isStart ? t('Manually input current segment\'s start time') : t('Manually input current segment\'s end time')}
+        title={t(isStart ? 'Manually input current segment\'s start time' : 'Manually input current segment\'s end time')}
         onChange={(e) => handleCutTimeInput(e.target.value)}
         onPaste={handleCutTimePaste}
         onBlur={handleInputBlur}
+        onKeyDown={handleInputKeyDown}
         onContextMenu={handleContextMenu}
         value={renderValue()}
       />
@@ -370,7 +389,7 @@ function BottomBar({
   }, [playStyle, selectedSegments]);
 
   const keyframeStyle = useMemo(() => ({
-    color: currentFrame != null && currentFrame.keyframe ? primaryTextColor : undefined,
+    color: currentFrame?.keyframe ? primaryTextColor : undefined,
   }), [currentFrame]);
 
   const { invertCutSegments, setInvertCutSegments, simpleMode, toggleSimpleMode, exportConfirmEnabled } = useUserSettings();
@@ -407,7 +426,7 @@ function BottomBar({
       <div
         style={segButtonStyle}
         role="button"
-        title={`${direction > 0 ? t('Select next segment') : t('Select previous segment')} (${newIndex + 1})`}
+        title={`${t(direction > 0 ? 'Select next segment' : 'Select previous segment')} (${newIndex + 1})`}
         onClick={() => seg && setCurrentSegIndex(newIndex)}
       >
         {text}

@@ -1,4 +1,4 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
+// eslint-disable-next-line import-js/no-extraneous-dependencies
 import { test, expect, describe } from 'vitest';
 
 import { isRequestAllowed } from './httpServerUtil.js';

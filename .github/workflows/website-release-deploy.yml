@@ -1,0 +1,25 @@
+name: Website deploy after release
+
+# The homepage shows the latest release's version (website/src/latestRelease.ts), which Cloudflare only updates when it
+# rebuilds the site, and a release doesn't change the website's files. So rebuild it when a release is published.
+
+on:
+  release:
+    types: [published]
+
+permissions: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # A deploy hook of the losslesscut-app Worker for the master branch (Cloudflare dashboard: Settings > Builds > Deploy Hooks)
+      - env:
+          CLOUDFLARE_DEPLOY_HOOK_URL: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$CLOUDFLARE_DEPLOY_HOOK_URL" ]; then
+            echo "No CLOUDFLARE_DEPLOY_HOOK_URL secret, skipping"
+            exit 0
+          fi
+          curl --fail-with-body -sS -X POST "$CLOUDFLARE_DEPLOY_HOOK_URL"

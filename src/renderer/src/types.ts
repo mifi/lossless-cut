@@ -11,20 +11,17 @@ export interface ChromiumHTMLAudioElement extends HTMLAudioElement {
   audioTracks?: { id: string, enabled: boolean }[]
 }
 
-export const openFilesActionArgsSchema = z.tuple([z.string().array()]);
-export type OpenFilesActionArgs = z.infer<typeof openFilesActionArgsSchema>
-
 export const goToTimecodeDirectArgsSchema = z.tuple([z.object({ time: z.string() })]);
-export type GoToTimecodeDirectArgs = z.infer<typeof goToTimecodeDirectArgsSchema>
+export type GoToTimecodeDirectArgs = z.infer<typeof goToTimecodeDirectArgsSchema>;
 
 export const awaitEventArgsSchema = z.tuple([z.object({ eventName: z.string() })]);
 export type AwaitEventArgs = z.infer<typeof awaitEventArgsSchema>;
 
 export const segmentTagsSchema = z.record(z.string(), z.string());
 
-export type SegmentTags = z.infer<typeof segmentTagsSchema>
+export type SegmentTags = z.infer<typeof segmentTagsSchema>;
 
-export type EditingSegmentTags = Record<string, SegmentTags>
+export type EditingSegmentTags = Record<string, SegmentTags>;
 
 // todo remove some time in the future
 export const llcProjectV1Schema = z.object({
@@ -50,7 +47,7 @@ export const llcProjectV2Schema = z.object({
   }).array(),
 });
 
-export type LlcProject = z.infer<typeof llcProjectV2Schema>
+export type LlcProject = z.infer<typeof llcProjectV2Schema>;
 
 export interface SegmentBase {
   start: number,
@@ -136,16 +133,16 @@ export type FilesMeta = Record<string, {
   streams: FileStream[];
   format: FFprobeFormat;
   chapters: FFprobeChapter[];
-}>
+}>;
 
 export type CopyfileStreams = {
   path: string;
   streamIds: number[];
-}[]
+}[];
 
 export interface Chapter { start: number, end: number, name?: string | undefined }
 
-export type LiteFFprobeStream = Pick<FFprobeStream, 'index' | 'codec_type' | 'codec_tag' | 'codec_name' | 'disposition' | 'tags' | 'sample_rate' | 'time_base'>;
+export type LiteFFprobeStream = Pick<FFprobeStream, 'index' | 'codec_type' | 'codec_tag' | 'codec_name' | 'disposition' | 'tags' | 'sample_rate' | 'time_base' | 'has_b_frames'>;
 
 export interface FileStats {
   size: number | bigint,
@@ -159,7 +156,7 @@ export type AllFilesMeta = Record<string, {
   streams: LiteFFprobeStream[];
   format: FFprobeFormat;
   chapters: FFprobeChapter[];
-}>
+}>;
 
 export interface BsfCropParams {
   left: number;

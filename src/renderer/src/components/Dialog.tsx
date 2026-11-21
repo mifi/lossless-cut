@@ -16,8 +16,7 @@ export const Description = withClass(Dialog.Description, styles['DialogDescripti
 
 export const Title = withClass(Dialog.Title, styles['DialogTitle']!);
 
-// eslint-disable-next-line react/jsx-props-no-spreading
-export const Portal = (props: Dialog.DialogPortalProps) => <Dialog.Portal container={document.getElementById('app-root')!} {...props} />;
+export const Portal = (props: Dialog.DialogPortalProps) => <Dialog.Portal container={document.getElementById('app-root')} {...props} />;
 
 export const CloseButton = () => (
   <Dialog.Close asChild>

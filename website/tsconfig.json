@@ -1,0 +1,13 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  // index.html: Vite resolves some imports as if from <root>/index.html, and a file that no tsconfig
+  // includes makes Vite look for a parent project that does, which finds the app's tsconfig.json in
+  // the repo root. Its configs extend packages that are only installed with the app's dependencies.
+  "include": [".astro/types.d.ts", "**/*", "index.html"],
+  "exclude": ["dist"],
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "allowImportingTsExtensions": true,
+  },
+}

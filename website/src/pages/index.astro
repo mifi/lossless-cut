@@ -1,0 +1,119 @@
+---
+import Home from '../components/Home.tsx';
+import getGithubStars from '../githubStars.ts';
+import { ogImage } from '../images.ts';
+import getLatestRelease from '../latestRelease.ts';
+import { mastodonUrl } from '../links.ts';
+import getStructuredData from '../structuredData.ts';
+import '../styles/home.css';
+
+const stars = await getGithubStars();
+const release = await getLatestRelease();
+
+const title = 'LosslessCut – Official Download | Free Lossless Video Cutter';
+const description = 'The official LosslessCut website and downloads. A free, open source app to cut, trim and merge video and audio without re-encoding, on Windows, macOS and Linux.';
+---
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{title}</title>
+  <meta name="description" content={description}>
+  <link rel="canonical" href={new URL('/', Astro.site)}>
+  <link rel="me" href={mastodonUrl}>
+  <meta property="og:site_name" content="LosslessCut">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content={title}>
+  <meta property="og:description" content={description}>
+  <meta property="og:url" content={new URL('/', Astro.site)}>
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:image" content={ogImage}>
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(getStructuredData(release))} />
+</head>
+<body>
+  <Home stars={stars} release={release} />
+  <!-- is:inline: plain JS, not compiled by Vite, which would look for a tsconfig and find the app's (see tsconfig.json) -->
+  <script is:inline>
+    // The framed videos (<FramedVideo> in Home.tsx): their pause buttons, playing them only while they're on screen (the hero
+    // also autoplays), and with prefers-reduced-motion, no video at all (only its poster, see home.css)
+    document.querySelectorAll('.framed-video').forEach((frame) => {
+      const video = frame.querySelector('video');
+      const pauseButton = frame.querySelector('.framed-video-pause');
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        // and don't download it (in browsers that ignore the sources' media, see Home.tsx)
+        video.removeAttribute('autoplay');
+        video.pause();
+        video.preload = 'none';
+        video.querySelectorAll('source').forEach((source) => source.remove());
+        video.load();
+        return;
+      }
+      let pausedByUser = false;
+      pauseButton.hidden = false;
+      pauseButton.addEventListener('click', () => {
+        pausedByUser = !video.paused;
+        if (video.paused) video.play().catch(() => {});
+        else video.pause();
+      });
+      const update = () => {
+        pauseButton.classList.toggle('paused', video.paused);
+        pauseButton.setAttribute('aria-label', video.paused ? 'Play the video' : 'Pause the video');
+      };
+      video.addEventListener('play', update);
+      video.addEventListener('pause', update);
+      update(); // e.g. if the browser didn't autoplay it
+      // no button for a video that can't play
+      video.querySelector('source:last-of-type')?.addEventListener('error', () => { pauseButton.hidden = true; });
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver(([{ isIntersecting }]) => {
+          if (!isIntersecting) video.pause();
+          else if (!pausedByUser) video.play().catch(() => {});
+        }).observe(video);
+      }
+    });
+
+    // On touch screens, draw each feature card's icon when the card reaches the middle of the screen (.draw in home.css), again
+    // after it has left the screen, and when it's tapped. Cards that are on screen when scrolling stops without having passed the
+    // middle (after a jump to a link, or a fast scroll) are drawn then. (Scroll-driven CSS animations can't do this yet in all
+    // browsers, e.g. on iOS.) With a mouse, the icons draw on hover instead.
+    if (matchMedia('(hover: none) and (prefers-reduced-motion: no-preference)').matches && 'IntersectionObserver' in window) {
+      const inMiddle = new IntersectionObserver((entries) => {
+        for (const { target, isIntersecting } of entries) if (isIntersecting) target.classList.add('draw');
+      }, { rootMargin: '-35% 0px -35% 0px' }); // the middle 30% of the screen
+      const visibleCards = new Set();
+      const onScreen = new IntersectionObserver((entries) => {
+        for (const { target, isIntersecting } of entries) {
+          if (isIntersecting) {
+            visibleCards.add(target);
+          } else {
+            visibleCards.delete(target);
+            target.classList.remove('draw');
+          }
+        }
+      });
+      let scrollStopTimer;
+      const drawVisibleWhenScrollStops = () => {
+        clearTimeout(scrollStopTimer);
+        scrollStopTimer = setTimeout(() => visibleCards.forEach((card) => card.classList.add('draw')), 300);
+      };
+      addEventListener('scroll', drawVisibleWhenScrollStops, { passive: true });
+      drawVisibleWhenScrollStops();
+      document.querySelector('.feature-grid')?.classList.add('draw-on-scroll');
+      document.querySelectorAll('.feature-card').forEach((card) => {
+        inMiddle.observe(card);
+        onScreen.observe(card);
+        card.addEventListener('click', () => {
+          card.classList.remove('draw');
+          card.getBoundingClientRect(); // so that the animation starts over
+          card.classList.add('draw');
+        });
+      });
+    }
+  </script>
+</body>
+</html>

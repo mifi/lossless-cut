@@ -1,5 +1,5 @@
 import Store from 'electron-store';
-// eslint-disable-next-line import/no-extraneous-dependencies
+// eslint-disable-next-line import-js/no-extraneous-dependencies
 import electron from 'electron';
 import { join, dirname } from 'node:path';
 import assert from 'node:assert';
@@ -145,6 +145,7 @@ const defaults: Config = {
   enableAutoHtml5ify: true,
   keyBindings: defaultKeyBindings,
   customFfPath: undefined,
+  lastDialogDir: undefined,
   storeProjectInWorkingDir: true,
   enableOverwriteOutput: true,
   mouseWheelZoomModifierKey: 'ctrl',
@@ -160,7 +161,8 @@ const defaults: Config = {
     trashTmpFiles: true, askForCleanup: true, closeFile: true, cleanupAfterExport: false,
   },
   allowMultipleInstances: false,
-  darkMode: true,
+  theme: 'dark',
+  videoFit: 'contain',
   preferStrongColors: false,
   outputFileNameMinZeroPadding: 1,
   cutFromAdjustmentFrames: 0,
@@ -206,7 +208,11 @@ export function set<T extends keyof Config>(key: T, val: Config[T]) {
   else store.set(key, val);
 }
 
-export function reset<T extends keyof Config>(key: T) {
+export function onDidChange<T extends keyof Config>(key: T, callback: (val: Config[T]) => void) {
+  return store.onDidChange(key, (val) => callback(val as Config[T]));
+}
+
+export function reset(key: keyof Config) {
   set(key, defaults[key]);
 }
 
@@ -215,12 +221,11 @@ async function tryCreateStore({ customStoragePath }: { customStoragePath: string
     try {
       store = new Store({
         defaults,
-        ...(customStoragePath != null ? { cwd: customStoragePath } : {}),
+        ...(customStoragePath != null && { cwd: customStoragePath }),
       });
       return;
     } catch (err) {
-      // eslint-disable-next-line no-await-in-loop
-      await new Promise((r) => setTimeout(r, 2000));
+      await new Promise((resolve) => { setTimeout(resolve, 2000); });
       logger.error('Failed to create config store, retrying', err);
     }
   }
@@ -257,6 +262,13 @@ export async function init({ customConfigDir }: { customConfigDir: string | unde
     set('treatOutputFileModifiedTimeAsStart', enableTransferTimestamps ? true : undefined);
   }
 
+  const darkMode = store.get('darkMode'); // todo remove after a while
+  if (darkMode != null) {
+    logger.info('Migrating darkMode to theme');
+    store.delete('darkMode');
+    set('theme', darkMode ? 'dark' : 'light');
+  }
+
   const cleanupChoices = store.get('cleanupChoices'); // todo remove after a while
   if (cleanupChoices != null && cleanupChoices.closeFile == null) {
     logger.info('Migrating cleanupChoices.closeFile');
@@ -282,10 +294,10 @@ export async function init({ customConfigDir }: { customConfigDir: string | unde
 
     const newBindings = keyBindings.map(({ keys: keysOrig, keysStr, action }) => {
       try {
-        assert(keysOrig.length > 0 && keysOrig.every((k) => k.length > 0), 'Invalid keys');
+        assert.ok(keysOrig.length > 0 && keysOrig.every((k) => k.length > 0), 'Invalid keys');
 
         const map: Record<string, string> = {
-          /* eslint-disable quote-props */
+          /* eslint-disable @stylistic/quote-props */
           'esc': 'Escape',
           '1': 'Digit1',
           '2': 'Digit2',
@@ -385,7 +397,7 @@ export async function init({ customConfigDir }: { customConfigDir: string | unde
           'shift': 'ShiftLeft',
           'alt': 'AltLeft',
           'meta': 'MetaLeft',
-          /* eslint-enable quote-props */
+          /* eslint-enable @stylistic/quote-props */
         };
 
         const newKeys = keysOrig.flatMap((k) => {
@@ -397,7 +409,7 @@ export async function init({ customConfigDir }: { customConfigDir: string | unde
           return [k];
         }).map((k) => {
           const mapped = map[k.toLowerCase()];
-          assert(mapped != null, `Unknown key: ${k}`);
+          assert.ok(mapped != null, `Unknown key: ${k}`);
           return mapped;
         });
 

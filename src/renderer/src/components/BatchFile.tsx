@@ -68,9 +68,7 @@ function BatchFile({ path, index, isOpen, isSelected, name, onSelect, onDelete, 
 
   return (
     <div
-      // eslint-disable-next-line react/jsx-props-no-spreading
       {...sortable.attributes}
-      // eslint-disable-next-line react/jsx-props-no-spreading
       {...sortable.listeners}
       ref={setRef}
       role="button"

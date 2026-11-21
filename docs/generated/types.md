@@ -58,7 +58,7 @@ interface FileNameTemplateContext {
 
 ```ts
 /**
- * See https://github.com/mifi/lossless-cut/blob/master/docs/expressions.md
+ * See https://losslesscut.app/docs/expressions
  */
 interface Segment {
     /** Index of the segment in the segment list, starting with 0 */

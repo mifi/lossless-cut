@@ -1,4 +1,4 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
+// eslint-disable-next-line import-js/no-extraneous-dependencies
 import type { defineConfig } from 'i18next-cli';
 
 const configBase: Omit<Parameters<typeof defineConfig>[0], 'locales'> = {

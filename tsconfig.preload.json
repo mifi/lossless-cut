@@ -1,0 +1,29 @@
+{
+  "extends": ["@tsconfig/strictest"],
+  "compilerOptions": {
+    "composite": true,
+
+    "emitDeclarationOnly": true,
+    "outDir": "preload-ts-dist",
+    "tsBuildInfoFile": "preload-ts-dist/tsconfig.tsbuildinfo",
+
+    // the preload script runs in the renderer's window, with access to Node.js
+    "lib": ["ES2024", "DOM"],
+    "types": ["node"],
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+
+    // bundled by electron-vite
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+  },
+  "references": [
+    { "path": "./tsconfig.main.json" },
+    { "path": "./tsconfig.common.json" },
+  ],
+  "include": [
+    "src/preload/**/*",
+  ],
+}

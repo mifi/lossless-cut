@@ -15,5 +15,7 @@ const { version } = packageJson;
 
 xml.component.releases.release = [{ '@_version': version, '@_date': DateTime.now().toISODate() }, ...xml.component.releases.release];
 
+// TODO use the fast-xml-builder package instead (XMLBuilder is deprecated in fast-xml-parser)
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 const builder = new XMLBuilder({ format: true, ignoreAttributes: false, suppressEmptyNode: true });
 await writeFile(xmlUrl, builder.build(xml));

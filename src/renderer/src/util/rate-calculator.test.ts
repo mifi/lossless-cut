@@ -1,4 +1,3 @@
-// eslint-disable-line unicorn/filename-case
 import { describe, it, expect } from 'vitest';
 
 import { adjustRate, DEFAULT_PLAYBACK_RATE } from './rate-calculator';
@@ -10,12 +9,12 @@ it('inverts for reverse direction', () => {
 
 it('uses default rate', () => {
   const r = adjustRate(1, 1);
-  expect(r).toBe(1 * DEFAULT_PLAYBACK_RATE);
+  expect(r).toBe(DEFAULT_PLAYBACK_RATE);
 });
 
 it('allows multiplier override', () => {
   const r = adjustRate(1, 1, Math.PI);
-  expect(r).toBe(1 * Math.PI);
+  expect(r).toBe(Math.PI);
 });
 
 describe('speeding up', () => {
@@ -23,7 +22,7 @@ describe('speeding up', () => {
     expect(adjustRate(1 / DEFAULT_PLAYBACK_RATE + 0.01, 1)).toBe(1);
   });
 
-  it('sets rate to 1 if passing 1 ', () => {
+  it('sets rate to 1 if passing 1', () => {
     expect(adjustRate(0.5, 1, 2)).toBe(1);
   });
 

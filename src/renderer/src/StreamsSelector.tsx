@@ -1,12 +1,12 @@
 import type { Dispatch, SetStateAction, CSSProperties, ReactNode, ChangeEventHandler, DragEventHandler } from 'react';
 import { memo, useState, useMemo, useCallback } from 'react';
 
-import { FaImage, FaPaperclip, FaVideo, FaVideoSlash, FaFileImport, FaVolumeUp, FaVolumeMute, FaBan, FaFileExport, FaBook, FaInfoCircle, FaFilter, FaEye, FaEdit, FaTrash, FaSortNumericDown, FaSortNumericUp, FaHamburger, FaMap, FaLanguage } from 'react-icons/fa';
+import { FaImage, FaPaperclip, FaVideo, FaVideoSlash, FaFileImport, FaVolumeUp, FaVolumeMute, FaBan, FaFileExport, FaBook, FaInfoCircle, FaFilter, FaEye, FaEdit, FaTrash, FaSortNumericDown, FaSortNumericUp, FaHamburger, FaMap, FaLanguage, FaUndo } from 'react-icons/fa';
 import { GoFileBinary } from 'react-icons/go';
 import { MdSubtitles } from 'react-icons/md';
 import { useTranslation, Trans } from 'react-i18next';
 import prettyBytes from 'pretty-bytes';
-import { Tabs, TextField } from '@radix-ui/themes';
+import { Button as ThemesButton, Callout, Tabs, TextField } from '@radix-ui/themes';
 import { produce } from 'immer';
 
 import * as DropdownMenu from './components/DropdownMenu';
@@ -15,16 +15,51 @@ import AutoExportToggler from './components/AutoExportToggler';
 import Select from './components/Select';
 import type { FileStream } from './ffmpeg';
 import { getStreamFps } from './ffmpeg';
-import { getActiveDisposition, attachedPicDisposition, isGpsStream } from './util/streams';
-import TagEditor from './components/TagEditor';
+import { getActiveDisposition, attachedPicDisposition, isGpsStream, isMov, hasFileEdits, hasStreamEdits } from './util/streams';
+import { fileMetadataKeys, getCodecTagSuggestions, getCopyableMetadata, getEffectiveMetadata, getLanguageSuggestions, getNonNativeMovMetadataKeys, isValidCodecTag, isValidCreationTime, isValidLanguageCode, needsHvc1Tag, streamMetadataKeys } from './util/metadata';
+import useUserSettings from './hooks/useUserSettings';
+import TagEditor, { cancelTagEditOnEscape } from './components/TagEditor';
+import type { TagInfo } from './components/TagEditor';
+import SuggestionTextField from './components/SuggestionTextField';
+import Warning from './components/Warning';
 import type { FFprobeChapter, FFprobeFormat, FFprobeStream } from '../../common/ffprobe';
-import { contentDispositionOptionsSchema, deleteDispositionValue, dispositionOptions, type ContentDispositionOptions, type FileParams, type FilesMeta, type FormatTimecode, type ParamsByFile, type StreamParams } from './types';
+import { contentDispositionOptionsSchema, deleteDispositionValue, dispositionOptions } from './types';
+import type { ContentDispositionOptions, FileParams, FilesMeta, FormatTimecode, ParamsByFile, StreamParams } from './types';
 import Button, { DialogButton } from './components/Button';
 import styles from './StreamsSelector.module.css';
 import Json5Dialog from './components/Json5Dialog';
 import GpsMap from './components/GpsMap';
 import Switch from './components/Switch';
+import type { ConfirmDialog } from './components/GenericDialog';
+import { basename } from './util/path';
 
+
+// for "Copy from": the source's metadata including the user's changes, without muxer-written keys
+function getCopyFromSource({ key, getLabel, existing, custom }: { key: string, getLabel: (metadata: Record<string, string>) => string, existing: Record<string, string> | undefined, custom: Record<string, string> | undefined }) {
+  const metadata = getCopyableMetadata(getEffectiveMetadata(existing, custom));
+  return Object.keys(metadata).length > 0 ? { key, label: getLabel(metadata), metadata } : undefined;
+}
+
+type ResetParams = (path: string, streamId?: number) => void;
+
+// highlighted when there are changes
+function EditButton({ title, onClick, highlighted }: { title: string, onClick: () => void, highlighted: boolean }) {
+  return <Button title={title} onClick={onClick}><FaEdit style={{ verticalAlign: 'middle', color: highlighted ? 'var(--accent-11)' : undefined }} /></Button>;
+}
+
+// Without streamId: resets the file's own params (not its tracks). Keeps disposition (see hasStreamEdits)
+function resetParamsDraft(fileParams: FileParams, streamId?: number) {
+  if (streamId == null) {
+    // eslint-disable-next-line no-param-reassign
+    fileParams.metadata = {};
+    // eslint-disable-next-line no-param-reassign
+    delete fileParams.offset;
+    return;
+  }
+  const disposition = fileParams.paramsByStream.get(streamId)?.disposition;
+  if (disposition != null) fileParams.paramsByStream.set(streamId, { metadata: {}, disposition });
+  else fileParams.paramsByStream.delete(streamId);
+}
 
 type UpdateStreamParams = (fileId: string, streamId: number, setter: (a: StreamParams) => void) => void;
 
@@ -33,7 +68,7 @@ interface EditingStream {
   path: string;
 }
 
-const getStreamDispositionsObj = (stream: FFprobeStream) => ((stream && stream.disposition) || {});
+const getStreamDispositionsObj = (stream: FFprobeStream) => (stream?.disposition || {});
 
 const getStreamParams = ({ paramsByFile, filePath, streamId }: { paramsByFile: ParamsByFile, filePath: string, streamId: number }) => (
   paramsByFile.get(filePath)?.paramsByStream.get(streamId)
@@ -47,6 +82,54 @@ function getStreamEffectiveDisposition(paramsByFile: ParamsByFile, fileId: strin
   return getActiveDisposition(existingDispositionsObj);
 }
 
+
+// Tag info shared by file and track metadata
+function useCommonTagInfo(): TagInfo {
+  const { t } = useTranslation();
+  return useMemo(() => ({
+    creation_time: {
+      // resolved by ffmpeg at export time
+      suggestions: [{ value: 'now', label: t('Now') }],
+      validate: (value) => (isValidCreationTime(value) ? undefined : t('Invalid date, use e.g. {{example}} or {{now}}', { example: '2024-12-31T23:59:59Z', now: 'now' })),
+    },
+    comment: { multiline: true },
+    description: { multiline: true },
+  }), [t]);
+}
+
+function ActionCallout({ color, style, text, actionText, onAction }: { color: 'amber' | 'blue', style?: CSSProperties, text: string, actionText: string, onAction: () => void }) {
+  return (
+    <Callout.Root size="1" color={color} style={style}>
+      <Callout.Icon><FaInfoCircle /></Callout.Icon>
+      <Callout.Text>
+        {text}{' '}
+        <ThemesButton size="1" variant="soft" onClick={onAction}>{actionText}</ThemesButton>
+      </Callout.Text>
+    </Callout.Root>
+  );
+}
+
+// MP4/MOV only stores certain keys, unless "use_metadata_tags" is enabled
+function MovMetadataNotice({ outFormat, metadata, isStream }: { outFormat: string | undefined, metadata: Record<string, string> | undefined, isStream: boolean }) {
+  const { t } = useTranslation();
+  const { preserveMovData, setPreserveMovData } = useUserSettings();
+  const nonNativeKeys = getNonNativeMovMetadataKeys({ metadata, outFormat, isStream });
+  if (!isMov(outFormat) || preserveMovData || nonNativeKeys.length === 0) return null;
+  return (
+    <ActionCallout
+      color="amber"
+      style={{ marginBottom: '1em' }}
+      text={t('MP4/MOV may not keep these keys unless "{{option}}" is enabled: {{keys}}', { option: t('Preserve all MP4/MOV metadata?'), keys: nonNativeKeys.join(', ') })}
+      actionText={t('Enable')}
+      onAction={() => setPreserveMovData(true)}
+    />
+  );
+}
+
+function ResetButton({ disabled, onClick }: { disabled: boolean, onClick: () => void }) {
+  const { t } = useTranslation();
+  return <DialogButton disabled={disabled} onClick={onClick}><FaUndo style={{ verticalAlign: 'baseline', fontSize: '.8em', marginRight: '.3em' }} />{t('Reset')}</DialogButton>;
+}
 
 function KeyValue({ name, value }: { name: ReactNode, value: ReactNode }) {
   return (
@@ -80,7 +163,7 @@ function AspectEditor({ stream, streamParams, updateStreamParams }: {
   return (
     <>
       <div style={{ fontSize: '.85em', color: 'var(--gray-11)', marginBottom: '.4em' }}>
-        {isSar ? t('Losslessly change the sample aspect ratio (SAR) of this track with a bitstream filter.') : t('Losslessly change the display aspect ratio of this track at the container level.')}
+        {t(isSar ? 'Losslessly change the sample aspect ratio (SAR) of this track with a bitstream filter.' : 'Losslessly change the display aspect ratio of this track at the container level.')}
         {' '}
         {t('Note that this is not supported in all video players.')}
       </div>
@@ -167,8 +250,9 @@ function OffsetEditor({ fileParams, updateFileParams }: {
 }
 
 // eslint-disable-next-line react/display-name
-const EditFileDialog = memo(({ editingFile, allFilesMeta, paramsByFile, setParamsByFile, editingKey, setEditingKey, enableMetadata }: {
+const EditFileDialog = memo(({ editingFile, allFilesMeta, paramsByFile, setParamsByFile, editingKey, setEditingKey, enableMetadata, outFormat }: {
   editingFile: string,
+  outFormat: string | undefined,
   allFilesMeta: FilesMeta,
   paramsByFile: ParamsByFile,
   setParamsByFile: Dispatch<SetStateAction<ParamsByFile>>,
@@ -209,11 +293,17 @@ const EditFileDialog = memo(({ editingFile, allFilesMeta, paramsByFile, setParam
     });
   }, [updateFileParams]);
 
-  const tagInfo = useMemo(() => ({
+  const copyFromSources = useMemo(() => Object.entries(allFilesMeta).flatMap(([path, { format: otherFormat }]) => (
+    (path !== editingFile && getCopyFromSource({ key: path, getLabel: () => basename(path), existing: otherFormat.tags, custom: paramsByFile.get(path)?.metadata })) || []
+  )), [allFilesMeta, editingFile, paramsByFile]);
+
+  const commonTagInfo = useCommonTagInfo();
+  const tagInfo = useMemo<TagInfo>(() => ({
+    ...commonTagInfo,
     encoder: {
       description: t('This is hardcoded by FFmpeg and cannot be changed.'),
     },
-  }), [t]);
+  }), [commonTagInfo, t]);
 
   return (
     <Tabs.Root defaultValue={enableMetadata ? 'metadata' : 'offset'} style={{ minHeight: '20em' }}>
@@ -225,7 +315,8 @@ const EditFileDialog = memo(({ editingFile, allFilesMeta, paramsByFile, setParam
       <div style={{ marginTop: '.5em' }}>
         {enableMetadata && (
           <Tabs.Content value="metadata">
-            <TagEditor existingTags={existingMetadata} customTags={fileParams?.metadata} editingTag={editingKey} setEditingTag={setEditingKey} onTagsChange={onMetadataChange} onTagReset={onMetadataReset} addTagTitle={t('Add metadata')} tagInfo={tagInfo} canDeleteExisting />
+            <MovMetadataNotice outFormat={outFormat} metadata={fileParams?.metadata} isStream={false} />
+            <TagEditor existingTags={existingMetadata} customTags={fileParams?.metadata} editingTag={editingKey} setEditingTag={setEditingKey} onTagsChange={onMetadataChange} onTagReset={onMetadataReset} addTagTitle={t('Add metadata')} tagInfo={tagInfo} keySuggestions={fileMetadataKeys} copyFromSources={copyFromSources} canDeleteExisting />
           </Tabs.Content>
         )}
 
@@ -238,14 +329,16 @@ const EditFileDialog = memo(({ editingFile, allFilesMeta, paramsByFile, setParam
 });
 
 // eslint-disable-next-line react/display-name
-const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, path: editingFile }, setEditingStream, allFilesMeta, paramsByFile, updateStreamParams }: {
+const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, path: editingFile }, setEditingStream, allFilesMeta, paramsByFile, updateStreamParams, outFormat, resetParams }: {
   editingStream: EditingStream,
   setEditingStream: Dispatch<SetStateAction<EditingStream | undefined>>,
   allFilesMeta: FilesMeta,
   paramsByFile: ParamsByFile,
   updateStreamParams: UpdateStreamParams,
+  outFormat: string | undefined,
+  resetParams: ResetParams,
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [editingKey, setEditingKey] = useState<string>();
 
   const { streams } = allFilesMeta[editingFile]!;
@@ -255,16 +348,29 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
 
   const streamParams = useMemo(() => getStreamParams({ paramsByFile, filePath: editingFile, streamId: editingStreamId }), [editingFile, editingStreamId, paramsByFile]);
 
-  const onMetadataChange = useCallback((keyValues: Record<string, string>) => {
-    updateStreamParams(editingFile, editingStreamId, (params) => {
+  const setStreamMetadata = useCallback((streamId: number, keyValues: Record<string, string>) => {
+    updateStreamParams(editingFile, streamId, (params) => {
       // eslint-disable-next-line no-param-reassign
-      if (params.metadata == null) params.metadata = {};
+      params.metadata ??= {};
       const { metadata } = params;
       Object.entries(keyValues).forEach(([tag, value]) => {
         metadata[tag] = tag === 'language' ? value.toLowerCase() : value;
       });
     });
-  }, [editingFile, editingStreamId, updateStreamParams]);
+  }, [editingFile, updateStreamParams]);
+
+  const onMetadataChange = useCallback((keyValues: Record<string, string>) => setStreamMetadata(editingStreamId, keyValues), [editingStreamId, setStreamMetadata]);
+
+  // cover art counts as its own type
+  const otherStreamsOfSameType = useMemo(() => {
+    if (editingStream == null) return [];
+    const isCoverArt = (stream: FFprobeStream) => getStreamEffectiveDisposition(paramsByFile, editingFile, stream) === attachedPicDisposition;
+    return streams.filter((s) => s.index !== editingStreamId && s.codec_type === editingStream.codec_type && isCoverArt(s) === isCoverArt(editingStream));
+  }, [editingFile, editingStream, editingStreamId, paramsByFile, streams]);
+
+  const onApplyToAll = useCallback((tag: string, value: string) => {
+    otherStreamsOfSameType.forEach((s) => setStreamMetadata(s.index, { [tag]: value }));
+  }, [otherStreamsOfSameType, setStreamMetadata]);
 
   const onMetadataReset = useCallback((key: string) => {
     updateStreamParams(editingFile, editingStreamId, (params) => {
@@ -276,20 +382,41 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
     });
   }, [editingFile, editingStreamId, updateStreamParams]);
 
-  const tagInfo = useMemo(() => ({
+  const copyFromSources = useMemo(() => {
+    const multipleFiles = Object.keys(allFilesMeta).length > 1;
+    return Object.entries(allFilesMeta).flatMap(([path, { streams: fileStreams }]) => fileStreams.flatMap((s) => {
+      // attachments only have metadata describing the attached file itself
+      if ((path === editingFile && s.index === editingStreamId) || s.codec_type === 'attachment') return [];
+      return getCopyFromSource({
+        key: `${path}:${s.index}`,
+        getLabel: ({ title }) => `${multipleFiles ? `${basename(path)}: ` : ''}#${s.index + 1} ${s.codec_type}${title ? ` – ${title}` : ''}`,
+        existing: s.tags,
+        custom: getStreamParams({ paramsByFile, filePath: path, streamId: s.index })?.metadata,
+      }) ?? [];
+    }));
+  }, [allFilesMeta, editingFile, editingStreamId, paramsByFile]);
+
+  const commonTagInfo = useCommonTagInfo();
+  const tagInfo = useMemo<TagInfo>(() => ({
+    ...commonTagInfo,
     language: {
       description: t('The language tag (ISO 639-2 code). For example "eng" for English. This is used by some players to select the appropriate audio/subtitle track based on the user\'s language preferences.'),
       url: 'https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes',
+      suggestions: getLanguageSuggestions(i18n.language),
+      validate: (value) => (isValidLanguageCode(value.toLowerCase()) ? undefined : t('Language should be a 3-letter ISO 639-2 code')),
     },
-  }), [t]);
+  }), [commonTagInfo, i18n.language, t]);
+
+  const codecTagSuggestions = useMemo(() => (isMov(outFormat) ? getCodecTagSuggestions(editingStream?.codec_name).map((value) => ({ value })) : []), [editingStream?.codec_name, outFormat]);
+  const suggestHvc1 = editingStream != null && needsHvc1Tag({ stream: editingStream, outFormat, customTag: streamParams?.tag });
 
   const updateCurrentStreamParams = (setter: (a: StreamParams) => void) => updateStreamParams(editingFile, editingStreamId, setter);
 
   return (
-    <Dialog.Root open={editingStream != null} onOpenChange={(v) => v === false && setEditingStream(undefined)}>
+    <Dialog.Root open={editingStream != null} onOpenChange={(v) => !v && setEditingStream(undefined)}>
       <Dialog.Portal>
         <Dialog.Overlay />
-        <Dialog.Content style={{ width: '40em' }} aria-describedby={undefined}>
+        <Dialog.Content style={{ width: '40em' }} aria-describedby={undefined} onEscapeKeyDown={cancelTagEditOnEscape(editingKey, setEditingKey)}>
           <Dialog.Title>{t('Edit track {{trackNum}} metadata', { trackNum: editingStream && (editingStream.index + 1) })}</Dialog.Title>
 
           <Tabs.Root defaultValue="metadata" style={{ minHeight: '20em' }}>
@@ -306,7 +433,8 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
 
             <div style={{ marginTop: '.5em' }}>
               <Tabs.Content value="metadata">
-                <TagEditor existingTags={existingMetadata} customTags={streamParams?.metadata} editingTag={editingKey} setEditingTag={setEditingKey} onTagsChange={onMetadataChange} onTagReset={onMetadataReset} addTagTitle={t('Add metadata')} tagInfo={tagInfo} canDeleteExisting />
+                <MovMetadataNotice outFormat={outFormat} metadata={streamParams?.metadata} isStream />
+                <TagEditor existingTags={existingMetadata} customTags={streamParams?.metadata} editingTag={editingKey} setEditingTag={setEditingKey} onTagsChange={onMetadataChange} onTagReset={onMetadataReset} addTagTitle={t('Add metadata')} tagInfo={tagInfo} keySuggestions={streamMetadataKeys} canDeleteExisting onApplyToAll={otherStreamsOfSameType.length > 0 ? onApplyToAll : undefined} applyToAllTitle={t('Apply to all other tracks of this type')} copyFromSources={copyFromSources} />
               </Tabs.Content>
 
               {editingStream != null && (
@@ -325,7 +453,7 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
                       <KeyValue
                         name={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'h264_mp4toannexb' })}
                         // eslint-disable-next-line no-param-reassign
-                        value={<Switch checked={!!streamParams?.bsfH264Mp4toannexb} onCheckedChange={(checked) => updateCurrentStreamParams((params) => { params.bsfH264Mp4toannexb = checked === true; })} />}
+                        value={<Switch checked={Boolean(streamParams?.bsfH264Mp4toannexb)} onCheckedChange={(checked) => updateCurrentStreamParams((params) => { params.bsfH264Mp4toannexb = checked; })} />}
                       />
                     )}
 
@@ -334,23 +462,38 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
                         <KeyValue
                           name={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'hevc_mp4toannexb' })}
                           // eslint-disable-next-line no-param-reassign
-                          value={<Switch checked={!!streamParams?.bsfH264Mp4toannexb} onCheckedChange={(checked) => updateCurrentStreamParams((params) => { params.bsfHevcMp4toannexb = checked === true; })} />}
+                          value={<Switch checked={Boolean(streamParams?.bsfHevcMp4toannexb)} onCheckedChange={(checked) => updateCurrentStreamParams((params) => { params.bsfHevcMp4toannexb = checked; })} />}
                         />
 
                         <KeyValue
                           name={t('Enable "{{filterName}}" bitstream filter.', { filterName: 'hevc_metadata=aud=insert' })}
                           // eslint-disable-next-line no-param-reassign
-                          value={<Switch checked={!!streamParams?.bsfHevcAudInsert} onCheckedChange={(checked) => updateCurrentStreamParams((params) => { params.bsfHevcAudInsert = checked === true; })} />}
+                          value={<Switch checked={Boolean(streamParams?.bsfHevcAudInsert)} onCheckedChange={(checked) => updateCurrentStreamParams((params) => { params.bsfHevcAudInsert = checked; })} />}
                         />
                       </>
                     )}
 
                     {(editingStream.codec_type === 'video' || editingStream.codec_type === 'audio') && (
-                      <KeyValue
-                        name={t('Codec tag')}
-                        // eslint-disable-next-line no-param-reassign
-                        value={<TextField.Root placeholder={editingStream?.codec_tag_string ?? t('Default')} value={streamParams?.tag ?? ''} onChange={(e) => updateCurrentStreamParams((params) => { params.tag = e.target.value.trim() === '' ? undefined : e.target.value; })} />}
-                      />
+                      <>
+                        <KeyValue
+                          name={t('Codec tag')}
+                          // eslint-disable-next-line no-param-reassign
+                          value={<SuggestionTextField placeholder={editingStream?.codec_tag_string ?? t('Default')} value={streamParams?.tag ?? ''} suggestions={codecTagSuggestions} onValueChange={(value) => updateCurrentStreamParams((params) => { params.tag = value.trim() === '' ? undefined : value; })} />}
+                        />
+
+                        {streamParams?.tag != null && !isValidCodecTag(streamParams.tag) && <Warning>{t('Codec tag should be 4 characters')}</Warning>}
+
+                        {suggestHvc1 && (
+                          <ActionCallout
+                            color="blue"
+                            style={{ marginTop: '.5em' }}
+                            text={t('Apple devices (QuickTime, Safari, iOS) require the "{{tag}}" codec tag to play HEVC in MP4/MOV.', { tag: 'hvc1' })}
+                            actionText={t('Use "{{tag}}"', { tag: 'hvc1' })}
+                            // eslint-disable-next-line no-param-reassign
+                            onAction={() => updateCurrentStreamParams((params) => { params.tag = 'hvc1'; })}
+                          />
+                        )}
+                      </>
                     )}
                   </Tabs.Content>
                 </>
@@ -359,6 +502,7 @@ const EditStreamDialog = memo(({ editingStream: { streamId: editingStreamId, pat
           </Tabs.Root>
 
           <Dialog.ButtonRow>
+            <ResetButton disabled={editingKey != null || !hasStreamEdits(streamParams)} onClick={() => resetParams(editingFile, editingStreamId)} />
             <Dialog.Close asChild>
               <DialogButton disabled={editingKey != null} primary>{t('Done')}</DialogButton>
             </Dialog.Close>
@@ -379,7 +523,8 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
   stream: FileStream,
   onToggle: (a: number) => void,
   toggleCopyStreamIds: (filter: (a: FFprobeStream) => boolean) => void,
-  copyStream: boolean, fileDuration: number | undefined,
+  copyStream: boolean,
+  fileDuration: number | undefined,
   setEditingStream: (a: EditingStream) => void,
   onExtractStreamPress?: () => void,
   paramsByFile: ParamsByFile,
@@ -390,7 +535,8 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
   const { t } = useTranslation();
 
   const effectiveDisposition = useMemo(() => getStreamEffectiveDisposition(paramsByFile, filePath, stream), [filePath, paramsByFile, stream]);
-  const effectiveLanguage = getStreamParams({ paramsByFile, filePath, streamId: stream.index })?.metadata['language'] ?? stream.tags?.language;
+  const streamParams = getStreamParams({ paramsByFile, filePath, streamId: stream.index });
+  const effectiveLanguage = streamParams?.metadata['language'] ?? stream.tags?.language;
 
   const bitrate = parseInt(stream.bit_rate!, 10);
   const streamDuration = parseInt(stream.duration, 10);
@@ -398,7 +544,7 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
 
   let Icon: typeof FaBan;
   let codecTypeHuman;
-  // eslint-disable-next-line unicorn/prefer-switch
+  // eslint-disable-next-line unicorn-js/prefer-switch
   if (stream.codec_type === 'audio') {
     Icon = copyStream ? FaVolumeUp : FaVolumeMute;
     codecTypeHuman = t('audio');
@@ -421,10 +567,11 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
     codecTypeHuman = stream.codec_type;
   }
 
-  const streamFps = getStreamFps(stream);
+  const streamFps = stream.codec_type === 'audio' ? undefined : getStreamFps(stream);
+  const sampleRate = Number(stream.sample_rate);
   const title = stream.tags?.title;
 
-  const onClick = () => onToggle && onToggle(stream.index);
+  const onClick = () => onToggle?.(stream.index);
 
   const onDispositionChange = useCallback<ChangeEventHandler<HTMLSelectElement>>((e) => {
     let newDisposition: ContentDispositionOptions | 'llc_disposition_remove' | undefined;
@@ -457,13 +604,13 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
       </td>
       <td style={{ maxWidth: '3em', overflow: 'hidden' }} title={stream.codec_name}>{stream.codec_name} {codecTag}</td>
       <td>
-        {duration != null && !Number.isNaN(duration) && `${formatTimecode({ seconds: duration, shorten: true })}`}
+        {duration != null && !Number.isNaN(duration) && formatTimecode({ seconds: duration, shorten: true })}
         {stream.nb_frames != null ? <span> {stream.nb_frames}f</span> : null}
       </td>
       <td>{!Number.isNaN(bitrate) && (stream.codec_type === 'audio' ? `${Math.round(bitrate / 1000)} kbps` : prettyBytes(bitrate, { bits: true }))}</td>
       <td style={{ maxWidth: '2.5em', wordBreak: 'break-word' }} title={title}>{title}</td>
       <td style={{ maxWidth: '2.5em', overflow: 'hidden' }} title={effectiveLanguage}>{effectiveLanguage}</td>
-      <td>{stream.width && stream.height && `${stream.width}x${stream.height}`} {stream.channels && `${stream.channels}c`} {stream.channel_layout} {streamFps && `${streamFps.toFixed(2)}fps`}</td>
+      <td>{stream.width && stream.height && `${stream.width}x${stream.height}`} {stream.channels && `${stream.channels}c`} {stream.channel_layout} {sampleRate > 0 && `${sampleRate / 1000}kHz`} {streamFps && `${streamFps.toFixed(2)}fps`}</td>
       <td>
         <Select style={{ width: '6em' }} value={effectiveDisposition || unchangedDispositionValue} onChange={onDispositionChange}>
           <option value="" disabled>{t('Disposition')}</option>
@@ -476,7 +623,8 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
         </Select>
       </td>
 
-      <td style={{ textAlign: 'right', fontSize: '1.1em' }}>
+      <td style={{ textAlign: 'right', fontSize: '1.1em', whiteSpace: 'nowrap' }}>
+        {hasStreamEdits(streamParams) && <EditButton title={t('This track has been edited')} onClick={() => setEditingStream({ streamId: stream.index, path: filePath })} highlighted />}
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
             <Button><FaHamburger style={{ verticalAlign: 'middle', padding: '.4em' }} /></Button>
@@ -552,8 +700,9 @@ const Stream = memo(({ filePath, stream, onToggle, toggleCopyStreamIds, copyStre
   );
 });
 
-function FileHeading({ path, format, onEditClick, toggleCopyAllStreams, chapters, onTrashClick, onExtractAllStreamsPress, changeEnabledStreamsFilter }: {
+function FileHeading({ path, format, onEditClick, edited, toggleCopyAllStreams, chapters, onTrashClick, onExtractAllStreamsPress, changeEnabledStreamsFilter }: {
   path: string,
+  edited: boolean,
   format: FFprobeFormat | undefined,
   onEditClick?: (() => void) | undefined,
   toggleCopyAllStreams: () => void,
@@ -566,7 +715,7 @@ function FileHeading({ path, format, onEditClick, toggleCopyAllStreams, chapters
 
   return (
     <div style={{ display: 'flex', marginBottom: '.2em', borderBottom: '1px solid var(--gray-7)' }}>
-      <div title={path} style={{ wordBreak: 'break-all', marginRight: '1em', fontWeight: 'bold' }}>{path.replace(/.*\/([^/]+)$/, '$1')}</div>
+      <div title={path} style={{ wordBreak: 'break-all', marginRight: '1em', fontWeight: 'bold' }}>{basename(path)}</div>
 
       <div style={{ flexGrow: 1 }} />
 
@@ -579,7 +728,7 @@ function FileHeading({ path, format, onEditClick, toggleCopyAllStreams, chapters
         <Json5Dialog title={t('File info')} json={format}>
           <Button title={t('File info')}><FaInfoCircle style={{ verticalAlign: 'middle' }} /></Button>
         </Json5Dialog>
-        {onEditClick && <Button title={t('Edit file metadata')} onClick={onEditClick}><FaEdit style={{ verticalAlign: 'middle' }} /></Button>}
+        {onEditClick && <EditButton title={t('Edit file metadata')} onClick={onEditClick} highlighted={edited} />}
         <Button title={t('Toggle all tracks')} onClick={() => toggleCopyAllStreams()}><FaEye style={{ verticalAlign: 'middle' }} /></Button>
         {changeEnabledStreamsFilter && <Button title={t('Filter tracks')} onClick={changeEnabledStreamsFilter}><FaFilter style={{ verticalAlign: 'middle' }} /></Button>}
         {onExtractAllStreamsPress && <Button title={t('Export each track as individual files')} onClick={onExtractAllStreamsPress}><FaFileExport style={{ verticalAlign: 'middle' }} /></Button>}
@@ -613,7 +762,7 @@ const fileStyle: CSSProperties = { marginBottom: '2em', padding: '.5em 0', overf
 
 
 function StreamsSelector({
-  mainFilePath, mainFileFormat, mainFileStreams, mainFileChapters, isCopyingStreamId, toggleCopyStreamId, setCopyStreamIdsForPath, onExtractStreamPress, onExtractAllStreamsPress, allFilesMeta, externalFilesMeta, setExternalFilesMeta, showAddStreamSourceDialog, shortestFlag, setShortestFlag, nonCopiedExtraStreams, paramsByFile, setParamsByFile, updateStreamParams, formatTimecode, loadSubtitleTrackToSegments, toggleCopyStreamIds, changeEnabledStreamsFilter, toggleCopyAllStreamsForPath, onStreamSourceFileDrop,
+  mainFilePath, mainFileFormat, mainFileStreams, mainFileChapters, isCopyingStreamId, toggleCopyStreamId, setCopyStreamIdsForPath, onExtractStreamPress, onExtractAllStreamsPress, allFilesMeta, externalFilesMeta, setExternalFilesMeta, showAddStreamSourceDialog, shortestFlag, setShortestFlag, nonCopiedExtraStreams, paramsByFile, setParamsByFile, updateStreamParams, formatTimecode, loadSubtitleTrackToSegments, toggleCopyStreamIds, changeEnabledStreamsFilter, toggleCopyAllStreamsForPath, onStreamSourceFileDrop, outFormat, confirmDialog,
 }: {
   mainFilePath: string,
   mainFileFormat: FFprobeFormat | undefined,
@@ -640,6 +789,8 @@ function StreamsSelector({
   changeEnabledStreamsFilter: () => void,
   toggleCopyAllStreamsForPath: (path: string) => void,
   onStreamSourceFileDrop: DragEventHandler<HTMLDivElement>,
+  outFormat: string | undefined,
+  confirmDialog: ConfirmDialog,
 }) {
   const [editingFile, setEditingFile] = useState<string>();
   const [editingStream, setEditingStream] = useState<EditingStream>();
@@ -647,7 +798,7 @@ function StreamsSelector({
   const { t } = useTranslation();
 
   function getFormatDuration(format: FFprobeFormat | undefined) {
-    if (!format || !format.duration) return undefined;
+    if (!format?.duration) return undefined;
     const parsed = parseFloat(format.duration);
     if (Number.isNaN(parsed)) return undefined;
     return parsed;
@@ -664,11 +815,29 @@ function StreamsSelector({
 
   const externalFilesEntries = Object.entries(externalFilesMeta);
 
+  const resetParams = useCallback<ResetParams>((path, streamId) => setParamsByFile(produce((draft) => {
+    const fileParams = draft.get(path);
+    if (fileParams != null) resetParamsDraft(fileParams, streamId);
+  })), [setParamsByFile]);
+
+  // eslint-disable-next-line unicorn-js/prefer-iterator-helpers, unicorn-js/prefer-iterator-to-array -- TODO fix (new rule in @mifi/lint-config)
+  const haveEdits = useMemo(() => [...paramsByFile.values()].some((fileParams) => hasFileEdits(fileParams) || [...fileParams.paramsByStream.values()].some((streamParams) => hasStreamEdits(streamParams))), [paramsByFile]);
+
+  const onResetAllClick = useCallback(async () => {
+    if (!(await confirmDialog({ description: t('Reset all changes to files and tracks?') }))) return;
+    setParamsByFile(produce((draft) => {
+      for (const fileParams of draft.values()) {
+        resetParamsDraft(fileParams);
+        for (const streamId of fileParams.paramsByStream.keys()) resetParamsDraft(fileParams, streamId);
+      }
+    }));
+  }, [confirmDialog, setParamsByFile, t]);
+
   return (
     <>
       <div style={fileStyle} onDrop={onStreamSourceFileDrop}>
         {/* We only support editing main file metadata for now */}
-        <FileHeading path={mainFilePath} format={mainFileFormat} chapters={mainFileChapters} onEditClick={() => setEditingFile(mainFilePath)} toggleCopyAllStreams={() => toggleCopyAllStreamsForPath(mainFilePath)} onExtractAllStreamsPress={onExtractAllStreamsPress} changeEnabledStreamsFilter={changeEnabledStreamsFilter} />
+        <FileHeading path={mainFilePath} format={mainFileFormat} edited={hasFileEdits(paramsByFile.get(mainFilePath))} chapters={mainFileChapters} onEditClick={() => setEditingFile(mainFilePath)} toggleCopyAllStreams={() => toggleCopyAllStreamsForPath(mainFilePath)} onExtractAllStreamsPress={onExtractAllStreamsPress} changeEnabledStreamsFilter={changeEnabledStreamsFilter} />
         <table className={styles['table']}>
           <Thead />
 
@@ -696,7 +865,7 @@ function StreamsSelector({
 
       {externalFilesEntries.map(([path, { streams: externalFileStreams, format }]) => (
         <div key={path} style={fileStyle}>
-          <FileHeading path={path} format={format} onEditClick={() => setEditingFile(path)} toggleCopyAllStreams={() => toggleCopyAllStreamsForPath(path)} onTrashClick={() => removeFile(path)} />
+          <FileHeading path={path} format={format} edited={hasFileEdits(paramsByFile.get(path))} onEditClick={() => setEditingFile(path)} toggleCopyAllStreams={() => toggleCopyAllStreamsForPath(path)} onTrashClick={() => removeFile(path)} />
 
           <table className={styles['table']}>
             <Thead />
@@ -726,6 +895,12 @@ function StreamsSelector({
           <FaFileImport style={{ verticalAlign: 'middle', marginRight: '.5em' }} /> {t('Include more tracks from other file')}
         </Button>
 
+        {haveEdits && (
+          <Button style={{ marginBottom: '1em', marginLeft: '.5em', padding: '0.3em 1em' }} onClick={onResetAllClick}>
+            <FaUndo style={{ verticalAlign: 'middle', marginRight: '.5em' }} /> {t('Reset all changes')}
+          </Button>
+        )}
+
         {nonCopiedExtraStreams.length > 0 && (
           <div style={{ marginBottom: '1em' }}>
             <span style={{ marginRight: 10 }}>{t('Discard or extract unprocessable tracks to separate files?')}</span>
@@ -744,15 +919,16 @@ function StreamsSelector({
       </div>
 
       {editingFile != null && (
-        <Dialog.Root defaultOpen onOpenChange={(v) => v === false && setEditingFile(undefined)}>
+        <Dialog.Root defaultOpen onOpenChange={(v) => !v && setEditingFile(undefined)}>
           <Dialog.Portal>
             <Dialog.Overlay />
-            <Dialog.Content style={{ width: '40em' }} aria-describedby={undefined}>
+            <Dialog.Content style={{ width: '40em' }} aria-describedby={undefined} onEscapeKeyDown={cancelTagEditOnEscape(editingKey, setEditingKey)}>
               <Dialog.Title>{t('Edit file metadata')}</Dialog.Title>
 
-              <EditFileDialog editingFile={editingFile} editingKey={editingKey} setEditingKey={setEditingKey} allFilesMeta={allFilesMeta} paramsByFile={paramsByFile} setParamsByFile={setParamsByFile} enableMetadata={editingFile === mainFilePath} />
+              <EditFileDialog editingFile={editingFile} editingKey={editingKey} setEditingKey={setEditingKey} allFilesMeta={allFilesMeta} paramsByFile={paramsByFile} setParamsByFile={setParamsByFile} enableMetadata={editingFile === mainFilePath} outFormat={outFormat} />
 
               <Dialog.ButtonRow>
+                <ResetButton disabled={editingKey != null || !hasFileEdits(paramsByFile.get(editingFile))} onClick={() => resetParams(editingFile)} />
                 <Dialog.Close asChild>
                   <DialogButton primary disabled={editingKey != null}>{t('Done')}</DialogButton>
                 </Dialog.Close>
@@ -771,6 +947,8 @@ function StreamsSelector({
           allFilesMeta={allFilesMeta}
           paramsByFile={paramsByFile}
           updateStreamParams={updateStreamParams}
+          outFormat={outFormat}
+          resetParams={resetParams}
         />
       )}
     </>

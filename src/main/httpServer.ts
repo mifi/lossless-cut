@@ -43,14 +43,14 @@ export default ({ port, onKeyboardAction, onAwaitAppEvent }: {
     // eslint-disable-next-line prefer-destructuring
     const action = req.params['action'];
     const parameters = req.body as unknown;
-    assert(action != null);
+    assert.ok(action != null);
     await onKeyboardAction(action, [parameters]);
     res.end();
   });
 
   apiRouter.post('/await-event/:eventName', express.json(), async (req, res) => {
     const { eventName } = req.params;
-    assert(eventName != null);
+    assert.ok(eventName != null);
     const abortController = new AbortController();
     abortController.signal.addEventListener('abort', () => logger.info('await-event aborted', eventName));
     req.on('close', () => abortController.abort());

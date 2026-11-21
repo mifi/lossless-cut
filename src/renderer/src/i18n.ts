@@ -1,3 +1,4 @@
+// eslint-disable-next-line unicorn/prefer-export-from -- it's configured below
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
@@ -30,5 +31,4 @@ i18n
     },
   });
 
-// eslint-disable-next-line unicorn/prefer-export-from
 export default i18n;

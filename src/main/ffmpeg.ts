@@ -6,17 +6,17 @@ import type { Options as ExecaOptions, ResultPromise } from 'execa';
 import { execa } from 'execa';
 import assert from 'node:assert';
 import type { Readable } from 'node:stream';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { app, clipboard, nativeImage } from 'electron';
+// eslint-disable-next-line import-js/no-extraneous-dependencies
+import { app, clipboard, ClipboardItem, nativeImage } from 'electron';
 
 import { platform, arch, isWindows, isLinux } from './util.js';
-import type { CaptureFormat, FfmpegHwAccel } from '../common/types.js';
+import type { AudioStreamInfo, CaptureFormat, FfmpegHwAccel } from '../common/types.js';
 import type { FFprobeFormat } from '../common/ffprobe.js';
 import isDev from './isDev.js';
 import logger from './logger.js';
 import { parseFfmpegProgressLine } from './progress.js';
-import { formatFfmpegNumber, getHwaccelArgs, parseFfprobeDuration } from '../common/util.js';
-import { getFfmpegJpegQuality } from './ffmpegUtil.js';
+import { formatFfmpegNumber, getFixChannelLayoutFilter, getHwaccelArgs, parseFfprobeDuration } from '../common/util.js';
+import { getFfmpegJpegQuality, parseBlackDetectLine, parseSilenceDetectLine } from './ffmpegUtil.js';
 import { throwIfDisabledNetworking } from './networking.js';
 
 
@@ -27,6 +27,8 @@ const runningFfmpegs = new Set<{
 }>();
 // setInterval(() => console.log(runningFfmpegs.size), 1000);
 
+// Only the bundled FFmpeg version (see script/downloadFfmpeg.ts) is supported, also when using a custom FFmpeg path.
+// Don't add code for compatibility with older versions. Older versions are not blocked, but may not work correctly.
 let customFfPath: string | undefined;
 
 // Note that this does not work on MAS because of sandbox restrictions
@@ -35,12 +37,11 @@ export function setCustomFfPath(path: string | undefined) {
 }
 
 function escapeCliArg(arg: string) {
-  // todo change String(arg) => arg when ts no-implicit-any is turned on
   if (isWindows) {
     // https://github.com/mifi/lossless-cut/issues/2151
-    return /[\s"&<>^|]/.test(arg) ? `"${String(arg).replaceAll('"', '""')}"` : arg;
+    return /[\s"&<>^|]/.test(arg) ? `"${arg.replaceAll('"', '""')}"` : arg;
   }
-  return /[^\w-]/.test(arg) ? `'${String(arg).replaceAll("'", '\'"\'"\'')}'` : arg;
+  return /[^\w-]/.test(arg) ? `'${arg.replaceAll("'", '\'"\'"\'')}'` : arg;
 }
 
 export type FfCommand = 'ffmpeg' | 'ffprobe';
@@ -77,9 +78,7 @@ export async function checkFfExists(cmd: FfCommand) {
 }
 
 const getFfprobePath = () => getFfPath('ffprobe');
-/**
- * ⚠️ Do not use directly when running ffmpeg, because we need to add certain options before running, like `LD_LIBRARY_PATH` on linux
- */
+/** ⚠️ Do not use directly when running ffmpeg, because we need to add certain options before running, like `LD_LIBRARY_PATH` on linux */
 export const getFfmpegPath = () => getFfPath('ffmpeg');
 
 export function abortFfmpegs() {
@@ -95,8 +94,7 @@ function handleProgress(
   onProgress: (a: number) => void,
   customMatcher?: (a: string) => void,
 ) {
-  if (!onProgress) return;
-  if (process.stderr == null) return;
+  if (!onProgress || (process.stderr == null)) return;
   onProgress(0);
 
   const rl = readline.createInterface({ input: process.stderr });
@@ -175,7 +173,7 @@ export async function runFfmpegConcat({ ffmpegArgs, concatTxt, totalDuration, on
 
   handleProgress(process, totalDuration, onProgress);
 
-  assert(process.stdin != null);
+  assert.ok(process.stdin != null);
   stringToStream(concatTxt).pipe(process.stdin);
 
   return process;
@@ -187,7 +185,7 @@ export async function runFfmpegWithProgress({ ffmpegArgs, duration, onProgress }
   onProgress: (a: number) => void,
 }) {
   const process = runFfmpegProcess(ffmpegArgs);
-  assert(process.stderr != null);
+  assert.ok(process.stderr != null);
   handleProgress(process, duration, onProgress);
   return process;
 }
@@ -236,6 +234,9 @@ export async function renderWaveformPng({ filePath, start, duration, resample, c
       '-ar', String(resample),
     ] : [
       '-c', 'copy',
+      // we seek after the input, so keep leading non-keyframe packets, or else the waveform is shifted
+      // for audio files where not all packets are flagged as keyframes (see isCopyingOnlyAudioStreams in renderer)
+      '-copyinkf',
     ]),
     '-f', 'matroska', // mpegts doesn't support vorbis etc
     '-',
@@ -258,8 +259,8 @@ export async function renderWaveformPng({ filePath, start, duration, resample, c
   try {
     ps1 = runFfmpegProcess(args1, { buffer: false, ...(timeout != null && { timeout }) }, { logCli: false });
     ps2 = runFfmpegProcess(args2, timeout != null ? { timeout } : undefined, { logCli: false });
-    assert(ps1.stdout != null);
-    assert(ps2.stdin != null);
+    assert.ok(ps1.stdout != null);
+    assert.ok(ps2.stdin != null);
     ps1.stdout.pipe(ps2.stdin);
 
     const { stdout } = await ps2;
@@ -285,13 +286,8 @@ export function mapTimesToSegments(times: number[], includeLast: boolean) {
   for (let i = 0; i < times.length; i += 1) {
     const start = times[i];
     const end = times[i + 1];
-    if (start != null) {
-      if (end != null) {
-        segments.push({ start, end });
-      } else if (includeLast) {
-        segments.push({ start, end }); // end undefined is allowed (means until end of video)
-      }
-    }
+    // end undefined is allowed for the last segment (means until end of video)
+    if (start != null && (end != null || includeLast)) segments.push({ start, end });
   }
   return segments;
 }
@@ -324,14 +320,13 @@ export async function detectSceneChanges({ filePath, streamId, minChange, onProg
 
   handleProgress(process, to - from, onProgress);
 
-  assert(process.stdout != null);
+  assert.ok(process.stdout != null);
   const rl = readline.createInterface({ input: process.stdout });
 
   let lastTime: number | undefined;
 
   rl.on('line', (line) => {
-    // eslint-disable-next-line unicorn/better-regex
-    const match = line.match(/^frame:\d+\s+pts:\d+\s+pts_time:([\d.]+)/);
+    const match = /^frame:\d+\s+pts:\d+\s+pts_time:([\d.]+)/.exec(line);
     if (!match) return;
     const time = parseFloat(match[1]!);
     if (!Number.isNaN(time)) {
@@ -413,22 +408,7 @@ export async function blackDetect({ streamId, filterOptions, ...rest }: {
 }) {
   return detectIntervals({
     ...rest,
-    matchLineTokens: (line) => {
-      // eslint-disable-next-line unicorn/better-regex
-      const match = line.match(/^[blackdetect\s*@\s*0x[0-9a-f]+] black_start:([\d\\.]+) black_end:([\d\\.]+) black_duration:[\d\\.]+/);
-      if (!match) {
-        return undefined;
-      }
-      const start = parseFloat(match[1]!);
-      const end = parseFloat(match[2]!);
-      if (Number.isNaN(start) || Number.isNaN(end)) {
-        return undefined;
-      }
-      if (start < 0 || end <= 0 || start >= end) {
-        return undefined;
-      }
-      return { start, end };
-    },
+    matchLineTokens: parseBlackDetectLine,
     customArgs: [
       '-map', streamId != null ? `0:${streamId}` : 'v:0',
       '-filter:v', `blackdetect=${mapFilterOptions(filterOptions)}`,
@@ -443,28 +423,13 @@ export async function silenceDetect({ streamId, filterOptions, ...rest }: {
   boundingMode: boolean,
   onProgress: (p: number) => void,
   onSegmentDetected: (p: DetectedSegment) => void,
-  from: number, to: number,
+  from: number,
+  to: number,
   ffmpegHwaccel: FfmpegHwAccel,
 }) {
   return detectIntervals({
     ...rest,
-    matchLineTokens: (line) => {
-      // eslint-disable-next-line unicorn/better-regex
-      const match = line.match(/^[silencedetect\s*@\s*0x[0-9a-f]+] silence_end: ([\d\\.]+)[|\s]+silence_duration: ([\d\\.]+)/);
-      if (!match) {
-        return undefined;
-      }
-      const end = parseFloat(match[1]!);
-      const silenceDuration = parseFloat(match[2]!);
-      if (Number.isNaN(end) || Number.isNaN(silenceDuration)) {
-        return undefined;
-      }
-      const start = end - silenceDuration;
-      if (start < 0 || end <= 0 || start >= end) {
-        return undefined;
-      }
-      return { start, end };
-    },
+    matchLineTokens: parseSilenceDetectLine,
     customArgs: [
       '-map', streamId != null ? `0:${streamId}` : 'a:0',
       '-filter:a', `silencedetect=${mapFilterOptions(filterOptions)}`,
@@ -594,7 +559,7 @@ export async function captureFrames({ from, to, videoPath, outPathTemplate, qual
           '-vf', filter,
           // https://superuser.com/questions/1336285/use-ffmpeg-for-thumbnail-selections
           ...(framePts ? ['-frame_pts', '1'] : []),
-          '-vsync', '0', // else we get a ton of duplicates (thumbnail filter)
+          '-fps_mode', 'passthrough', // else we get a ton of duplicates (thumbnail filter). `-vsync` was removed in ffmpeg 9
         ] : [])
     ),
     ...getCodecOpts(captureFormat),
@@ -615,17 +580,17 @@ export async function captureFrames({ from, to, videoPath, outPathTemplate, qual
   return args;
 }
 
-function getCaptureFrameArgs({ timestamp, videoPath, quality }: {
+function getCaptureFrameArgs({ timestamp, videoPath, quality, captureFormat }: {
   timestamp: number,
   videoPath: string,
   quality: number,
+  captureFormat: CaptureFormat,
 }) {
-  const ffmpegQuality = getFfmpegJpegQuality(quality);
   return [
     '-ss', String(timestamp),
     '-i', videoPath,
     '-frames:v', '1',
-    '-q:v', String(ffmpegQuality),
+    ...getQualityOpts({ captureFormat, quality }),
   ];
 }
 
@@ -635,24 +600,26 @@ export async function captureFrameToClipboard({ timestamp, videoPath, quality }:
   quality: number,
 }) {
   const args = [
-    ...getCaptureFrameArgs({ timestamp, videoPath, quality }),
+    ...getCaptureFrameArgs({ timestamp, videoPath, quality, captureFormat: 'jpeg' }),
     '-c:v', 'mjpeg',
     '-f', 'image2',
     '-',
   ];
   const { stdout } = await runFfmpegProcess(args);
 
-  clipboard.writeImage(nativeImage.createFromBuffer(Buffer.from(stdout)));
+  const png = nativeImage.createFromBuffer(Buffer.from(stdout)).toPNG();
+  await clipboard.write([new ClipboardItem({ 'image/png': new Blob([png], { type: 'image/png' }) })]);
 }
 
-export async function captureFrameToFile({ timestamp, videoPath, outPath, quality }: {
+export async function captureFrameToFile({ timestamp, videoPath, outPath, quality, captureFormat }: {
   timestamp: number,
   videoPath: string,
   outPath: string,
   quality: number,
+  captureFormat: CaptureFormat,
 }) {
   const args = [
-    ...getCaptureFrameArgs({ timestamp, videoPath, quality }),
+    ...getCaptureFrameArgs({ timestamp, videoPath, quality, captureFormat }),
     '-y', outPath,
   ];
   await runFfmpegProcess(args);
@@ -676,10 +643,10 @@ export async function getDuration(filePath: string) {
 const enableLog = false;
 const encode = true;
 
-export function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIndexes, seekTo, size, fps, rotate, forceColorspace, ffmpegHwaccel }: {
+export function createMediaSourceProcess({ path, videoStreamIndex, audioStreams, seekTo, size, fps, rotate, forceColorspace, ffmpegHwaccel }: {
   path: string,
   videoStreamIndex?: number | undefined,
-  audioStreamIndexes: number[],
+  audioStreams: AudioStreamInfo[],
   seekTo: number,
   size?: number | undefined,
   fps?: number | undefined,
@@ -749,18 +716,24 @@ export function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIn
       graph.push(`[0:${videoStreamIndex}]${videoFiltersStr}[video]`);
     }
 
-    if (audioStreamIndexes.length > 0) {
-      if (audioStreamIndexes.length > 1) {
-        const resampledStr = audioStreamIndexes.map((i) => `[resampled${i}]`).join('');
-        const weightsStr = audioStreamIndexes.map(() => '1').join(' ');
+    if (audioStreams.length > 0) {
+      // some streams have a channel layout that ffmpeg cannot resample or downmix, so relabel it first
+      const getAudioFilters = (stream: AudioStreamInfo, rest: string[]) => {
+        const filters = [getFixChannelLayoutFilter(stream), ...rest].filter((filter) => filter != null);
+        return filters.length > 0 ? filters.join(',') : 'anull';
+      };
+
+      if (audioStreams.length > 1) {
+        const resampledStr = audioStreams.map(({ index }) => `[resampled${index}]`).join('');
+        const weightsStr = audioStreams.map(() => '1').join(' ');
         graph.push(
           // First resample because else we get the lowest sample rate
-          ...audioStreamIndexes.map((i) => `[0:${i}]aresample=44100[resampled${i}]`),
+          ...audioStreams.map((stream) => `[0:${stream.index}]${getAudioFilters(stream, ['aresample=44100'])}[resampled${stream.index}]`),
           // now mix all audio channels together
-          `${resampledStr}amix=inputs=${audioStreamIndexes.length}:duration=longest:weights=${weightsStr}:normalize=0:dropout_transition=2[audio]`,
+          `${resampledStr}amix=inputs=${audioStreams.length}:duration=longest:weights=${weightsStr}:normalize=0:dropout_transition=2[audio]`,
         );
       } else {
-        graph.push(`[0:${audioStreamIndexes[0]}]anull[audio]`);
+        graph.push(`[0:${audioStreams[0]!.index}]${getAudioFilters(audioStreams[0]!, [])}[audio]`);
       }
     }
 
@@ -812,7 +785,7 @@ export function createMediaSourceProcess({ path, videoStreamIndex, audioStreamIn
         '-g', '1', // reduces latency and buffering
       ] : ['-vn']),
 
-      ...(audioStreamIndexes.length > 0 ? [
+      ...(audioStreams.length > 0 ? [
         '-map', '[audio]',
         '-ac', '2', '-c:a', 'aac', '-b:a', '128k',
       ] : ['-an']),

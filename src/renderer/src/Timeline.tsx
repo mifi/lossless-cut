@@ -1,4 +1,4 @@
-import type { MutableRefObject, CSSProperties, WheelEventHandler, MouseEventHandler } from 'react';
+import type { RefObject, CSSProperties, WheelEventHandler, MouseEventHandler } from 'react';
 import { memo, useRef, useMemo, useCallback, useEffect } from 'react';
 import { motion, useMotionValue, useSpring } from 'motion/react';
 import debounce from 'lodash/debounce';
@@ -19,13 +19,15 @@ import type { Frame } from './ffmpeg';
 import type { FormatTimecode, InverseCutSegment, OverviewWaveform, RenderableWaveform, WaveformSlice, StateSegment, Thumbnail } from './types';
 import Button from './components/Button';
 import type { UseSegments } from './hooks/useSegments';
-import { keyMap } from './hooks/useTimelineScroll';
+import { keyMap } from './timelineWheel';
 import { calculateTimelinePercent as calculateTimelinePercent2, calculateTimelinePos } from './util';
 
 
 type CalculateTimelinePercent = (time: number) => string | undefined;
 
 const currentTimeWidth = 1;
+// contrasting outline, so that the cursor/keyframes are visible on top of any segment color, in both light and dark mode #1199
+const outlineShadow = '0 0 0 1px var(--gray-1)';
 
 // eslint-disable-next-line react/display-name
 const Waveform = memo(({ waveform, calculateTimelinePercent, fileDurationNonZero, darkMode }: {
@@ -77,7 +79,7 @@ const CommandedTime = memo(({ commandedTimePercent }: { commandedTimePercent: st
   return (
     <>
       <FaCaretDown style={{ ...commonStyle, top: 0, color, fontSize: 14, marginLeft: -7, marginTop: -6 }} />
-      <div style={{ ...commonStyle, bottom: 0, top: 0, backgroundColor: color, width: currentTimeWidth }} />
+      <div style={{ ...commonStyle, bottom: 0, top: 0, backgroundColor: color, width: currentTimeWidth, boxShadow: outlineShadow }} />
       <FaCaretUp style={{ ...commonStyle, bottom: 0, color, fontSize: 14, marginLeft: -7, marginBottom: -5 }} />
     </>
   );
@@ -147,7 +149,7 @@ function Timeline({
   playing: boolean,
   isFileOpened: boolean,
   onWheel: WheelEventHandler,
-  commandedTimeRef: MutableRefObject<number>,
+  commandedTimeRef: RefObject<number>,
   goToTimecode: () => void,
   darkMode: boolean,
   setCutTime: UseSegments['setCutTime'],
@@ -159,6 +161,7 @@ function Timeline({
 
   const timelineScrollerRef = useRef<HTMLDivElement>(null);
   const timelineScrollerSkipEventRef = useRef<boolean>(false);
+  // eslint-disable-next-line @eslint-react/naming-convention-ref-name -- TODO fix (new rule in @mifi/lint-config)
   const timelineScrollerSkipEventDebounce = useRef<() => void>(undefined);
   const timelineWrapperRef = useRef<HTMLDivElement>(null);
 
@@ -178,12 +181,12 @@ function Timeline({
     // https://github.com/mifi/lossless-cut/issues/676
     const pos = calculateTimelinePos(relevantTime, fileDurationNonZero);
     // eslint-disable-next-line react-hooks/refs
-    if (pos != null && timelineScrollerRef.current) return pos * zoom * timelineScrollerRef.current!.offsetWidth;
+    if (pos != null && timelineScrollerRef.current) return pos * zoom * timelineScrollerRef.current.offsetWidth;
     return undefined;
   }, [fileDurationNonZero, relevantTime, zoom]);
 
   const calcZoomWindowStartTime = useCallback(() => (timelineScrollerRef.current
-    ? (timelineScrollerRef.current.scrollLeft / (timelineScrollerRef.current!.offsetWidth * zoom)) * fileDurationNonZero
+    ? (timelineScrollerRef.current.scrollLeft / (timelineScrollerRef.current.offsetWidth * zoom)) * fileDurationNonZero
     : 0), [fileDurationNonZero, zoom]);
 
   // const zoomWindowStartTime = calcZoomWindowStartTime(duration, zoom);
@@ -317,7 +320,7 @@ function Timeline({
       const mouseDragTimelinePos = getMouseTimelinePos(e2);
       seekAbs(mouseDragTimelinePos);
       try {
-        // eslint-disable-next-line unicorn/prefer-switch
+        // eslint-disable-next-line unicorn-js/prefer-switch
         if (resizingSegmentRef.current?.operation === 'start') {
           setCutTime('start', mouseDragTimelinePos);
         } else if (resizingSegmentRef?.current?.operation === 'end') {
@@ -365,7 +368,7 @@ function Timeline({
   }, [onGenerateOverviewWaveformClick]);
 
   return (
-    // eslint-disable-next-line jsx-a11y/no-static-element-interactions,jsx-a11y/mouse-events-have-key-events
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <div
       className="no-user-select"
       style={{ position: 'relative', borderTop: '1px solid var(--gray-7)', borderBottom: '1px solid var(--gray-7)' }}
@@ -447,11 +450,11 @@ function Timeline({
           })}
 
           {shouldShowKeyframes && !areKeyframesTooClose && keyFramesInZoomWindow.map((f) => (
-            <div key={f.time} style={{ position: 'absolute', top: 0, bottom: 0, left: `${(f.time / fileDurationNonZero) * 100}%`, marginLeft: -1, width: 1, background: 'var(--gray-10)', pointerEvents: 'none' }} />
+            <div key={f.time} style={{ position: 'absolute', top: 0, bottom: 0, left: `${(f.time / fileDurationNonZero) * 100}%`, marginLeft: -1, width: 1, background: 'var(--gray-10)', boxShadow: '1px 0 0 var(--gray-1)', pointerEvents: 'none' }} />
           ))}
 
           {currentTimePercent !== undefined && (
-            <motion.div transition={springAnimation} animate={{ left: currentTimePercent }} style={{ position: 'absolute', bottom: 0, top: 0, backgroundColor: 'var(--gray-12)', width: currentTimeWidth, pointerEvents: 'none' }} />
+            <motion.div transition={springAnimation} animate={{ left: currentTimePercent }} style={{ position: 'absolute', bottom: 0, top: 0, backgroundColor: 'var(--gray-12)', width: currentTimeWidth, boxShadow: outlineShadow, pointerEvents: 'none' }} />
           )}
           {commandedTimePercent !== undefined && (
             <CommandedTime commandedTimePercent={commandedTimePercent} />

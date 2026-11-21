@@ -7,10 +7,10 @@ import timers from 'node:timers/promises';
 
 
 const losslessCutExePath = process.argv[2];
-assert(losslessCutExePath);
+assert.ok(losslessCutExePath);
 const screenshotDevice = process.argv[3];
 const screenshotOutPath = process.argv[4];
-assert(screenshotOutPath);
+assert.ok(screenshotOutPath);
 
 
 const port = 8081;
@@ -26,7 +26,7 @@ const ps = execa(losslessCutExePath, losslessCutArgs, { forceKillAfterDelay: 100
 console.log('Started', losslessCutExePath);
 
 // eslint-disable-next-line unicorn/prefer-top-level-await
-ps.catch((err) => console.error(err));
+ps.catch((err: unknown) => console.error(err));
 
 const client = ky.extend({ baseUrl: `http://127.0.0.1:${port}` });
 
@@ -38,7 +38,7 @@ async function captureScreenshot(outPath: string) {
     console.log(stderr);
   }
 
-  assert(screenshotDevice);
+  assert.ok(screenshotDevice);
 
   await execa('ffmpeg', [
     ...(platform === 'darwin' ? ['-r', '30', '-pix_fmt', 'uyvy422', '-f', 'avfoundation'] : []),
@@ -55,7 +55,7 @@ try {
     retry: { backoffLimit: 5000, limit: 10 },
     hooks: { beforeRequest: [() => { console.log('attempt'); }] },
   }).text();
-  assert(resp.length > 0);
+  assert.ok(resp.length > 0);
 
   console.log('Waiting for UI to settle');
 

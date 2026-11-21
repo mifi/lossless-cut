@@ -51,7 +51,6 @@ function ExportModeButton({ selectedSegments, style }: { selectedSegments: unkno
   ], [effectiveExportMode, selectedSegments.length]);
 
   return (
-    // eslint-disable-next-line react/jsx-props-no-spreading
     <Select
       style={style}
       value={effectiveExportMode}

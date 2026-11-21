@@ -1,6 +1,10 @@
 name: Test
 
-on: [push, pull_request]
+on:
+  # Only master: on a branch with a pull request, a push would otherwise run the tests twice (once for push, once for pull_request)
+  push:
+    branches: [master]
+  pull_request:
 
 jobs:
   test:

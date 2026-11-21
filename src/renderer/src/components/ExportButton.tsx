@@ -37,7 +37,7 @@ const ExportButton = forwardRef<HTMLButtonElement, Props>(({
     title = t('Export {{ num }} segments', { num: segmentsToExport.length });
   }
 
-  const text = autoMerge && segmentsToExport && segmentsToExport.length > 1 ? t('Export+merge') : t('Export');
+  const text = t(autoMerge && segmentsToExport && segmentsToExport.length > 1 ? 'Export+merge' : 'Export');
 
   return (
     <button

@@ -87,7 +87,7 @@ if (unsafeLicenses.length > 0) {
 
   for (const l of unsafeLicenses) {
     console.error(l.value);
-    console.error(`${Object.keys(l.children).map((v) => `- ${v}`).join('\n')}`);
+    console.error(Object.keys(l.children).map((v) => `- ${v}`).join('\n'));
     console.error();
   }
   process.exitCode = 1;

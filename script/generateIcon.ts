@@ -10,6 +10,7 @@ const renderPng = (from: string, width: number, height: number) => sharp(from)
   })
   .toBuffer();
 
+// eslint-disable-next-line unicorn-js/no-unnecessary-parameters -- TODO fix (new rule in @mifi/lint-config)
 const svg2png = async (from: string, to: string, width: number, height: number) => (
   writeFile(to, await renderPng(from, width, height))
 );

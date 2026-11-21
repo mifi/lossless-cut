@@ -11,6 +11,7 @@ If the video exports successfully without any error from LosslessCut, but it doe
 - Select a different **output format** (`matroska` and `mov` support a lot of codecs.)
 - Try the same operation with a different file (same codec or different codec) and see whether it's a problem with just that one particular file.
 - Enable the **Experimental Flag** under **Settings** before trying again.
+- If your files are stored in a cloud-synced folder (e.g. iCloud Drive, OneDrive, Google Drive, Dropbox, Proton Drive) or on a network drive, try copying them to a local folder (e.g. Desktop) and also export to a local folder. Cloud sync clients may serve incomplete (on-demand) files or interfere with files while they are being written.
 
 ## Cutting times are not accurate
 
@@ -19,16 +20,27 @@ Each segment's *start cut time* will normally (but not always) be "rounded" to t
 - Your mileage may vary when it comes to *Keyframe cut mode*. Most common video files need *Keyframe cut* enabled, but you may need to try both values. [ffmpeg](https://trac.ffmpeg.org/wiki/Seeking) also has documentation about these two seek/cut modes. In `ffmpeg`, *Keyframe cut* corresponds to `-ss` *before* `-i`.
 - Try to change `avoid_negative_ts` (in export options).
 - Try also to set the **start**-cutpoint a few frames **before or after** the nearest keyframe (may also solve audio sync issues).
+- For **audio-only** files (e.g. `.m4a`) where the cut starts several seconds early with *Keyframe cut mode* on, and late with it off, the file probably has a sync sample table that only flags some audio packets as keyframes. Disable *Keyframe cut mode*, or first export the whole file without cutting (this remuxes it and drops the table) and then cut the exported file.
 - You may try to enable the experimental "Smart cut" mode to allow cutting between keyframes. However it will not work for many files.
 - Currently, the only way to review the exported file (to check the actual cutpoints) is to run the export (possibly with only one segment enabled to speed up) and then manually check the output file. See also [#1887](https://github.com/mifi/lossless-cut/issues/1887)
+
+### Export starts a few seconds before my cut point
+
+This is expected with lossless cutting, and it applies to both *Separate files* and *Merge cuts*. Video is stored as *keyframes* (complete pictures) followed by frames that only store the changes since the previous frame. A lossless cut cannot start on a non-keyframe, so with *Keyframe cut mode* enabled (the default), LosslessCut starts the cut from the nearest keyframe **before** your start cutpoint. If the file has few keyframes (e.g. one every 5-10 seconds), the export may start several seconds early.
+
+What you can do:
+- **Place your start cutpoints on (or a few frames after) a keyframe.** Keyframes are shown as vertical lines on the timeline (zoom in to see them). Use the *Seek previous keyframe* / *Seek next keyframe* buttons in the bottom bar, the keyboard shortcuts <kbd>ALT</kbd>+<kbd>←</kbd> / <kbd>ALT</kbd>+<kbd>→</kbd>, or hold <kbd>SHIFT</kbd> while scrolling the mouse wheel over the timeline to jump between keyframes, then press <kbd>I</kbd>. To move existing segments, use *Segments* -> *Align segment times to keyframes*. If the export still starts from the keyframe before, see [Cut starts from wrong keyframe](#cut-starts-from-wrong-keyframe).
+- **Try Smart cut** (*Smart cut (experimental)* in the *Export options* dialog). It re-encodes only the part from the cutpoint to the next keyframe. It does not work for all files, see [Smart cut not working](#smart-cut-not-working).
+- **Re-encode** the file (or just that part) with a different tool. Frame accurate cuts at any position are not possible without re-encoding.
+
+**Why not cut from the nearest keyframe *after* my cutpoint?** Because then the export would be missing the part between your cutpoint and that keyframe, which is content you wanted to keep. Starting a little early is the safer choice. If you prefer that, you can place the start cutpoint on (or just after) the next keyframe yourself.
 
 ### Cut starts from wrong keyframe
 
 For some files, when you place segment start cutpoints at keyframes, and you export, it will instead cut from the keyframe **before** the keyframe that you wanted. This is because with some videos, FFmpeg struggles to find the nearest previous keyframe, see [#1216](https://github.com/mifi/lossless-cut/issues/1216). To workaround this, you can try to shift your segments' **start**-cutpoints forward by a few frames, so that ffmpeg correctly cuts from the *previous* keyframe.
 
-- Menu: "Edit" -> "Segments" -> "Shift all segments on timeline"
-- Enter `00:00:00.200` (or a larger value if it doesn't help)
-- When asked about Start or End timestamps, Select **Start**
+- Menu: "Segments" -> "Shift all segments on timeline"
+- Enter `00:00:00.200` in *Shift start by* (or a larger value if it doesn't help) and leave *Shift end by* empty
 
 This will effectively shift all start times of segments by 6 frames (`6/30=0.2` for 30fps video). Alternatively, to always shift start times, you can enable the Export Option "Shift all start times" by +1, +2, +3 frames or so.
 
@@ -36,7 +48,7 @@ In some videos (like VP9 from `yt-dlp`), some start keyframes are being ignored 
 
 ## Start cut is ignored
 
-Check whether your video has enough keyframes before your cutpoint. You can see keyframes on the timeline as vertical lines. You may have to zoom in to see them. If there are no keyframes, then it is most likely not possible to cut your file at the desired cutpoints losslessly. You can try to enable the Smart Cut mode, alternatively you may try to disable "keyframe cut" mode. See also (#2864)(https://github.com/mifi/lossless-cut/issues/2864).
+Check whether your video has enough keyframes before your cutpoint. You can see keyframes on the timeline as vertical lines. You may have to zoom in to see them. If there are no keyframes, then it is most likely not possible to cut your file at the desired cutpoints losslessly. You can try to enable the Smart Cut mode, alternatively you may try to disable "keyframe cut" mode. See also [#2864](https://github.com/mifi/lossless-cut/issues/2864).
 
 ## Cut file has same length as input
 
@@ -46,9 +58,9 @@ If you are trying to cut a FLAC file but your output has the same duration as in
 
 ## Merge / concat results in corrupt or broken parts
 
-This can happen when trying to merge files that are not compatible. Make sure they have the exact same codec parameters before merging. If you are sure they are the same, you can try to first running each of the files separately through LosslessCut before merging the outputs:
+Typical symptoms: the merged file plays only the first part, later parts have only audio (no video), or are corrupt/glitchy. This can happen when trying to merge files that are not compatible. Make sure they have the exact same codec parameters (codec, resolution, pixel format, profile, frame rate, audio format, sample rate, channels etc.) before merging. Enable *Check compatibility* in the *Merge/concatenate files* dialog to have LosslessCut warn you about many (but not all) mismatches. Files from the same camera/app with the same settings usually work. If you are sure they are the same, you can try to first running each of the files separately through LosslessCut before merging the outputs:
 1. First open each file separately and just export without cutting anything, but before exporting
-  - change the format to `mp4` is [known to fix certain issues like `Non-monotonous DTS in output stream`](https://github.com/mifi/lossless-cut/issues/1713#issuecomment-1726325218)
+  - change the format to `mp4`, which can fix certain issues like `Non-monotonous DTS in output stream`
   - change the format to TS (`mpegts`) is [known to give the files a common timebase](https://github.com/mifi/lossless-cut/issues/455), which sometimes makes it possible to merge them, or fixes incorrect output duration, sped up or slowed down segments.
 3. Then merge the resulting exported files.
 
@@ -76,7 +88,9 @@ If you have a problem playing back a particular file inside LosslessCut (**befor
 
 ### File not supported
 
-If you're getting a message saying that the file must be converted to a supported format, this means that LosslessCut's built-in player isn't able to play back that particular file. As a work-around LosslessCut has an FFmpeg-assisted software decoding playback which can be activated from the menu: *File* -> *Convert to supported format*.
+If you're getting a message saying that the file must be converted to a supported format, this means that LosslessCut's built-in player isn't able to play back that particular file. As a work-around LosslessCut has an FFmpeg-assisted software decoding playback which can be activated from the menu: *File* -> *Convert to supported format*. This is only used for the preview, **your export is still made losslessly from the original file.**
+
+By default LosslessCut will do this automatically when you open an unsupported file. You can turn this off in Settings (*Show advanced settings*): *Try to automatically convert to supported format when opening unsupported file*.
 
 ### Preview is completely black/blank, corrupted or just won't play back
 
@@ -90,6 +104,10 @@ LosslessCut uses the same video player that is used by Chrome. You can try to op
 ### Low quality / blurry playback
 
 Some formats or codecs are not natively supported by LosslessCut's built in player, and LosslessCut will automatically use FFmpeg-assisted software decoding to playback in a lower quality. For better playback you may convert these files to a different format from the menu: *File -> Convert to supported format*. Note that this will not affect the output from LosslessCut, it is only used for playback, see [#88](https://github.com/mifi/lossless-cut/issues/88).
+
+### Playback stutters or is slow
+
+LosslessCut's player is the same as Chrome's (Chromium), so files that Chrome cannot play smoothly will have the same problem. If the *FFmpeg-assisted playback* label is shown on top of the video, the preview is being decoded by FFmpeg in software, which can be slow for large or high resolution files. Click the quality label next to it to switch between `HD`, `SD` (lower resolution and frame rate, faster to decode) and `OG` (original resolution and frame rate, slowest). For a smoother preview, use *File* -> *Convert to supported format* and choose one of the slower (encode) options. None of this affects the export. For H265/HEVC files, also try toggling *Enable HEVC / H265 hardware decoding* in Settings (*Show advanced settings*), and see [Windows specific issues](#windows-specific-issues) if you have an NVIDIA GPU.
 
 ### Auto convert to supported format on certain timestamp
 
@@ -111,7 +129,9 @@ If you have an issue with the Snap or Flatpak version of LosslessCut, please try
   - Try [removing the AppContainer restrictions](https://github.com/mifi/lossless-cut/discussions/2043#discussioncomment-14909957) on LosslessCut.
   - Disable your anti-virus or whitelist LosslessCut. See [#18](https://github.com/mifi/lossless-cut/issues/18), [#1114](https://github.com/mifi/lossless-cut/issues/1114). 
 - Video preview playback slow, stuttering, low FPS, flickering (NVIDIA)
-  - See [#922](https://github.com/mifi/lossless-cut/issues/922) [#1904](https://github.com/mifi/lossless-cut/issues/1904) [#1915](https://github.com/mifi/lossless-cut/issues/1915) [#922](https://github.com/mifi/lossless-cut/issues/922) [#2083](https://github.com/mifi/lossless-cut/issues/2083) [#2556](https://github.com/mifi/lossless-cut/issues/2556)
+  - Try to turn off *Max Frame Rate* and *Background Application Max Frame Rate* in NVIDIA Control Panel → Manage 3D settings (either globally, or just for LosslessCut under Program Settings).
+  - For flickering, try to turn off *Antialiasing - FXAA* and *Multi-Frame Sampled AA (MFAA)* for LosslessCut in the same place.
+  - See [#922](https://github.com/mifi/lossless-cut/issues/922) [#1904](https://github.com/mifi/lossless-cut/issues/1904) [#1915](https://github.com/mifi/lossless-cut/issues/1915) [#2083](https://github.com/mifi/lossless-cut/issues/2083) [#2556](https://github.com/mifi/lossless-cut/issues/2556)
 - Why no `.exe`/`.zip`/`.appx` downloads?
   - I decided to stop distributing exe/zip and instead just [7zip](https://github.com/mifi/lossless-cut/releases/latest/download/LosslessCut-win-x64.7z), due to the [problems](https://github.com/mifi/lossless-cut/issues/1072#issuecomment-1066026323) that the (self-extracting) exe was causing and the large size of `.zip` files. `appx` is unsigned and [**does not work**](https://github.com/mifi/lossless-cut/issues/337).
 - I'm getting a `KERNEL32.dll` error
@@ -123,7 +143,7 @@ If you have an issue with the Snap or Flatpak version of LosslessCut, please try
 
 ## Undo/redo
 
-Undo/redo segments doesn't work through the top menu. This is a [known issue](https://github.com/mifi/lossless-cut/issues/610) that I don't know how to fix. Please use the keyboard shortcuts instead (<kbd>CTRL</kbd>/<kbd>CMD</kbd>+<kbd>Z</kbd> and <kbd>CTRL</kbd>+<kbd>Y</kbd> / <kbd>CMD</kbd>+<kbd>SHIFT</kbd>+<kbd>Z</kbd>).
+Undo/redo segments doesn't work through the top menu. This is a [known issue](https://github.com/mifi/lossless-cut/issues/610) that I don't know how to fix. Please use the keyboard shortcuts instead (<kbd>CTRL</kbd>/<kbd>CMD</kbd>+<kbd>Z</kbd> and <kbd>CTRL</kbd>/<kbd>CMD</kbd>+<kbd>SHIFT</kbd>+<kbd>Z</kbd>).
 
 ## MP4/MOV extension
 

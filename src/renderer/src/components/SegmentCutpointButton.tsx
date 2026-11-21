@@ -25,7 +25,7 @@ const SegmentCutpointButton = ({ currentCutSeg, side, Icon, onClick, title, styl
   return (
     <Icon
       size={13}
-      title={title as string}
+      title={title!}
       role="button"
       style={{ flexShrink: 0, color: 'white', padding: start ? '4px 4px 4px 2px' : '4px 2px 4px 4px', borderLeft: start ? border : undefined, borderRight: !start ? border : undefined, background: backgroundColor, borderRadius: 6, ...style }}
       onClick={onClick}

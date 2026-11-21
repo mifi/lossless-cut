@@ -65,6 +65,7 @@ import {
   getFfCommandLine,
 } from './ffmpeg';
 import { shouldCopyStreamByDefault, getAudioStreams, getRealVideoStreams, isAudioDefinitelyNotSupported, willPlayerProperlyHandleVideo, doesPlayerSupportHevcPlayback, getSubtitleStreams, enableVideoTrack, enableAudioTrack, canHtml5PlayerPlayStreams, isMatroska } from './util/streams';
+import { needsHvc1Tag } from './util/metadata';
 import { exportEdlFile, readEdlFile, loadLlcProject, askForEdlImport } from './edlStore';
 import { formatYouTube, getFrameCountRaw, formatTsvHuman } from './edlFormats';
 import {
@@ -84,6 +85,7 @@ import {
   getOutFileExtension,
   getSuffixedOutPath,
   calculateTimelinePercent,
+  getFileDir,
 } from './util';
 import getSwal, { errorToast, showPlaybackFailedMessage } from './swal';
 import { adjustRate } from './util/rate-calculator';
@@ -98,8 +100,9 @@ import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './uti
 import BigWaveform from './components/BigWaveform';
 
 import type { BatchFile, Chapter, EdlExportType, EdlFileType, EdlImportType, FfmpegCommandLog, FilesMeta, FileStats, ParamsByFile, PlaybackMode, SegmentBase, SegmentColorIndex, SegmentTags, StateSegment, TunerType } from './types';
-import { goToTimecodeDirectArgsSchema, openFilesActionArgsSchema } from './types';
+import { goToTimecodeDirectArgsSchema } from './types';
 import type { CaptureFormat, KeyboardAction, ApiActionRequest } from '../../common/types.js';
+import { openFilesActionArgsSchema } from '../../common/types.js';
 import type { FFprobeChapter, FFprobeStream } from '../../common/ffprobe.js';
 import { parseFfprobeDuration } from '../../common/util.js';
 
@@ -122,16 +125,16 @@ import WhatsNew from './components/WhatsNew';
 import mainApi from './mainApi.js';
 import type { AppEvent } from '../../main/index.js';
 import { appName } from '../../main/common.js';
+import { parse as parsePath, join as pathJoin, basename, dirname } from './util/path';
 
 const { ipcRenderer, webUtils } = window.require('electron');
 const { lstat } = window.require('node:fs/promises');
-const { parse: parsePath, join: pathJoin, basename, dirname } = window.require('node:path');
 const { hasDisabledNetworking, pathToFileURL, lossyMode, isLinux } = window.require('@electron/remote').require('./index.js');
 
 
 const hevcPlaybackSupportedPromise = doesPlayerSupportHevcPlayback();
 // eslint-disable-next-line unicorn/prefer-top-level-await
-hevcPlaybackSupportedPromise.catch((err) => console.error(err));
+hevcPlaybackSupportedPromise.catch((err: unknown) => console.error(err));
 
 function emitEvent(appEvent: AppEvent) {
   ipcRenderer.send('appEvent', appEvent satisfies AppEvent);
@@ -190,8 +193,8 @@ function App() {
   const [selectedBatchFiles, setSelectedBatchFiles] = useState<string[]>([]);
 
   const allUserSettings = useUserSettingsRoot();
-  const { captureFormat, keyframeCut, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, avoidNegativeTs, autoMerge, timecodeFormat, invertCutSegments, autoExportExtraStreams, askBeforeClose, enableImportChapters, enableAskForFileOpenAction, playbackVolume, autoSaveProjectFile, wheelSensitivity, waveformHeight, invertTimelineScroll, language, ffmpegExperimental, hideNotifications, hideOsNotifications, autoLoadTimecode, autoDeleteMergedSegments, exportConfirmEnabled, segmentsToChapters, simpleMode, cutFileTemplate, cutMergedFileTemplate, mergedFileTemplate, keyboardSeekAccFactor, keyboardNormalSeekSpeed, keyboardSeekSpeed2, keyboardSeekSpeed3, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, outFormatLocked, safeOutputFileName, enableAutoHtml5ify, segmentsToChaptersOnly, keyBindings, enableSmartCut, customFfPath, storeProjectInWorkingDir, enableOverwriteOutput, mouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, captureFrameMethod, captureFrameQuality, captureFrameFileNameFormat, enableNativeHevc, cleanupChoices, darkMode, preferStrongColors, outputFileNameMinZeroPadding, cutFromAdjustmentFrames, cutToAdjustmentFrames, waveformMode: waveformModePreference, thumbnailsEnabled, keyframesEnabled, reducedMotion, ffmpegHwaccel } = allUserSettings.settings;
-  const { setCaptureFormat, setCustomOutDir, setKeyframeCut, setPlaybackVolume, setExportConfirmEnabled, setSimpleMode, setOutFormatLocked, setSafeOutputFileName, setKeyBindings, resetKeyBindings, setStoreProjectInWorkingDir, setCleanupChoices, toggleDarkMode, setWaveformMode, setThumbnailsEnabled, setKeyframesEnabled, prefersReducedMotion, customOutDir } = allUserSettings;
+  const { captureFormat, keyframeCut, preserveMetadata, preserveMetadataOnMerge, preserveMovData, preserveChapters, movFastStart, avoidNegativeTs, autoMerge, timecodeFormat, invertCutSegments, autoExportExtraStreams, askBeforeClose, enableImportChapters, enableAskForFileOpenAction, playbackVolume, autoSaveProjectFile, wheelSensitivity, waveformHeight, invertTimelineScroll, language, ffmpegExperimental, hideNotifications, hideOsNotifications, autoLoadTimecode, autoDeleteMergedSegments, exportConfirmEnabled, segmentsToChapters, simpleMode, cutFileTemplate, cutMergedFileTemplate, mergedFileTemplate, keyboardSeekAccFactor, keyboardNormalSeekSpeed, keyboardSeekSpeed2, keyboardSeekSpeed3, treatInputFileModifiedTimeAsStart, treatOutputFileModifiedTimeAsStart, outFormatLocked, safeOutputFileName, enableAutoHtml5ify, segmentsToChaptersOnly, keyBindings, enableSmartCut, customFfPath, storeProjectInWorkingDir, enableOverwriteOutput, mouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, captureFrameMethod, captureFrameQuality, captureFrameFileNameFormat, enableNativeHevc, cleanupChoices, preferStrongColors, outputFileNameMinZeroPadding, cutFromAdjustmentFrames, cutToAdjustmentFrames, waveformMode: waveformModePreference, thumbnailsEnabled, keyframesEnabled, reducedMotion, ffmpegHwaccel, videoFit } = allUserSettings.settings;
+  const { setCaptureFormat, setCustomOutDir, setKeyframeCut, setPlaybackVolume, setExportConfirmEnabled, setSimpleMode, setOutFormatLocked, setSafeOutputFileName, setKeyBindings, resetKeyBindings, setStoreProjectInWorkingDir, setCleanupChoices, darkMode, toggleDarkMode, setWaveformMode, setThumbnailsEnabled, setKeyframesEnabled, prefersReducedMotion, customOutDir } = allUserSettings;
 
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(!simpleMode);
 
@@ -201,6 +204,8 @@ function App() {
 
   // Note that each action may be multiple key bindings and this will only be the first binding for each action
   const keyBindingByAction = useMemo(() => Object.fromEntries(keyBindings.map((binding) => [binding.action, binding])), [keyBindings]);
+
+  const mainVideoStyle = useMemo<CSSProperties>(() => ({ ...videoStyle, objectFit: videoFit }), [videoFit]);
 
   const { working, setWorking, workingRef, abortWorking } = useLoading();
   const { videoRef, videoContainerRef, playbackRate, setPlaybackRate, outputPlaybackRate, setOutputPlaybackRate, commandedTime, seekAbs, playingRef, getRelevantTime, setPlaying, onSeeked, relevantTime, onStartPlaying, setCommandedTime, setOutputPlaybackRateState, commandedTimeRef, onStopPlaying, onVideoAbort, playerTime, setPlayerTime, playbackMode, setPlaybackMode, playbackModeRef, playing, play, pause, seekRel } = useVideo({ filePath });
@@ -231,7 +236,7 @@ function App() {
     ipcRenderer.send('setLanguage', language);
   }, [language]);
 
-  const isFileOpened = !!filePath;
+  const isFileOpened = Boolean(filePath);
 
   const [hoveringTime, setHoveringTime] = useState<number>();
 
@@ -244,6 +249,7 @@ function App() {
     }
   }, [detectedFileFormat, outFormatLocked, setFileFormat, setOutFormatLocked]);
 
+  // eslint-disable-next-line @eslint-react/naming-convention-ref-name -- TODO fix (new rule in @mifi/lint-config)
   const previousPlaybackVolume = useRef(playbackVolume);
   const toggleMuted = useCallback(() => {
     setPlaybackVolume((volume) => {
@@ -275,7 +281,7 @@ function App() {
 
   const toggleExportConfirmEnabled = useCallback(() => setExportConfirmEnabled((v) => {
     const newVal = !v;
-    showNotification({ text: newVal ? i18n.t('Export options will be shown before exporting.') : i18n.t('Export options will not be shown before exporting.') });
+    showNotification({ text: i18n.t(newVal ? 'Export options will be shown before exporting.' : 'Export options will not be shown before exporting.') });
     return newVal;
   }), [setExportConfirmEnabled, showNotification]);
 
@@ -444,7 +450,7 @@ function App() {
   }), [showNotification, setKeyframeCut]);
 
   const toggleSimpleMode = useCallback(() => setSimpleMode((v) => {
-    showNotification({ text: v ? i18n.t('Advanced view has been enabled. You will now also see non-essential buttons and functions') : i18n.t('Advanced view disabled. You will now see only the most essential buttons and functions') });
+    showNotification({ text: i18n.t(v ? 'Advanced view has been enabled. You will now also see non-essential buttons and functions' : 'Advanced view disabled. You will now see only the most essential buttons and functions') });
     return !v;
   }), [setSimpleMode, showNotification]);
 
@@ -487,7 +493,7 @@ function App() {
   const segColorsContext = useMemo<SegColorsContextType>(() => ({
     getSegColor: (seg: SegmentColorIndex | undefined) => {
       const color = getSegColor(seg);
-      return preferStrongColors ? color.desaturate(0.2) : color.desaturate(0.6);
+      return color.desaturate(preferStrongColors ? 0.2 : 0.6);
     },
     nextSegColorIndex: isInitialSegment(cutSegments) ? segColorCounter : segColorCounter + 1,
   }), [cutSegments, preferStrongColors, segColorCounter]);
@@ -532,21 +538,20 @@ function App() {
 
   const allFilesMeta = useMemo(() => ({
     ...externalFilesMeta,
-    ...(filePath && mainFileMeta != null ? { [filePath]: mainFileMeta.ffprobeMeta } : {}),
+    ...(filePath && mainFileMeta != null && { [filePath]: mainFileMeta.ffprobeMeta }),
   }), [externalFilesMeta, filePath, mainFileMeta]);
 
   // total number of streams for ALL files
   const numStreamsTotal = Object.values(allFilesMeta).flatMap(({ streams }) => streams).length;
 
-  const hasAudio = !!mainAudioStream;
-  const hasVideo = !!mainVideoStream;
+  const hasAudio = Boolean(mainAudioStream);
+  const hasVideo = Boolean(mainVideoStream);
 
   const forceBigWaveform = !hasVideo && hasAudio;
 
   const toggleWaveformMode = useCallback(() => {
     if (forceBigWaveform) return;
 
-    // eslint-disable-next-line unicorn/prefer-switch
     if (waveformModePreference === 'waveform') {
       setWaveformMode('big-waveform');
     } else if (waveformModePreference === 'big-waveform') {
@@ -624,7 +629,7 @@ function App() {
 
   const shouldShowPlaybackStreamSelector = videoStreams.length > 0 || audioStreams.length > 0 || (subtitleStreams.length > 0 && !compatPlayerEnabled);
 
-  const usingPreviewFile = !!previewFilePath;
+  const usingPreviewFile = Boolean(previewFilePath);
   const effectiveFilePath = previewFilePath || filePath;
   useEffect(() => {
     if (!effectiveFilePath) return undefined;
@@ -776,7 +781,7 @@ function App() {
     const firstSegmentAtCursorIndex = segmentsAtCursorIndexes[0];
     const playingSegment = firstSegmentAtCursorIndex != null ? cutSegments[firstSegmentAtCursorIndex] : undefined;
 
-    if (playbackModeRef.current != null && playingRef.current && playingSegment && playingSegment.end != null) {
+    if (playbackModeRef.current != null && playingRef.current && playingSegment?.end != null) {
       const nextAction = getPlaybackAction({ playbackMode: playbackModeRef.current, currentTime, playingSegment: { start: playingSegment.start, end: playingSegment.end } });
 
       const exit = () => {
@@ -843,7 +848,6 @@ function App() {
   }, []);
 
   const commonSettings = useMemo(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { keyBindings: _keyBindings, ...rest } = allUserSettings.settings;
     return { ...rest, ffmpegVersion: ffmpegInfo?.program_version.version };
   }, [allUserSettings.settings, ffmpegInfo?.program_version.version]);
@@ -1351,11 +1355,9 @@ function App() {
         setProgress(totalProgress / segments.length);
       };
 
-      // eslint-disable-next-line no-restricted-syntax
       for (const [index, segment] of segments.entries()) {
         const { start, end } = segment;
         invariant(filePath != null);
-        // eslint-disable-next-line no-await-in-loop
         lastOutPath = await captureFramesRange({ customOutDir, filePath, fps: detectedFps, fromTime: start, toTime: end, estimatedMaxNumFiles: captureFramesResponse.estimatedMaxNumFiles, captureFormat, quality: captureFrameQuality, filter: captureFramesResponse.filter, outputTimestamps: captureFrameFileNameFormat === 'timestamp', onProgress: (segmentProgress) => handleSegmentProgress(index, segmentProgress) });
       }
       if (!hideAllNotifications && lastOutPath != null) {
@@ -1583,8 +1585,7 @@ function App() {
     // Open .llc AND media referenced within
     if (isLlcProject) {
       console.log('Loading LLC project', path);
-      const project = await loadLlcProject(path);
-      const { mediaFileName } = project;
+      const { mediaFileName } = await loadLlcProject(path);
 
       console.log({ mediaFileName });
       if (!mediaFileName) return;
@@ -1615,8 +1616,7 @@ function App() {
 
   // todo merge with userOpenFiles?
   const batchOpenSingleFile = useCallback(async (path: string) => {
-    if (workingRef.current) return;
-    if (filePath === path) return;
+    if (workingRef.current || (filePath === path)) return;
     setWorking({ text: i18n.t('Loading file') });
     try {
       await withErrorHandling(async () => {
@@ -1688,11 +1688,11 @@ function App() {
   }, []);
 
   const extractAllStreams = useCallback(async () => {
-    if (!filePath) return;
-
-    if (!(await confirmDialog({ focusConfirm: true, description: t('Please confirm that you want to extract all tracks as separate files'), confirmButtonText: t('Extract all tracks') }))) return;
-
-    if (workingRef.current) return;
+    if (
+      !filePath
+      || !(await confirmDialog({ focusConfirm: true, description: t('Please confirm that you want to extract all tracks as separate files'), confirmButtonText: t('Extract all tracks') }))
+      || workingRef.current
+    ) return;
     try {
       setWorking({ text: i18n.t('Extracting all streams') });
       setStreamsSelectorShown(false);
@@ -1706,6 +1706,8 @@ function App() {
 
       if (err instanceof RefuseOverwriteError) {
         showRefuseToOverwrite();
+      } else if (err instanceof UserFacingError) {
+        errorToast(err.message);
       } else {
         errorToast(i18n.t('Failed to extract all streams'));
         console.error('Failed to extract all streams', err);
@@ -1784,6 +1786,8 @@ function App() {
     return fileMeta;
   }, [allFilesMeta, setCopyStreamIdsForPath]);
 
+  const hvc1NeededStreams = useMemo(() => copyFileStreams.flatMap(({ path, streamIds }) => (allFilesMeta[path]?.streams ?? []).filter((stream) => streamIds.includes(stream.index) && needsHvc1Tag({ stream, outFormat: fileFormat, customTag: paramsByFile.get(path)?.paramsByStream.get(stream.index)?.tag }))), [allFilesMeta, copyFileStreams, fileFormat, paramsByFile]);
+
   const updateStreamParams = useCallback<Parameters<typeof StreamsSelector>[0]['updateStreamParams']>((fileId, streamId, setter) => setParamsByFile(produce((draft) => {
     if (!draft.has(fileId)) draft.set(fileId, { metadata: {}, paramsByStream: new Map() });
     const fileMap = draft.get(fileId);
@@ -1813,7 +1817,7 @@ function App() {
     setBatchFiles((existingFiles) => {
       const mapPathsToFiles = (paths: string[]) => paths.map((path) => ({ path, name: basename(path) }));
       if (append) {
-        const newUniquePaths = newPaths.filter((newPath) => !existingFiles.some(({ path: existingPath }) => newPath === existingPath));
+        const newUniquePaths = newPaths.filter((newPath) => existingFiles.every(({ path: existingPath }) => newPath !== existingPath));
         const [firstNewUniquePath] = newUniquePaths;
         if (firstNewUniquePath == null) return existingFiles;
         setSelectedBatchFiles([firstNewUniquePath]);
@@ -1890,7 +1894,7 @@ function App() {
         const inputOptions: { open?: string, project?: string, tracks?: string, subtitles?: string, addToBatch?: string, mergeWithCurrentFile?: string } = {};
 
         if (newFilePaths.length === 1) {
-          inputOptions.open = isFileOpened ? i18n.t('Open the file instead of the current one') : i18n.t('Open the file');
+          inputOptions.open = i18n.t(isFileOpened ? 'Open the file instead of the current one' : 'Open the file');
         }
 
         if (isFileOpened && newFilePaths.length === 1) {
@@ -1977,12 +1981,16 @@ function App() {
 
   const showIncludeExternalStreamsDialog = useCallback(async () => {
     await withErrorHandling(async () => {
-      const { canceled, filePaths } = await showOpenDialog({ properties: ['openFile'], title: t('Include more tracks from other file') });
+      const { canceled, filePaths } = await showOpenDialog({
+        properties: ['openFile'],
+        title: t('Include more tracks from other file'),
+        ...(filePath != null && { defaultPath: dirname(filePath) }),
+      });
       const [firstFilePath] = filePaths;
       if (canceled || firstFilePath == null) return;
       await addStreamSourceFile(firstFilePath);
     }, i18n.t('Failed to include track'));
-  }, [addStreamSourceFile, t, withErrorHandling]);
+  }, [addStreamSourceFile, filePath, t, withErrorHandling]);
 
   const toggleFullscreenVideo = useCallback(async () => {
     if (!screenfull.isEnabled) {
@@ -2080,9 +2088,9 @@ function App() {
       selectSegmentsAtCursor,
       increaseRotation,
       goToTimecode: () => goToTimecode(),
-      seekBackwards: () => seekRelAccelerated(-1 * keyboardNormalSeekSpeed),
-      seekBackwards2: () => seekRelAccelerated(-1 * keyboardSeekSpeed2),
-      seekBackwards3: () => seekRelAccelerated(-1 * keyboardSeekSpeed3),
+      seekBackwards: () => seekRelAccelerated(-keyboardNormalSeekSpeed),
+      seekBackwards2: () => seekRelAccelerated(-keyboardSeekSpeed2),
+      seekBackwards3: () => seekRelAccelerated(-keyboardSeekSpeed3),
       seekForwards: () => seekRelAccelerated(keyboardNormalSeekSpeed),
       seekForwards2: () => seekRelAccelerated(keyboardSeekSpeed2),
       seekForwards3: () => seekRelAccelerated(keyboardSeekSpeed3),
@@ -2233,9 +2241,7 @@ function App() {
   }, [askBeforeClose, isFileOpened]);
 
   const extractSingleStream = useCallback(async (index: number) => {
-    if (!filePath) return;
-
-    if (workingRef.current) return;
+    if (!filePath || workingRef.current) return;
     try {
       setWorking({ text: i18n.t('Extracting track') });
       // setStreamsSelectorShown(false);
@@ -2249,6 +2255,8 @@ function App() {
 
       if (err instanceof RefuseOverwriteError) {
         showRefuseToOverwrite();
+      } else if (err instanceof UserFacingError) {
+        errorToast(err.message);
       } else {
         errorToast(i18n.t('Failed to extract track'));
         console.error('Failed to extract track', err);
@@ -2337,10 +2345,10 @@ function App() {
     if (!checkFileOpened()) return;
 
     await withErrorHandling(async () => {
-      const edl = await askForEdlImport({ type, fps: detectedFps, fileDuration });
+      const edl = await askForEdlImport({ type, fps: detectedFps, fileDuration, defaultPath: type === 'llc' ? getOutDir(customOutDir, filePath) : getFileDir(filePath) });
       if (edl.length > 0) loadCutSegments({ segments: edl, append: true, clampDuration: fileDuration });
     }, i18n.t('Failed to import project file'));
-  }, [checkFileOpened, detectedFps, fileDuration, loadCutSegments, withErrorHandling]);
+  }, [checkFileOpened, customOutDir, detectedFps, fileDuration, filePath, loadCutSegments, withErrorHandling]);
 
   useEffect(() => {
     const openFiles = async (filePaths: string[]) => userOpenFiles(filePaths.map((p) => resolvePathIfNeeded(p)));
@@ -2520,9 +2528,9 @@ function App() {
   return (
     <Theme appearance={darkMode ? 'dark' : 'light'} accentColor="cyan">
       <MotionConfig reducedMotion={reducedMotion}>
-        <AppContext.Provider value={appContext}>
-          <SegColorsContext.Provider value={segColorsContext}>
-            <UserSettingsContext.Provider value={userSettingsContext}>
+        <AppContext value={appContext}>
+          <SegColorsContext value={segColorsContext}>
+            <UserSettingsContext value={userSettingsContext}>
               <div className={rootClass} style={rootStyle} id="app-root">
                 <TopMenu
                   filePath={filePath}
@@ -2570,7 +2578,7 @@ function App() {
                         tabIndex={-1}
                         muted={playbackVolume === 0 || compatPlayerEnabled}
                         ref={videoRef}
-                        style={videoStyle}
+                        style={mainVideoStyle}
                         onPlay={onStartPlaying}
                         onPause={onStopPlaying}
                         onAbort={onVideoAbort}
@@ -2585,7 +2593,7 @@ function App() {
                         {renderSubtitles()}
                       </video>
 
-                      {filePath != null && compatPlayerEnabled && <MediaSourcePlayer rotate={effectiveRotation} filePath={filePath} videoStream={activeVideoStream} audioStreams={activeAudioStreams} masterVideoRef={videoRef} mediaSourceQuality={mediaSourceQuality} ffmpegHwaccel={ffmpegHwaccel} />}
+                      {filePath != null && compatPlayerEnabled && <MediaSourcePlayer rotate={effectiveRotation} filePath={filePath} videoStream={activeVideoStream} audioStreams={activeAudioStreams} masterVideoRef={videoRef} mediaSourceQuality={mediaSourceQuality} ffmpegHwaccel={ffmpegHwaccel} baseVideoStyle={mainVideoStyle} />}
                     </div>
 
                     {bigWaveformEnabled && <BigWaveform waveforms={waveforms} relevantTime={relevantTime} playing={playing} fileDurationNonZero={fileDurationNonZero} zoom={zoomUnrounded} seekRel={seekRel} darkMode={darkMode} />}
@@ -2779,7 +2787,7 @@ function App() {
 
                 {/* Dialogs */}
 
-                <ExportConfirm areWeCutting={areWeCutting} segmentsOrInverse={segmentsOrInverse} segmentsToExport={segmentsToExport} willMerge={willMerge} visible={exportConfirmOpen} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} onShowStreamsSelectorClick={handleShowStreamsSelectorClick} outFormat={fileFormat} cutFileTemplate={cutFileTemplateOrDefault} cutMergedFileTemplate={cutMergedFileTemplateOrDefault} generateCutFileNames={generateCutFileNames} generateCutMergedFileNames={generateCutMergedFileNames} currentSegIndexSafe={currentSegIndexSafe} mainCopiedThumbnailStreams={mainCopiedThumbnailStreams} needSmartCut={needSmartCut} isEncoding={isEncoding} encBitrate={encBitrate} setEncBitrate={setEncBitrate} toggleSettings={toggleSettings} outputPlaybackRate={outputPlaybackRate} lossyMode={lossyMode} neighbouringKeyFrames={neighbouringKeyFrames} findNearestKeyFrameTime={findNearestKeyFrameTime} />
+                <ExportConfirm areWeCutting={areWeCutting} segmentsOrInverse={segmentsOrInverse} segmentsToExport={segmentsToExport} willMerge={willMerge} visible={exportConfirmOpen} onClosePress={closeExportConfirm} onExportConfirm={onExportConfirm} renderOutFmt={renderOutFmt} outputDir={outputDir} numStreamsTotal={numStreamsTotal} numStreamsToCopy={numStreamsToCopy} onShowStreamsSelectorClick={handleShowStreamsSelectorClick} outFormat={fileFormat} cutFileTemplate={cutFileTemplateOrDefault} cutMergedFileTemplate={cutMergedFileTemplateOrDefault} generateCutFileNames={generateCutFileNames} generateCutMergedFileNames={generateCutMergedFileNames} currentSegIndexSafe={currentSegIndexSafe} mainCopiedThumbnailStreams={mainCopiedThumbnailStreams} hvc1NeededStreams={hvc1NeededStreams} needSmartCut={needSmartCut} isEncoding={isEncoding} encBitrate={encBitrate} setEncBitrate={setEncBitrate} toggleSettings={toggleSettings} outputPlaybackRate={outputPlaybackRate} lossyMode={lossyMode} neighbouringKeyFrames={neighbouringKeyFrames} findNearestKeyFrameTime={findNearestKeyFrameTime} />
 
                 <Dialog.Root open={streamsSelectorShown} onOpenChange={setStreamsSelectorShown}>
                   <Dialog.Portal>
@@ -2815,6 +2823,8 @@ function App() {
                           changeEnabledStreamsFilter={changeEnabledStreamsFilter}
                           toggleCopyAllStreamsForPath={toggleCopyAllStreamsForPath}
                           onStreamSourceFileDrop={handleStreamSourceFileDrop}
+                          outFormat={fileFormat}
+                          confirmDialog={confirmDialog}
                         />
                       )}
 
@@ -2862,9 +2872,9 @@ function App() {
               </div>
 
               <SwalContainer darkMode={darkMode} style={baseColorStyle} />
-            </UserSettingsContext.Provider>
-          </SegColorsContext.Provider>
-        </AppContext.Provider>
+            </UserSettingsContext>
+          </SegColorsContext>
+        </AppContext>
       </MotionConfig>
     </Theme>
   );

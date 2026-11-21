@@ -1,5 +1,5 @@
 import type { AboutPanelOptionsOptions } from 'electron';
-// eslint-disable-next-line import/no-extraneous-dependencies
+// eslint-disable-next-line import-js/no-extraneous-dependencies
 import { app } from 'electron';
 import { t } from 'i18next';
 
@@ -9,7 +9,6 @@ import isStoreBuild from './isStoreBuild.js';
 import { githubUrl, homepageUrl } from '../common/constants.js';
 
 
-// eslint-disable-next-line import/prefer-default-export
 export function getAboutPanelOptions() {
   const appVersion = app.getVersion();
 

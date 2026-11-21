@@ -6,7 +6,6 @@ export default function SwalContainer({ darkMode, ...props }: HTMLAttributes<HTM
     <div
       id={swalContainerWrapperId}
       className={darkMode ? 'dark-theme' : undefined}
-      // eslint-disable-next-line react/jsx-props-no-spreading
       {...props}
     />
   );

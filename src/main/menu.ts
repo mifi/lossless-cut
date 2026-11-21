@@ -1,5 +1,5 @@
 import type { BrowserWindow, MenuItem, MenuItemConstructorOptions } from 'electron';
-// eslint-disable-next-line import/no-extraneous-dependencies
+// eslint-disable-next-line import-js/no-extraneous-dependencies
 import electron from 'electron';
 import { t } from 'i18next';
 
@@ -227,6 +227,7 @@ export default ({ app, mainWindow, newVersion, isStoreBuild, openExternal }: {
           { type: 'separator' } as const,
           {
             label: esc(t('Exit')),
+            accelerator: 'Ctrl+Q',
             click() {
               app.quit();
             },
@@ -293,6 +294,12 @@ export default ({ app, mainWindow, newVersion, isStoreBuild, openExternal }: {
           label: esc(t('Create random segments')),
           click() {
             mainWindow.webContents.send('createRandomSegments');
+          },
+        },
+        {
+          label: esc(t('Create segments from keyframes')),
+          click() {
+            mainWindow.webContents.send('createSegmentsFromKeyframes');
           },
         },
 
@@ -380,6 +387,8 @@ export default ({ app, mainWindow, newVersion, isStoreBuild, openExternal }: {
         { role: 'togglefullscreen', label: esc(t('Toggle Full Screen')) },
         { role: 'resetZoom', label: esc(t('Reset font size')) },
         { role: 'zoomIn', label: esc(t('Increase font size')) },
+        // zoomIn's accelerator is CommandOrControl+Plus, which on many layouts needs Shift (Ctrl+Shift+=), so also accept Ctrl+= like browsers do https://github.com/mifi/lossless-cut/issues/3200
+        { role: 'zoomIn', accelerator: 'CommandOrControl+=', visible: false },
         { role: 'zoomOut', label: esc(t('Decrease font size')) },
       ],
     },
@@ -432,12 +441,6 @@ export default ({ app, mainWindow, newVersion, isStoreBuild, openExternal }: {
           label: esc(t('Read all keyframes')),
           click() {
             mainWindow.webContents.send('readAllKeyframes');
-          },
-        },
-        {
-          label: esc(t('Create segments from keyframes')),
-          click() {
-            mainWindow.webContents.send('createSegmentsFromKeyframes');
           },
         },
         {

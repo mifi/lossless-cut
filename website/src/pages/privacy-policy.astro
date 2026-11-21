@@ -1,0 +1,18 @@
+---
+// The privacy policy, in the same layout as the docs (but without the docs navigation).
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+
+import { Content, getHeadings } from '../legal/privacy-policy.md';
+---
+
+<StarlightPage
+  frontmatter={{
+    title: 'Privacy policy',
+    description: 'What LosslessCut and losslesscut.app store and send: no tracking, accounts or ads, and your files never leave your computer.',
+    editUrl: false,
+  }}
+  hasSidebar={false}
+  headings={getHeadings()}
+>
+  <Content />
+</StarlightPage>

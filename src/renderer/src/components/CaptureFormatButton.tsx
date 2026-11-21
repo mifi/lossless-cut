@@ -16,7 +16,6 @@ function CaptureFormatButton({ showIcon = false, ...props }: { showIcon?: boolea
     <Button
       title={actionTitle(t('Capture frame format'), 'toggleCaptureFormat')}
       onClick={withBlur(toggleCaptureFormat)}
-      // eslint-disable-next-line react/jsx-props-no-spreading
       {...props}
     >
       {showIcon && <FaImage style={{ verticalAlign: 'middle', fontSize: '1.3em', marginRight: '.7em' }} />}
