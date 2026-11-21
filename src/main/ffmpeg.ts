@@ -498,7 +498,7 @@ export async function cropDetect({ filePath, streamId, limit, reset_count, minSe
 
   handleProgress(process, to - from, onProgress);
 
-  assert(process.stdout != null);
+  assert(process.stderr != null);
   const rl = readline.createInterface({ input: process.stderr});
 
   const minDuration = parseFloat(minSegmentDuration);
