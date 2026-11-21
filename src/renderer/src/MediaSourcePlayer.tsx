@@ -93,8 +93,9 @@ async function startPlayback({ path, slaveVideo, masterVideo, videoStreamIndex, 
   mediaSourceProcess = createMediaSourceStream({ path, videoStreamIndex, audioStreams, seekTo, size, fps, rotate, ffmpegHwaccel });
   console.log('Waiting for media source process to emit first data...');
   const readChunk = await mediaSourceProcess.promise;
+  // If aborted while we were waiting, the cleanup has already run, so we must not create any object URL or intervals (they would leak)
+  if (signal.aborted) return;
   if (readChunk == null) {
-    if (signal.aborted) return;
     throw new Error('Media source process did not initialize');
   }
   console.log('Media source process emitted first data');
@@ -337,8 +338,8 @@ function MediaSourcePlayer({ rotate, filePath, videoStream, audioStreams, master
     const canvas = canvasRef.current;
     invariant(canvas != null);
 
-    let abortController: AbortController;
-    let startDebounced: () => void;
+    let abortController: AbortController | undefined;
+    let startDebounced: ReturnType<typeof debounce<() => Promise<void>>>;
 
     const start = async () => {
       abortController = new AbortController();
@@ -379,7 +380,7 @@ function MediaSourcePlayer({ rotate, filePath, videoStream, audioStreams, master
             setShowCanvas(false);
           },
           onResetNeeded: () => {
-            abortController.abort();
+            abortController?.abort();
             startDebounced();
           },
           onWaiting: () => {
@@ -396,7 +397,11 @@ function MediaSourcePlayer({ rotate, filePath, videoStream, audioStreams, master
 
     startDebounced();
 
-    return () => abortController.abort();
+    return () => {
+      // cancel any pending (trailing) start too, or else it would start a new preview process after cleanup, which would never be aborted
+      startDebounced.cancel();
+      abortController?.abort();
+    };
     // Important that we also have eventId in the deps, so that we can restart the preview when the eventId changes
   }, [audioStreamsForPreview, ffmpegHwaccel, filePath, masterVideoRef, mediaSourceQuality, rotate, videoStream]);
 
