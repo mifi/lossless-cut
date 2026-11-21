@@ -18,6 +18,7 @@ import { UserFacingError } from '../../errors';
 import mainApi from '../mainApi';
 import { formatFfmpegNumber, getFixChannelLayoutFilter, getHwaccelArgs, hasCustomChannelLayout } from '../../../common/util';
 import { join, resolve, dirname, extname } from '../util/path';
+import { getChaptersFfmetadata } from '../util/ffmetadata';
 
 const { writeFile, mkdir, access, constants: { W_OK } } = window.require('node:fs/promises');
 
@@ -34,9 +35,7 @@ async function writeChaptersFfmetadata(outDir: string, chapters: Chapter[] | und
 
   const path = join(outDir, `ffmetadata-${Date.now()}.txt`);
 
-  const ffmetadata = chapters.map(({ start, end, name }) => (
-    `[CHAPTER]\nTIMEBASE=1/1000\nSTART=${Math.floor(start * 1000)}\nEND=${Math.floor(end * 1000)}\ntitle=${name || ''}`
-  )).join('\n\n');
+  const ffmetadata = getChaptersFfmetadata(chapters);
   console.log('Writing chapters', ffmetadata);
   await writeFile(path, ffmetadata);
   return path;
