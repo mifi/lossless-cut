@@ -1160,7 +1160,7 @@ function App() {
         invariant(fileName != null);
         mergedOutFilePath = getOutPath({ customOutDir, filePath, fileName });
 
-        await concatCutSegments({
+        const { created: mergedFileCreated } = await concatCutSegments({
           customOutDir,
           outFormat: fileFormat,
           segmentPaths: outFiles.map((f) => f.path),
@@ -1175,7 +1175,8 @@ function App() {
 
         // don't delete existing files that were not created by losslesscut now (due to overwrite disabled) https://github.com/mifi/lossless-cut/issues/2436
         const createdOutFiles = outFiles.flatMap((f) => (f.created ? [f.path] : []));
-        if (autoDeleteMergedSegments) await tryDeleteFiles(createdOutFiles);
+        // and don't delete the segments if the merged file was not created now (skipped due to overwrite disabled), or else we would lose them
+        if (autoDeleteMergedSegments && mergedFileCreated) await tryDeleteFiles(createdOutFiles);
       }
 
       if (!enableOverwriteOutput) warnings.add(i18n.t('Overwrite output setting is disabled and some files might have been skipped.'));

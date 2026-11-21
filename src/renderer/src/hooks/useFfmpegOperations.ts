@@ -18,6 +18,7 @@ import { UserFacingError } from '../../errors';
 import mainApi from '../mainApi';
 import { formatFfmpegNumber, getFixChannelLayoutFilter, getHwaccelArgs, hasCustomChannelLayout } from '../../../common/util';
 import { join, resolve, dirname, extname } from '../util/path';
+import { getChaptersFfmetadata } from '../util/ffmetadata';
 
 const { writeFile, mkdir, access, constants: { W_OK } } = window.require('node:fs/promises');
 
@@ -34,9 +35,7 @@ async function writeChaptersFfmetadata(outDir: string, chapters: Chapter[] | und
 
   const path = join(outDir, `ffmetadata-${Date.now()}.txt`);
 
-  const ffmetadata = chapters.map(({ start, end, name }) => (
-    `[CHAPTER]\nTIMEBASE=1/1000\nSTART=${Math.floor(start * 1000)}\nEND=${Math.floor(end * 1000)}\ntitle=${name || ''}`
-  )).join('\n\n');
+  const ffmetadata = getChaptersFfmetadata(chapters);
   console.log('Writing chapters', ffmetadata);
   await writeFile(path, ffmetadata);
   return path;
@@ -85,6 +84,17 @@ const getChaptersInputArgs = (ffmetadataPath: string | undefined) => (ffmetadata
 
 async function tryDeleteFiles(paths: string[]) {
   return pMap(paths, (path) => unlinkWithRetry(path).catch((err: unknown) => console.error('Failed to delete', path, err)), { concurrency: 5 });
+}
+
+// If ffmpeg fails or is cancelled, it leaves behind a partially written (truncated) output file.
+// Delete it, or else it could later be mistaken for a finished export (e.g. skipped when "overwrite output" is disabled)
+async function withPartialOutputCleanup<T>(outPath: string, fn: () => Promise<T>) {
+  try {
+    return await fn();
+  } catch (err) {
+    if (await mainApi.pathExists(outPath)) await tryDeleteFiles([outPath]);
+    throw err;
+  }
 }
 
 export async function maybeMkDeepOutDir({ outputDir, fileOutPath }: { outputDir: string, fileOutPath: string }) {
@@ -316,7 +326,9 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     const copyInitialNonKeyframesArgs = cuttingStart && !ssBeforeInput && isCopyingOnlyAudioStreams({ allFilesMeta, copyFileStreams: copyFileStreamsFiltered }) ? ['-copyinkf'] : [];
 
     // If cutting multiple files, `-ss` must be before `-i`, regardless of `ssBeforeInput` choice
-    // and it seems that `-t` must be after `-i` #896
+    // `-t` must be after `-i` #896, as an *output* option. Note that ffmpeg applies an option to the next file on the command line,
+    // so `-t` is added once after *all* inputs (see cutToArgs below). Otherwise it would end up as an input option of the next input
+    // (e.g. a cover art file or the chapters ffmetadata file), and the output would not be cut at the end.
     const inputFilesArgs = copyFileStreamsFiltered.length > 1
       ? copyFileStreamsFiltered.flatMap(({ streamIds, path }) => {
         const fileParams = paramsByFile.get(path);
@@ -332,14 +344,12 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
           ...cutFromArgs,
           ...itsOffsetArgs,
           '-i', path,
-          ...cutToArgs,
         ];
       })
       : [
         ...(ssBeforeInput ? [...cutFromArgs, ...seekCompensationArgs] : []),
         '-i', copyFileStreamsFiltered[0]!.path,
         ...(!ssBeforeInput ? cutFromArgs : []),
-        ...cutToArgs,
       ];
 
     const chaptersInputIndex = copyFileStreamsFiltered.length;
@@ -470,6 +480,9 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
       ...inputFilesArgs,
       ...getChaptersInputArgs(chaptersPath),
+
+      // must come after all inputs, see inputFilesArgs
+      ...cutToArgs,
 
       ...avoidNegativeTsArgs,
 
@@ -619,13 +632,9 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     // or if enabled, will first cut&encode the part before the next keyframe, trying to match the input file's codec params
     // then it will cut the part *from* the keyframe to "end", and concat them together and return the concated file
     // so that for the calling code it looks as if it's just a normal segment
-    const cutSegment = async ({ start: desiredCutFrom, end: cutTo }: { start: number, end: number }, i: number) => {
+    const cutSegmentToPath = async ({ start: desiredCutFrom, end: cutTo }: { start: number, end: number }, i: number, finalOutPath: string) => {
       const onProgress = (progress: number) => onSingleProgress(i, progress / 2);
       const onConcatProgress = (progress: number) => onSingleProgress(i, (1 + progress) / 2);
-
-      const finalOutPath = join(outputDir, cutFileNames[i]!);
-
-      if (await shouldSkipExistingFile(finalOutPath)) return { path: finalOutPath, created: false };
 
       await maybeMkDeepOutDir({ outputDir, fileOutPath: finalOutPath });
 
@@ -659,9 +668,10 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
         streamIds: streamsToCopyFromMainFile.filter((stream) => stream.index === videoStream.index || stream.codec_type !== 'video').map((stream) => stream.index),
       }];
 
+      // Note: no "skip existing file" check here: The final output path has already been checked,
+      // and a smart cut temp file left behind by an earlier (crashed) export must never be reused
       // eslint-disable-next-line no-shadow, unicorn-js/no-unnecessary-parameters -- TODO fix (new rule in @mifi/lint-config)
       async function cutEncodeSmartPartWrapper({ cutFrom, cutTo, outPath }: { cutFrom: number, cutTo: number, outPath: string }) {
-        if (await shouldSkipExistingFile(outPath)) return;
         invariant(videoCodec != null);
         invariant(sourceCodecParams.videoBitrate != null);
         invariant(sourceCodecParams.videoTimebase != null);
@@ -703,24 +713,26 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
         console.log('Cutting/encoding lossless part', { from: losslessCutFrom, to: cutTo });
       }
 
-      const losslessPartOutPath = segmentNeedsSmartCut
-        ? getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `smartcut-segment-copy-${i}${ext}` })
-        : finalOutPath;
-
       // for smart cut we need to use keyframe cut here, and no avoid_negative_ts
-      await losslessCutSingle({
-        cutFrom: losslessCutFrom, cutTo, chaptersPath, outPath: losslessPartOutPath, copyFileStreams: copyFileStreamsFiltered, keyframeCut: true, avoidNegativeTs: undefined, fileDuration, rotation, allFilesMeta, outFormat, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMovData, preserveChapters, movFastStart, paramsByFile, videoTimebase, onProgress,
+      const cutLosslessPart = async (outPath: string) => losslessCutSingle({
+        cutFrom: losslessCutFrom, cutTo, chaptersPath, outPath, copyFileStreams: copyFileStreamsFiltered, keyframeCut: true, avoidNegativeTs: undefined, fileDuration, rotation, allFilesMeta, outFormat, shortestFlag, ffmpegExperimental, preserveMetadata, preserveMovData, preserveChapters, movFastStart, paramsByFile, videoTimebase, onProgress,
       });
 
       // We don't need to concat, just return the single cut file (we may need smart cut in other segments though)
-      if (!segmentNeedsSmartCut) return { path: finalOutPath, created: true };
+      if (!segmentNeedsSmartCut) {
+        await cutLosslessPart(finalOutPath);
+        return { path: finalOutPath, created: true };
+      }
 
       // We need to concat
 
+      const losslessPartOutPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `smartcut-segment-copy-${i}${ext}` });
       const smartCutEncodedPartOutPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: `smartcut-segment-encode-${i}${ext}` });
       const smartCutSegmentsToConcat = [smartCutEncodedPartOutPath, losslessPartOutPath];
 
       try {
+        await cutLosslessPart(losslessPartOutPath);
+
         const frameDuration = getFrameDuration(detectedFps);
         // Subtract one frame so we don't end up with duplicates when concating, and make sure we don't create a 0 length segment
         const encodeCutToSafe = Math.max(desiredCutFrom + frameDuration, losslessCutFrom - frameDuration);
@@ -738,6 +750,14 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       } finally {
         await tryDeleteFiles(smartCutSegmentsToConcat);
       }
+    };
+
+    const cutSegment = async (segment: { start: number, end: number }, i: number) => {
+      const finalOutPath = join(outputDir, cutFileNames[i]!);
+
+      if (await shouldSkipExistingFile(finalOutPath)) return { path: finalOutPath, created: false };
+
+      return withPartialOutputCleanup(finalOutPath, async () => cutSegmentToPath(segment, i, finalOutPath));
     };
 
     try {
@@ -761,7 +781,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
   }) => {
     const outDir = getOutDir(customOutDir, filePath);
 
-    if (await shouldSkipExistingFile(mergedOutFilePath)) return;
+    if (await shouldSkipExistingFile(mergedOutFilePath)) return { created: false };
 
     const chapters = await createChaptersFromSegments({ paths: segmentPaths, defaultChapterNames: chapterNames });
 
@@ -769,7 +789,8 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
     invariant(metadataFromPath != null);
     // need to re-read streams because may have changed
     const { streams } = await readFileFfprobeMeta(metadataFromPath);
-    await concatFiles({ paths: segmentPaths, outDir, outPath: mergedOutFilePath, metadataFromPath, outFormat, includeAllStreams: true, streams, ffmpegExperimental, onProgress, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge });
+    await withPartialOutputCleanup(mergedOutFilePath, async () => concatFiles({ paths: segmentPaths, outDir, outPath: mergedOutFilePath, metadataFromPath, outFormat, includeAllStreams: true, streams, ffmpegExperimental, onProgress, preserveMovData, movFastStart, chapters, preserveMetadataOnMerge }));
+    return { created: true };
   }, [concatFiles, filePath, shouldSkipExistingFile]);
 
   // This is just used to load something into the player with correct duration,
