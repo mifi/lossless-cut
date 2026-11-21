@@ -162,6 +162,14 @@ function getSavedBounds() {
 
 const getBackgroundColor = () => (nativeTheme.shouldUseDarkColors ? '#333' : '#fff');
 
+async function openExternal(url: string) {
+  if (hasDisabledNetworking()) {
+    logger.warn('openExternal blocked because networking is disabled', url);
+    return;
+  }
+  await shell.openExternal(url);
+}
+
 function createWindow() {
   const savedBounds = getSavedBounds();
 
@@ -185,6 +193,25 @@ function createWindow() {
   remote.enable(mainWindow.webContents);
 
   attachContextMenu(mainWindow);
+
+  // The renderer has Node integration, so it must never navigate away from the app's own page or open new windows.
+  // e.g. a link inside the GPS map attribution, or a page in the start screen iframe trying to navigate the top frame.
+  // Web links are opened in the user's browser instead.
+  const stripHash = (url: string) => url.replace(/#.*$/, '');
+  const openWebUrlExternally = (url: string) => {
+    if (/^https?:\/\//i.test(url)) openExternal(url).catch((err: unknown) => logger.error('Failed to open external URL', err));
+    else logger.warn('Blocked opening non-web URL', url);
+  };
+  mainWindow.webContents.on('will-navigate', (e, url) => {
+    if (mainWindow != null && stripHash(url) === stripHash(mainWindow.webContents.getURL())) return;
+    e.preventDefault();
+    logger.warn('Blocked navigation', url);
+    openWebUrlExternally(url);
+  });
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    openWebUrlExternally(url);
+    return { action: 'deny' };
+  });
 
   if (isDev) mainWindow.loadURL('http://localhost:3001');
   // Need to useloadFile for special characters https://github.com/mifi/lossless-cut/issues/40
@@ -229,14 +256,6 @@ function createWindow() {
   mainWindow.on('unmaximize', debouncedSaveWindowState);
   mainWindow.on('resize', debouncedSaveWindowState);
   mainWindow.on('move', debouncedSaveWindowState);
-}
-
-async function openExternal(url: string) {
-  if (hasDisabledNetworking()) {
-    logger.warn('openExternal blocked because networking is disabled', url);
-    return;
-  }
-  await shell.openExternal(url);
 }
 
 function updateMenu() {

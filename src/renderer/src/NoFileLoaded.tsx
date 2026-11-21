@@ -87,7 +87,8 @@ function NoFileLoaded({ mifiLink, currentCutSeg, onClick, darkMode, keyBindingBy
       {mifiLink && typeof mifiLink === 'object' && 'loadUrl' in mifiLink && typeof mifiLink.loadUrl === 'string' && mifiLink.loadUrl ? (
         <div style={{ position: 'relative', margin: '.3em', width: '24em', height: '8em' }}>
           {/* eslint-disable-next-line react/iframe-missing-sandbox -- TODO fix (new rule in @mifi/lint-config) */}
-          <iframe src={`${mifiLink.loadUrl}#dark=${darkMode ? 'true' : 'false'}`} title="iframe" style={{ background: 'rgba(0,0,0,0)', border: 'none', pointerEvents: 'none', width: '100%', height: '100%', position: 'absolute', colorScheme: 'initial' }} />
+          {/* Remote content: sandboxed (opaque origin) so that it cannot navigate the (Node-enabled) top frame, open popups or submit forms */}
+          <iframe src={`${mifiLink.loadUrl}#dark=${darkMode ? 'true' : 'false'}`} title="iframe" sandbox="allow-scripts" referrerPolicy="no-referrer" style={{ background: 'rgba(0,0,0,0)', border: 'none', pointerEvents: 'none', width: '100%', height: '100%', position: 'absolute', colorScheme: 'initial' }} />
           {/* eslint-disable-next-line jsx-a11y/interactive-supports-focus */}
           <div style={{ width: '100%', height: '100%', position: 'absolute', cursor: 'pointer' }} title={t('Open link in browser')} role="button" onClick={(e) => { e.stopPropagation(); if ('targetUrl' in mifiLink && typeof mifiLink.targetUrl === 'string') mainApi.openExternal(mifiLink.targetUrl); }} />
         </div>

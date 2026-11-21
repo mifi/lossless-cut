@@ -11,6 +11,8 @@ import * as Dialog from './Dialog';
 import { useAppContext } from '../contexts';
 import { UserFacingError } from '../../errors';
 
+const { hasDisabledNetworking } = window.require('@electron/remote').require('./index.js');
+
 
 // https://www.openstreetmap.org/copyright
 
@@ -73,10 +75,13 @@ export default function GpsMap({ filePath, streamIndex }: {
   return (
     <div style={{ width: '80vw', height: '60vh' }}>
       <MapContainer center={[firstPoint.lat, firstPoint.lng]} zoom={16} style={{ width: '100%', height: '100%' }}>
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+        {/* map tiles are loaded from openstreetmap.org, so skip them when networking is disabled (the GPS track is still shown) */}
+        {!hasDisabledNetworking() && (
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+        )}
 
         {points.map((point, i) => (
           <Marker key={point.index} position={[point.lat, point.lng]} icon={<FaMapMarkerAlt color="#af0e0e" size={20} />}>

@@ -26,6 +26,7 @@ import '@radix-ui/themes/styles.css';
 
 import type { KeyboardLayoutMap } from './types';
 import App from './App';
+import mainApi from './mainApi';
 import ErrorBoundary from './ErrorBoundary';
 import './i18n';
 
@@ -71,6 +72,17 @@ enableMapSet();
 const { app } = window.require('@electron/remote');
 
 console.log('Version', app.getVersion());
+
+// Open web links (e.g. the GPS map's OpenStreetMap attribution) in the user's browser, instead of letting them navigate
+// this window. The main process blocks such navigations anyway (see `will-navigate`), but by then @electron/remote has already
+// released its objects for this page, so the app would break. Handling the click here means that the navigation never starts.
+document.addEventListener('click', (e) => {
+  if (e.defaultPrevented || !(e.target instanceof Element)) return;
+  const link = e.target.closest('a[href]');
+  if (!(link instanceof HTMLAnchorElement) || !/^https?:$/.test(link.protocol)) return;
+  e.preventDefault();
+  mainApi.openExternal(link.href);
+});
 
 
 const container = document.getElementById('root')!;
