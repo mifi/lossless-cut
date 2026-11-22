@@ -60,7 +60,7 @@ export function isCuttingEnd(cutTo: number, fileDuration: number | undefined) {
   return cutTo < fileDuration;
 }
 
-function getIntervalAroundTime(time: number, window: number) {
+export function getIntervalAroundTime(time: number, window: number) {
   return {
     from: Math.max(time - window / 2, 0),
     to: time + window / 2,

@@ -566,7 +566,7 @@ function App() {
 
   const { thumbnailsSorted, setThumbnails } = useThumbnails({ filePath, zoomedDuration, zoomWindowStartTime, showThumbnails });
 
-  const { neighbouringKeyFrames, findNearestKeyFrameTime, keyframeByNumber, readAllKeyframes } = useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream: activeVideoStream, detectedFps, ffmpegExtractWindow, maxKeyframes, currentCutSegOrWholeTimeline, setWorking, setMaxKeyframes, handleError });
+  const { neighbouringKeyFrames, findNearestKeyFrameTime, findNearestKnownKeyFrameTime, keyframeByNumber, readAllKeyframes } = useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream: activeVideoStream, detectedFps, ffmpegExtractWindow, maxKeyframes, currentCutSegOrWholeTimeline, setWorking, setMaxKeyframes, handleError });
   const { waveforms, overviewWaveform, renderOverviewWaveform } = useWaveform({ filePath, relevantTime, waveformEnabled, audioStream: activeAudioStreams[0], ffmpegExtractWindow, fileDuration });
 
   const currentFrame = useMemo(() => {
@@ -1567,10 +1567,12 @@ function App() {
 
   const seekClosestKeyframe = useCallback((direction: number) => {
     const sigma = detectedFps ? (1 / detectedFps) : 0.1; // because we don't want it to find the keyframe we're currently at.
-    const time = findNearestKeyFrameTime({ time: getRelevantTime() + direction * sigma, direction });
+    const currentTime = getRelevantTime();
+    // If keyframes around the current position haven't been read yet (e.g. just after jumping to a new location), stay where we are
+    const time = findNearestKnownKeyFrameTime({ fromTime: currentTime, time: currentTime + direction * sigma, direction });
     if (time == null) return;
     seekAbs(time);
-  }, [detectedFps, findNearestKeyFrameTime, getRelevantTime, seekAbs]);
+  }, [detectedFps, findNearestKnownKeyFrameTime, getRelevantTime, seekAbs]);
 
   const onTimelineWheel = useTimelineScroll({ wheelSensitivity, mouseWheelZoomModifierKey, mouseWheelFrameSeekModifierKey, mouseWheelKeyframeSeekModifierKey, invertTimelineScroll, zoomRel, seekRel, shortStep, seekClosestKeyframe });
 
