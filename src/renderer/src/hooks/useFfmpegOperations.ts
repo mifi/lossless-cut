@@ -6,7 +6,8 @@ import i18n from 'i18next';
 
 import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, getHtml5ifiedPath, unlinkWithRetry, getFrameDuration, isMac, html5ifiedPrefix, html5dummySuffix, assertFileExists, decodeText, isExecaError, getStdioString } from '../util';
 import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, getDuration, createChaptersFromSegments, readFileFfprobeMeta, getExperimentalArgs, getVideoTimescaleArgs, logStdoutStderr, runFfmpegConcat, RefuseOverwriteError, runFfmpeg } from '../ffmpeg';
-import { flacEncodeArgs, getEffectiveAvoidNegativeTs, getKeyframeCutSeekCompensation, getMapStreamsArgs, getStreamIdsToCopy, isCopyingOnlyAudioStreams, isCropActive, isAspectRatioActive } from '../util/streams';
+import { flacEncodeArgs, getEffectiveAvoidNegativeTs, getKeyframeCutSeekCompensation, getMapStreamsArgs, getStreamById, getStreamIdsToCopy, isCopyingOnlyAudioStreams, isCropActive, isAspectRatioActive } from '../util/streams';
+import { getTrackTitleFromName } from '../util/metadata';
 import { needsSmartCut, getCodecParams } from '../smartcut';
 import { getGuaranteedSegments, isDurationValid } from '../segments';
 import type { FFprobeStream } from '../../../common/ffprobe';
@@ -200,6 +201,12 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
         needFlac: true, // https://github.com/mifi/lossless-cut/issues/2636
       });
 
+      // keep the names of tracks from MP4/MOV files (output stream indexes follow streamIdsToCopy, see getMapStreamsArgs)
+      const trackTitleArgs = streamIdsToCopy.flatMap((streamId, outputIndex) => {
+        const title = getTrackTitleFromName({ existing: streams.find((stream) => stream.index === streamId)?.tags, outFormat });
+        return title != null ? [`-metadata:s:${outputIndex}`, `title=${title}`] : [];
+      });
+
       // Keep this similar to losslessCutSingle()
       const ffmpegArgs = [
         '-hide_banner',
@@ -209,6 +216,8 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
         ...inputArgs,
 
         ...mapStreamsArgs,
+
+        ...trackTitleArgs,
 
         // -map_metadata 0 with concat demuxer doesn't transfer metadata from the concat'ed file input (index 0) when merging.
         // So we use the first file file (index 1) for metadata
@@ -373,6 +382,13 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
     const mapStreamsArgs = getMapStreamsArgs({ copyFileStreams: copyFileStreamsFiltered, allFilesMeta, outFormat, needFlac: areWeCutting });
 
+    // keep the names of tracks from MP4/MOV files, unless not preserving metadata
+    const trackTitleArgs = preserveMetadata === 'none' ? [] : copyFileStreamsFiltered.flatMap(({ path, streamIds }) => streamIds.flatMap((streamId) => {
+      const outputIndex = mapInputStreamIndexToOutputIndex(path, streamId);
+      const title = getTrackTitleFromName({ existing: getStreamById({ allFilesMeta, streamId, path })?.tags, custom: paramsByFile.get(path)?.paramsByStream.get(streamId)?.metadata, outFormat });
+      return outputIndex != null && title != null ? [`-metadata:s:${outputIndex}`, `title=${title}`] : [];
+    }));
+
     const customParamsArgs = (() => {
       const ret: string[] = [];
       for (const [fileId, { paramsByStream }] of paramsByFile.entries()) {
@@ -487,6 +503,8 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
       ...getMatroskaFlags(outFormat),
 
       ...customFileMetadataArgs,
+
+      ...trackTitleArgs,
 
       ...customParamsArgs,
 
