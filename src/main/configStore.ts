@@ -106,6 +106,7 @@ const defaults: Config = {
   autoDeleteMergedSegments: true,
   segmentsToChaptersOnly: false,
   enableSmartCut: false,
+  fullEncode: false,
   timecodeFormat: 'timecodeWithDecimalFraction',
   invertCutSegments: false,
   autoExportExtraStreams: true,
