@@ -406,6 +406,11 @@ export function enableVideoTrack(video: ChromiumHTMLVideoElement, index: number 
 }
 
 export function enableAudioTrack(video: ChromiumHTMLVideoElement, index: number | undefined) {
+  // FFmpeg-assisted playback may use an audio-only dummy as the timeline clock.
+  // Source stream indexes need not exist in that file. Disabling its only track
+  // makes Chromium end playback, so leave native tracks alone in that case.
+  if (index != null && getAudioTrackForStreamIndex(video, index) == null) return;
+
   if (index == null) {
     console.log('Resetting audio track');
     resetAudioTrack(video);
