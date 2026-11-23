@@ -128,6 +128,20 @@ export default ({ filePath }: { filePath: string | undefined }) => {
     });
   }, [filePath, outputPlaybackRate, playingRef, setPlaybackRate, videoRef]);
 
+  const lastCustomPlaybackRateRef = useRef<number>(undefined);
+
+  // Toggle between the normal speed and the last used custom speed, without affecting play/pause (#3179)
+  const togglePlaybackRate = useCallback(() => {
+    const video = videoRef.current;
+    if (!filePath || video == null) return;
+    if (video.playbackRate !== outputPlaybackRate) {
+      lastCustomPlaybackRateRef.current = video.playbackRate;
+      setPlaybackRate(outputPlaybackRate);
+    } else if (lastCustomPlaybackRateRef.current != null) {
+      setPlaybackRate(lastCustomPlaybackRateRef.current);
+    }
+  }, [filePath, outputPlaybackRate, setPlaybackRate]);
+
 
   return {
     videoRef,
@@ -149,6 +163,7 @@ export default ({ filePath }: { filePath: string | undefined }) => {
     seekRel,
     play,
     pause,
+    togglePlaybackRate,
     relevantTime,
     getRelevantTime,
     onVideoAbort,

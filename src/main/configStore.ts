@@ -21,6 +21,7 @@ const defaultKeyBindings: KeyBinding[] = [
   { keys: 'ShiftLeft+KeyJ', action: 'reducePlaybackRateMore' },
   { keys: 'KeyL', action: 'increasePlaybackRate' },
   { keys: 'ShiftLeft+KeyL', action: 'increasePlaybackRateMore' },
+  { keys: 'ShiftLeft+KeyK', action: 'togglePlaybackRate' },
   { keys: 'KeyZ', action: 'timelineToggleComfortZoom' },
   { keys: 'ShiftLeft+KeyZ', action: 'makeCursorTimeZero' },
   { keys: 'Comma', action: 'seekPreviousFrame' },
