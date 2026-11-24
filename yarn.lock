@@ -8629,15 +8629,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"i18next@npm:^26.3.0":
-  version: 26.3.0
-  resolution: "i18next@npm:26.3.0"
+"i18next@npm:^26.3.4":
+  version: 26.3.4
+  resolution: "i18next@npm:26.3.4"
   peerDependencies:
     typescript: ^5 || ^6
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 10/f06640d4c6db0574c8c097997f882f1459134c5e625647e37ac60ed66754ef9ffca011787fe70284ec0734de1187a26e72935f39e993220e68914bf404124f47
+  checksum: 10/133ba9a5f76c1d57337f0dcc1b0ab0ff987714a1863813dcc95024531074c6d92603a19b0bac9c16a6b04c734742d8d098da0c222bef5a9562bdde231ea4b221
   languageName: node
   linkType: hard
 
@@ -9445,7 +9445,7 @@ __metadata:
     express: "npm:^5.2.1"
     fast-xml-parser: "npm:^5.12.0"
     file-type: "npm:^22.0.1"
-    i18next: "npm:^26.3.0"
+    i18next: "npm:^26.3.4"
     i18next-cli: "npm:^1.58.1"
     i18next-fs-backend: "npm:^2.6.6"
     immer: "npm:^11.1.8"
