@@ -12,7 +12,8 @@ import { decodeText, isExecaError, safeCreateBlob } from './util';
 import { isDurationValid } from './segments';
 import type { FFprobeChapter, FFprobeFormat, FFprobeProbeResult, FFprobeStream } from '../../common/ffprobe';
 import { parseSrt, parseSrtToSegments } from './edlFormats';
-import { UnsupportedFileError, UserFacingError } from '../errors';
+import { InterruptedRecordingError, UnsupportedFileError, UserFacingError } from '../errors';
+import { diagnoseRecordingFile } from './interruptedRecording';
 import mainApi from './mainApi';
 import { parseFfprobeDuration } from '../../common/util';
 
@@ -337,6 +338,14 @@ export async function readFileFfprobeMeta(filePath: string) {
     return { format, streams, chapters };
   } catch (err) {
     if (isExecaError(err) && err.code == null && err.exitCode != null) {
+      const diagnosis = await diagnoseRecordingFile(filePath).catch(() => undefined);
+      if (diagnosis != null) {
+        const mb = Math.round(diagnosis.mediaBytes / 1e6);
+        const message = i18n.t(diagnosis.damage === 'index-missing'
+          ? 'This recording was interrupted before its index (moov) was written, for example because the camera lost power. {{mb}} MB of video data is still in the file and can usually be rebuilt.'
+          : 'The index of this file is intact, but the header in front of its video data is damaged, so it cannot be opened. {{mb}} MB of video data is still in the file and can usually be rebuilt.', { mb });
+        throw new InterruptedRecordingError(message, { cause: err });
+      }
       throw new UnsupportedFileError('Unsupported file', { cause: err });
     }
     throw err;
