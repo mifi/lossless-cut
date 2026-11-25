@@ -142,7 +142,7 @@
     "execa": "^9.6.1",
     "express": "^5.2.1",
     "file-type": "^22.0.1",
-    "i18next": "^26.3.0",
+    "i18next": "^26.3.4",
     "i18next-fs-backend": "^2.6.6",
     "json5": "^2.2.3",
     "mime-types": "^3.0.2",
