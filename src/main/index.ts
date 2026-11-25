@@ -149,7 +149,7 @@ function getSavedBounds() {
       options.y = bounds.y;
     }
     // If the saved size is still valid, use it.
-    if (bounds.width <= area.width || bounds.height <= area.height) {
+    if (bounds.width <= area.width && bounds.height <= area.height) {
       options.width = bounds.width;
       options.height = bounds.height;
     }
@@ -387,6 +387,7 @@ async function init() {
 
     ipcMain.on('apiActionResponse', (_e, { id }) => {
       apiActionRequests.get(id)?.();
+      apiActionRequests.delete(id);
     });
 
     logger.info('Waiting for app to become ready');

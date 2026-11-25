@@ -50,9 +50,15 @@ function useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream, 
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setNeighbouringKeyFrames({}), [filePath, videoStream]);
 
-  useDebounceOld(() => {
-    let aborted = false;
+  // Used to discard keyframes read from a file (or stream) that is no longer the current one.
+  // Note: react-use's useDebounce ignores the callback's return value, so we cannot use a cleanup function for this
+  // eslint-disable-next-line @eslint-react/naming-convention-ref-name -- TODO fix (new rule in @mifi/lint-config)
+  const currentFileRef = useRef({ filePath, videoStream });
+  useEffect(() => {
+    currentFileRef.current = { filePath, videoStream };
+  }, [filePath, videoStream]);
 
+  useDebounceOld(() => {
     (async () => {
       // See getIntervalAroundTime
       // We still want to calculate keyframes even if not shouldShowKeyframes because maybe we want to be able to step to the closest keyframe
@@ -63,7 +69,7 @@ function useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream, 
         const promise = readFramesAroundTime({ filePath, aroundTime: commandedTime, streamIndex: videoStream.index, window: ffmpegExtractWindow });
         readingKeyframesPromise.current = promise;
         const newFrames = await promise;
-        if (aborted) return;
+        if (currentFileRef.current.filePath !== filePath || currentFileRef.current.videoStream !== videoStream) return;
         const newKeyFrames = newFrames.filter((frame) => frame.keyframe);
         // console.log(newFrames);
         setNeighbouringKeyFrames((existingKeyFramesMap) => {
@@ -82,10 +88,6 @@ function useKeyframes({ keyframesEnabled, filePath, commandedTime, videoStream, 
         readingKeyframesPromise.current = undefined;
       }
     })();
-
-    return () => {
-      aborted = true;
-    };
     // NOTE: you have to manually pass dependencies here, eslint doesn't recognize it
   }, 500, [keyframesEnabled, filePath, commandedTime, videoStream, ffmpegExtractWindow, maxKeyframes]);
 
