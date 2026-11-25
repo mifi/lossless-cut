@@ -437,6 +437,86 @@ export async function silenceDetect({ streamId, filterOptions, ...rest }: {
   });
 }
 
+export async function cropDetect({ filePath, streamId, limit, resetCount, minSegmentDuration, width, height, onProgress, onSegmentDetected, from, to, ffmpegHwaccel }: {
+  filePath: string,
+  streamId: number | undefined
+  limit: number | string,
+  resetCount: number | string,
+  minSegmentDuration: string,
+  width: string,
+  height: string,
+  onProgress: (p: number) => void,
+  onSegmentDetected: (p: DetectedSegment) => void,
+  from: number,
+  to: number,
+  ffmpegHwaccel: FfmpegHwAccel,
+}) {
+  const args = [
+    '-hide_banner',
+    ...getHwaccelArgs(ffmpegHwaccel),
+    ...getInputSeekArgs({ filePath, from, to }),
+    '-map', streamId != null ? `0:${streamId}` : 'v:0',
+    '-filter:v', `cropdetect=reset_count=${resetCount}:limit=${limit}:round=1`,
+    '-f', 'null', '-',
+  ];
+  const process = runFfmpegProcess(args, { buffer: false });
+
+  handleProgress(process, to - from, onProgress);
+
+  assert.ok(process.stderr != null);
+  const rl = readline.createInterface({ input: process.stderr });
+
+  const minDuration = parseFloat(minSegmentDuration);
+  const maxWidth = parseInt(width, 10);
+  const maxHeight = parseInt(height, 10);
+
+  let lastTime = 0;
+  let currentStartTime = 0;
+  let currentEndTime = 0;
+  let skippedStart = 0;
+  let skipping = false;
+
+  rl.on('line', (line) => {
+    // cropdetect output => match[1]=pts_time,match[2]=crop values, match[3]=w, match[4]=h, match[5]=x, match[6]=y
+    const match = /\s+t:([\d.]+)\s+limit:[\d.]+\s+crop=((\d+):(\d+):(\d+):(\d+))$/.exec(line);
+    if (!match) return;
+    const time = parseFloat(match[1]!);
+    const widthTest = maxWidth === 0 || parseInt(match[3]!, 10) <= maxWidth;
+    const heightTest = maxHeight === 0 || parseInt(match[4]!, 10) <= maxHeight;
+
+    if (!Number.isNaN(time)) {
+      if (time > lastTime) {
+        if (widthTest && heightTest) {
+          if (skipping) {
+            if (lastTime - skippedStart > minDuration) {
+              // Skipped duration is long enough to be left out
+              if (currentEndTime - currentStartTime >= minDuration) {
+                // Current Segment is long enough
+                onSegmentDetected({ start: from + currentStartTime, end: from + currentEndTime });
+              }
+              currentStartTime = time;
+            }
+            skipping = false;
+          }
+          currentEndTime = time;
+        } else if (!skipping) {
+          skipping = true;
+          skippedStart = time;
+        }
+      }
+      lastTime = time;
+    }
+  });
+  await process;
+
+  // Create Last Segment
+  if (currentStartTime != null && currentEndTime != null && currentEndTime - currentStartTime >= minDuration) {
+    onSegmentDetected({ start: from + currentStartTime, end: from + currentEndTime });
+  }
+
+  return { ffmpegArgs: args };
+}
+
 function getQualityOpts({ captureFormat, quality }: { captureFormat: CaptureFormat, quality: number }) {
   if (captureFormat === 'jpeg') return ['-q:v', String(getFfmpegJpegQuality(quality))];
   if (captureFormat === 'webp') return ['-q:v', String(Math.max(0, Math.min(100, Math.round(quality * 100))))];
