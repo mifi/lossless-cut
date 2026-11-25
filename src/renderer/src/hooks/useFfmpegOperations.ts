@@ -6,7 +6,7 @@ import i18n from 'i18next';
 
 import { getSuffixedOutPath, transferTimestamps, getOutFileExtension, getOutDir, getHtml5ifiedPath, unlinkWithRetry, getFrameDuration, isMac, html5ifiedPrefix, html5dummySuffix, assertFileExists, decodeText, isExecaError, getStdioString } from '../util';
 import { isCuttingStart, isCuttingEnd, runFfmpegWithProgress, getFfCommandLine, getDuration, createChaptersFromSegments, readFileFfprobeMeta, getExperimentalArgs, getVideoTimescaleArgs, logStdoutStderr, runFfmpegConcat, RefuseOverwriteError, runFfmpeg } from '../ffmpeg';
-import { flacEncodeArgs, getEffectiveAvoidNegativeTs, getKeyframeCutSeekCompensation, getMapStreamsArgs, getStreamIdsToCopy, isCopyingOnlyAudioStreams, isCropActive, isAspectRatioActive } from '../util/streams';
+import { flacEncodeArgs, getEffectiveAvoidNegativeTs, getKeyframeCutSeekCompensation, getMapStreamsArgs, getStreamIdsToCopy, isCopyingOnlyAudioStreams, hasAttachedPicture, isCropActive, isAspectRatioActive } from '../util/streams';
 import { needsSmartCut, getCodecParams } from '../smartcut';
 import { getGuaranteedSegments, isDurationValid } from '../segments';
 import type { FFprobeStream } from '../../../common/ffprobe';
@@ -18,6 +18,7 @@ import { UserFacingError } from '../../errors';
 import mainApi from '../mainApi';
 import { formatFfmpegNumber, getFixChannelLayoutFilter, getHwaccelArgs, hasCustomChannelLayout } from '../../../common/util';
 import { join, resolve, dirname, extname } from '../util/path';
+import { getMovFlags } from '../util/muxer';
 
 const { writeFile, mkdir, access, constants: { W_OK } } = window.require('node:fs/promises');
 
@@ -42,31 +43,8 @@ async function writeChaptersFfmetadata(outDir: string, chapters: Chapter[] | und
   return path;
 }
 
-// Muxers implemented by ffmpeg's movenc.c, i.e. the ones that accept `-movflags`.
-// Note: deliberately not util/streams.ts `isMov`, which is a narrower, UI oriented list.
-const movencFormats = new Set(['3g2', '3gp', 'f4v', 'ipod', 'ismv', 'mov', 'mp4', 'psp']);
-
 // Muxers implemented by ffmpeg's matroskaenc.c, i.e. the ones that accept `-default_mode`.
 const matroskaencFormats = new Set(['matroska', 'webm']);
-
-// ffmpeg tolerates private options belonging to a different muxer, but they add noise to the command line
-// that we log, show in "Last commands" and include in error reports - which makes troubleshooting harder.
-// If the output format is unknown, ffmpeg infers the muxer from the file extension, so keep the flags to be safe.
-function getMovFlags({ outFormat, preserveMovData, movFastStart }: { outFormat: string | undefined, preserveMovData: boolean, movFastStart: boolean }) {
-  if (outFormat != null && !movencFormats.has(outFormat)) return [];
-
-  const flags: string[] = [];
-
-  // https://video.stackexchange.com/a/26084/29486
-  // https://github.com/mifi/lossless-cut/issues/331#issuecomment-623401794
-  if (preserveMovData) flags.push('use_metadata_tags');
-
-  // https://github.com/mifi/lossless-cut/issues/347
-  if (movFastStart) flags.push('+faststart');
-
-  if (flags.length === 0) return [];
-  return flags.flatMap((flag) => ['-movflags', flag]);
-}
 
 // same as getMovFlags, but for the matroska muxer's private options
 function getMatroskaFlags(outFormat: string | undefined) {
@@ -217,7 +195,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
         ...(chaptersInputIndex != null ? ['-map_chapters', String(chaptersInputIndex)] : []),
 
-        ...getMovFlags({ outFormat, preserveMovData, movFastStart }),
+        ...getMovFlags({ outFormat, preserveMovData, movFastStart, hasAttachedPicture: hasAttachedPicture({ allFilesMeta: { [metadataFromPath]: { streams } }, copyFileStreams: [{ path: metadataFromPath, streamIds: streamIdsToCopy }] }) }),
         ...getMatroskaFlags(outFormat),
 
         // See https://github.com/mifi/lossless-cut/issues/170
@@ -483,7 +461,7 @@ function useFfmpegOperations({ filePath, treatInputFileModifiedTimeAsStart, trea
 
       ...(shortestFlag ? ['-shortest'] : []),
 
-      ...getMovFlags({ outFormat, preserveMovData, movFastStart }),
+      ...getMovFlags({ outFormat, preserveMovData, movFastStart, hasAttachedPicture: hasAttachedPicture({ allFilesMeta, copyFileStreams: copyFileStreamsFiltered, paramsByFile }) }),
       ...getMatroskaFlags(outFormat),
 
       ...customFileMetadataArgs,

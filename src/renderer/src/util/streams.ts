@@ -1,7 +1,7 @@
 import invariant from 'tiny-invariant';
 import type { FFprobeStream, FFprobeStreamDisposition } from '../../../common/ffprobe';
 import type { AvoidNegativeTs } from '../../../common/types';
-import type { AllFilesMeta, BsfAspectRatioParams, BsfCropParams, ChromiumHTMLAudioElement, ChromiumHTMLVideoElement, CopyfileStreams, FileParams, LiteFFprobeStream, StreamParams } from '../types';
+import type { AllFilesMeta, BsfAspectRatioParams, BsfCropParams, ChromiumHTMLAudioElement, ChromiumHTMLVideoElement, CopyfileStreams, FileParams, LiteFFprobeStream, ParamsByFile, StreamParams } from '../types';
 import type { FileStream } from '../ffmpeg';
 
 
@@ -283,6 +283,19 @@ export const attachedPicDisposition = 'attached_pic';
 
 export function isStreamThumbnail(stream: Pick<FFprobeStream, 'codec_type' | 'disposition'>) {
   return stream?.codec_type === 'video' && stream.disposition?.[attachedPicDisposition] === 1;
+}
+
+export function hasAttachedPicture({ allFilesMeta, copyFileStreams, paramsByFile }: {
+  allFilesMeta: Record<string, Pick<AllFilesMeta[string], 'streams'>>,
+  copyFileStreams: CopyfileStreams,
+  paramsByFile?: ParamsByFile,
+}) {
+  return copyFileStreams.some(({ path, streamIds }) => streamIds.some((streamId) => {
+    const disposition = paramsByFile?.get(path)?.paramsByStream.get(streamId)?.disposition;
+    if (disposition != null) return disposition === attachedPicDisposition;
+    const stream = allFilesMeta[path]?.streams.find((s) => s.index === streamId);
+    return stream != null && isStreamThumbnail(stream);
+  }));
 }
 
 /** Resolves every stream that is going to be copied to the output. Unknown streams resolve to `undefined`. */
