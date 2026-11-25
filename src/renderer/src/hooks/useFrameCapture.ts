@@ -32,7 +32,7 @@ export default ({ appendFfmpegCommandLog, formatTimecode, treatInputFileModified
   treatOutputFileModifiedTimeAsStart: boolean | undefined | null,
   fileDuration: number | undefined,
 }) => {
-  const captureFramesRange = useCallback(async ({ customOutDir, filePath, fps, fromTime, toTime, estimatedMaxNumFiles, captureFormat, quality, filter, onProgress, outputTimestamps }: {
+  const captureFramesRange = useCallback(async ({ customOutDir, filePath, fps, fromTime, toTime, estimatedMaxNumFiles, captureFormat, quality, filter, onProgress, outputTimestamps, segPrefix }: {
     customOutDir: string | undefined,
     filePath: string,
     fps: number,
@@ -44,6 +44,8 @@ export default ({ appendFfmpegCommandLog, formatTimecode, treatInputFileModified
     filter?: string | undefined,
     onProgress: (a: number) => void,
     outputTimestamps: boolean,
+    // only used when not `outputTimestamps`: frame numbers start from 1 on every call, so calls for different segments need different prefixes
+    segPrefix: string,
   }) => {
     // fail fast with a helpful message if the source file has been moved/deleted since it was opened
     await assertFileExists(filePath);
@@ -52,8 +54,8 @@ export default ({ appendFfmpegCommandLog, formatTimecode, treatInputFileModified
 
     if (!outputTimestamps) {
       const numDigits = getNumDigits(estimatedMaxNumFiles);
-      const outPathTemplate = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: getSuffix(`%0${numDigits}d`) });
-      const firstFileOutPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: getSuffix('1'.padStart(numDigits, '0')) }); // mimic ffmpeg output
+      const outPathTemplate = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: getSuffix(`${segPrefix}%0${numDigits}d`) });
+      const firstFileOutPath = getSuffixedOutPath({ customOutDir, filePath, nameSuffix: getSuffix(`${segPrefix}${'1'.padStart(numDigits, '0')}`) }); // mimic ffmpeg output
 
       const args = await ffmpeg.captureFrames({ from: fromTime, to: toTime, videoPath: filePath, outPathTemplate, captureFormat, quality, filter, onProgress });
       appendFfmpegCommandLog(args);

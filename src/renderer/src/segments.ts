@@ -275,6 +275,15 @@ export function formatSegNum(segIndex: number, numSegments: number, minLength = 
   return `${segIndex + 1}`.padStart(Math.max(numDigits, minLength), '0');
 }
 
+// File name prefixes (before the frame number) of the frames extracted from each segment, when files are named by frame number.
+// Frame numbers start from 1 for every segment, so with more than one segment, the segment number is included
+// (like `SEG_SUFFIX` when exporting), or the segments would overwrite each other's files https://github.com/mifi/lossless-cut/issues/3216
+export function getExtractedFramesSegPrefixes(segments: { originalIndex: number }[], minLength = 0) {
+  if (segments.length <= 1) return segments.map(() => '');
+  const maxOriginalIndex = maxBy(segments, (segment) => segment.originalIndex)!.originalIndex;
+  return segments.map((segment) => `seg${formatSegNum(segment.originalIndex, maxOriginalIndex + 1, minLength)}-`);
+}
+
 export const filterNonMarkers = <T extends { end?: number | undefined }>(segments: T[]) => segments.flatMap(({ end, ...rest }) => (end != null ? [{
   ...rest,
   end,

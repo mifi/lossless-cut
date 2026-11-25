@@ -94,7 +94,7 @@ const Segment = memo(({
   jumpSegEnd: (i: number) => void,
   addSegment: UseSegments['addSegment'],
   onEditSegmentTags: (i: number) => void,
-  onExtractSegmentsFramesAsImages: (segments: Pick<SegmentBase, 'start' | 'end'>[]) => Promise<void>,
+  onExtractSegmentsFramesAsImages: (segments: (Pick<SegmentBase, 'start' | 'end'> & { originalIndex: number })[]) => Promise<void>,
   onExtractSelectedSegmentsFramesAsImages: () => void,
   onInvertSelectedSegments: UseSegments['invertSelectedSegments'],
   onDuplicateSegmentClick: UseSegments['duplicateSegment'],
@@ -148,7 +148,7 @@ const Segment = memo(({
       { type: 'separator' },
 
       { label: t('Segment tags'), click: () => onEditSegmentTags(index) },
-      { label: t('Extract segment frames as image files'), click: () => onExtractSegmentsFramesAsImages([seg]) },
+      { label: t('Extract segment frames as image files'), click: () => onExtractSegmentsFramesAsImages([{ ...seg, originalIndex: index }]) },
     ];
   }, [invertCutSegments, t, addSegment, onLabelSelectedSegments, onRemoveSelected, onExtractSelectedSegmentsFramesAsImages, updateSegOrder, index, jumpSegStart, jumpSegEnd, onLabelPress, onRemovePress, onDuplicateSegmentClick, seg, onSelectSingleSegment, onSelectAllSegments, onDeselectAllSegments, onSelectAllMarkers, onSelectSegmentsByLabel, onSelectSegmentsByExpr, onInvertSelectedSegments, onMutateSegmentsByExpr, onReorderPress, onEditSegmentTags, onExtractSegmentsFramesAsImages]);
 
@@ -361,7 +361,7 @@ function SegmentList({
   onSelectSegmentsByExpr: UseSegments['selectSegmentsByExpr'],
   onSelectAllMarkers: UseSegments['selectAllMarkers'],
   onMutateSegmentsByExpr: UseSegments['mutateSegmentsByExpr'],
-  onExtractSegmentsFramesAsImages: (segments: Pick<SegmentBase, 'start' | 'end'>[]) => Promise<void>,
+  onExtractSegmentsFramesAsImages: (segments: (Pick<SegmentBase, 'start' | 'end'> & { originalIndex: number })[]) => Promise<void>,
   onExtractSelectedSegmentsFramesAsImages: () => void,
   onLabelSelectedSegments: UseSegments['labelSelectedSegments'],
   onInvertSelectedSegments: UseSegments['invertSelectedSegments'],

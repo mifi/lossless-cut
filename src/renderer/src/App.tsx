@@ -93,7 +93,7 @@ import { askExtractFramesAsImages } from './dialogs/extractFrames';
 import type { CleanupChoicesType, OpenFileResponse } from './dialogs';
 import { askForOutDir, askForImportChapters, askForFileOpenAction, showDiskFull, showExportFailedDialog, showConcatFailedDialog, openYouTubeChaptersDialog, showRefuseToOverwrite, showOpenDialog, showMuxNotSupported, promptDownloadMediaUrl, showOutputNotWritable, deleteFiles, mustDisallowVob, toastError } from './dialogs';
 import { openSendReportDialog } from './reporting';
-import { sortSegments, convertSegmentsToChaptersWithGaps, hasAnySegmentOverlap, isDurationValid, getPlaybackAction, getSegmentTags, filterNonMarkers, isInitialSegment } from './segments';
+import { sortSegments, convertSegmentsToChaptersWithGaps, hasAnySegmentOverlap, isDurationValid, getPlaybackAction, getSegmentTags, filterNonMarkers, isInitialSegment, getExtractedFramesSegPrefixes } from './segments';
 import type { GenerateMergedOutFileNamesParams, GeneratedOutFileNames } from './util/outputNameTemplate';
 import { generateCutFileNames as generateCutFileNamesRaw, generateCutMergedFileNames as generateCutMergedFileNamesRaw, generateMergedFileNames as generateMergedFileNamesRaw, defaultCutFileTemplate, defaultCutMergedFileTemplate, defaultMergedFileTemplate } from './util/outputNameTemplate';
 import { rightBarWidth, leftBarWidth, ffmpegExtractWindow, zoomMax } from './util/constants';
@@ -1329,7 +1329,7 @@ function App() {
     }
   }, [captureFrameQuality, captureFrameToClipboard, filePath, getRelevantTime, hideAllNotifications, prefersReducedMotion, setWorking, simpleMode, t, withErrorHandling, workingRef]);
 
-  const extractSegmentsFramesAsImages = useCallback(async (segments: SegmentBase[]) => {
+  const extractSegmentsFramesAsImages = useCallback(async (segments: (SegmentBase & { originalIndex: number })[]) => {
     if (!filePath || detectedFps == null || workingRef.current || segments.length === 0) return;
     const segmentsNumFrames = segments.reduce((acc, { start, end }) => acc + (end == null ? 1 : (getFrameCount(end - start) ?? 0)), 0);
     // If all segments are markers, we shall export every marker as a file and therefore we don't have to ask user
@@ -1355,10 +1355,12 @@ function App() {
         setProgress(totalProgress / segments.length);
       };
 
+      const segPrefixes = getExtractedFramesSegPrefixes(segments, outputFileNameMinZeroPadding);
+
       for (const [index, segment] of segments.entries()) {
         const { start, end } = segment;
         invariant(filePath != null);
-        lastOutPath = await captureFramesRange({ customOutDir, filePath, fps: detectedFps, fromTime: start, toTime: end, estimatedMaxNumFiles: captureFramesResponse.estimatedMaxNumFiles, captureFormat, quality: captureFrameQuality, filter: captureFramesResponse.filter, outputTimestamps: captureFrameFileNameFormat === 'timestamp', onProgress: (segmentProgress) => handleSegmentProgress(index, segmentProgress) });
+        lastOutPath = await captureFramesRange({ customOutDir, filePath, fps: detectedFps, fromTime: start, toTime: end, estimatedMaxNumFiles: captureFramesResponse.estimatedMaxNumFiles, captureFormat, quality: captureFrameQuality, filter: captureFramesResponse.filter, outputTimestamps: captureFrameFileNameFormat === 'timestamp', segPrefix: segPrefixes[index]!, onProgress: (segmentProgress) => handleSegmentProgress(index, segmentProgress) });
       }
       if (!hideAllNotifications && lastOutPath != null) {
         showOsNotification(i18n.t('Frames have been extracted'));
@@ -1371,11 +1373,11 @@ function App() {
       setWorking(undefined);
       setProgress(undefined);
     }
-  }, [filePath, detectedFps, workingRef, getFrameCount, setWorking, hideAllNotifications, captureFramesRange, customOutDir, captureFormat, captureFrameQuality, captureFrameFileNameFormat, showOsNotification, openExportFinishedDialog, outputDir, handleError]);
+  }, [filePath, detectedFps, workingRef, getFrameCount, setWorking, outputFileNameMinZeroPadding, hideAllNotifications, captureFramesRange, customOutDir, captureFormat, captureFrameQuality, captureFrameFileNameFormat, showOsNotification, openExportFinishedDialog, outputDir, handleError]);
 
   const extractCurrentSegmentFramesAsImages = useCallback(() => {
-    if (currentCutSeg != null) extractSegmentsFramesAsImages([currentCutSeg]);
-  }, [currentCutSeg, extractSegmentsFramesAsImages]);
+    if (currentCutSeg != null) extractSegmentsFramesAsImages([{ ...currentCutSeg, originalIndex: currentSegIndexSafe }]);
+  }, [currentCutSeg, currentSegIndexSafe, extractSegmentsFramesAsImages]);
 
   const extractSelectedSegmentsFramesAsImages = useCallback(() => extractSegmentsFramesAsImages(selectedSegments), [extractSegmentsFramesAsImages, selectedSegments]);
 
