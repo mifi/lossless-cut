@@ -1,6 +1,7 @@
 import { it, expect } from 'vitest';
 
-import { formatDuration, isExactTimecodeMatch, parseDuration } from './duration';
+import type { FormatTimecode } from '../types';
+import { formatDuration, formatRelativeTime, getTimeRelativeToSegStart, isExactTimecodeMatch, parseDuration } from './duration';
 
 it('should format duration properly', () => {
   expect(formatDuration({ seconds: 1.5, fps: 30 })).toBe('00:00:01.15');
@@ -107,4 +108,18 @@ it.each([24, 25, 30, 60, 24000 / 1001, 30000 / 1001, 48000 / 1001, 60000 / 1001]
     if (roundTripped !== formatted) mismatches.push(`${formatted} -> ${roundTripped}`);
   }
   expect(mismatches).toStrictEqual([]);
+});
+
+it('should get time relative to segment start', () => {
+  expect(getTimeRelativeToSegStart({ displayTime: 15, startTimeOffset: 0, segStart: 10 })).toBe(5);
+  expect(getTimeRelativeToSegStart({ displayTime: 8, startTimeOffset: 0, segStart: 10 })).toBe(-2);
+  // displayTime includes the start time offset, segment times don't
+  expect(getTimeRelativeToSegStart({ displayTime: 115, startTimeOffset: 100, segStart: 10 })).toBe(5);
+});
+
+it('should format relative time with a sign', () => {
+  const formatTimecode: FormatTimecode = ({ seconds }) => formatDuration({ seconds });
+  expect(formatRelativeTime(12.345, formatTimecode)).toBe('+00:00:12.345');
+  expect(formatRelativeTime(-1.5, formatTimecode)).toBe('-00:00:01.500');
+  expect(formatRelativeTime(0, formatTimecode)).toBe('+00:00:00.000');
 });
