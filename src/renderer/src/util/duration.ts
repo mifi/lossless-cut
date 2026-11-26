@@ -53,6 +53,18 @@ export const isExactTimecodeMatch = (str: string, parseTimecode: ParseTimecode, 
   return seconds != null && Number.isFinite(seconds) && formatTimecode({ seconds }) === str;
 };
 
+// displayTime includes the file's start time offset, but segment times don't
+export const getTimeRelativeToSegStart = ({ displayTime, startTimeOffset, segStart }: {
+  displayTime: number,
+  startTimeOffset: number,
+  segStart: number,
+}) => displayTime - startTimeOffset - segStart;
+
+// Always show a sign, and format the absolute value, so that it works with every timecode format (e.g. frame count)
+export const formatRelativeTime = (seconds: number, formatTimecode: FormatTimecode) => (
+  `${seconds < 0 ? '-' : '+'}${formatTimecode({ seconds: Math.abs(seconds) })}`
+);
+
 // See also parseYoutube
 export function parseDuration(str: string, fps?: number) {
   const match = durationRegex.exec(str.replaceAll(/\s/g, ''));

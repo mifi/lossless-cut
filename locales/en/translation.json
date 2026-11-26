@@ -815,6 +815,7 @@
   "This option lets you losslessly change the speed at which media players will play back the exported file. For example if you double the FPS, the playback speed will double (and duration will halve), however all the frames will be intact and played back (but faster). Be careful not to set it too high, as the player might not be able to keep up (playback CPU usage will increase proportionally to the speed!)": "This option lets you losslessly change the speed at which media players will play back the exported file. For example if you double the FPS, the playback speed will double (and duration will halve), however all the frames will be intact and played back (but faster). Be careful not to set it too high, as the player might not be able to keep up (playback CPU usage will increase proportionally to the speed!)",
   "This track has been edited": "This track has been edited",
   "thumbnail": "thumbnail",
+  "Time relative to current segment start": "Time relative to current segment start",
   "Timeline keyboard seek acceleration": "Timeline keyboard seek acceleration",
   "Timeline keyboard seek interval": "Timeline keyboard seek interval",
   "Timeline keyboard seek interval (longer)": "Timeline keyboard seek interval (longer)",

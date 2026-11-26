@@ -11,6 +11,7 @@ Here's everything it can do, and what people use it for. Which functions are ava
 - Export each segment as its own file, merge them into one file, or both
 - Rearrange the order of the segments
 - Type in cut point times
+- See how far the cursor is from the current segment's start, to place a cut point at an exact segment length
 - Timeline with zoom and frame/keyframe jumping, for cutting around keyframes
 - Video thumbnails and audio waveform on the timeline
 - Play or loop the current segment, or all selected segments in order

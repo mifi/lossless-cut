@@ -23,7 +23,7 @@ import getSwal, { errorToast } from './swal';
 import { UserFacingError } from '../errors';
 import { getSegColor as getSegColorRaw } from './util/colors';
 import { useSegColors } from './contexts';
-import { isExactTimecodeMatch } from './util/duration';
+import { formatRelativeTime, getTimeRelativeToSegStart, isExactTimecodeMatch } from './util/duration';
 import useUserSettings from './hooks/useUserSettings';
 import useActionTitle from './hooks/useActionTitle';
 import { askForPlaybackRate, checkAppPath } from './dialogs';
@@ -441,6 +441,12 @@ function BottomBar({
 
   const displayTimeFrameCount = useMemo(() => getFrameCount(displayTime), [displayTime, getFrameCount]);
 
+  // https://github.com/mifi/lossless-cut/issues/2730
+  const timeRelativeToSegStartStr = useMemo(() => {
+    if (!isFileOpened || simpleMode || currentCutSeg == null) return undefined;
+    return formatRelativeTime(getTimeRelativeToSegStart({ displayTime, startTimeOffset, segStart: currentCutSeg.start }), formatTimecode);
+  }, [currentCutSeg, displayTime, formatTimecode, isFileOpened, simpleMode, startTimeOffset]);
+
   return (
     <>
       <div className="no-user-select" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: isFileOpened ? 1 : 0.5 }}>
@@ -620,6 +626,9 @@ function BottomBar({
               {displayTimeFrameCount ?? 0}<span style={{ opacity: 0.5, userSelect: 'none' }}>f</span>
               {isZoomed && <span style={{ marginLeft: '.5em' }}>{Math.round((displayTime / fileDurationNonZero) * 100)}<span style={{ opacity: 0.5, userSelect: 'none' }}>%</span></span>}
             </span>
+            {timeRelativeToSegStartStr != null && (
+              <span title={t('Time relative to current segment start')} style={{ color: 'var(--gray-11)', marginLeft: '.5em' }}>{timeRelativeToSegStartStr}</span>
+            )}
           </div>
         </div>
 
