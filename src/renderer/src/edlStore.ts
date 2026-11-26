@@ -50,8 +50,8 @@ async function loadEdl(path: string, fps: number) {
   return parseEdl(trimBom(await readFile(path, 'utf8')), fps);
 }
 
-async function loadCue(path: string) {
-  return parseCuesheet(cueParser.parse(path));
+async function loadCue(path: string, fileDuration: number | undefined) {
+  return parseCuesheet(cueParser.parse(path), fileDuration);
 }
 
 async function loadSrt(path: string) {
@@ -129,10 +129,11 @@ export async function loadOtio(path: string) {
   return parseOtio(JSON.parse(await readFile(path, 'utf8')));
 }
 
-export async function readEdlFile({ type, path, fps }: {
+export async function readEdlFile({ type, path, fps, fileDuration }: {
   type: EdlFileType,
   path: string,
   fps: number | undefined,
+  fileDuration?: number | undefined,
 }) {
   if (type === 'csv') return loadCsv(path, parseCsvTime);
   if (type === 'csv-frames' || type === 'edl') {
@@ -145,7 +146,7 @@ export async function readEdlFile({ type, path, fps }: {
   if (type === 'xmeml') return loadXmeml(path);
   if (type === 'fcpxml') return loadFcpXml(path);
   if (type === 'dv-analyzer-summary-txt') return loadDvAnalyzerSummaryTxt(path);
-  if (type === 'cue') return loadCue(path);
+  if (type === 'cue') return loadCue(path, fileDuration);
   if (type === 'pbf') return loadPbf(path);
   if (type === 'srt') return loadSrt(path);
   if (type === 'otio') return loadOtio(path);
@@ -179,7 +180,7 @@ export async function askForEdlImport({ type, fps, fileDuration, defaultPath }: 
   });
   const [firstFilePath] = filePaths;
   if (canceled || firstFilePath == null) return [];
-  return readEdlFile({ type, path: firstFilePath, fps });
+  return readEdlFile({ type, path: firstFilePath, fps, fileDuration });
 }
 
 export async function exportEdlFile({ type, cutSegments, customOutDir, filePath, getFrameCount }: {
