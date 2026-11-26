@@ -1,6 +1,6 @@
 // eslint-disable-next-line import-js/no-extraneous-dependencies
 import { describe, expect, test } from 'vitest';
-import { getFfmpegJpegQuality, parseBlackDetectLine, parseSilenceDetectLine } from './ffmpegUtil.ts';
+import { getFfmpegJpegQuality, getInputOutputSeekArgs, parseBlackDetectLine, parseSilenceDetectLine } from './ffmpegUtil.ts';
 
 describe('getFfmpegJpegQuality', () => {
   test('quality 1 -> best (2)', () => {
@@ -51,5 +51,25 @@ describe('parseSilenceDetectLine', () => {
   });
   test('silence_start line is ignored', () => {
     expect(parseSilenceDetectLine('[Parsed_silencedetect_0 @ 0x5581e0c2e540] silence_start: 7.5')).toBeUndefined();
+  });
+});
+
+describe('getInputOutputSeekArgs', () => {
+  test('no start', () => {
+    expect(getInputOutputSeekArgs(undefined)).toStrictEqual({ inputSeekArgs: [], outputSeekArgs: [] });
+  });
+
+  test('start within the margin only seeks after the input', () => {
+    expect(getInputOutputSeekArgs(0)).toStrictEqual({ inputSeekArgs: [], outputSeekArgs: ['-ss', '0.000000'] });
+    expect(getInputOutputSeekArgs(3)).toStrictEqual({ inputSeekArgs: [], outputSeekArgs: ['-ss', '3.000000'] });
+  });
+
+  test('seeks most of the way before the input', () => {
+    expect(getInputOutputSeekArgs(3300)).toStrictEqual({ inputSeekArgs: ['-ss', '3295.000000'], outputSeekArgs: ['-ss', '5.000000'] });
+    expect(getInputOutputSeekArgs(1234.5)).toStrictEqual({ inputSeekArgs: ['-ss', '1229.500000'], outputSeekArgs: ['-ss', '5.000000'] });
+  });
+
+  test('custom margin', () => {
+    expect(getInputOutputSeekArgs(60, 10)).toStrictEqual({ inputSeekArgs: ['-ss', '50.000000'], outputSeekArgs: ['-ss', '10.000000'] });
   });
 });

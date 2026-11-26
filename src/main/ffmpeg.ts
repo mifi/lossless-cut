@@ -16,7 +16,7 @@ import isDev from './isDev.js';
 import logger from './logger.js';
 import { parseFfmpegProgressLine } from './progress.js';
 import { formatFfmpegNumber, getFixChannelLayoutFilter, getHwaccelArgs, parseFfprobeDuration } from '../common/util.js';
-import { getFfmpegJpegQuality, parseBlackDetectLine, parseSilenceDetectLine } from './ffmpegUtil.js';
+import { getFfmpegJpegQuality, getInputOutputSeekArgs, parseBlackDetectLine, parseSilenceDetectLine } from './ffmpegUtil.js';
 import { throwIfDisabledNetworking } from './networking.js';
 
 
@@ -218,12 +218,16 @@ export async function renderWaveformPng({ filePath, start, duration, resample, c
   streamIndex: number,
   timeout?: number,
 }): Promise<Waveform> {
+  // Seeking only after `-i` would make ffmpeg read (and demux) the whole file up to `start`, for every waveform slice
+  const { inputSeekArgs, outputSeekArgs } = getInputOutputSeekArgs(start);
+
   const args1 = [
     '-hide_banner',
+    ...inputSeekArgs,
     '-i', filePath,
     '-vn',
     '-map', `0:${streamIndex}`,
-    ...(start != null ? ['-ss', String(start)] : []),
+    ...outputSeekArgs,
     ...(duration != null ? ['-t', String(duration)] : []),
     ...(resample != null ? [
       // the operation is faster if we resample

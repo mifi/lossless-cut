@@ -1,3 +1,5 @@
+import { formatFfmpegNumber } from '../common/util.js';
+
 /**
 Convert 0-1 quality to ffmpeg jpeg quality scale
 @param quality 0-1 where 1 is best quality
@@ -34,4 +36,18 @@ export function parseSilenceDetectLine(line: string) {
   const end = parseFloat(match[1]!);
   // start can be slightly negative if the audio timestamps start below 0
   return toInterval(Math.max(0, end - parseFloat(match[2]!)), end);
+}
+
+/**
+Args for extracting a part of a file starting at `start`, without reading the whole file up to `start`.
+Most of the seek happens before `-i` (fast, uses the index), and the rest after `-i` (exact, like an output-only seek).
+The margin makes sure that we also get packets that are stored before the keyframe that the input seek lands on.
+*/
+export function getInputOutputSeekArgs(start: number | undefined, margin = 5) {
+  if (start == null) return { inputSeekArgs: [], outputSeekArgs: [] };
+  const inputSeek = Math.max(0, start - margin);
+  return {
+    inputSeekArgs: inputSeek > 0 ? ['-ss', formatFfmpegNumber(inputSeek)] : [],
+    outputSeekArgs: ['-ss', formatFfmpegNumber(start - inputSeek)],
+  };
 }
