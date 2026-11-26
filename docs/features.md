@@ -85,6 +85,7 @@ Lossless cuts can only start at a keyframe, so a cut starts at the keyframe befo
 - Convert a whole batch of files to a supported format
 - Keyboard shortcut workflow, with customizable shortcuts
 - See the FFmpeg commands that were run, so you can change and re-run them on the command line
+- Tells you when a file won't open because its recording was interrupted (camera lost power, card pulled) and its video data is still in the file
 - Basic [CLI](cli.md) and [HTTP API](api.md)
 - Simple and advanced mode, dark and light themes, and 26 languages
 

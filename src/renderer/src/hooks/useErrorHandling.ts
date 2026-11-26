@@ -1,7 +1,7 @@
 import i18n from 'i18next';
 import { useCallback, useState } from 'react';
 
-import { DirectoryAccessDeclinedError, UnsupportedFileError } from '../../errors';
+import { DirectoryAccessDeclinedError, InterruptedRecordingError, UnsupportedFileError } from '../../errors';
 import { isAbortedError } from '../util';
 import type { GenericError } from '../components/ErrorDialog';
 
@@ -20,6 +20,12 @@ export default function useErrorHandling() {
       await operation();
     } catch (err) {
       if (err instanceof DirectoryAccessDeclinedError || isAbortedError(err)) return;
+
+      if (err instanceof InterruptedRecordingError) {
+        console.error(err);
+        handleError({ title: errorMsg, err: err.message });
+        return;
+      }
 
       if (err instanceof UnsupportedFileError) {
         console.error(err);
