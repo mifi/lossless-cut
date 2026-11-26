@@ -1,6 +1,6 @@
 import { test, it, expect, describe } from 'vitest';
 
-import { convertSegmentsToChaptersWithGaps, partitionIntoOverlappingRanges, formatSegNum, combineOverlappingSegments, invertSegments } from './segments';
+import { convertSegmentsToChaptersWithGaps, partitionIntoOverlappingRanges, formatSegNum, combineOverlappingSegments, invertSegments, makeDurationSegments } from './segments';
 
 it('converts segments to chapters with gaps', () => {
   expect(convertSegmentsToChaptersWithGaps([
@@ -234,5 +234,75 @@ describe('combineOverlappingSegments', () => {
     ];
 
     expect(combineOverlappingSegments(segments)).toMatchSnapshot();
+  });
+});
+
+describe('makeDurationSegments', () => {
+  const expectValid = (segs: { start: number, end: number }[], total: number) => {
+    expect(segs.length).toBeGreaterThan(0);
+    expect(segs[0]!.start).toBe(0);
+    expect(segs[segs.length - 1]!.end).toBe(total);
+    for (let i = 0; i < segs.length; i += 1) {
+      expect(segs[i]!.end).toBeGreaterThan(segs[i]!.start);
+      if (i > 0) expect(segs[i]!.start).toBe(segs[i - 1]!.end);
+    }
+    // no near-zero-length "sliver" segment from float drift
+    const shortest = Math.min(...segs.map((s) => s.end - s.start));
+    expect(shortest).toBeGreaterThan(1e-9);
+  };
+
+  it('splits evenly when the duration is an exact multiple', () => {
+    const segs = makeDurationSegments(5, 60);
+    expect(segs.length).toBe(12);
+    expectValid(segs, 60);
+  });
+
+  it('makes the last segment shorter for a real remainder', () => {
+    const segs = makeDurationSegments(1, 3.5);
+    expect(segs.length).toBe(4);
+    expect(segs[3]).toEqual({ start: 3, end: 3.5 });
+    expectValid(segs, 3.5);
+  });
+
+  it.each([
+    [0.1, 10, 100],
+    [0.1, 3, 30],
+    [0.3, 9, 30],
+    [0.7, 7, 10],
+    [1 / 3, 10, 30],
+    [0.2, 600, 3000],
+  ])('does not add a tiny extra segment from float drift (%s over %ss)', (step, total, expectedCount) => {
+    const segs = makeDurationSegments(step, total);
+    expect(segs.length).toBe(expectedCount);
+    expectValid(segs, total);
+  });
+
+  it.each([
+    [1, 3.000001, 4],
+    [1, 3.0000000001, 4],
+  ])('keeps real remainders (%s over %ss)', (step, total, expectedCount) => {
+    expect(makeDurationSegments(step, total).length).toBe(expectedCount);
+  });
+
+  it('treats ratios within float error of a whole number as exact', () => {
+    expect(makeDurationSegments(1, 3.000000000000004).length).toBe(3);
+  });
+
+  it('returns one segment when the total is shorter than the segment duration', () => {
+    expect(makeDurationSegments(1e10, 5)).toEqual([{ start: 0, end: 5 }]);
+    expect(makeDurationSegments(10, 0.001)).toEqual([{ start: 0, end: 0.001 }]);
+  });
+
+  it.each([
+    [0, 10],
+    [-1, 10],
+    [NaN, 10],
+    [Infinity, 10],
+    [1, 0],
+    [1, -5],
+    [1, NaN],
+    [1, Infinity],
+  ])('returns no segments for invalid input (%s over %s)', (step, total) => {
+    expect(makeDurationSegments(step, total)).toEqual([]);
   });
 });
