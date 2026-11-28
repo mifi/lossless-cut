@@ -1,6 +1,6 @@
 // eslint-disable-next-line import-js/no-extraneous-dependencies
 import { describe, expect, test } from 'vitest';
-import { getFfmpegJpegQuality, parseBlackDetectLine, parseSilenceDetectLine } from './ffmpegUtil.ts';
+import { createSceneChangeSegmenter, getFfmpegJpegQuality, parseBlackDetectLine, parseSilenceDetectLine } from './ffmpegUtil.ts';
 
 describe('getFfmpegJpegQuality', () => {
   test('quality 1 -> best (2)', () => {
@@ -51,5 +51,60 @@ describe('parseSilenceDetectLine', () => {
   });
   test('silence_start line is ignored', () => {
     expect(parseSilenceDetectLine('[Parsed_silencedetect_0 @ 0x5581e0c2e540] silence_start: 7.5')).toBeUndefined();
+  });
+});
+
+describe('createSceneChangeSegmenter', () => {
+  function getSegments(range: { from: number, to: number }, times: number[]) {
+    const segmenter = createSceneChangeSegmenter(range);
+    const segments = times.flatMap((time) => segmenter.addSceneChange(time) ?? []);
+    const lastSegment = segmenter.finish();
+    return lastSegment != null ? [...segments, lastSegment] : segments;
+  }
+
+  test('includes the start and the end', () => {
+    expect(getSegments({ from: 0, to: 10 }, [2, 5])).toStrictEqual([
+      { start: 0, end: 2 },
+      { start: 2, end: 5 },
+      { start: 5, end: 10 },
+    ]);
+  });
+
+  test('times are relative to the start of the range', () => {
+    expect(getSegments({ from: 10, to: 20 }, [2, 5])).toStrictEqual([
+      { start: 10, end: 12 },
+      { start: 12, end: 15 },
+      { start: 15, end: 20 },
+    ]);
+  });
+
+  test('no scene changes gives one segment for the whole range', () => {
+    expect(getSegments({ from: 3, to: 8 }, [])).toStrictEqual([{ start: 3, end: 8 }]);
+  });
+
+  test('a scene change at the very start makes no zero-length segment', () => {
+    expect(getSegments({ from: 0, to: 10 }, [0, 4])).toStrictEqual([
+      { start: 0, end: 4 },
+      { start: 4, end: 10 },
+    ]);
+  });
+
+  test('a scene change at or after the very end makes no zero-length segment', () => {
+    expect(getSegments({ from: 0, to: 10 }, [4, 10])).toStrictEqual([
+      { start: 0, end: 4 },
+      { start: 4, end: 10 },
+    ]);
+    expect(getSegments({ from: 5, to: 10 }, [2, 5.04])).toStrictEqual([
+      { start: 5, end: 7 },
+      { start: 7, end: 10 },
+    ]);
+  });
+
+  test('ignores repeated, out of order and invalid times', () => {
+    expect(getSegments({ from: 0, to: 10 }, [4, 4, 3, NaN, 6])).toStrictEqual([
+      { start: 0, end: 4 },
+      { start: 4, end: 6 },
+      { start: 6, end: 10 },
+    ]);
   });
 });

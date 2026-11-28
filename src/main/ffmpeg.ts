@@ -16,7 +16,7 @@ import isDev from './isDev.js';
 import logger from './logger.js';
 import { parseFfmpegProgressLine } from './progress.js';
 import { formatFfmpegNumber, getFixChannelLayoutFilter, getHwaccelArgs, parseFfprobeDuration } from '../common/util.js';
-import { getFfmpegJpegQuality, parseBlackDetectLine, parseSilenceDetectLine } from './ffmpegUtil.js';
+import { createSceneChangeSegmenter, getFfmpegJpegQuality, parseBlackDetectLine, parseSilenceDetectLine } from './ffmpegUtil.js';
 import { throwIfDisabledNetworking } from './networking.js';
 
 
@@ -323,21 +323,19 @@ export async function detectSceneChanges({ filePath, streamId, minChange, onProg
   assert.ok(process.stdout != null);
   const rl = readline.createInterface({ input: process.stdout });
 
-  let lastTime: number | undefined;
+  const segmenter = createSceneChangeSegmenter({ from, to });
 
   rl.on('line', (line) => {
     const match = /^frame:\d+\s+pts:\d+\s+pts_time:([\d.]+)/.exec(line);
     if (!match) return;
-    const time = parseFloat(match[1]!);
-    if (!Number.isNaN(time)) {
-      if (lastTime != null && time > lastTime) {
-        onSegmentDetected({ start: from + lastTime, end: from + time });
-      }
-      lastTime = time;
-    }
+    const segment = segmenter.addSceneChange(parseFloat(match[1]!));
+    if (segment != null) onSegmentDetected(segment);
   });
 
   await process;
+
+  const lastSegment = segmenter.finish();
+  if (lastSegment != null) onSegmentDetected(lastSegment);
 
   return { ffmpegArgs: args };
 }
