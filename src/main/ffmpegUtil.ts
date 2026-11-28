@@ -35,3 +35,29 @@ export function parseSilenceDetectLine(line: string) {
   // start can be slightly negative if the audio timestamps start below 0
   return toInterval(Math.max(0, end - parseFloat(match[2]!)), end);
 }
+
+/**
+Turns scene changes detected in the range `from`-`to` into segments that cover the whole range:
+from its start to the first change, between the changes, and from the last change to its end.
+Scene change times are relative to `from`.
+*/
+export function createSceneChangeSegmenter({ from, to }: { from: number, to: number }) {
+  let lastTime = 0;
+
+  return {
+    // returns the segment that ends at this scene change, if any
+    addSceneChange(time: number) {
+      // a change at the very start or end of the range (or out of order) doesn't make a new segment
+      if (Number.isNaN(time) || time <= lastTime || from + time >= to) return undefined;
+      const segment = { start: from + lastTime, end: from + time };
+      lastTime = time;
+      return segment;
+    },
+    // returns the segment from the last scene change to the end of the range
+    finish() {
+      const start = from + lastTime;
+      if (start >= to) return undefined;
+      return { start, end: to };
+    },
+  };
+}
